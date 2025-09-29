@@ -130,16 +130,35 @@ gh pr create --base main --head staging --title "Release v1.x.x" --body "Product
 }
 ```
 
+### npm Scripts for Deployment
+
+The following npm scripts are available for Firebase operations:
+
+```bash
+# Deployment Scripts (builds and deploys)
+npm run deploy:staging        # Build and deploy to staging
+npm run deploy:production     # Build and deploy to production
+npm run deploy:all           # Build and deploy to both environments
+
+# Development & Testing Scripts
+npm run firebase:emulate      # Start Firebase emulator (staging: :5005, production: :5000)
+npm run firebase:serve        # Serve built site locally on :5000
+
+# Utility Scripts
+npm run firebase:login        # Authenticate with Firebase
+npm run firebase:projects     # List available Firebase projects
+npm run firebase:use          # Set project to static-sites-257923
+```
+
 ### Manual Deployment (if needed)
 
 ```bash
-# Build the project
+# Using npm scripts (recommended)
+npm run deploy:staging
+
+# Or direct Firebase CLI commands
 npm run build
-
-# Deploy to staging
 firebase deploy --only hosting:staging
-
-# Deploy to production
 firebase deploy --only hosting:production
 ```
 
@@ -193,9 +212,15 @@ firebase deploy --only hosting:production
 # Test build locally
 npm run build
 
-# Test with Firebase emulator
-firebase emulators:start --only hosting
+# Test with Firebase emulator (both staging and production)
+npm run firebase:emulate
 
+# Access sites at:
+# Production: http://localhost:5000
+# Staging: http://localhost:5005
+
+# Or serve built site only (single environment)
+npm run firebase:serve
 # Access at: http://localhost:5000
 ```
 

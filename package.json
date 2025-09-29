@@ -12,7 +12,15 @@
     "build:cypress": "cross-env CYPRESS_SUPPORT=y yarn build",
     "start": "gatsby develop",
     "serve": "gatsby serve",
-    "clean": "gatsby clean"
+    "clean": "gatsby clean",
+    "deploy:staging": "npm run build && firebase deploy --only hosting:staging",
+    "deploy:production": "npm run build && firebase deploy --only hosting:production",
+    "deploy:all": "npm run build && firebase deploy --only hosting",
+    "firebase:serve": "firebase serve --only hosting --port 5000",
+    "firebase:emulate": "firebase emulators:start --only hosting",
+    "firebase:login": "firebase login",
+    "firebase:projects": "firebase projects:list",
+    "firebase:use": "firebase use static-sites-257923"
   },
   "dependencies": {
     "@lekoarts/gatsby-theme-cara": "^5.1.7",
@@ -28,6 +36,7 @@
     "@types/react-dom": "^18.3.7",
     "ajv": "^8.17.1",
     "cross-env": "^7.0.3",
+    "firebase-tools": "^13.20.2",
     "typescript": "^5.8.3"
   }
 }
