@@ -5,9 +5,8 @@ const shouldAnalyseBundle = process.env.ANALYSE_BUNDLE
 
 const config: GatsbyConfig = {
   siteMetadata: {
-    // You can overwrite values here that are used for the SEO component
-    // You can also add new values here to query them like usual
-    // See all options: https://github.com/LekoArts/gatsby-themes/blob/main/themes/gatsby-theme-cara/gatsby-config.mjs
+    // Site metadata used for SEO and social media
+    // These values are available to query via GraphQL
     siteTitle: `Josh Wentworth`,
     siteTitleAlt: `Josh Wentworth - Software × Hardware × Fabrication`,
     siteHeadline: `Josh Wentworth - Multidisciplinary Engineer`,
@@ -21,7 +20,7 @@ const config: GatsbyConfig = {
   plugins: [
     {
       resolve: `@lekoarts/gatsby-theme-cara`,
-      // See the theme's README for all available options
+      // Gatsby theme providing the core functionality
       options: {},
     },
     {
