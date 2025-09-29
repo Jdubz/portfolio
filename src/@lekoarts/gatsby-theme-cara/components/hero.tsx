@@ -1,10 +1,10 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
-import Divider from "../elements/divider"
-import Inner from "../elements/inner"
-import Content from "../elements/content"
+import Divider from "@lekoarts/gatsby-theme-cara/src/elements/divider"
+import Inner from "@lekoarts/gatsby-theme-cara/src/elements/inner"
+import Content from "@lekoarts/gatsby-theme-cara/src/elements/content"
 import Svg from "./svg"
-import { UpDown, UpDownWide } from "../styles/animations"
+import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/animations"
 import Intro from "../sections/intro.mdx"
 
 const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
