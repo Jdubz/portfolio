@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "static-sites-257923"
+  },
+  "targets": {
+    "static-sites-257923": {
+      "hosting": {
+        "production": [
+          "jsdubz-production"
+        ],
+        "staging": [
+          "stagingjsw"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+# CODEOWNERS file for webMan Portfolio
+# This file defines who owns which parts of the codebase
+# Code owners are automatically requested for review when someone opens a pull request that modifies code that they own
+
+# Global ownership - Jdubz owns the entire repository by default
+* @Jdubz
+
+# Core application files
+/src/ @Jdubz
+/gatsby-*.js @Jdubz
+/package.json @Jdubz
+/tsconfig.json @Jdubz
+
+# Configuration files
+/.github/ @Jdubz
+/eslint.config.mjs @Jdubz
+/jest.config.json @Jdubz
+/playwright.config.ts @Jdubz
+/firebase.json @Jdubz
+
+# Build and deployment
+/scripts/ @Jdubz
+/.github/workflows/ @Jdubz
+
+# Documentation
+/*.md @Jdubz
+/docs/ @Jdubz
+
+# Test files - require approval for test changes
+/tests/ @Jdubz
+/src/**/*.test.tsx @Jdubz
+/src/**/*.test.ts @Jdubz
+/src/**/__tests__/ @Jdubz
+
+# Static assets
+/static/ @Jdubz
+/src/assets/ @Jdubz
+
+# Component-specific ownership
+/src/components/features/ @Jdubz
+/src/components/ui/ @Jdubz
+/src/components/layout/ @Jdubz
+
+# Styles and theming
+/src/styles/ @Jdubz
+**/*.scss @Jdubz
+
+# Critical files that should always require review
+/package-lock.json @Jdubz
+/gatsby-config.js @Jdubz
+/gatsby-node.js @Jdubz
