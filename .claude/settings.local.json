@@ -6,7 +6,11 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(gh pr create --base main --head staging --title \"Test PR workflow and prepare for production deployment\" --body \"$(cat <<''EOF''\n## Summary\n- Testing PR quality gate workflow\n- Verifying CI/CD pipeline setup\n- Preparing staging branch changes for production deployment\n\n## Changes\n- Added temporary test message to verify deployment workflows\n- All Josh Wentworth brand implementation ready for production\n\n## Test plan\n- [x] Staging deployment workflow triggered\n- [ ] PR quality gate checks passing\n- [ ] Ready for production deployment after approval\n\n🤖 Generated with Claude Code\nEOF\n)\")",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []
