@@ -56,6 +56,10 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
             transitionDuration: "0.01ms !important",
             scrollBehavior: "auto !important",
           },
+          // Step 6: Disable parallax transforms for reduced motion
+          ".iconCanvas > *": {
+            transform: "none !important",
+          },
         },
         // Mobile responsive icon settings
         "@media (max-width: 768px)": {
@@ -64,13 +68,13 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
             "--icon-size-max": "80px",
           },
           // Step 5: Density control - show only first 8 icons on mobile
-          ".iconCanvas > *:nth-child(n+9)": {
+          ".iconCanvas > *:nth-of-type(n+9)": {
             display: "none",
           },
         },
         // Tablet density control - show up to 12 icons
         "@media (min-width: 769px) and (max-width: 1200px)": {
-          ".iconCanvas > *:nth-child(n+13)": {
+          ".iconCanvas > *:nth-of-type(n+13)": {
             display: "none",
           },
         },
@@ -90,6 +94,9 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         ".iconCanvas > *": {
           opacity: "var(--icon-opacity)",
           filter: "blur(var(--icon-blur))",
+          // Step 6: Performance hints for smooth parallax
+          willChange: "transform",
+          contain: "paint",
         },
         ".iconCanvas svg, .iconCanvas img": {
           opacity: "var(--icon-opacity)",
