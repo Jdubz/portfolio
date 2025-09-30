@@ -1,4 +1,5 @@
-import * as React from "react"
+/** @jsx jsx */
+import { jsx } from "theme-ui"
 import Divider from "@lekoarts/gatsby-theme-cara/src/elements/divider"
 import Inner from "@lekoarts/gatsby-theme-cara/src/elements/inner"
 import Content from "@lekoarts/gatsby-theme-cara/src/elements/content"
@@ -7,7 +8,13 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import AboutMDX from "../sections/about.mdx"
 
 const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
-  <div>
+  <div
+    className="section has-icons"
+    sx={{
+      "--icon-safe-x": "48px",
+      "--icon-safe-y": "32px",
+    } as any}
+  >
     <Divider
       bg="divider"
       clipPath="polygon(0 16%, 100% 4%, 100% 82%, 0 94%)"

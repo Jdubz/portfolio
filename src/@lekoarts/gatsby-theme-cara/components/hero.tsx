@@ -8,7 +8,13 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import Intro from "../sections/intro.mdx"
 
 const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
-  <div>
+  <div
+    className="section has-icons"
+    sx={{
+      "--icon-safe-x": "48px",
+      "--icon-safe-y": "32px",
+    } as any}
+  >
     <Divider speed={0.2} offset={offset} factor={factor} className="iconCanvas">
       <UpDown>
         <Svg icon="rocket" hiddenMobile width={56} stroke color="icon_orange" left="10%" top="20%" />
