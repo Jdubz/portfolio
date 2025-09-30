@@ -10,6 +10,16 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
   <React.Fragment>
     <Global
       styles={(t) => ({
+        ":root": {
+          // Step 2: Icon behavior tokens
+          "--icon-opacity": "0.12",
+          "--icon-blur": "0px",
+          "--icon-size-min": "16px",
+          "--icon-size-max": "96px",
+          "--icon-safe-x": "0px",
+          "--icon-safe-y": "0px",
+          "--icon-motion": "1",
+        },
         "html, body": {
           overflowX: "hidden",
         },
@@ -37,11 +47,21 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         },
         // Reduce motion for users who prefer it
         "@media (prefers-reduced-motion: reduce)": {
+          ":root": {
+            "--icon-motion": "0",
+          },
           "*": {
             animationDuration: "0.01ms !important",
             animationIterationCount: "1 !important",
             transitionDuration: "0.01ms !important",
             scrollBehavior: "auto !important",
+          },
+        },
+        // Mobile responsive icon settings
+        "@media (max-width: 768px)": {
+          ":root": {
+            "--icon-opacity": "0.10",
+            "--icon-size-max": "80px",
           },
         },
         // Step 1: Layering primitives for icon backgrounds
