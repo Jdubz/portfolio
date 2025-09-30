@@ -67,3 +67,12 @@ public
 .idea
 .vscode
 .DS_Store
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Windows
+nul
