@@ -63,6 +63,16 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
             "--icon-opacity": "0.10",
             "--icon-size-max": "80px",
           },
+          // Step 5: Density control - show only first 8 icons on mobile
+          ".iconCanvas > *:nth-child(n+9)": {
+            display: "none",
+          },
+        },
+        // Tablet density control - show up to 12 icons
+        "@media (min-width: 769px) and (max-width: 1200px)": {
+          ".iconCanvas > *:nth-child(n+13)": {
+            display: "none",
+          },
         },
         // Step 1: Layering primitives for icon backgrounds
         ".iconCanvas": {
