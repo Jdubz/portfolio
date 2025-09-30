@@ -20,7 +20,10 @@
     "firebase:emulate": "firebase emulators:start --only hosting",
     "firebase:login": "firebase login",
     "firebase:projects": "firebase projects:list",
-    "firebase:use": "firebase use static-sites-257923"
+    "firebase:use": "firebase use static-sites-257923",
+    "version:patch": "npm version patch -m \"chore: bump version to %s\"",
+    "version:minor": "npm version minor -m \"chore: bump version to %s\"",
+    "version:major": "npm version major -m \"chore: bump version to %s\""
   },
   "dependencies": {
     "@lekoarts/gatsby-theme-cara": "^5.1.7",

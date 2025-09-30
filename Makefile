@@ -1,4 +1,4 @@
-.PHONY: help dev build serve clean kill status deploy-staging deploy-prod firebase-serve firebase-login
+.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -30,6 +30,11 @@ help:
 	@echo "  make kill             - Kill all Node.js processes"
 	@echo "  make status           - Check what's running on dev ports"
 	@echo ""
+	@echo "Versioning commands:"
+	@echo "  make version-patch    - Bump patch version (1.0.0 -> 1.0.1)"
+	@echo "  make version-minor    - Bump minor version (1.0.0 -> 1.1.0)"
+	@echo "  make version-major    - Bump major version (1.0.0 -> 2.0.0)"
+	@echo ""
 	@echo "Firebase commands:"
 	@echo "  make firebase-serve   - Serve Firebase hosting locally (port 5000)"
 	@echo "  make firebase-login   - Login to Firebase"
@@ -52,6 +57,18 @@ serve:
 clean:
 	@echo "Cleaning Gatsby cache..."
 	npm run clean
+
+version-patch:
+	@echo "Bumping patch version..."
+	npm run version:patch
+
+version-minor:
+	@echo "Bumping minor version..."
+	npm run version:minor
+
+version-major:
+	@echo "Bumping major version..."
+	npm run version:major
 
 kill:
 	@echo "Killing processes on ports 8000, 9000, and 5000..."
