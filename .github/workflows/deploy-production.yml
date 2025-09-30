@@ -34,19 +34,40 @@ jobs:
       - name: Install dependencies
         run: npm ci --include=optional --legacy-peer-deps
 
-      - name: Rebuild native dependencies
-        run: npm rebuild @parcel/watcher --verbose
-
-      - name: Verify @parcel/watcher installation
+      - name: Install and verify @parcel/watcher
         run: |
+          echo "Installing @parcel/watcher with prebuilds..."
+          npm install --no-save @parcel/watcher@2.5.1
+
+          echo "Rebuilding native module..."
+          npm rebuild @parcel/watcher --verbose
+
+          echo "Verifying installation..."
           if [ ! -d "node_modules/@parcel/watcher" ]; then
             echo "ERROR: @parcel/watcher not installed"
             exit 1
           fi
-          echo "@parcel/watcher directory exists"
+
+          echo "Directory structure:"
           ls -la node_modules/@parcel/watcher/
-          echo "Checking for prebuilds..."
-          ls -la node_modules/@parcel/watcher/prebuilds/ || echo "No prebuilds directory"
+
+          echo "Checking for native binding..."
+          if [ -f "node_modules/@parcel/watcher/watcher.node" ]; then
+            echo "✓ Native binding found: watcher.node"
+            file node_modules/@parcel/watcher/watcher.node
+          else
+            echo "⚠ Native binding not found"
+          fi
+
+          echo "Checking prebuilds..."
+          if [ -d "node_modules/@parcel/watcher/prebuilds" ]; then
+            ls -la node_modules/@parcel/watcher/prebuilds/
+          else
+            echo "No prebuilds directory"
+          fi
+
+          echo "Testing require..."
+          node -e "require('@parcel/watcher')" && echo "✓ Module loads successfully" || echo "✗ Module failed to load"
 
       - name: Clean Gatsby cache
         run: npm run clean
