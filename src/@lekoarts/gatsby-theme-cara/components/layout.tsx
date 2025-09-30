@@ -72,6 +72,17 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         ".content": {
           zIndex: 10,
         },
+        // Step 3: Tame icon scale & opacity
+        ".iconCanvas > *": {
+          opacity: "var(--icon-opacity)",
+          filter: "blur(var(--icon-blur))",
+        },
+        ".iconCanvas svg, .iconCanvas img": {
+          opacity: "var(--icon-opacity)",
+          filter: "blur(var(--icon-blur))",
+          maxWidth: "var(--icon-size-max)",
+          maxHeight: "var(--icon-size-max)",
+        },
       })}
     />
     <MDXProvider components={MdxComponents}>
