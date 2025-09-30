@@ -22,7 +22,8 @@
       "Bash(taskkill:*)",
       "Bash(git rm:*)",
       "Bash(npm outdated)",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []
