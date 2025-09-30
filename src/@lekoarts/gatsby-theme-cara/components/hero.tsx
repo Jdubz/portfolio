@@ -9,7 +9,7 @@ import Intro from "../sections/intro.mdx"
 
 const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
   <div>
-    <Divider speed={0.2} offset={offset} factor={factor}>
+    <Divider speed={0.2} offset={offset} factor={factor} className="iconCanvas">
       <UpDown>
         <Svg icon="rocket" hiddenMobile width={56} stroke color="icon_orange" left="10%" top="20%" />
         <Svg icon="database" width={48} stroke color="icon_red" left="60%" top="70%" />
@@ -37,7 +37,7 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
       <Svg icon="hexa" width={16} stroke color="icon_darker" left="10%" top="50%" />
       <Svg icon="database" width={8} stroke color="icon_darker" left="80%" top="70%" />
     </Divider>
-    <Content sx={{ variant: `texts.bigger` }} speed={0.4} offset={offset} factor={factor}>
+    <Content sx={{ variant: `texts.bigger` }} speed={0.4} offset={offset} factor={factor} className="content">
       <Inner>
         <Intro />
       </Inner>

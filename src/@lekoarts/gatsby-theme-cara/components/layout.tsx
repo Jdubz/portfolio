@@ -44,6 +44,14 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
             scrollBehavior: "auto !important",
           },
         },
+        // Step 1: Layering primitives for icon backgrounds
+        ".iconCanvas": {
+          pointerEvents: "none",
+          zIndex: 0,
+        },
+        ".content": {
+          zIndex: 10,
+        },
       })}
     />
     <MDXProvider components={MdxComponents}>

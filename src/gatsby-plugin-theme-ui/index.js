@@ -46,19 +46,6 @@ const customTheme = merge(originalTheme, {
     icon_indigo: "#6366F1",
     icon_teal: "#14B8A6",
     icon_cyan: "#06B6D4",
-
-    // Mode switching (light theme is primary per brand)
-    modes: {
-      dark: {
-        text: "#FFFFFF",
-        "text-secondary": "#CBD5E1",
-        heading: "#FFFFFF",
-        background: "#0F172A",
-        "background-secondary": "#1E293B",
-        primary: "#0EA5E9",
-        secondary: "#00C9A7",
-      }
-    }
   },
 
   // Enhanced typography scale

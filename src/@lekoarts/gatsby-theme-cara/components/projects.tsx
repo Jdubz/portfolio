@@ -16,7 +16,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
       offset={1.1}
       factor={factor}
     />
-    <Content speed={0.4} offset={offset + 0.2} factor={factor}>
+    <Content speed={0.4} offset={offset + 0.2} factor={factor} className="content">
       <Inner>
         <div
           sx={{
@@ -30,7 +30,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
         </div>
       </Inner>
     </Content>
-    <Divider speed={0.1} offset={offset} factor={factor}>
+    <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
       <UpDown>
         <Svg icon="box" width={6} color="icon_brightest" left="85%" top="75%" />
         <Svg icon="upDown" width={8} color="icon_teal" left="70%" top="20%" />
