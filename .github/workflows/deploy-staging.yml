@@ -27,7 +27,15 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps --no-audit --no-fund
+        run: npm ci --include=optional --legacy-peer-deps
+
+      - name: Verify @parcel/watcher installation
+        run: |
+          if [ ! -d "node_modules/@parcel/watcher" ]; then
+            echo "ERROR: @parcel/watcher not installed"
+            exit 1
+          fi
+          echo "@parcel/watcher is installed"
 
       - name: Clean Gatsby cache
         run: npm run clean
