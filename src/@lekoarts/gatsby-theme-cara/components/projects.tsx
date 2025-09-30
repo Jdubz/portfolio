@@ -8,7 +8,13 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import ProjectsMDX from "../sections/projects.mdx"
 
 const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) => (
-  <div>
+  <div
+    className="section has-icons"
+    sx={{
+      "--icon-safe-x": "64px",
+      "--icon-safe-y": "48px",
+    } as any}
+  >
     <Divider
       bg="linear-gradient(to right, SlateBlue 0%, DeepSkyBlue 100%)"
       sx={{ clipPath: `polygon(0 15%, 100% 25%, 100% 85%, 0 75%)` }}

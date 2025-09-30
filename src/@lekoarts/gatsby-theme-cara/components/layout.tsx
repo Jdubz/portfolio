@@ -72,6 +72,10 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         ".content": {
           zIndex: 10,
         },
+        // Step 4: Safe area - inset icon canvas to avoid content zones
+        ".section.has-icons .iconCanvas": {
+          inset: "var(--icon-safe-y) var(--icon-safe-x)",
+        },
         // Step 3: Tame icon scale & opacity
         ".iconCanvas > *": {
           opacity: "var(--icon-opacity)",
