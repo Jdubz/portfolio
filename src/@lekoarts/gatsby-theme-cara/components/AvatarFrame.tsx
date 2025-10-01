@@ -27,7 +27,7 @@ export default function AvatarFrame({
             position: "absolute",
             inset: "-2px",
             borderRadius: "inherit",
-            background: (t) => `linear-gradient(120deg, ${t.colors.accentStart}, ${t.colors.accentEnd})`,
+            background: (t) => `linear-gradient(120deg, ${t.colors?.accentStart || '#8B5CF6'}, ${t.colors?.accentEnd || '#06B6D4'})`,
             filter: "blur(10px)", // Increased blur for softer falloff
             opacity: 0.30, // Reduced opacity to prevent "glow melt"
             zIndex: -1,
