@@ -2,6 +2,11 @@ import { merge } from "theme-ui"
 import originalTheme from "@lekoarts/gatsby-theme-cara/src/gatsby-plugin-theme-ui"
 
 const customTheme = merge(originalTheme, {
+  // Override config to remove dark mode
+  config: {
+    useColorSchemeMediaQuery: false,
+    initialColorModeName: undefined,
+  },
   // Josh Wentworth Brand Typography
   fonts: {
     body: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -46,6 +51,14 @@ const customTheme = merge(originalTheme, {
     icon_indigo: "#6366F1",
     icon_teal: "#14B8A6",
     icon_cyan: "#06B6D4",
+
+    // Neutral icon colors for light mode
+    icon_brightest: "#F7F8FB",  // Light surface color
+    icon_darker: "#94A3B8",     // Medium gray
+    icon_darkest: "#64748B",    // Darker gray
+
+    // Remove dark mode - override modes from base theme
+    modes: {},
   },
 
   // Enhanced typography scale

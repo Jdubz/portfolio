@@ -26,7 +26,8 @@
       "Bash(xargs:*)",
       "Bash(npm test)",
       "Bash(npx husky init:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []
