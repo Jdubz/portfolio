@@ -13,6 +13,10 @@
     "start": "gatsby develop",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
+    "lint": "tsc --project tsconfig.lint.json",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "deploy:staging": "npm run build && firebase deploy --only hosting:staging",
     "deploy:production": "npm run build && firebase deploy --only hosting:production",
     "deploy:all": "npm run build && firebase deploy --only hosting",
@@ -23,7 +27,8 @@
     "firebase:use": "firebase use static-sites-257923",
     "version:patch": "npm version patch -m \"chore: bump version to %s\"",
     "version:minor": "npm version minor -m \"chore: bump version to %s\"",
-    "version:major": "npm version major -m \"chore: bump version to %s\""
+    "version:major": "npm version major -m \"chore: bump version to %s\"",
+    "prepare": "husky"
   },
   "dependencies": {
     "@lekoarts/gatsby-theme-cara": "^5.1.7",
@@ -34,12 +39,19 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.0",
+    "@testing-library/react": "^14.3.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.18.7",
     "@types/react": "^18.3.25",
     "@types/react-dom": "^18.3.7",
     "ajv": "^8.17.1",
     "cross-env": "^7.0.3",
     "firebase-tools": "^13.35.1",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "ts-jest": "^29.4.4",
     "typescript": "^5.8.3",
     "webpack": "^5.102.0"
   }

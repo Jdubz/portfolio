@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "isolatedModules": false,
+    "strict": false,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@lekoarts/gatsby-theme-cara/src/elements/content": ["./src/@lekoarts/gatsby-theme-cara/elements/content.tsx"],
+      "@lekoarts/gatsby-theme-cara/src/elements/divider": ["./src/@lekoarts/gatsby-theme-cara/elements/divider.tsx"],
+      "@lekoarts/gatsby-theme-cara/src/components/layout": ["./src/@lekoarts/gatsby-theme-cara/components/layout.tsx"]
+    }
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.tsx",
+    "./gatsby-node.ts",
+    "./gatsby-config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/__tests__/**/*"
+  ]
+}

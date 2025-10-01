@@ -23,7 +23,10 @@
       "Bash(git rm:*)",
       "Bash(npm outdated)",
       "Bash(npm view:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(npm test)",
+      "Bash(npx husky init:*)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": []

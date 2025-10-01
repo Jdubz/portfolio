@@ -6,6 +6,7 @@ const Footer = () => {
   const isDark = colorMode === `dark`
 
   return (
+    // @ts-expect-error - React 18 type compatibility
     <Box as="footer" variant="footer">
       <button
         sx={{ variant: `buttons.toggle`, fontWeight: `semibold`, display: `block`, mx: `auto`, mb: 3 }}

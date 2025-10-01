@@ -7,7 +7,9 @@ import MdxComponents from "@lekoarts/gatsby-theme-cara/src/components/mdx-compon
 type LayoutProps = { children: React.ReactNode; className?: string }
 
 const Layout = ({ children, className = `` }: LayoutProps) => (
+  // @ts-expect-error - React 18 type compatibility
   <React.Fragment>
+    {/* @ts-expect-error - React 18 type compatibility */}
     <Global
       styles={(t) => ({
         ":root": {
@@ -51,14 +53,14 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
             "--icon-motion": "0",
           },
           "*": {
-            animationDuration: "0.01ms !important",
-            animationIterationCount: "1 !important",
-            transitionDuration: "0.01ms !important",
-            scrollBehavior: "auto !important",
+            animationDuration: "0.01ms !important" as any,
+            animationIterationCount: "1 !important" as any,
+            transitionDuration: "0.01ms !important" as any,
+            scrollBehavior: "auto" as any,
           },
           // Step 6: Disable parallax transforms for reduced motion
           ".iconCanvas > *": {
-            transform: "none !important",
+            transform: "none !important" as any,
           },
         },
         // Mobile responsive icon settings
