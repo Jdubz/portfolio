@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
 import { withPrefix } from "gatsby"
-import { hidden } from "../styles/utils"
+import { hidden } from "@lekoarts/gatsby-theme-cara/src/styles/utils"
 
 type IconType = "triangle" | "circle" | "arrowUp" | "upDown" | "box" | "hexa" | "cross" | "rocket" | "code-brackets" | "resistor" | "wifi" | "database"
 

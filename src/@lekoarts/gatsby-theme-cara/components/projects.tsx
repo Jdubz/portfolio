@@ -1,14 +1,17 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
-import Divider from "../elements/divider"
-import Inner from "../elements/inner"
-import Content from "../elements/content"
+import Divider from "@lekoarts/gatsby-theme-cara/src/elements/divider"
+import Inner from "@lekoarts/gatsby-theme-cara/src/elements/inner"
+import Content from "@lekoarts/gatsby-theme-cara/src/elements/content"
 import Svg from "./svg"
-import { UpDown, UpDownWide } from "../styles/animations"
+import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/animations"
 import ProjectsMDX from "../sections/projects.mdx"
 
 const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) => (
-  <div>
+  <div
+    className="section has-icons"
+    data-icon-preset="projects"
+  >
     <Divider
       bg="linear-gradient(to right, SlateBlue 0%, DeepSkyBlue 100%)"
       sx={{ clipPath: `polygon(0 15%, 100% 25%, 100% 85%, 0 75%)` }}
@@ -16,7 +19,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
       offset={1.1}
       factor={factor}
     />
-    <Content speed={0.4} offset={offset + 0.2} factor={factor}>
+    <Content speed={0.4} offset={offset + 0.2} factor={factor} className="content">
       <Inner>
         <div
           sx={{
@@ -30,7 +33,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
         </div>
       </Inner>
     </Content>
-    <Divider speed={0.1} offset={offset} factor={factor}>
+    <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
       <UpDown>
         <Svg icon="box" width={6} color="icon_brightest" left="85%" top="75%" />
         <Svg icon="upDown" width={8} color="icon_teal" left="70%" top="20%" />

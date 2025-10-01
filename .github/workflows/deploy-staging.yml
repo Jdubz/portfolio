@@ -26,19 +26,51 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - name: Cache Gatsby build
-        uses: actions/cache@v4
-        with:
-          path: |
-            .cache
-            public
-          key: gatsby-staging-${{ runner.os }}-${{ hashFiles('gatsby-config.ts', 'package-lock.json') }}-${{ github.sha }}
-          restore-keys: |
-            gatsby-staging-${{ runner.os }}-${{ hashFiles('gatsby-config.ts', 'package-lock.json') }}-
-            gatsby-staging-${{ runner.os }}-
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 make g++
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
+        run: npm ci --include=optional --legacy-peer-deps
+
+      - name: Install and verify @parcel/watcher
+        run: |
+          echo "Installing @parcel/watcher with prebuilds..."
+          npm install --no-save @parcel/watcher@2.5.1
+
+          echo "Rebuilding native module..."
+          npm rebuild @parcel/watcher --verbose
+
+          echo "Verifying installation..."
+          if [ ! -d "node_modules/@parcel/watcher" ]; then
+            echo "ERROR: @parcel/watcher not installed"
+            exit 1
+          fi
+
+          echo "Directory structure:"
+          ls -la node_modules/@parcel/watcher/
+
+          echo "Checking for native binding..."
+          if [ -f "node_modules/@parcel/watcher/watcher.node" ]; then
+            echo "✓ Native binding found: watcher.node"
+            file node_modules/@parcel/watcher/watcher.node
+          else
+            echo "⚠ Native binding not found"
+          fi
+
+          echo "Checking prebuilds..."
+          if [ -d "node_modules/@parcel/watcher/prebuilds" ]; then
+            ls -la node_modules/@parcel/watcher/prebuilds/
+          else
+            echo "No prebuilds directory"
+          fi
+
+          echo "Testing require..."
+          node -e "require('@parcel/watcher')" && echo "✓ Module loads successfully" || echo "✗ Module failed to load"
+
+      - name: Clean Gatsby cache
+        run: npm run clean
 
       - name: Set build environment
         run: |
