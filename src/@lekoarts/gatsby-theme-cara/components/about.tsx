@@ -10,10 +10,7 @@ import AboutMDX from "../sections/about.mdx"
 const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
   <div
     className="section has-icons"
-    sx={{
-      "--icon-safe-x": "48px",
-      "--icon-safe-y": "32px",
-    } as any}
+    data-icon-preset="about"
   >
     <Divider
       bg="divider"
