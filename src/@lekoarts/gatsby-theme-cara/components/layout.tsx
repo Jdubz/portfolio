@@ -14,13 +14,14 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
       styles={(t) => ({
         ":root": {
           // Step 2: Icon behavior tokens
-          "--icon-opacity": "0.12",
+          "--icon-opacity": "0.16",
           "--icon-blur": "0px",
           "--icon-size-min": "16px",
-          "--icon-size-max": "96px",
+          "--icon-size-max": "112px",
           "--icon-safe-x": "0px",
           "--icon-safe-y": "0px",
           "--icon-motion": "1",
+          "--icon-motion-amp": "1.15",
         },
         "html, body": {
           overflowX: "hidden",
@@ -66,17 +67,23 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         // Mobile responsive icon settings
         "@media (max-width: 768px)": {
           ":root": {
-            "--icon-opacity": "0.10",
-            "--icon-size-max": "80px",
+            "--icon-opacity": "0.12",
+            "--icon-size-max": "92px",
           },
-          // Step 5: Density control - show only first 8 icons on mobile
-          ".iconCanvas > *:nth-of-type(n+9)": {
+          // Step 5: Density control - show only first 10 icons on mobile
+          ".iconCanvas > *:nth-of-type(n+11)": {
             display: "none",
           },
         },
-        // Tablet density control - show up to 12 icons
+        // Tablet density control - show up to 14 icons
         "@media (min-width: 769px) and (max-width: 1200px)": {
-          ".iconCanvas > *:nth-of-type(n+13)": {
+          ".iconCanvas > *:nth-of-type(n+15)": {
+            display: "none",
+          },
+        },
+        // Desktop density control - cap at 20 icons
+        "@media (min-width: 1201px)": {
+          ".iconCanvas > *:nth-of-type(n+21)": {
             display: "none",
           },
         },
@@ -99,6 +106,12 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
           // Step 6: Performance hints for smooth parallax
           willChange: "transform",
           contain: "paint",
+        },
+        // Accent icons - every 4th icon is slightly more prominent
+        ".iconCanvas > *:nth-of-type(4n)": {
+          opacity: "calc(var(--icon-opacity) + 0.06)",
+          transform: "scale(1.06)",
+          filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.08))",
         },
         ".iconCanvas svg, .iconCanvas img": {
           opacity: "var(--icon-opacity)",

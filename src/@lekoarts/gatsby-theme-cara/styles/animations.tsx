@@ -19,7 +19,7 @@ const upDown = keyframes`
     transform: translateY(0);
   }
   to {
-    transform: translateY(30px);
+    transform: translateY(calc(30px * var(--icon-motion-amp, 1)));
   }
 `
 
@@ -28,7 +28,7 @@ const upDownWide = keyframes`
     transform: translateY(0);
   }
   to {
-    transform: translateY(200px);
+    transform: translateY(calc(200px * var(--icon-motion-amp, 1)));
   }
 `
 
