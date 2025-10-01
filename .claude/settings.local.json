@@ -27,7 +27,12 @@
       "Bash(npm test)",
       "Bash(npx husky init:*)",
       "Bash(npm run lint)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(npm run screenshot:desktop:*)",
+      "Bash(curl:*)",
+      "Bash(timeout:*)",
+      "Bash(npm run screenshot:full:*)",
+      "Bash(npm run screenshot:components:*)"
     ],
     "deny": [],
     "ask": []

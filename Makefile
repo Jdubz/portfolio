@@ -1,4 +1,4 @@
-.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login
+.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshots screenshots-test screenshots-verify
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -29,6 +29,11 @@ help:
 	@echo "  make clean            - Clean Gatsby cache and build files"
 	@echo "  make kill             - Kill all Node.js processes"
 	@echo "  make status           - Check what's running on dev ports"
+	@echo ""
+	@echo "Screenshot commands:"
+	@echo "  make screenshots      - Generate and verify all component screenshots"
+	@echo "  make screenshots-test - Quick desktop-only screenshot test"
+	@echo "  make screenshots-verify - Verify existing screenshots are valid"
 	@echo ""
 	@echo "Versioning commands:"
 	@echo "  make version-patch    - Bump patch version (1.0.0 -> 1.0.1)"
@@ -126,3 +131,16 @@ deploy-prod:
 	else \
 		echo "Deployment cancelled."; \
 	fi
+
+# Screenshot commands
+screenshots:
+	@echo "Generating and verifying component screenshots..."
+	node scripts/screenshot/workflow.js
+
+screenshots-test:
+	@echo "Running quick screenshot test (desktop only)..."
+	node scripts/screenshot/test.js
+
+screenshots-verify:
+	@echo "Verifying existing screenshots..."
+	node scripts/screenshot/verify.js
