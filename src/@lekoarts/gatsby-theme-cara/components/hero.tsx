@@ -10,10 +10,7 @@ import Intro from "../sections/intro.mdx"
 const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
   <div
     className="section has-icons"
-    sx={{
-      "--icon-safe-x": "48px",
-      "--icon-safe-y": "32px",
-    } as any}
+    data-icon-preset="hero"
   >
     <Divider speed={0.2} offset={offset} factor={factor} className="iconCanvas">
       <UpDown>

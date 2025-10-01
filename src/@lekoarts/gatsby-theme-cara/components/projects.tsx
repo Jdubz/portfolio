@@ -10,10 +10,7 @@ import ProjectsMDX from "../sections/projects.mdx"
 const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) => (
   <div
     className="section has-icons"
-    sx={{
-      "--icon-safe-x": "64px",
-      "--icon-safe-y": "48px",
-    } as any}
+    data-icon-preset="projects"
   >
     <Divider
       bg="linear-gradient(to right, SlateBlue 0%, DeepSkyBlue 100%)"

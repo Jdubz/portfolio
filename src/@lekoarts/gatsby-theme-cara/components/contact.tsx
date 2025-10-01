@@ -11,10 +11,7 @@ import ContactMDX from "../sections/contact.mdx"
 const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
   <div
     className="section has-icons"
-    sx={{
-      "--icon-safe-x": "48px",
-      "--icon-safe-y": "32px",
-    } as any}
+    data-icon-preset="contact"
   >
     <Divider fill="divider" speed={0.2} offset={offset} factor={factor}>
       <div sx={{ position: `absolute`, bottom: 0, width: `full`, transform: `matrix(1, 0, 0, -1, 0, 0)` }}>
