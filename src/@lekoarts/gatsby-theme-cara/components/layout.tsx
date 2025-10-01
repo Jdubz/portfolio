@@ -7,9 +7,7 @@ import MdxComponents from "@lekoarts/gatsby-theme-cara/src/components/mdx-compon
 type LayoutProps = { children: React.ReactNode; className?: string }
 
 const Layout = ({ children, className = `` }: LayoutProps) => (
-  // @ts-expect-error - React 18 type compatibility
   <React.Fragment>
-    {/* @ts-expect-error - React 18 type compatibility */}
     <Global
       styles={(t) => ({
         ":root": {
