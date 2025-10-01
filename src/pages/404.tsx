@@ -12,6 +12,7 @@ import Inner from "@lekoarts/gatsby-theme-cara/src/elements/inner"
 
 const NotFound = (_props: PageProps) => (
   <Layout>
+    {/* @ts-expect-error - React 18 type compatibility */}
     <Parallax pages={1}>
       <div>
         <Divider speed={0.2} offset={0} factor={1}>
