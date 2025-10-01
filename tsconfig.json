@@ -2,10 +2,10 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": ["dom", "esnext"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "theme-ui",
+    "jsx": "react",
     "module": "esnext",
     "moduleResolution": "node",
+    "ignoreDeprecations": "5.0",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,

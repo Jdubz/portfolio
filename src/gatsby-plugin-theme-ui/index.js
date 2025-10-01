@@ -31,14 +31,18 @@ const customTheme = merge(originalTheme, {
     text: "#0F172A",           // Ink (primary text)
     "text-secondary": "#384155", // Ink-2 (secondary text)
     heading: "#0F172A",        // Same as primary text for consistency
+    muted: "#475569",          // Muted text for hero subcopy
 
     // Surface colors
     background: "#FFFFFF",     // Surface (base)
     "background-secondary": "#F7F8FB", // Surface-2 (alt panels)
+    border: "rgba(15,23,42,.12)",  // Subtle borders
 
     // Gradient colors
     "gradient-start": "#1B1F2B",
     "gradient-end": "#00C9A7",
+    accentStart: "#7C3AED",    // Violet for avatar gradient
+    accentEnd: "#06B6D4",      // Cyan for avatar gradient
 
     // Icon colors - using brand-appropriate palette
     icon_red: "#EF4444",
@@ -56,6 +60,9 @@ const customTheme = merge(originalTheme, {
     icon_brightest: "#F7F8FB",  // Light surface color
     icon_darker: "#94A3B8",     // Medium gray
     icon_darkest: "#64748B",    // Darker gray
+
+    // Focus ring for accessibility
+    ring: "rgba(14, 165, 233, 0.35)",
 
     // Remove dark mode - override modes from base theme
     modes: {},
@@ -77,6 +84,9 @@ const customTheme = merge(originalTheme, {
     md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
     lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
     xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+    soft: "0 6px 30px rgba(2,6,23,.08)",  // Soft shadow for avatar frame
+    softLg: "0 24px 60px rgba(2,6,23,.10)", // Professional portrait shadow
+    ring: "0 0 0 4px rgba(14, 165, 233, 0.35)", // Focus ring
   },
 
   // Friendly radii as per brand guide
@@ -132,6 +142,77 @@ const customTheme = merge(originalTheme, {
       textDecoration: "none",
       "&:hover": {
         textDecoration: "underline",
+      },
+    },
+  },
+
+  // Hero-specific text variants
+  text: {
+    heroTitle: {
+      fontFamily: "heading",
+      fontWeight: 900,
+      letterSpacing: "-0.02em",
+      color: "heading",
+      // Responsive sizing with precise line-height per breakpoint
+      fontSize: ["clamp(32px, 6vw, 40px)", "clamp(40px, 5vw, 56px)", "clamp(48px, 4vw, 64px)"],
+      lineHeight: [1.12, 1.08, 1.04], // Tighter on mobile, looser on desktop
+    },
+    heroKicker: {
+      fontWeight: 700,
+      color: "text",
+      letterSpacing: ".01em",
+      fontSize: [2, 3],          // 16px, 18px
+      fontFamily: "heading",
+    },
+    heroSub: {
+      color: "muted",
+      fontSize: [2, 3, 3],       // 16px, 18px, 18px
+      lineHeight: 1.55,
+      maxWidth: 720,
+    },
+    heroProof: {
+      color: "muted",
+      fontSize: [1, 2, 2],       // 14px, 16px, 16px
+      lineHeight: 1.55,
+      maxWidth: 740,
+    },
+    micro: {
+      color: "muted",
+      fontSize: 1,               // 14px
+    },
+  },
+
+  // Button variants
+  buttons: {
+    primary: {
+      bg: "#0EA5E9",
+      color: "white",
+      borderRadius: "lg",
+      px: 22,
+      py: 14, // Increased for mobile hit area (≥44px)
+      fontWeight: "medium",
+      cursor: "pointer",
+      transition: "opacity 0.2s ease",
+      "&:hover": {
+        opacity: 0.92,
+      },
+      "&:focus-visible": {
+        boxShadow: "ring",
+      },
+    },
+    secondary: {
+      bg: "white",
+      color: "text",
+      border: "1px solid",
+      borderColor: "text", // Increased contrast from border color
+      borderRadius: "lg",
+      px: 22,
+      py: 14, // Increased for mobile hit area (≥44px)
+      fontWeight: "medium",
+      cursor: "pointer",
+      transition: "all 0.2s ease",
+      "&:hover": {
+        backgroundColor: "#fafafa",
       },
     },
   },
