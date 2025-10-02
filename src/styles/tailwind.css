@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* OPTIONAL: keep Theme UI in charge of fonts; Tailwind's preflight will reset a few tags.
+   If something looks off (e.g., headings), we can re-declare base styles here. */
