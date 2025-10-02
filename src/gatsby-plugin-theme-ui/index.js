@@ -84,9 +84,10 @@ const customTheme = merge(originalTheme, {
     md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
     lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
     xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-    soft: "0 6px 30px rgba(2,6,23,.08)",  // Soft shadow for avatar frame
-    softLg: "0 24px 60px rgba(2,6,23,.10)", // Professional portrait shadow
-    ring: "0 0 0 4px rgba(14, 165, 233, 0.35)", // Focus ring
+    soft: "0 8px 24px rgba(2,6,23,.08)",     // Soft shadow for buttons
+    softLg: "0 24px 60px rgba(2,6,23,.10)",  // Professional portrait shadow
+    ring: "0 0 0 4px var(--theme-ui-colors-ring)", // Focus ring
+    lift: "0 6px 16px rgba(2,6,23,.10)",     // Subtle button lift
   },
 
   // Friendly radii as per brand guide
@@ -150,12 +151,12 @@ const customTheme = merge(originalTheme, {
   text: {
     heroTitle: {
       fontFamily: "heading",
-      fontWeight: 900,
-      letterSpacing: "-0.02em",
+      fontWeight: 800,           // A touch lighter than 900 for premium feel
+      letterSpacing: "-0.015em",
       color: "heading",
-      // Responsive sizing with precise line-height per breakpoint
-      fontSize: ["clamp(32px, 6vw, 40px)", "clamp(40px, 5vw, 56px)", "clamp(48px, 4vw, 64px)"],
-      lineHeight: [1.12, 1.08, 1.04], // Tighter on mobile, looser on desktop
+      // Responsive sizing - slightly smaller, more refined
+      fontSize: ["clamp(30px, 6vw, 36px)", "clamp(36px, 5vw, 48px)", "clamp(42px, 4vw, 56px)"],
+      lineHeight: [1.18, 1.12, 1.08],
     },
     heroKicker: {
       fontWeight: 700,
@@ -166,53 +167,70 @@ const customTheme = merge(originalTheme, {
     },
     heroSub: {
       color: "muted",
-      fontSize: [2, 3, 3],       // 16px, 18px, 18px
+      fontSize: [16, 18, 18],    // Explicit px values
       lineHeight: 1.55,
       maxWidth: 720,
     },
     heroProof: {
       color: "muted",
-      fontSize: [1, 2, 2],       // 14px, 16px, 16px
+      fontSize: [15, 16, 16],    // Explicit px values
       lineHeight: 1.55,
       maxWidth: 740,
     },
     micro: {
       color: "muted",
-      fontSize: 1,               // 14px
+      fontSize: 14,              // Explicit px value
     },
   },
 
-  // Button variants
+  // Button variants - sleek and premium
   buttons: {
     primary: {
-      bg: "#0EA5E9",
+      bg: "primary",
       color: "white",
-      borderRadius: "lg",
-      px: 22,
-      py: 14, // Increased for mobile hit area (≥44px)
-      fontWeight: "medium",
+      borderRadius: 10,          // Sleeker than big pills
+      px: 14,
+      py: 10,                    // SHORTER, more premium
+      fontSize: 15,
+      fontWeight: 700,
+      lineHeight: 1,
       cursor: "pointer",
-      transition: "opacity 0.2s ease",
+      boxShadow: "0 4px 12px rgba(2,6,23,.10)",
+      transition: "transform .08s ease, box-shadow .15s ease, opacity .15s ease",
+      border: "none",
+      outline: "none",
       "&:hover": {
-        opacity: 0.92,
+        transform: "translateY(-1px)",
+        boxShadow: "0 8px 24px rgba(2,6,23,.12)",
+      },
+      "&:active": {
+        transform: "translateY(0)",
       },
       "&:focus-visible": {
         boxShadow: "ring",
+        outline: "none",
       },
     },
     secondary: {
-      bg: "white",
+      bg: "transparent",         // Ghost button
       color: "text",
       border: "1px solid",
-      borderColor: "text", // Increased contrast from border color
-      borderRadius: "lg",
-      px: 22,
-      py: 14, // Increased for mobile hit area (≥44px)
-      fontWeight: "medium",
+      borderColor: "rgba(15,23,42,.14)",
+      borderRadius: 10,
+      px: 14,
+      py: 10,
+      fontSize: 15,
+      fontWeight: 600,
+      lineHeight: 1,
       cursor: "pointer",
-      transition: "all 0.2s ease",
+      transition: "background-color .15s ease, box-shadow .15s ease",
+      outline: "none",
       "&:hover": {
-        backgroundColor: "#fafafa",
+        bg: "rgba(255,255,255,.6)",
+      },
+      "&:focus-visible": {
+        boxShadow: "ring",
+        outline: "none",
       },
     },
   },

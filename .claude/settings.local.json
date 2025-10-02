@@ -32,7 +32,14 @@
       "Bash(curl:*)",
       "Bash(timeout:*)",
       "Bash(npm run screenshot:full:*)",
-      "Bash(npm run screenshot:components:*)"
+      "Bash(npm run screenshot:components:*)",
+      "Bash(gatsby clean:*)",
+      "Bash(npx gatsby:*)",
+      "Bash(npm start)",
+      "Bash(lsof:*)",
+      "Bash(node:*)",
+      "Bash(make:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
