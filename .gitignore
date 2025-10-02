@@ -78,5 +78,6 @@ ui-debug.log
 nul
 
 # Screenshots
-screenshots/
+screenshots/images/
+!screenshots/README.md
 !screenshots/.gitkeep
