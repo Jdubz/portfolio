@@ -9,6 +9,7 @@ import AboutMDX from "../sections/about.mdx"
 
 const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
   <section
+    data-screenshot-section="about"
     className="section has-icons"
     data-icon-preset="about"
     aria-label="About"
