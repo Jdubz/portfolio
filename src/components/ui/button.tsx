@@ -4,17 +4,17 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  // base styles
-  "inline-flex items-center justify-center whitespace-nowrap rounded-[10px] text-sm font-bold transition-all",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-[10px] text-sm font-semibold transition-colors " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/35 focus-visible:ring-offset-2",
   {
     variants: {
       variant: {
         default:
-          "bg-brand text-white shadow-lift hover:shadow-[0_8px_24px_rgba(2,6,23,.12)] hover:-translate-y-px focus-visible:outline-none focus-visible:shadow-ring",
+          "bg-brand text-white shadow-[0_4px_12px_rgba(2,6,23,.10)] hover:bg-brand/90 hover:shadow-[0_8px_24px_rgba(2,6,23,.12)]",
         outline:
-          "border border-slate-200 bg-transparent text-slate-900 hover:bg-white/60 focus-visible:outline-none focus-visible:shadow-ring",
+          "border border-slate-200 bg-white text-slate-900 hover:bg-white/85",
         ghost:
-          "text-slate-900 hover:bg-slate-50 focus-visible:outline-none focus-visible:shadow-ring",
+          "text-slate-900 hover:bg-slate-50",
       },
       size: {
         sm: "h-9 px-3",

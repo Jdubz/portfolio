@@ -1,107 +1,52 @@
-/** @jsx jsx */
-import { Box, Grid, Heading, Text, jsx } from "theme-ui"
-import AvatarFrame from "../components/AvatarFrame"
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 
-// @ts-ignore - Theme UI JSX compatibility issues
 const Intro = () => (
-  // @ts-ignore
-  <Box as="section" sx={{ py: [5, 6, 7], position: "relative" }}>
+  <section className="relative py-16 sm:py-20 lg:py-24">
     {/* Mask background icons behind text to prevent collision */}
-    {/* @ts-ignore */}
-    <Box
-      sx={{
-        position: "absolute",
-        inset: 0,
-        pointerEvents: "none",
-        maskImage: "radial-gradient(220px 140px at 24% 46%, transparent 0, black 60%)",
-      }}
-    />
+    <div className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(220px_140px_at_22%_44%,transparent_0,black_60%)]" />
 
-    {/* @ts-ignore */}
-    <Grid
-      gap={[4, 5, 6]}            // 32 / 40 / 48px - tighter spacing
-      sx={{
-        // Slightly tighter container for balanced composition
-        maxWidth: [null, 1080, 1120],
-        mx: "auto",
-        px: [3, 4, 5],
-        // Fixed text + smaller avatar track
-        gridTemplateColumns: [
-          "1fr",
-          "minmax(44ch, 50ch) 260px",
-        ],
-        alignItems: "start",     // Align to top, not center
-      }}
-    >
+    <div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-10 grid grid-cols-1 md:[grid-template-columns:minmax(44ch,50ch)_260px] items-start gap-6 md:gap-10">
       {/* TEXT COLUMN */}
-      {/* @ts-ignore */}
-      <Box
-        sx={{
-          maxWidth: ["100%", "50ch", "50ch"],
-          // Kill default bottom-margins stacking on last child
-          "& > *:last-child": { mb: 0 },
-        }}
-      >
-        {/* @ts-ignore */}
-        <Text
-          sx={{
-            fontWeight: 700,
-            letterSpacing: ".02em",
-            textTransform: "uppercase",
-            fontSize: 13,
-            mb: 2,
-          }}
-        >
+      <div className="max-w-[50ch]">
+        <p className="font-semibold tracking-wide text-[13px] uppercase text-slate-900 mb-2 font-heading">
           Software × Hardware × Fabrication
-        </Text>
+        </p>
 
-        {/* @ts-ignore */}
-        <Heading as="h1" sx={{ variant: "text.heroTitle", mb: [2, 3] }}>
+        <h1 className="font-heading font-extrabold tracking-[-0.015em] text-[clamp(30px,6vw,36px)] md:text-[clamp(36px,5vw,48px)] lg:text-[clamp(42px,4vw,56px)] leading-[1.18] md:leading-[1.12] lg:leading-[1.08] mb-3 text-slate-900">
           Josh Wentworth
-        </Heading>
+        </h1>
 
-        {/* @ts-ignore */}
-        <Text as="p" sx={{ variant: "text.heroSub", mb: 2 }}>
+        <p className="text-slate-600 text-[16px] md:text-[18px] leading-[1.55] mb-3 max-w-[46rem]">
           Senior full-stack and cloud engineer. I design reliable, observable systems and ship polished products—blending React/Angular with TypeScript on the front end, Node.js/Python on the back end, and Kubernetes on GCP.
-        </Text>
+        </p>
 
-        {/* @ts-ignore */}
-        <Text as="p" sx={{ variant: "text.heroProof", mb: 3 }}>
+        <p className="text-slate-600 text-[15.5px] leading-[1.55] mb-4 max-w-[46rem]">
           Previously at Fulfil Solutions, I led cloud architecture and partner integrations for robotic grocery fulfillment. I also build electronics/lighting and digital-fabrication projects.
-        </Text>
+        </p>
 
-        {/* Compact button group with equal heights */}
-        {/* @ts-ignore - Radix Slot type compatibility */}
-        <div className="flex gap-2 flex-wrap md:flex-nowrap mb-3 items-center">
-          {/* @ts-ignore */}
-          <Button asChild size="md" className="min-h-10">
+        {/* Compact button group */}
+        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap mb-4">
+          <Button asChild size="md">
             <a href="#projects">View case studies</a>
           </Button>
-          {/* @ts-ignore */}
-          <Button asChild variant="outline" size="md" className="min-h-10">
+          <Button asChild variant="outline" size="md">
             <a href="#contact">Get in touch</a>
           </Button>
         </div>
 
-        {/* @ts-ignore */}
-        <Text as="p" sx={{ variant: "text.micro", mb: 0, opacity: 0.92 }}>
+        <p className="text-slate-500 text-[14px] m-0">
           React • Angular • TypeScript • Node.js • Python • Kubernetes • GCP • MySQL/Redis • Grafana/Loki/Elastic
-        </Text>
-      </Box>
+        </p>
+      </div>
 
-      {/* AVATAR COLUMN - smaller and top-aligned */}
-      {/* @ts-ignore */}
-      <Box
-        sx={{
-          justifySelf: ["center", "start"],
-          pt: ["8px", "6px", "4px"],  // Subtle alignment to headline block
-        }}
-      >
-        <AvatarFrame size={[184, 208, 232]} />
-      </Box>
-    </Grid>
-  </Box>
+      {/* AVATAR COLUMN */}
+      <div className="relative w-[184px] md:w-[208px] lg:w-[232px] aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-[0_24px_60px_rgba(2,6,23,.10)]">
+        <div className="absolute -inset-0.5 rounded-2xl bg-[linear-gradient(120deg,#7C3AED,#06B6D4)] blur-md opacity-20 -z-10" />
+        <img src="/avatar.jpg" alt="Josh Wentworth headshot" className="w-full h-full object-cover" />
+      </div>
+    </div>
+  </section>
 )
 
 export default Intro
