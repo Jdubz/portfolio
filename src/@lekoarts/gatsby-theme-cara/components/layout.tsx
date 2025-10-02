@@ -21,6 +21,9 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
           "--icon-motion": "1",
           "--icon-motion-amp": "1.15",
         },
+        html: {
+          scrollBehavior: "smooth",
+        },
         "html, body": {
           overflowX: "hidden",
         },
@@ -143,7 +146,7 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
       })}
     />
     <MDXProvider components={MdxComponents}>
-      <main className={className}>{children}</main>
+      <main className={className} role="main" aria-label="Main content">{children}</main>
     </MDXProvider>
   </React.Fragment>
 )
