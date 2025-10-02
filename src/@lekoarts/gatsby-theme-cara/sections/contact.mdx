@@ -1,6 +1,8 @@
+import ContactForm from "../../../components/ContactForm"
+
 export default () => (
   <>
-    <h2>Get in touch</h2>
+    <h2 sx={{ variant: 'text.sectionTitle' }}>Get in touch</h2>
 
     <div className="grid grid-cols-1 md:[grid-template-columns:1fr_280px] gap-6 md:gap-10 items-start">
       <div>
@@ -34,6 +36,10 @@ export default () => (
         <div className="absolute -inset-0.5 rounded-2xl bg-[linear-gradient(120deg,#7C3AED,#06B6D4)] blur-md opacity-20 -z-10" />
         <img src="/avatar2.jpg" alt="Josh Wentworth" className="w-full h-full object-cover" />
       </div>
+    </div>
+
+    <div className="mt-8">
+      <ContactForm />
     </div>
   </>
 )

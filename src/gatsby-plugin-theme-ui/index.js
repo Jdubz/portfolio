@@ -181,6 +181,29 @@ const customTheme = merge(originalTheme, {
       color: "muted",
       fontSize: 14,              // Explicit px value
     },
+    sectionKicker: {
+      fontFamily: "heading",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: ".08em",
+      color: "text",
+      fontSize: [1, 2],
+    },
+    sectionTitle: {
+      fontFamily: "heading",
+      fontWeight: 700,
+      letterSpacing: "-0.015em",
+      color: "heading",
+      fontSize: [5, 6, 7],
+      lineHeight: [1.2, 1.18, 1.12],
+      my: 2,
+    },
+    sectionIntro: {
+      color: "muted",
+      fontSize: [2, 3],
+      lineHeight: 1.6,
+      maxWidth: 760,
+    },
   },
 
   // Button variants - sleek and premium

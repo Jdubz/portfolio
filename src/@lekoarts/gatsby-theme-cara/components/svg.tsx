@@ -43,6 +43,8 @@ const Svg = ({ stroke = false, color = ``, width, icon, left, top, hiddenMobile 
       top,
     }}
     viewBox={viewBox[icon]}
+    aria-hidden="true"
+    focusable="false"
   >
     <use href={withPrefix(`/icons.svg#${icon}`)} />
   </svg>
