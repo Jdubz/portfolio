@@ -8,9 +8,10 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import Intro from "../sections/intro.mdx"
 
 const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
-  <div
+  <section
     className="section has-icons"
     data-icon-preset="hero"
+    aria-label="Introduction"
   >
     <Divider
       speed={0}
@@ -64,7 +65,7 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
         <Intro />
       </Inner>
     </Content>
-  </div>
+  </section>
 )
 
 export default Hero

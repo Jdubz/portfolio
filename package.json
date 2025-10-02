@@ -2,7 +2,7 @@
   "private": true,
   "name": "josh-wentworth-portfolio",
   "description": "Josh Wentworth - Multidisciplinary engineer portfolio featuring software, hardware, and fabrication projects",
-  "version": "1.4.1",
+  "version": "1.5.1",
   "author": "Josh Wentworth",
   "license": "0BSD",
   "scripts": {
@@ -35,8 +35,12 @@
     "@parcel/watcher": "^2.5.1",
     "@radix-ui/react-slot": "^1.2.3",
     "gatsby": "^5.15.0",
+    "gatsby-plugin-image": "^3.15.0",
     "gatsby-plugin-manifest": "^5.15.0",
+    "gatsby-plugin-sharp": "^5.15.0",
+    "gatsby-plugin-sitemap": "^6.15.0",
     "gatsby-plugin-webpack-statoscope": "^1.0.3",
+    "gatsby-transformer-sharp": "^5.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
