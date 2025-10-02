@@ -20,6 +20,17 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
             position: `relative`,
             height: `full`,
             svg: { width: `100%`, height: `40vh` },
+            '::before': {
+              content: '""',
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'url(/jw-logo-mono.svg)',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center 30%',
+              backgroundSize: 'min(440px, 54vw)',
+              opacity: 0.05,
+              pointerEvents: 'none',
+            },
             path: { animation: waveAnimation(`20s`) },
           }}
         >
