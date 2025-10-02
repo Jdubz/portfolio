@@ -1,11 +1,11 @@
 /** @jsx jsx */
-import { Box, Flex, Button, Link, Heading, Text, jsx } from "theme-ui"
+import { Box, Grid, Flex, Button, Link, Heading, Text, jsx } from "theme-ui"
 import AvatarFrame from "../components/AvatarFrame"
 
 // @ts-ignore - Theme UI JSX compatibility issues
 const Intro = () => (
   // @ts-ignore
-  <Box sx={{ py: [5, 6, 7], position: "relative" }}>
+  <Box as="section" sx={{ py: [5, 6, 7], position: "relative" }}>
     {/* Mask background icons behind text to prevent collision */}
     {/* @ts-ignore */}
     <Box
@@ -13,72 +13,108 @@ const Intro = () => (
         position: "absolute",
         inset: 0,
         pointerEvents: "none",
-        maskImage: "radial-gradient(220px 140px at 20% 46%, rgba(0,0,0,0) 0, rgba(0,0,0,1) 60%)",
+        maskImage: "radial-gradient(220px 140px at 24% 46%, transparent 0, black 60%)",
       }}
     />
 
     {/* @ts-ignore */}
-    <Flex
+    <Grid
+      gap={[4, 5, 6]}            // 32 / 40 / 48px - tighter spacing
       sx={{
-        maxWidth: 1200,
+        // Slightly tighter container for balanced composition
+        maxWidth: [null, 1080, 1120],
         mx: "auto",
         px: [3, 4, 5],
-        gap: [4, 5, 7],
-        alignItems: "center",
-        flexDirection: ["column-reverse", "row"],
+        // Fixed text + smaller avatar track
+        gridTemplateColumns: [
+          "1fr",
+          "minmax(44ch, 50ch) 260px",
+        ],
+        alignItems: "start",     // Align to top, not center
       }}
     >
-      {/* Text column - constrained width for better readability */}
+      {/* TEXT COLUMN */}
       {/* @ts-ignore */}
-      <Box sx={{ flex: "1 1 0", maxWidth: ["100%", "46ch", "52ch"] }}>
+      <Box
+        sx={{
+          maxWidth: ["100%", "50ch", "50ch"],
+          // Kill default bottom-margins stacking on last child
+          "& > *:last-child": { mb: 0 },
+        }}
+      >
         {/* @ts-ignore */}
-        <Text sx={{ variant: "text.heroKicker", mb: 2 }}>
+        <Text
+          sx={{
+            fontWeight: 700,
+            letterSpacing: ".02em",
+            textTransform: "uppercase",
+            fontSize: 13,
+            mb: 2,
+          }}
+        >
           Software × Hardware × Fabrication
         </Text>
 
         {/* @ts-ignore */}
         <Heading as="h1" sx={{ variant: "text.heroTitle", mb: [2, 3] }}>
-          Hi, I'm Josh Wentworth
+          Josh Wentworth
         </Heading>
 
         {/* @ts-ignore */}
-        <Text as="p" sx={{ variant: "text.heroSub", mb: 3 }}>
-          Senior full-stack and cloud engineer. I design reliable, observable systems and ship polished products—blending TypeScript, React/React Native, Node/Python/Rust, and AWS.
+        <Text as="p" sx={{ variant: "text.heroSub", mb: 2 }}>
+          Senior full-stack and cloud engineer. I design reliable, observable systems and ship polished products—blending React/Angular with TypeScript on the front end, Node.js/Python on the back end, and Kubernetes on GCP.
         </Text>
 
         {/* @ts-ignore */}
-        <Text as="p" sx={{ variant: "text.heroProof", mb: 4 }}>
+        <Text as="p" sx={{ variant: "text.heroProof", mb: 3 }}>
           Previously at Fulfil Solutions, I led cloud architecture and partner integrations for robotic grocery fulfillment. I also build electronics/lighting and digital-fabrication projects.
         </Text>
 
+        {/* Compact button group with equal heights */}
         {/* @ts-ignore */}
-        <Flex sx={{ gap: 3, flexWrap: "wrap", mb: 3 }}>
+        <Flex sx={{ gap: 2, flexWrap: ["wrap", "nowrap"], mb: 3, alignItems: "center" }}>
           {/* @ts-ignore */}
-          <Button as={Link} href="#projects">View case studies</Button>
+          <Link href="#projects" sx={{ textDecoration: "none" }}>
+            {/* @ts-ignore */}
+            <Button
+              sx={{
+                minHeight: 40,
+              }}
+            >
+              View case studies
+            </Button>
+          </Link>
           {/* @ts-ignore */}
-          <Button
-            variant="secondary"
-            // @ts-ignore
-            as={Link}
-            href="#contact"
-            sx={{ ":focus-visible": { boxShadow: "ring" } }}
-          >
-            Get in touch
-          </Button>
+          <Link href="#contact" sx={{ textDecoration: "none" }}>
+            {/* @ts-ignore */}
+            <Button
+              variant="secondary"
+              sx={{
+                minHeight: 40,
+              }}
+            >
+              Get in touch
+            </Button>
+          </Link>
         </Flex>
 
         {/* @ts-ignore */}
-        <Text as="p" sx={{ variant: "text.micro", m: 0 }}>
-          TypeScript • React/Native • Node • Python • Rust • AWS • Terraform • SRE
+        <Text as="p" sx={{ variant: "text.micro", mb: 0, opacity: 0.92 }}>
+          React • Angular • TypeScript • Node.js • Python • Kubernetes • GCP • MySQL/Redis • Grafana/Loki/Elastic
         </Text>
       </Box>
 
-      {/* Avatar */}
+      {/* AVATAR COLUMN - smaller and top-aligned */}
       {/* @ts-ignore */}
-      <Box sx={{ flex: "0 0 auto" }}>
-        <AvatarFrame size={[200, 232, 256]} />
+      <Box
+        sx={{
+          justifySelf: ["center", "start"],
+          pt: ["8px", "6px", "4px"],  // Subtle alignment to headline block
+        }}
+      >
+        <AvatarFrame size={[184, 208, 232]} />
       </Box>
-    </Flex>
+    </Grid>
   </Box>
 )
 

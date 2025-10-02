@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@lekoarts/gatsby-theme-cara": "^5.1.7",
+    "@parcel/watcher": "^2.5.1",
     "gatsby": "^5.15.0",
     "gatsby-plugin-manifest": "^5.15.0",
     "gatsby-plugin-webpack-statoscope": "^1.0.3",
