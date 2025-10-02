@@ -8,9 +8,10 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import AboutMDX from "../sections/about.mdx"
 
 const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
-  <div
+  <section
     className="section has-icons"
     data-icon-preset="about"
+    aria-label="About"
   >
     <Divider
       bg="divider"
@@ -43,7 +44,7 @@ const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
         <AboutMDX />
       </Inner>
     </Content>
-  </div>
+  </section>
 )
 
 export default About
