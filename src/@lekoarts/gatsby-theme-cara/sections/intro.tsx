@@ -1,6 +1,7 @@
 /** @jsx jsx */
-import { Box, Grid, Flex, Button, Link, Heading, Text, jsx } from "theme-ui"
+import { Box, Grid, Heading, Text, jsx } from "theme-ui"
 import AvatarFrame from "../components/AvatarFrame"
+import { Button } from "@/components/ui/button"
 
 // @ts-ignore - Theme UI JSX compatibility issues
 const Intro = () => (
@@ -71,32 +72,17 @@ const Intro = () => (
         </Text>
 
         {/* Compact button group with equal heights */}
-        {/* @ts-ignore */}
-        <Flex sx={{ gap: 2, flexWrap: ["wrap", "nowrap"], mb: 3, alignItems: "center" }}>
+        {/* @ts-ignore - Radix Slot type compatibility */}
+        <div className="flex gap-2 flex-wrap md:flex-nowrap mb-3 items-center">
           {/* @ts-ignore */}
-          <Link href="#projects" sx={{ textDecoration: "none" }}>
-            {/* @ts-ignore */}
-            <Button
-              sx={{
-                minHeight: 40,
-              }}
-            >
-              View case studies
-            </Button>
-          </Link>
+          <Button asChild size="md" className="min-h-10">
+            <a href="#projects">View case studies</a>
+          </Button>
           {/* @ts-ignore */}
-          <Link href="#contact" sx={{ textDecoration: "none" }}>
-            {/* @ts-ignore */}
-            <Button
-              variant="secondary"
-              sx={{
-                minHeight: 40,
-              }}
-            >
-              Get in touch
-            </Button>
-          </Link>
-        </Flex>
+          <Button asChild variant="outline" size="md" className="min-h-10">
+            <a href="#contact">Get in touch</a>
+          </Button>
+        </div>
 
         {/* @ts-ignore */}
         <Text as="p" sx={{ variant: "text.micro", mb: 0, opacity: 0.92 }}>

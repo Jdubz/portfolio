@@ -7,6 +7,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./src/*"],
       "@lekoarts/gatsby-theme-cara/src/elements/content": ["./src/@lekoarts/gatsby-theme-cara/elements/content.tsx"],
       "@lekoarts/gatsby-theme-cara/src/elements/divider": ["./src/@lekoarts/gatsby-theme-cara/elements/divider.tsx"],
       "@lekoarts/gatsby-theme-cara/src/components/layout": ["./src/@lekoarts/gatsby-theme-cara/components/layout.tsx"]
