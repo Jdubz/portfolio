@@ -10,6 +10,7 @@ import ContactMDX from "../sections/contact.mdx"
 
 const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
   <div
+    id="contact"
     className="section has-icons"
     data-icon-preset="contact"
   >
