@@ -2,20 +2,29 @@
 import { jsx } from "theme-ui"
 
 type ProjectCardProps = {
-  link: string
+  link?: string
   title: string
   children: React.ReactNode
   bg: string
+  bgImage?: string
   tags?: string
 }
 
-const ProjectCard = ({ link, title, children, bg, tags }: ProjectCardProps) => (
-  <a
-    href={link}
-    target="_blank"
-    rel="noreferrer noopener"
-    aria-label={`Project: ${title}`}
-    className="card"
+const ProjectCard = ({ link, title, children, bg, bgImage, tags }: ProjectCardProps) => {
+  const Component = link ? `a` : `div`
+  const linkProps = link
+    ? {
+        href: link,
+        target: `_blank`,
+        rel: `noreferrer noopener`,
+      }
+    : {}
+
+  return (
+    <Component
+      {...linkProps}
+      aria-label={`Project: ${title}`}
+      className="card"
     sx={{
       display: `block`,
       width: `100%`,
@@ -27,14 +36,19 @@ const ProjectCard = ({ link, title, children, bg, tags }: ProjectCardProps) => (
       px: [4, 5],
       py: [4, 5],
       color: `white`,
-      background: bg || `none`,
+      background: bgImage ? `none` : bg || `none`,
+      backgroundImage: bgImage ? `url(${bgImage})` : `none`,
+      backgroundSize: `cover`,
+      backgroundPosition: `center`,
       transition: `all 0.15s ease`,
       overflow: `hidden`,
       "&::before": {
         content: `""`,
         position: `absolute`,
         inset: 0,
-        background: `linear-gradient(180deg, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0.32) 100%)`,
+        background: bgImage
+          ? `radial-gradient(ellipse 120% 90% at 50% 100%, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.65) 100%)`
+          : `linear-gradient(180deg, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0.32) 100%)`,
         borderRadius: `md`,
         zIndex: 0,
       },
@@ -63,7 +77,7 @@ const ProjectCard = ({ link, title, children, bg, tags }: ProjectCardProps) => (
       <div
         sx={{
           opacity: 0.95,
-          textShadow: `0 2px 10px rgba(0, 0, 0, 0.3)`,
+          textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
           p: {
             fontSize: [1, 2],
             color: `#E6F0F2`,
@@ -84,6 +98,7 @@ const ProjectCard = ({ link, title, children, bg, tags }: ProjectCardProps) => (
             fontWeight: `heading`,
             lineHeight: `heading`,
             color: `#FFFFFF`,
+            textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
           }}
         >
           {title}
@@ -96,6 +111,7 @@ const ProjectCard = ({ link, title, children, bg, tags }: ProjectCardProps) => (
               color: `#E6F0F2`,
               opacity: 0.9,
               letterSpacing: `0.5px`,
+              textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
             }}
           >
             {tags}
@@ -103,7 +119,8 @@ const ProjectCard = ({ link, title, children, bg, tags }: ProjectCardProps) => (
         )}
       </div>
     </div>
-  </a>
-)
+  </Component>
+  )
+}
 
 export default ProjectCard
