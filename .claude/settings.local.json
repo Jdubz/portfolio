@@ -39,7 +39,10 @@
       "Bash(lsof:*)",
       "Bash(node:*)",
       "Bash(make:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm i:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(./node_modules/.bin/tailwindcss:*)"
     ],
     "deny": [],
     "ask": []
