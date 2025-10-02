@@ -1,6 +1,6 @@
 import * as React from "react"
 import type { HeadFC } from "gatsby"
-import { Parallax } from "@react-spring/parallax"
+import { Parallax, IParallax } from "@react-spring/parallax"
 import Layout from "../components/layout"
 import Hero from "../components/hero"
 import Projects from "../components/projects"
@@ -9,17 +9,21 @@ import Contact from "../components/contact"
 import Seo from "@lekoarts/gatsby-theme-cara/src/components/seo"
 
 // Create a context to share the parallax ref
-export const ParallaxContext = React.createContext<React.RefObject<any> | null>(null)
+export const ParallaxContext = React.createContext<React.RefObject<IParallax> | null>(null)
+
+// Custom hook to access the parallax scroll function
+export const useParallaxScroll = () => {
+  const parallaxRef = React.useContext(ParallaxContext)
+
+  const scrollToSection = React.useCallback((offset: number) => {
+    parallaxRef?.current?.scrollTo(offset)
+  }, [parallaxRef])
+
+  return scrollToSection
+}
 
 const Cara = () => {
-  const parallaxRef = React.useRef<any>(null)
-
-  // Add scroll function to window for button access
-  React.useEffect(() => {
-    (window as any).scrollToSection = (offset: number) => {
-      parallaxRef.current?.scrollTo(offset)
-    }
-  }, [])
+  const parallaxRef = React.useRef<IParallax>(null)
 
   return (
     <Layout>
