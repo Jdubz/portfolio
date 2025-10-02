@@ -9,6 +9,8 @@ import Intro from "../sections/intro.mdx"
 
 const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
   <section
+    id="intro"
+    data-screenshot-section="intro"
     className="section has-icons"
     data-icon-preset="hero"
     aria-label="Introduction"
