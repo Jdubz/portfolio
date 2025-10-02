@@ -14,3 +14,19 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+@layer components {
+  /* Button-styled links - override Theme UI global anchor styles */
+  a.btn {
+    /* Reset Theme UI anchor styles */
+    text-decoration: none !important;
+  }
+
+  a.btn:hover {
+    text-decoration: none !important;
+  }
+
+  a.btn:visited {
+    color: inherit !important;
+  }
+}
