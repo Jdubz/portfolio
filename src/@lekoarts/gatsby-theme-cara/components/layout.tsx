@@ -119,24 +119,24 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         },
         // Step 8: Section-specific presets for fine-tuning
         '.section[data-icon-preset="hero"]': {
-          "--icon-opacity": "0.10",
+          "--icon-opacity": "0.18",
           "--icon-size-max": "72px",
           "--icon-safe-x": "72px",
         },
         '.section[data-icon-preset="projects"]': {
-          "--icon-opacity": "0.12",
+          "--icon-opacity": "0.20",
           "--icon-size-max": "96px",
           "--icon-safe-x": "96px",
           "--icon-safe-y": "64px",
         },
         '.section[data-icon-preset="about"]': {
-          "--icon-opacity": "0.11",
+          "--icon-opacity": "0.19",
           "--icon-size-max": "80px",
           "--icon-safe-x": "64px",
           "--icon-safe-y": "48px",
         },
         '.section[data-icon-preset="contact"]': {
-          "--icon-opacity": "0.08",
+          "--icon-opacity": "0.16",
           "--icon-size-max": "56px",
           "--icon-safe-x": "64px",
         },
