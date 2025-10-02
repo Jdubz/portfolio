@@ -18,6 +18,7 @@ const config: GatsbyConfig = {
   },
   trailingSlash: `always`,
   plugins: [
+    `gatsby-plugin-postcss`,
     {
       resolve: `@lekoarts/gatsby-theme-cara`,
       // Gatsby theme providing the core functionality
