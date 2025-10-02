@@ -2,8 +2,8 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import Hero from '../../@lekoarts/gatsby-theme-cara/components/hero'
 
-// Mock the TSX component (not MDX)
-jest.mock('../../@lekoarts/gatsby-theme-cara/sections/intro', () => {
+// Mock the MDX component
+jest.mock('../../@lekoarts/gatsby-theme-cara/sections/intro.mdx', () => {
   return function IntroMock() {
     return <div data-testid="intro-content">Hero Content</div>
   }
