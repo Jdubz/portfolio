@@ -87,7 +87,7 @@ const Seo = ({ title, description, pathname, children }: { title?: string; descr
 
       {/* Preconnect to external domains for performance */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
 
       {children}
     </>
