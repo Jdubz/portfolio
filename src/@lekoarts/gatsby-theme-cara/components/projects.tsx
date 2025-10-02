@@ -10,6 +10,7 @@ import ProjectsMDX from "../sections/projects.mdx"
 const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) => (
   <section
     id="projects"
+    data-screenshot-section="projects"
     className="section has-icons"
     data-icon-preset="projects"
     aria-label="Projects"

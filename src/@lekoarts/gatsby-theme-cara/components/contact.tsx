@@ -11,6 +11,7 @@ import ContactMDX from "../sections/contact.mdx"
 const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
   <section
     id="contact"
+    data-screenshot-section="contact"
     className="section has-icons"
     data-icon-preset="contact"
     aria-label="Contact"
