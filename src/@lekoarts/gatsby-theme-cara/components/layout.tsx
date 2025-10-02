@@ -7,9 +7,7 @@ import MdxComponents from "@lekoarts/gatsby-theme-cara/src/components/mdx-compon
 type LayoutProps = { children: React.ReactNode; className?: string }
 
 const Layout = ({ children, className = `` }: LayoutProps) => (
-  // @ts-expect-error - React 18 type compatibility
   <React.Fragment>
-    {/* @ts-expect-error - React 18 type compatibility */}
     <Global
       styles={(t) => ({
         ":root": {
@@ -121,25 +119,25 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         },
         // Step 8: Section-specific presets for fine-tuning
         '.section[data-icon-preset="hero"]': {
-          "--icon-opacity": "0.10",
-          "--icon-size-max": "72px",
+          "--icon-opacity": "0.24",
+          "--icon-size-max": "84px",
           "--icon-safe-x": "72px",
         },
         '.section[data-icon-preset="projects"]': {
-          "--icon-opacity": "0.12",
-          "--icon-size-max": "96px",
+          "--icon-opacity": "0.26",
+          "--icon-size-max": "112px",
           "--icon-safe-x": "96px",
           "--icon-safe-y": "64px",
         },
         '.section[data-icon-preset="about"]': {
-          "--icon-opacity": "0.11",
-          "--icon-size-max": "80px",
+          "--icon-opacity": "0.22",
+          "--icon-size-max": "92px",
           "--icon-safe-x": "64px",
           "--icon-safe-y": "48px",
         },
         '.section[data-icon-preset="contact"]': {
-          "--icon-opacity": "0.08",
-          "--icon-size-max": "56px",
+          "--icon-opacity": "0.20",
+          "--icon-size-max": "68px",
           "--icon-safe-x": "64px",
         },
       })}

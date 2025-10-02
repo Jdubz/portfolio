@@ -12,7 +12,6 @@ import Inner from "@lekoarts/gatsby-theme-cara/src/elements/inner"
 
 const NotFound = (_props: PageProps) => (
   <Layout>
-    {/* @ts-expect-error - React 18 type compatibility */}
     <Parallax pages={1}>
       <div>
         <Divider speed={0.2} offset={0} factor={1}>
@@ -43,9 +42,11 @@ const NotFound = (_props: PageProps) => (
           <Svg icon="hexa" width={16} stroke color="icon_darker" left="10%" top="50%" />
           <Svg icon="hexa" width={8} stroke color="icon_darker" left="80%" top="70%" />
         </Divider>
-        <Content sx={{ variant: `texts.bigger` }} speed={0.4} offset={0} factor={1}>
+        <Content speed={0.4} offset={0} factor={1}>
           <Inner>
+            {/* @ts-ignore */}
             <Themed.h1>404 - Page not found</Themed.h1>
+            {/* @ts-ignore */}
             <Themed.p>
               Go back to <Link to="/">homepage</Link>.
             </Themed.p>
