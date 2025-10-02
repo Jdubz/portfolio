@@ -1,3 +1,5 @@
+import ScrollButton from "../components/scroll-button"
+
 export default () => (
   <>
     {/* Mask background icons behind text to prevent collision */}
@@ -27,11 +29,14 @@ export default () => (
 
         {/* CTAs */}
         <div className="flex items-center gap-2 flex-wrap md:flex-nowrap pt-2">
-          <a href="/case-studies" className="btn btn-primary">
-            View case studies
-          </a>
-          <a href="/contact" className="btn btn-secondary">
+          <ScrollButton href="#projects" className="btn btn-primary" offset={1.65}>
+            View projects
+          </ScrollButton>
+          <ScrollButton href="#contact" className="btn btn-secondary" offset={4}>
             Get in touch
+          </ScrollButton>
+          <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" className="btn btn-secondary">
+            Download resume
           </a>
         </div>
 

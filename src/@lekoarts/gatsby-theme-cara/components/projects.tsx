@@ -9,6 +9,7 @@ import ProjectsMDX from "../sections/projects.mdx"
 
 const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) => (
   <div
+    id="projects"
     className="section has-icons"
     data-icon-preset="projects"
   >
