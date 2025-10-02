@@ -32,7 +32,9 @@ export default () => (
             className="btn btn-primary"
             onClick={(e) => {
               e.preventDefault();
-              document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
+              if (window.scrollToSection) {
+                window.scrollToSection(1);
+              }
             }}
           >
             View projects
@@ -42,7 +44,9 @@ export default () => (
             className="btn btn-secondary"
             onClick={(e) => {
               e.preventDefault();
-              document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+              if (window.scrollToSection) {
+                window.scrollToSection(4);
+              }
             }}
           >
             Get in touch
