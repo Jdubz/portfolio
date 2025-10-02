@@ -6,16 +6,21 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // Brand colors
       colors: {
-        brand: { DEFAULT: "#0ea5e9" }, // your blue
+        brand: {
+          DEFAULT: "#0EA5E9",
+        },
       },
-      borderRadius: {
-        md: "10px",
-        xl: "16px",
+      // Font family
+      fontFamily: {
+        sans: ['"Inter"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        heading: ['"Poppins"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
       },
+      // Shadows for buttons
       boxShadow: {
-        lift: "0 4px 12px rgba(2,6,23,.10)",
-        liftLg: "0 8px 24px rgba(2,6,23,.12)",
+        lift: "0 6px 16px rgba(2,6,23,.10)",
+        ring: "0 0 0 4px rgba(14, 165, 233, 0.35)",
       },
     },
   },
