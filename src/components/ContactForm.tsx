@@ -40,6 +40,8 @@ export default function ContactForm() {
             value={form.name}
             onChange={handleChange}
             required
+            autoComplete="name"
+            aria-required="true"
             sx={{
               border: "1px solid",
               borderColor: "rgba(15,23,42,.18)",
@@ -62,6 +64,8 @@ export default function ContactForm() {
             value={form.email}
             onChange={handleChange}
             required
+            autoComplete="email"
+            aria-required="true"
             sx={{
               border: "1px solid",
               borderColor: "rgba(15,23,42,.18)",
@@ -85,6 +89,7 @@ export default function ContactForm() {
           onChange={handleChange}
           required
           rows={6}
+          aria-required="true"
           sx={{
             border: "1px solid",
             borderColor: "rgba(15,23,42,.18)",
@@ -104,6 +109,7 @@ export default function ContactForm() {
         <button
           type="submit"
           disabled={status === "submitting"}
+          aria-busy={status === "submitting" ? "true" : "false"}
           sx={{
             variant: "buttons.primary",
             px: 12,
@@ -114,8 +120,8 @@ export default function ContactForm() {
         >
           {status === "submitting" ? "Sending…" : "Send message"}
         </button>
-        {status === "success" && <span sx={{ color: "icon_green" }}>Thanks! I’ll get back to you shortly.</span>}
-        {status === "error" && <span sx={{ color: "icon_red" }}>Something went wrong. Please try again.</span>}
+        {status === "success" && <span sx={{ color: "icon_green" }} role="status" aria-live="polite">Thanks! I'll get back to you shortly.</span>}
+        {status === "error" && <span sx={{ color: "icon_red" }} role="alert" aria-live="assertive">Something went wrong. Please try again.</span>}
       </div>
     </form>
   )

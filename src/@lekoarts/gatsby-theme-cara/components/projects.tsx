@@ -8,10 +8,11 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import ProjectsMDX from "../sections/projects.mdx"
 
 const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) => (
-  <div
+  <section
     id="projects"
     className="section has-icons"
     data-icon-preset="projects"
+    aria-label="Projects"
   >
     <Divider
       bg="linear-gradient(to right, SlateBlue 0%, DeepSkyBlue 100%)"
@@ -70,7 +71,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
       <Svg icon="hexa" width={16} stroke color="icon_indigo" left="75%" top="30%" />
       <Svg icon="hexa" width={8} stroke color="icon_blue" left="80%" top="70%" />
     </Divider>
-  </div>
+  </section>
 )
 
 export default Projects

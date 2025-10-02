@@ -9,10 +9,11 @@ import Footer from "./footer"
 import ContactMDX from "../sections/contact.mdx"
 
 const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
-  <div
+  <section
     id="contact"
     className="section has-icons"
     data-icon-preset="contact"
+    aria-label="Contact"
   >
     <Divider fill="divider" speed={0.2} offset={offset} factor={factor}>
       <div sx={{ position: `absolute`, bottom: 0, width: `full`, transform: `matrix(1, 0, 0, -1, 0, 0)` }}>
@@ -69,7 +70,7 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
       <Svg icon="box" width={12} color="icon_darkest" left="20%" top="30%" />
       <Svg icon="hexa" width={8} stroke color="icon_darkest" left="80%" top="70%" />
     </Divider>
-  </div>
+  </section>
 )
 
 export default Contact
