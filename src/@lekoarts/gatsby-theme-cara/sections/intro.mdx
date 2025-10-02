@@ -27,10 +27,24 @@ export default () => (
 
         {/* CTAs */}
         <div className="flex items-center gap-2 flex-wrap md:flex-nowrap pt-2">
-          <a href="#projects" className="btn btn-primary">
+          <a
+            href="#projects"
+            className="btn btn-primary"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
             View projects
           </a>
-          <a href="#contact" className="btn btn-secondary">
+          <a
+            href="#contact"
+            className="btn btn-secondary"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
             Get in touch
           </a>
           <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" className="btn btn-secondary">
