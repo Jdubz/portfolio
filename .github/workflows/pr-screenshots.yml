@@ -1,0 +1,106 @@
+name: PR Screenshots
+
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  screenshots:
+    name: Generate Component Screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Generate screenshots
+        run: make screenshot
+
+      - name: Upload screenshots as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: component-screenshots-${{ github.event.pull_request.number }}
+          path: screenshots/images/*.png
+          retention-days: 30
+
+      - name: Create screenshot gallery for PR
+        id: gallery
+        run: |
+          echo "## 📸 Component Screenshots" > comment.md
+          echo "" >> comment.md
+          echo "Screenshots generated at breakpoints: 480px, 768px, 1024px, 1280px, 1440px" >> comment.md
+          echo "" >> comment.md
+
+          # Group by component
+          for component in intro projects about contact; do
+            if ls screenshots/images/${component}-*.png 1> /dev/null 2>&1; then
+              echo "### ${component^}" >> comment.md
+              echo "" >> comment.md
+              echo "<details>" >> comment.md
+              echo "<summary>View ${component} screenshots</summary>" >> comment.md
+              echo "" >> comment.md
+
+              for file in screenshots/images/${component}-*.png; do
+                if [ -f "$file" ]; then
+                  filename=$(basename "$file")
+                  breakpoint=$(echo "$filename" | sed "s/${component}-\(.*\)\.png/\1/")
+                  echo "#### ${breakpoint}" >> comment.md
+                  echo "![${component} at ${breakpoint}](https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/screenshots/images/${filename})" >> comment.md
+                  echo "" >> comment.md
+                fi
+              done
+
+              echo "</details>" >> comment.md
+              echo "" >> comment.md
+            fi
+          done
+
+          echo "---" >> comment.md
+          echo "*Generated from commit ${{ github.event.pull_request.head.sha }}*" >> comment.md
+
+      - name: Find existing screenshot comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '📸 Component Screenshots'
+
+      - name: Create or update PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: comment.md
+          edit-mode: replace
+
+      - name: Summary
+        run: |
+          echo "✅ Screenshots generated successfully!"
+          echo "📋 Generated screenshots:"
+          ls -lh screenshots/images/*.png || echo "No screenshots found"
+          echo ""
+          echo "🔗 View screenshots in PR comment"
