@@ -13,8 +13,8 @@ type ContentProps = {
 
 const Content = ({ speed, offset, children, className = ``, factor = 1 }: ContentProps) => {
   const childrenArray = React.Children.toArray(children)
-  const footer = childrenArray.find((child: any) => child?.type?.name === 'Footer')
-  const otherChildren = childrenArray.filter((child: any) => child?.type?.name !== 'Footer')
+  const footer = childrenArray.find((child: any) => child?.type?.name === "Footer")
+  const otherChildren = childrenArray.filter((child: any) => child?.type?.name !== "Footer")
 
   return (
     // @ts-expect-error - ParallaxLayer sx prop type issue with React 18
@@ -42,8 +42,16 @@ const Content = ({ speed, offset, children, className = ``, factor = 1 }: Conten
             backdropFilter: `blur(10px)`,
             WebkitBackdropFilter: `blur(10px)`,
             borderRadius: `20px`,
-            maskImage: `linear-gradient(to bottom, transparent 0, black 30px, black calc(100% - 30px), transparent 100%)`,
-            WebkitMaskImage: `linear-gradient(to bottom, transparent 0, black 30px, black calc(100% - 30px), transparent 100%)`,
+            maskImage: `
+              linear-gradient(to right, transparent 0, black 30px, black calc(100% - 30px), transparent 100%),
+              linear-gradient(to bottom, transparent 0, black 30px, black calc(100% - 30px), transparent 100%)
+            `,
+            WebkitMaskImage: `
+              linear-gradient(to right, transparent 0, black 30px, black calc(100% - 30px), transparent 100%),
+              linear-gradient(to bottom, transparent 0, black 30px, black calc(100% - 30px), transparent 100%)
+            `,
+            maskComposite: `intersect`,
+            WebkitMaskComposite: `source-in`,
             zIndex: -1,
           },
         }}

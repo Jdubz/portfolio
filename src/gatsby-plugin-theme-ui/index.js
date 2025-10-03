@@ -37,6 +37,7 @@ const customTheme = merge(originalTheme, {
     background: "#FFFFFF", // Surface (base)
     "background-secondary": "#F7F8FB", // Surface-2 (alt panels)
     border: "rgba(15,23,42,.12)", // Subtle borders
+    divider: "#3B4252", // Lighter dark background for About/Contact sections (split between gray-800 and gray-600)
 
     // Gradient colors
     "gradient-start": "#1B1F2B",

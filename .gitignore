@@ -81,3 +81,10 @@ nul
 screenshots/images/
 !screenshots/README.md
 !screenshots/.gitkeep
+
+# Lighthouse reports
+lighthouse-report.html
+lighthouse-report.json
+lighthouse-report.*.html
+lighthouse-report.*.json
+.lighthouseci/

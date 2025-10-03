@@ -27,6 +27,8 @@
     "test:coverage": "jest --coverage",
     "lighthouse": "lhci autorun",
     "lighthouse:view": "lhci open",
+    "lighthouse:local": "npm run build && npm run serve & npx wait-on http://localhost:9000 && lighthouse http://localhost:9000 --view --preset=desktop --output=html --output-path=./lighthouse-report.html; kill $!",
+    "lighthouse:report": "lighthouse http://localhost:9000 --output=html,json --output-path=./lighthouse-report --preset=desktop",
     "deploy:staging": "npm run build && firebase deploy --only hosting:staging",
     "deploy:production": "npm run build && firebase deploy --only hosting:production",
     "deploy:all": "npm run build && firebase deploy --only hosting",
@@ -92,6 +94,7 @@
     "tailwindcss": "^4.1.14",
     "ts-jest": "^29.4.4",
     "typescript": "^5.8.3",
+    "wait-on": "^9.0.1",
     "webpack": "^5.102.0"
   }
 }

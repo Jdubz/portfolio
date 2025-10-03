@@ -4,6 +4,7 @@ import { jsx } from "theme-ui"
 
 type ProjectCardProps = {
   link?: string
+  linkText?: string
   title: string
   children: React.ReactNode
   bg: string
@@ -11,28 +12,17 @@ type ProjectCardProps = {
   tags?: string
 }
 
-const ProjectCard = ({ link, title, children, bg, bgImage, tags }: ProjectCardProps) => {
-  const Component = link ? `a` : `div`
-  const linkProps = link
-    ? {
-        href: link,
-        target: `_blank`,
-        rel: `noreferrer noopener`,
-      }
-    : {}
-
+const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags }: ProjectCardProps) => {
   return (
-    <Component
-      {...linkProps}
+    <div
       aria-label={`Project: ${title}`}
       className="card"
       sx={{
         display: `block`,
         width: `100%`,
-        minHeight: [`220px`, `240px`, `260px`],
+        minHeight: [`240px`, `260px`, `280px`],
         boxShadow: `elevated`,
         position: `relative`,
-        textDecoration: `none`,
         borderRadius: `md`,
         px: [4, 5],
         py: [4, 5],
@@ -41,7 +31,6 @@ const ProjectCard = ({ link, title, children, bg, bgImage, tags }: ProjectCardPr
         backgroundImage: bgImage ? `url(${bgImage})` : `none`,
         backgroundSize: `cover`,
         backgroundPosition: `center`,
-        transition: `all 0.15s ease`,
         overflow: `hidden`,
         "&::before": {
           content: `""`,
@@ -52,16 +41,6 @@ const ProjectCard = ({ link, title, children, bg, bgImage, tags }: ProjectCardPr
             : `linear-gradient(180deg, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0.32) 100%)`,
           borderRadius: `md`,
           zIndex: 0,
-        },
-        "&:hover, &:focus-visible": {
-          color: `white !important`,
-          transform: `translateY(-2px)`,
-          boxShadow: `hover`,
-          textDecoration: `none`,
-        },
-        "&:focus-visible": {
-          outline: `none`,
-          boxShadow: `0 0 0 3px rgba(14, 165, 233, 0.45)`,
         },
       }}
     >
@@ -75,52 +54,64 @@ const ProjectCard = ({ link, title, children, bg, bgImage, tags }: ProjectCardPr
           justifyContent: `space-between`,
         }}
       >
-        <div
-          sx={{
-            opacity: 0.95,
-            textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
-            p: {
-              fontSize: [1, 2],
-              color: `#E6F0F2`,
-              margin: 0,
-              lineHeight: 1.6,
-            },
-          }}
-        >
-          {children}
-        </div>
         <div>
           <div
             sx={{
               textTransform: `uppercase`,
               letterSpacing: `wide`,
-              pt: 4,
               fontSize: [4, 5, 6],
               fontWeight: `heading`,
               lineHeight: `heading`,
               color: `#FFFFFF`,
               textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
+              mb: 3,
             }}
           >
             {title}
           </div>
-          {tags && (
-            <div
-              sx={{
-                pt: 2,
-                fontSize: 0,
+          <div
+            sx={{
+              opacity: 0.95,
+              textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
+              p: {
+                fontSize: [1, 2],
                 color: `#E6F0F2`,
-                opacity: 0.9,
-                letterSpacing: `0.5px`,
-                textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
+                margin: 0,
+                lineHeight: 1.6,
+              },
+            }}
+          >
+            {children}
+          </div>
+        </div>
+        <div>
+          {link && linkText && (
+            <a
+              href={link}
+              target="_blank"
+              rel="noreferrer noopener"
+              sx={{
+                display: `inline-flex`,
+                alignItems: `center`,
+                gap: 1,
+                fontSize: [1, 2],
+                color: `#FFFFFF`,
+                textDecoration: `none`,
+                fontWeight: 600,
+                textShadow: `0 2px 10px rgba(0, 0, 0, 0.5)`,
+                transition: `all 0.2s ease`,
+                "&:hover": {
+                  transform: `translateX(4px)`,
+                  color: `#00C9A7`,
+                },
               }}
             >
-              {tags}
-            </div>
+              {linkText}
+            </a>
           )}
         </div>
       </div>
-    </Component>
+    </div>
   )
 }
 
