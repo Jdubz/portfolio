@@ -1,23 +1,24 @@
 import * as React from "react"
 import useSiteMetadata from "@lekoarts/gatsby-theme-cara/src/hooks/use-site-metadata"
 
-const Seo = ({ title, description, pathname, children }: { title?: string; description?: string; pathname?: string; children?: React.ReactNode }) => {
+const Seo = ({
+  title,
+  description,
+  pathname,
+  children,
+}: {
+  title?: string
+  description?: string
+  pathname?: string
+  children?: React.ReactNode
+}) => {
   const site = useSiteMetadata()
 
-  const {
-    siteTitle,
-    siteTitleAlt,
-    siteHeadline,
-    siteUrl,
-    siteDescription,
-    siteImage,
-    siteLanguage,
-    author,
-  } = site
+  const { siteTitle, siteTitleAlt, siteHeadline, siteUrl, siteDescription, siteImage, siteLanguage, author } = site
 
   const seo = {
-    title: title || siteTitleAlt,
-    description: description || siteDescription,
+    title: title ?? siteTitleAlt,
+    description: description ?? siteDescription,
     url: pathname ? `${siteUrl}${pathname}` : siteUrl,
     image: `${siteUrl}${siteImage}`,
   }
@@ -31,10 +32,7 @@ const Seo = ({ title, description, pathname, children }: { title?: string; descr
     jobTitle: "Multidisciplinary Engineer",
     description: siteDescription,
     image: seo.image,
-    sameAs: [
-      "https://github.com/jdubz",
-      "https://www.linkedin.com/in/josh-wentworth",
-    ],
+    sameAs: ["https://github.com/jdubz", "https://www.linkedin.com/in/josh-wentworth"],
     knowsAbout: [
       "Software Engineering",
       "Hardware Engineering",
@@ -78,9 +76,7 @@ const Seo = ({ title, description, pathname, children }: { title?: string; descr
       <meta name="googlebot" content="index, follow" />
 
       {/* Structured Data */}
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
+      <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
 
       {/* Canonical URL */}
       <link rel="canonical" href={seo.url} />

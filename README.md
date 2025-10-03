@@ -5,7 +5,7 @@
 A professional portfolio showcasing multidisciplinary engineering projects that blend software development, electronics design, and digital fabrication.
 
 **Josh Wentworth**
-*Multidisciplinary Engineer*
+_Multidisciplinary Engineer_
 
 - **Email**: hello@joshwentworth.com
 - **LinkedIn**: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)
@@ -78,6 +78,7 @@ npm run serve
 ## 🔧 Engineering Focus
 
 This portfolio specifically highlights expertise in:
+
 - **Software Development** - Full-stack applications and embedded systems
 - **Electronics Design** - PCB design, embedded firmware, and hardware integration
 - **Digital Fabrication** - CNC machining, 3D modeling, and custom tooling
@@ -85,4 +86,4 @@ This portfolio specifically highlights expertise in:
 
 ---
 
-*Built with precision engineering and attention to detail.*
+_Built with precision engineering and attention to detail._

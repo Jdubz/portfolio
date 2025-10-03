@@ -22,16 +22,22 @@ export default function ContactForm() {
     setStatus("submitting")
     try {
       // Stub: replace with real endpoint or form service
-      await new Promise((r) => setTimeout(r, 600))
+      await new Promise((r) => globalThis.setTimeout(r, 600))
       setStatus("success")
       setForm({ name: "", email: "", message: "" })
-    } catch (err) {
+    } catch (_err) {
       setStatus("error")
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} sx={{ mt: 4 }} aria-label="Contact form">
+    <form
+      onSubmit={(e) => {
+        void handleSubmit(e)
+      }}
+      sx={{ mt: 4 }}
+      aria-label="Contact form"
+    >
       <div sx={{ display: "grid", gridTemplateColumns: ["1fr", "1fr 1fr"], gap: 3 }}>
         <label sx={{ display: "grid", gap: 2 }}>
           <span sx={{ fontWeight: 600 }}>Name</span>
@@ -51,8 +57,8 @@ export default function ContactForm() {
               bg: "#fff",
               color: "text",
               fontSize: 2,
-              '&:hover': { borderColor: "rgba(15,23,42,.28)" },
-              '&:focus-visible': { outline: "none", boxShadow: "ring", borderColor: "primary" },
+              "&:hover": { borderColor: "rgba(15,23,42,.28)" },
+              "&:focus-visible": { outline: "none", boxShadow: "ring", borderColor: "primary" },
             }}
           />
         </label>
@@ -75,8 +81,8 @@ export default function ContactForm() {
               bg: "#fff",
               color: "text",
               fontSize: 2,
-              '&:hover': { borderColor: "rgba(15,23,42,.28)" },
-              '&:focus-visible': { outline: "none", boxShadow: "ring", borderColor: "primary" },
+              "&:hover": { borderColor: "rgba(15,23,42,.28)" },
+              "&:focus-visible": { outline: "none", boxShadow: "ring", borderColor: "primary" },
             }}
           />
         </label>
@@ -100,8 +106,8 @@ export default function ContactForm() {
             color: "text",
             fontSize: 2,
             resize: "vertical",
-            '&:hover': { borderColor: "rgba(15,23,42,.28)" },
-            '&:focus-visible': { outline: "none", boxShadow: "ring", borderColor: "primary" },
+            "&:hover": { borderColor: "rgba(15,23,42,.28)" },
+            "&:focus-visible": { outline: "none", boxShadow: "ring", borderColor: "primary" },
           }}
         />
       </label>
@@ -120,8 +126,16 @@ export default function ContactForm() {
         >
           {status === "submitting" ? "Sending…" : "Send message"}
         </button>
-        {status === "success" && <span sx={{ color: "icon_green" }} role="status" aria-live="polite">Thanks! I'll get back to you shortly.</span>}
-        {status === "error" && <span sx={{ color: "icon_red" }} role="alert" aria-live="assertive">Something went wrong. Please try again.</span>}
+        {status === "success" && (
+          <span sx={{ color: "icon_green" }} role="status" aria-live="polite">
+            Thanks! I&apos;ll get back to you shortly.
+          </span>
+        )}
+        {status === "error" && (
+          <span sx={{ color: "icon_red" }} role="alert" aria-live="assertive">
+            Something went wrong. Please try again.
+          </span>
+        )}
       </div>
     </form>
   )

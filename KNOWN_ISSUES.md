@@ -7,7 +7,7 @@
 **Files Affected**:
 
 - `src/@lekoarts/gatsby-theme-cara/components/AvatarFrame.tsx`
-- `src/@lekoarts/gatsby-theme-cara/sections/intro.tsx`  
+- `src/@lekoarts/gatsby-theme-cara/sections/intro.tsx`
 - `src/pages/404.tsx`
 
 ### Problem

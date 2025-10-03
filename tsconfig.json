@@ -11,18 +11,12 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "types": ["jest", "@testing-library/jest-dom"],
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["*"]
-    }
+      "@/*": ["./src/*"]
+    },
+    "noEmit": true
   },
-  "include": [
-    "./src/**/*",
-    "./gatsby-node.ts",
-    "./gatsby-config.ts",
-    "./plugins/**/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["./src/**/*", "./gatsby-node.ts", "./gatsby-config.ts", "./plugins/**/*"],
+  "exclude": ["node_modules", "node_modules/**/*", ".cache", "public", "build", "dist"]
 }

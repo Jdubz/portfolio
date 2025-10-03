@@ -8,11 +8,7 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import AboutMDX from "../sections/about.mdx"
 
 const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
-  <section
-    className="section has-icons"
-    data-icon-preset="about"
-    aria-label="About"
-  >
+  <section className="section has-icons" data-icon-preset="about" aria-label="About">
     <Divider
       bg="divider"
       clipPath="polygon(0 16%, 100% 4%, 100% 82%, 0 94%)"

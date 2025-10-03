@@ -146,7 +146,9 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
       })}
     />
     <MDXProvider components={MdxComponents}>
-      <main className={className} role="main" aria-label="Main content">{children}</main>
+      <main className={className} role="main" aria-label="Main content">
+        {children}
+      </main>
     </MDXProvider>
   </React.Fragment>
 )
