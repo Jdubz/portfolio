@@ -57,7 +57,12 @@
       "Bash(/home/jdubz/Development/portfolio/.husky/commit-msg:*)",
       "Bash(npx prettier:*)",
       "Bash(gh workflow:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(git revert:*)",
+      "Bash(npx:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []

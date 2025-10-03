@@ -1,6 +1,5 @@
-/** @jsx jsx */
-import { jsx } from "theme-ui"
 import * as React from "react"
+import { Button } from "./ui/button"
 
 type FormState = {
   name: string
@@ -35,104 +34,54 @@ export default function ContactForm() {
       onSubmit={(e) => {
         void handleSubmit(e)
       }}
-      sx={{ mt: 4 }}
+      className="mt-8 space-y-4"
       aria-label="Contact form"
     >
-      <div sx={{ display: "grid", gridTemplateColumns: ["1fr", "1fr 1fr"], gap: 3 }}>
-        <label sx={{ display: "grid", gap: 2 }}>
-          <span sx={{ fontWeight: 600 }}>Name</span>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            autoComplete="name"
-            aria-required="true"
-            sx={{
-              border: "1px solid",
-              borderColor: "rgba(15,23,42,.18)",
-              borderRadius: "10px",
-              px: 3,
-              py: 2,
-              bg: "#fff",
-              color: "text",
-              fontSize: 2,
-              "&:hover": { borderColor: "rgba(15,23,42,.28)" },
-              "&:focus-visible": { outline: "none", boxShadow: "ring", borderColor: "primary" },
-            }}
-          />
-        </label>
-        <label sx={{ display: "grid", gap: 2 }}>
-          <span sx={{ fontWeight: 600 }}>Email</span>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            autoComplete="email"
-            aria-required="true"
-            sx={{
-              border: "1px solid",
-              borderColor: "rgba(15,23,42,.18)",
-              borderRadius: "10px",
-              px: 3,
-              py: 2,
-              bg: "#fff",
-              color: "text",
-              fontSize: 2,
-              "&:hover": { borderColor: "rgba(15,23,42,.28)" },
-              "&:focus-visible": { outline: "none", boxShadow: "ring", borderColor: "primary" },
-            }}
-          />
-        </label>
-      </div>
-      <label sx={{ display: "grid", gap: 2, mt: 3 }}>
-        <span sx={{ fontWeight: 600 }}>Message</span>
-        <textarea
-          name="message"
-          value={form.message}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <input
+          type="text"
+          name="name"
+          value={form.name}
           onChange={handleChange}
+          placeholder="Name"
+          aria-label="Name"
           required
-          rows={6}
-          aria-required="true"
-          sx={{
-            border: "1px solid",
-            borderColor: "rgba(15,23,42,.18)",
-            borderRadius: "12px",
-            px: 3,
-            py: 2,
-            bg: "#fff",
-            color: "text",
-            fontSize: 2,
-            resize: "vertical",
-            "&:hover": { borderColor: "rgba(15,23,42,.28)" },
-            "&:focus-visible": { outline: "none", boxShadow: "ring", borderColor: "primary" },
-          }}
+          autoComplete="name"
+          className="h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 shadow-[0_2px_12px_rgba(2,6,23,.06)] focus:outline-none focus:ring-2 focus:ring-sky-300/60 focus:ring-offset-2"
         />
-      </label>
-      <div sx={{ mt: 3, display: "flex", gap: 2, alignItems: "center" }}>
-        <button
-          type="submit"
-          disabled={status === "submitting"}
-          aria-busy={status === "submitting" ? "true" : "false"}
-          sx={{
-            variant: "buttons.primary",
-            px: 12,
-            py: 8,
-            fontSize: 14,
-            borderRadius: 8,
-          }}
-        >
+        <input
+          type="email"
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          placeholder="Email"
+          aria-label="Email"
+          required
+          autoComplete="email"
+          className="h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 shadow-[0_2px_12px_rgba(2,6,23,.06)] focus:outline-none focus:ring-2 focus:ring-sky-300/60 focus:ring-offset-2"
+        />
+      </div>
+      <textarea
+        name="message"
+        value={form.message}
+        onChange={handleChange}
+        placeholder="Message"
+        aria-label="Message"
+        required
+        rows={6}
+        className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-slate-900 shadow-[0_2px_12px_rgba(2,6,23,.06)] focus:outline-none focus:ring-2 focus:ring-sky-300/60 focus:ring-offset-2 resize-vertical"
+      />
+      <div className="flex gap-2 items-center">
+        <Button type="submit" size="md" disabled={status === "submitting"} className="min-h-10">
           {status === "submitting" ? "Sending…" : "Send message"}
-        </button>
+        </Button>
         {status === "success" && (
-          <span sx={{ color: "icon_green" }} role="status" aria-live="polite">
+          <span className="text-green-600" role="status" aria-live="polite">
             Thanks! I&apos;ll get back to you shortly.
           </span>
         )}
         {status === "error" && (
-          <span sx={{ color: "icon_red" }} role="alert" aria-live="assertive">
+          <span className="text-red-600" role="alert" aria-live="assertive">
             Something went wrong. Please try again.
           </span>
         )}

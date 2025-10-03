@@ -1,6 +1,4 @@
-/** @jsx jsx */
 import * as React from "react"
-import { jsx } from "theme-ui"
 
 type ProjectCardProps = {
   link?: string
@@ -25,100 +23,29 @@ const ProjectCard = ({ link, title, children, bg, bgImage, tags }: ProjectCardPr
     <Component
       {...linkProps}
       aria-label={`Project: ${title}`}
-      className="card"
-      sx={{
-        display: `block`,
-        width: `100%`,
-        minHeight: [`220px`, `240px`, `260px`],
-        boxShadow: `elevated`,
-        position: `relative`,
-        textDecoration: `none`,
-        borderRadius: `md`,
-        px: [4, 5],
-        py: [4, 5],
-        color: `white`,
-        background: bgImage ? `none` : bg || `none`,
-        backgroundImage: bgImage ? `url(${bgImage})` : `none`,
-        backgroundSize: `cover`,
-        backgroundPosition: `center`,
-        transition: `all 0.15s ease`,
-        overflow: `hidden`,
-        "&::before": {
-          content: `""`,
-          position: `absolute`,
-          inset: 0,
-          background: bgImage
-            ? `radial-gradient(ellipse 120% 90% at 50% 100%, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.65) 100%)`
-            : `linear-gradient(180deg, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0.32) 100%)`,
-          borderRadius: `md`,
-          zIndex: 0,
-        },
-        "&:hover, &:focus-visible": {
-          color: `white !important`,
-          transform: `translateY(-2px)`,
-          boxShadow: `hover`,
-          textDecoration: `none`,
-        },
-        "&:focus-visible": {
-          outline: `none`,
-          boxShadow: `0 0 0 3px rgba(14, 165, 233, 0.45)`,
-        },
+      className="group relative block rounded-xl overflow-hidden ring-1 ring-black/5 shadow-[0_12px_40px_rgba(2,6,23,.16)] hover:shadow-[0_16px_60px_rgba(2,6,23,.2)] transition-shadow"
+      style={{
+        backgroundImage: bgImage ? `url(${bgImage})` : bg,
       }}
     >
-      <div
-        sx={{
-          position: `relative`,
-          zIndex: 1,
-          height: `100%`,
-          display: `flex`,
-          flexDirection: `column`,
-          justifyContent: `space-between`,
-        }}
-      >
-        <div
-          sx={{
-            opacity: 0.95,
-            textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
-            p: {
-              fontSize: [1, 2],
-              color: `#E6F0F2`,
-              margin: 0,
-              lineHeight: 1.6,
-            },
-          }}
-        >
+      <img
+        src={bgImage}
+        alt=""
+        className="h-full w-full object-cover aspect-[16/9]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity group-hover:opacity-90" />
+      <div className="absolute inset-x-4 bottom-4 md:inset-x-6 md:bottom-6">
+        <h3 className="text-white font-extrabold text-xl md:text-2xl tracking-[-0.01em]">
+          {title}
+        </h3>
+        <p className="hidden md:block mt-1 text-white/80 text-sm max-w-[58ch]">
           {children}
-        </div>
-        <div>
-          <div
-            sx={{
-              textTransform: `uppercase`,
-              letterSpacing: `wide`,
-              pt: 4,
-              fontSize: [4, 5, 6],
-              fontWeight: `heading`,
-              lineHeight: `heading`,
-              color: `#FFFFFF`,
-              textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
-            }}
-          >
-            {title}
+        </p>
+        {tags && (
+          <div className="mt-2 text-xs text-white/70 tracking-wide">
+            {tags}
           </div>
-          {tags && (
-            <div
-              sx={{
-                pt: 2,
-                fontSize: 0,
-                color: `#E6F0F2`,
-                opacity: 0.9,
-                letterSpacing: `0.5px`,
-                textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
-              }}
-            >
-              {tags}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </Component>
   )

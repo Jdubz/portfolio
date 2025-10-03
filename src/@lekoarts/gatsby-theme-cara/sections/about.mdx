@@ -1,33 +1,32 @@
 export default () => (
-  <>
-    <h2 sx={{ variant: 'text.sectionTitle' }}>About</h2>
+  <section className="relative py-20">
+    <h2 className="text-white font-extrabold text-3xl mb-4">About</h2>
 
     <div className="grid grid-cols-1 md:[grid-template-columns:1fr_280px] gap-6 md:gap-10 items-start">
-      <div style={{ textShadow: '0 2px 8px rgba(148, 163, 184, 0.15)' }}>
-        <blockquote className="italic border-l-4 border-slate-300 pl-4 mb-6" sx={{ color: 'muted' }}>
+      <div>
+        <blockquote className="text-slate-200/80 italic border-l-2 border-white/20 pl-3 mb-4">
           An idea machine for turning ideas into machines.
         </blockquote>
 
-        <p className="mb-4" sx={{ variant: 'text.sectionIntro' }}>
+        <p className="text-slate-200/90 leading-relaxed mb-4">
           I'm a multidisciplinary engineer who thrives at the intersection of software development, electronics design, and digital fabrication. My approach combines technical precision with creative problem-solving to build end-to-end solutions.
         </p>
 
-        <p className="mb-4" sx={{ variant: 'text.sectionIntro' }}>
+        <p className="text-slate-200/90 leading-relaxed mb-4">
           Whether it's developing embedded systems, crafting interactive installations, or engineering custom lighting solutions, I believe in the power of bringing together different domains to create something greater than the sum of its parts.
         </p>
 
-        <p className="mb-0" sx={{ variant: 'text.sectionIntro' }}>
+        <p className="text-slate-200/90 leading-relaxed mb-0">
           My work spans from writing clean, efficient code to designing PCBs and fabricating custom enclosures. I'm passionate about projects that challenge conventional boundaries and require inventive thinking.
         </p>
       </div>
 
-      <div className="relative w-[200px] md:w-[280px] aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-[0_24px_60px_rgba(2,6,23,.10)] mx-auto md:mx-0">
-        <div className="absolute -inset-0.5 rounded-2xl bg-[linear-gradient(120deg,#7C3AED,#06B6D4)] blur-md opacity-20 -z-10" />
-        <img src="/synth.jpg" alt="Custom synthesizer hardware project" className="w-full h-full object-cover" />
-        <div className="absolute bottom-2 right-2 opacity-70">
-          <img src="/jw-logo-mono.svg" alt="" aria-hidden="true" className="w-8 h-8 opacity-50" />
+      <div className="mt-8">
+        <div className="relative w-[260px] aspect-square rounded-2xl overflow-hidden border border-white/15 shadow-[0_24px_60px_rgba(0,0,0,.5)]">
+          <div className="absolute -inset-0.5 rounded-2xl bg-[linear-gradient(120deg,#7C3AED,#06B6D4)] blur-md opacity-15 -z-10" />
+          <img src="/synth.jpg" alt="Custom synthesizer hardware project" className="w-full h-full object-cover" />
         </div>
       </div>
     </div>
-  </>
+  </section>
 )
