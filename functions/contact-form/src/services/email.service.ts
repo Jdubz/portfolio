@@ -43,9 +43,9 @@ export class EmailService {
 
   constructor(secretManager: SecretManagerService, logger?: SimpleLogger) {
     this.secretManager = secretManager
-    
+
     const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
-    
+
     this.logger = logger || {
       info: (message: string, data?: any) => {
         if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")

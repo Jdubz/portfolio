@@ -14,9 +14,9 @@ export class SecretManagerService {
   constructor(projectId?: string) {
     this.client = new SecretManagerServiceClient()
     this.projectId = projectId ?? process.env.GCP_PROJECT ?? "static-sites-257923"
-    
+
     const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
-    
+
     this.logger = {
       info: (message: string, data?: any) => {
         if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
