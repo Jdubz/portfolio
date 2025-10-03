@@ -88,3 +88,11 @@ lighthouse-report.json
 lighthouse-report.*.html
 lighthouse-report.*.json
 .lighthouseci/
+lighthouse-debug.json
+lighthouse-fcp-test.html
+lighthouse-launcher.html
+lighthouse-*.html
+lighthouse-*.json
+
+# Claude Code local settings
+.claude/settings.local.json

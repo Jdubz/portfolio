@@ -6,7 +6,22 @@
       "Bash(git push:*)",
       "Bash(npm run type-check:*)",
       "Bash(npm run:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh run view:*)",
+      "Bash(npm test)",
+      "Bash(npm test:*)",
+      "Bash(bash -c \"npm test\")",
+      "Bash(bash -c \"npm run lint\")",
+      "Bash(bash -c \"npm run build\")",
+      "Bash(git -C /home/jdubz/Development/portfolio add jest.config.js functions/contact-form/.eslintrc.js functions/contact-form/eslint.config.mjs)",
+      "Bash(git -C /home/jdubz/Development/portfolio commit -m \"$(cat <<''EOF''\nfix: resolve GitHub Actions test and lint failures\n\n- Exclude functions directory from root Jest config to prevent dependency conflicts\n- Add standalone eslint.config.mjs for functions to override parent config\n- Add root: true to functions .eslintrc.js for legacy config isolation\n\nFixes two workflow failures:\n1. Quality Gate: Jest was trying to test function files without function dependencies\n2. Test Function: ESLint was loading parent config which required unavailable dependencies\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C /home/jdubz/Development/portfolio push)",
+      "Bash(grep:*)",
+      "Bash(npm audit:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git -C /home/jdubz/Development/portfolio rm --cached lighthouse-debug.json lighthouse-fcp-test.html lighthouse-launcher.html)"
     ],
     "deny": [],
     "ask": []
