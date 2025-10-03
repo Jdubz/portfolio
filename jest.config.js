@@ -20,6 +20,7 @@ module.exports = {
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   testMatch: ["**/__tests__/**/*.(test|spec).(ts|tsx|js)"],
+  testPathIgnorePatterns: ["/node_modules/", "/functions/"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   collectCoverageFrom: ["src/**/*.{ts,tsx}", "!src/**/*.d.ts", "!src/**/*.stories.tsx"],
 }
