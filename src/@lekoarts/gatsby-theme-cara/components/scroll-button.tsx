@@ -1,26 +1,29 @@
 import * as React from "react"
 import { useParallaxScroll } from "../templates/cara"
 
-interface ScrollButtonProps {
+interface ScrollButtonProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   offset: number
   href: string
-  className?: string
-  children: React.ReactNode
 }
 
-const ScrollButton: React.FC<ScrollButtonProps> = ({ offset, href, className, children }) => {
-  const scrollToSection = useParallaxScroll()
+const ScrollButton = React.forwardRef<HTMLAnchorElement, ScrollButtonProps>(
+  ({ offset, href, className, children, onClick, ...props }, ref) => {
+    const scrollToSection = useParallaxScroll()
 
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()
-    scrollToSection(offset)
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault()
+      scrollToSection(offset)
+      onClick?.(e)
+    }
+
+    return (
+      <a ref={ref} href={href} className={className} onClick={handleClick} {...props}>
+        {children}
+      </a>
+    )
   }
+)
 
-  return (
-    <a href={href} className={className} onClick={handleClick}>
-      {children}
-    </a>
-  )
-}
+ScrollButton.displayName = "ScrollButton"
 
 export default ScrollButton
