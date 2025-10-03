@@ -6,6 +6,7 @@ import Hero from "../components/hero"
 import Projects from "../components/projects"
 import About from "../components/about"
 import Contact from "../components/contact"
+import Footer from "../components/footer"
 import Seo from "@lekoarts/gatsby-theme-cara/src/components/seo"
 
 // Create a context to share the parallax ref
@@ -63,6 +64,7 @@ const Cara = () => {
             <Contact offset={4} factor={1} />
           </Parallax>
         </ParallaxContext.Provider>
+        <Footer />
       </Layout>
     </>
   )
