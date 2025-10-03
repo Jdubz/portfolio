@@ -3,13 +3,7 @@
     {
       "target": "production",
       "public": "public",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**",
-        "**/.DS_Store",
-        "**/Thumbs.db"
-      ],
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "**/.DS_Store", "**/Thumbs.db"],
       "cleanUrls": true,
       "trailingSlash": false,
       "headers": [
@@ -102,20 +96,12 @@
           "destination": "/index.html"
         }
       ],
-      "predeploy": [
-        "npm run build"
-      ]
+      "predeploy": ["npm run build"]
     },
     {
       "target": "staging",
       "public": "public",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**",
-        "**/.DS_Store",
-        "**/Thumbs.db"
-      ],
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "**/.DS_Store", "**/Thumbs.db"],
       "cleanUrls": true,
       "trailingSlash": false,
       "headers": [
@@ -182,12 +168,9 @@
           "destination": "/index.html"
         }
       ],
-      "predeploy": [
-        "npm run build"
-      ]
+      "predeploy": ["npm run build"]
     }
-  ]
-  ,
+  ],
   "emulators": {
     "hosting": {
       "port": 5000,

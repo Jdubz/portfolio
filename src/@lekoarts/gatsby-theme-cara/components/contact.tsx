@@ -9,12 +9,7 @@ import Footer from "./footer"
 import ContactMDX from "../sections/contact.mdx"
 
 const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
-  <section
-    id="contact"
-    className="section has-icons"
-    data-icon-preset="contact"
-    aria-label="Contact"
-  >
+  <section id="contact" className="section has-icons" data-icon-preset="contact" aria-label="Contact">
     <Divider fill="divider" speed={0.2} offset={offset} factor={factor}>
       <div sx={{ position: `absolute`, bottom: 0, width: `full`, transform: `matrix(1, 0, 0, -1, 0, 0)` }}>
         <div
@@ -22,16 +17,16 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
             position: `relative`,
             height: `full`,
             svg: { width: `100%`, height: `40vh` },
-            '::before': {
+            "::before": {
               content: '""',
-              position: 'absolute',
+              position: "absolute",
               inset: 0,
-              backgroundImage: 'url(/jw-logo-mono.svg)',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center 30%',
-              backgroundSize: 'min(440px, 54vw)',
+              backgroundImage: "url(/jw-logo-mono.svg)",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center 30%",
+              backgroundSize: "min(440px, 54vw)",
               opacity: 0.05,
-              pointerEvents: 'none',
+              pointerEvents: "none",
             },
             path: { animation: waveAnimation(`20s`) },
           }}

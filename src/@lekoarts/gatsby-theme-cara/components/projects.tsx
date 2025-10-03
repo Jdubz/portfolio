@@ -8,27 +8,22 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import ProjectsMDX from "../sections/projects.mdx"
 
 const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) => (
-  <section
-    id="projects"
-    className="section has-icons"
-    data-icon-preset="projects"
-    aria-label="Projects"
-  >
+  <section id="projects" className="section has-icons" data-icon-preset="projects" aria-label="Projects">
     <Divider
       bg="linear-gradient(to right, SlateBlue 0%, DeepSkyBlue 100%)"
       sx={{
         clipPath: `polygon(0 15%, 100% 25%, 100% 85%, 0 75%)`,
-        position: 'relative',
-        '::after': {
+        position: "relative",
+        "::after": {
           content: '""',
-          position: 'absolute',
+          position: "absolute",
           inset: 0,
-          backgroundImage: 'url(/jw-logo-mono.svg)',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center 30%',
-          backgroundSize: 'min(520px, 60vw)',
+          backgroundImage: "url(/jw-logo-mono.svg)",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center 30%",
+          backgroundSize: "min(520px, 60vw)",
           opacity: 0.06,
-          pointerEvents: 'none',
+          pointerEvents: "none",
         },
       }}
       speed={-0.2}

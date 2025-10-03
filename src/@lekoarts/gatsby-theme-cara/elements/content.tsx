@@ -1,5 +1,5 @@
-// @ts-nocheck - React 18 type compatibility
 /** @jsx jsx */
+import * as React from "react"
 import { jsx } from "theme-ui"
 import { ParallaxLayer } from "@react-spring/parallax"
 
@@ -12,6 +12,7 @@ type ContentProps = {
 }
 
 const Content = ({ speed, offset, children, className = ``, factor = 1 }: ContentProps) => (
+  // @ts-expect-error - ParallaxLayer sx prop type issue with React 18
   <ParallaxLayer
     sx={{
       padding: [3, 4, 4, 5],
