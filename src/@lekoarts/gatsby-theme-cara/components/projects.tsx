@@ -8,7 +8,12 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import ProjectsMDX from "../sections/projects.mdx"
 
 const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) => (
-  <section id="projects" className="section has-icons" data-icon-preset="projects" aria-label="Projects">
+  <section
+    data-screenshot-section="projects"
+    className="section has-icons"
+    data-icon-preset="projects"
+    aria-label="Projects"
+  >
     <Divider
       bg="linear-gradient(to right, SlateBlue 0%, DeepSkyBlue 100%)"
       sx={{
