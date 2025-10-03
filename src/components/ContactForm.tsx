@@ -20,12 +20,42 @@ export default function ContactForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setStatus("submitting")
+
     try {
-      // Stub: replace with real endpoint or form service
-      await new Promise((r) => globalThis.setTimeout(r, 600))
+      // Determine function URL based on environment
+      const isProduction =
+        typeof window !== "undefined" &&
+        (window.location.hostname === "joshwentworth.com" || window.location.hostname === "www.joshwentworth.com")
+
+      const functionUrl = isProduction
+        ? "https://us-central1-static-sites-257923.cloudfunctions.net/contact-form"
+        : "https://us-central1-static-sites-257923.cloudfunctions.net/contact-form-staging"
+
+      const response = await fetch(functionUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          message: form.message,
+          honeypot: "", // Empty honeypot field for spam detection
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      console.log("Contact form submitted successfully:", result.message)
+
       setStatus("success")
       setForm({ name: "", email: "", message: "" })
-    } catch (_err) {
+    } catch (error) {
+      console.error("Contact form submission failed:", error)
       setStatus("error")
     }
   }
