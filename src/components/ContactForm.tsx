@@ -45,11 +45,12 @@ export default function ContactForm() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`)
+        const errorData = (await response.json().catch(() => ({ message: undefined }))) as { message?: string }
+        throw new Error(errorData.message ?? `HTTP ${response.status}: ${response.statusText}`)
       }
 
-      const result = await response.json()
+      const result = (await response.json()) as { message?: string }
+      // eslint-disable-next-line no-console
       console.log("Contact form submitted successfully:", result.message)
 
       setStatus("success")
