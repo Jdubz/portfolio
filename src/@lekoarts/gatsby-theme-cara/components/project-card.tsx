@@ -28,24 +28,12 @@ const ProjectCard = ({ link, title, children, bg, bgImage, tags }: ProjectCardPr
         backgroundImage: bgImage ? `url(${bgImage})` : bg,
       }}
     >
-      <img
-        src={bgImage}
-        alt=""
-        className="h-full w-full object-cover aspect-[16/9]"
-      />
+      <img src={bgImage} alt="" className="h-full w-full object-cover aspect-[16/9]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity group-hover:opacity-90" />
       <div className="absolute inset-x-4 bottom-4 md:inset-x-6 md:bottom-6">
-        <h3 className="text-white font-extrabold text-xl md:text-2xl tracking-[-0.01em]">
-          {title}
-        </h3>
-        <p className="hidden md:block mt-1 text-white/80 text-sm max-w-[58ch]">
-          {children}
-        </p>
-        {tags && (
-          <div className="mt-2 text-xs text-white/70 tracking-wide">
-            {tags}
-          </div>
-        )}
+        <h3 className="text-white font-extrabold text-xl md:text-2xl tracking-[-0.01em]">{title}</h3>
+        <p className="hidden md:block mt-1 text-white/80 text-sm max-w-[58ch]">{children}</p>
+        {tags && <div className="mt-2 text-xs text-white/70 tracking-wide">{tags}</div>}
       </div>
     </Component>
   )
