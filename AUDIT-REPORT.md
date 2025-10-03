@@ -1,4 +1,5 @@
 # Portfolio Project Audit Report
+
 ## Tailwind CSS + Theme UI Integration
 
 **Date:** 2025-10-01
@@ -17,6 +18,7 @@ The portfolio successfully implements a **lightweight hybrid approach** using Th
 ### Design System Strategy
 
 **Theme UI (Primary)** - Handles:
+
 - Layout primitives (Grid, Box, Flex)
 - Typography system and text variants
 - Color palette and theme tokens
@@ -25,6 +27,7 @@ The portfolio successfully implements a **lightweight hybrid approach** using Th
 - Section dividers and backgrounds
 
 **Tailwind CSS (Supplemental)** - Handles:
+
 - Modern button components (shadcn/ui)
 - Utility-first layout (flex, gap, etc.)
 - Future shadcn components (Dialog, Popover, etc.)
@@ -32,6 +35,7 @@ The portfolio successfully implements a **lightweight hybrid approach** using Th
 ### Configuration Approach
 
 **Minimal Tailwind Config** - Only essential brand tokens:
+
 ```js
 - Brand color: #0EA5E9
 - Font families: Inter (body), Poppins (heading)
@@ -39,6 +43,7 @@ The portfolio successfully implements a **lightweight hybrid approach** using Th
 ```
 
 **Preserves Tailwind Defaults** for:
+
 - Spacing scale (uses standard Tailwind units)
 - Breakpoints (sm/md/lg/xl/2xl)
 - Typography scale
@@ -50,21 +55,21 @@ The portfolio successfully implements a **lightweight hybrid approach** using Th
 
 ### Theme UI Components (8 total)
 
-| Component | Purpose | Complexity | Tailwind Candidate? |
-|-----------|---------|------------|---------------------|
-| `AvatarFrame.tsx` | Portrait with gradient ring | High (pseudo-elements) | ❌ Keep Theme UI |
-| `hero.tsx` | Hero section wrapper | Low | ❌ Keep (semantic) |
-| `about.tsx` | About section wrapper | Low | ❌ Keep (semantic) |
-| `projects.tsx` | Projects section + grid | Medium (grid layout) | ❌ Keep Theme UI |
-| `project-card.tsx` | Interactive project card | High (gradients, hovers) | ❌ Keep Theme UI |
-| `contact.tsx` | Contact section + wave SVG | High (animations) | ❌ Keep Theme UI |
-| `footer.tsx` | Simple footer | Low | ⚠️ Could migrate |
-| `intro.tsx` | Hero content (mixed) | Mixed | ✅ Partially using Tailwind |
+| Component          | Purpose                     | Complexity               | Tailwind Candidate?         |
+| ------------------ | --------------------------- | ------------------------ | --------------------------- |
+| `AvatarFrame.tsx`  | Portrait with gradient ring | High (pseudo-elements)   | ❌ Keep Theme UI            |
+| `hero.tsx`         | Hero section wrapper        | Low                      | ❌ Keep (semantic)          |
+| `about.tsx`        | About section wrapper       | Low                      | ❌ Keep (semantic)          |
+| `projects.tsx`     | Projects section + grid     | Medium (grid layout)     | ❌ Keep Theme UI            |
+| `project-card.tsx` | Interactive project card    | High (gradients, hovers) | ❌ Keep Theme UI            |
+| `contact.tsx`      | Contact section + wave SVG  | High (animations)        | ❌ Keep Theme UI            |
+| `footer.tsx`       | Simple footer               | Low                      | ⚠️ Could migrate            |
+| `intro.tsx`        | Hero content (mixed)        | Mixed                    | ✅ Partially using Tailwind |
 
 ### Tailwind Components (1 total)
 
-| Component | Purpose | Implementation |
-|-----------|---------|----------------|
+| Component    | Purpose          | Implementation           |
+| ------------ | ---------------- | ------------------------ |
 | `Button.tsx` | shadcn/ui button | CVA variants, Radix Slot |
 
 ---
@@ -112,10 +117,12 @@ The portfolio successfully implements a **lightweight hybrid approach** using Th
 ### 🟢 Recommendations (Optional)
 
 **Low Priority Migrations** (if desired later):
+
 - `footer.tsx` could use Tailwind utilities (simple component)
 - Button group layout in `intro.tsx` already uses Tailwind flex
 
 **Keep as Theme UI:**
+
 - All components with gradients, animations, complex hover states
 - Anything using `sx` prop with theme tokens
 - Parallax/SVG animation components
@@ -126,30 +133,30 @@ The portfolio successfully implements a **lightweight hybrid approach** using Th
 
 ### Colors
 
-| Token | Theme UI | Tailwind | Status |
-|-------|----------|----------|--------|
-| Primary | `#0EA5E9` | `brand` = `#0EA5E9` | ✅ Aligned |
-| Text | `#0F172A` | Uses Tailwind default slate | ⚠️ Different (OK) |
-| Border | `rgba(15,23,42,.12)` | Uses Tailwind defaults | ⚠️ Different (OK) |
+| Token   | Theme UI             | Tailwind                    | Status            |
+| ------- | -------------------- | --------------------------- | ----------------- |
+| Primary | `#0EA5E9`            | `brand` = `#0EA5E9`         | ✅ Aligned        |
+| Text    | `#0F172A`            | Uses Tailwind default slate | ⚠️ Different (OK) |
+| Border  | `rgba(15,23,42,.12)` | Uses Tailwind defaults      | ⚠️ Different (OK) |
 
 **Decision:** Keep Theme UI colors for Theme UI components, use Tailwind defaults for Tailwind components. No visual inconsistency.
 
 ### Typography
 
-| Aspect | Theme UI | Tailwind | Status |
-|--------|----------|----------|--------|
-| Body font | Inter | Inter | ✅ Aligned |
-| Heading font | Poppins | Poppins | ✅ Aligned |
-| Scale | `[12, 14, 16...]` | Standard Tailwind | ⚠️ Different (OK) |
+| Aspect       | Theme UI          | Tailwind          | Status            |
+| ------------ | ----------------- | ----------------- | ----------------- |
+| Body font    | Inter             | Inter             | ✅ Aligned        |
+| Heading font | Poppins           | Poppins           | ✅ Aligned        |
+| Scale        | `[12, 14, 16...]` | Standard Tailwind | ⚠️ Different (OK) |
 
 **Decision:** Fonts match, scales differ but don't conflict.
 
 ### Shadows
 
-| Name | Theme UI | Tailwind | Status |
-|------|----------|----------|--------|
+| Name   | Theme UI                      | Tailwind                      | Status     |
+| ------ | ----------------------------- | ----------------------------- | ---------- |
 | `lift` | `0 6px 16px rgba(2,6,23,.10)` | `0 6px 16px rgba(2,6,23,.10)` | ✅ Aligned |
-| `ring` | `0 0 0 4px rgba(...)` | `0 0 0 4px rgba(...)` | ✅ Aligned |
+| `ring` | `0 0 0 4px rgba(...)`         | `0 0 0 4px rgba(...)`         | ✅ Aligned |
 
 **Decision:** Button shadows perfectly aligned.
 
@@ -176,10 +183,7 @@ The portfolio successfully implements a **lightweight hybrid approach** using Th
 ### Content Paths (Purge)
 
 ```js
-content: [
-  "./src/**/*.{js,jsx,ts,tsx,mdx}",
-  "./src/@lekoarts/gatsby-theme-cara/**/*.{js,jsx,ts,tsx,mdx}",
-]
+content: ["./src/**/*.{js,jsx,ts,tsx,mdx}", "./src/@lekoarts/gatsby-theme-cara/**/*.{js,jsx,ts,tsx,mdx}"]
 ```
 
 ✅ Covers all shadowed theme files
@@ -231,6 +235,7 @@ The portfolio implements a **best-of-both-worlds** approach:
 ### Status: ✅ Production Ready
 
 The integration is:
+
 - ✅ Properly configured
 - ✅ Performant (<10KB overhead)
 - ✅ Maintainable (clear patterns)
@@ -260,10 +265,12 @@ The integration is:
 ### Component Files
 
 **Using Tailwind:**
+
 - `src/components/ui/button.tsx`
 - `src/@lekoarts/gatsby-theme-cara/sections/intro.tsx` (mixed)
 
 **Using Theme UI:**
+
 - All other components (8 files)
 
 ### Utility Files

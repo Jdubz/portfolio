@@ -1,4 +1,4 @@
-.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login
+.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshot
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -40,6 +40,10 @@ help:
 	@echo "  make firebase-login   - Login to Firebase"
 	@echo "  make deploy-staging   - Build and deploy to staging"
 	@echo "  make deploy-prod      - Build and deploy to production"
+	@echo ""
+	@echo "Screenshot commands:"
+	@echo "  make screenshot       - Generate screenshots for all components"
+	@echo "  make screenshot COMPONENT=intro - Generate screenshots for specific component"
 	@echo ""
 
 dev:
@@ -125,4 +129,15 @@ deploy-prod:
 		npm run deploy:production; \
 	else \
 		echo "Deployment cancelled."; \
+	fi
+
+# Screenshot Generation
+screenshot:
+	@echo "Generating component screenshots..."
+	@if [ -n "$(COMPONENT)" ]; then \
+		echo "Target component: $(COMPONENT)"; \
+		node scripts/screenshot/capture.js $(COMPONENT); \
+	else \
+		echo "Generating screenshots for all components"; \
+		node scripts/screenshot/capture.js; \
 	fi

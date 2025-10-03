@@ -3,7 +3,19 @@ import { jsx } from "theme-ui"
 import { withPrefix } from "gatsby"
 import { hidden } from "@lekoarts/gatsby-theme-cara/src/styles/utils"
 
-type IconType = "triangle" | "circle" | "arrowUp" | "upDown" | "box" | "hexa" | "cross" | "rocket" | "code-brackets" | "resistor" | "wifi" | "database"
+type IconType =
+  | "triangle"
+  | "circle"
+  | "arrowUp"
+  | "upDown"
+  | "box"
+  | "hexa"
+  | "cross"
+  | "rocket"
+  | "code-brackets"
+  | "resistor"
+  | "wifi"
+  | "database"
 
 type SVGProps = {
   stroke?: boolean

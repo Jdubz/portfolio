@@ -44,9 +44,7 @@ const NotFound = (_props: PageProps) => (
         </Divider>
         <Content speed={0.4} offset={0} factor={1}>
           <Inner>
-            {/* @ts-ignore */}
             <Themed.h1>404 - Page not found</Themed.h1>
-            {/* @ts-ignore */}
             <Themed.p>
               Go back to <Link to="/">homepage</Link>.
             </Themed.p>

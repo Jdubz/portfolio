@@ -3,7 +3,7 @@
   "compilerOptions": {
     "noEmit": true,
     "isolatedModules": false,
-    "strict": false,
+    "strict": true,
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
@@ -13,14 +13,6 @@
       "@lekoarts/gatsby-theme-cara/src/components/layout": ["./src/@lekoarts/gatsby-theme-cara/components/layout.tsx"]
     }
   },
-  "include": [
-    "./src/**/*.ts",
-    "./src/**/*.tsx",
-    "./gatsby-node.ts",
-    "./gatsby-config.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "src/__tests__/**/*"
-  ]
+  "include": ["./src/**/*.ts", "./src/**/*.tsx", "./gatsby-node.ts", "./gatsby-config.ts"],
+  "exclude": ["node_modules", "src/__tests__/**/*"]
 }

@@ -48,7 +48,16 @@
       "Bash(gh api:*)",
       "Bash(git pull:*)",
       "Bash(git stash:*)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm run lint:eslint:report:*)",
+      "Bash(npm run lint:tsc:*)",
+      "Bash(npm run lint:*)",
+      "Bash(chmod:*)",
+      "Bash(/home/jdubz/Development/portfolio/.husky/commit-msg:*)",
+      "Bash(npx prettier:*)",
+      "Bash(gh workflow:*)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []
