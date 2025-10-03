@@ -36,18 +36,20 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
       factor={factor}
     />
     <Content speed={0.4} offset={offset + 0.2} factor={factor} className="content">
-      <Inner>
-        <div
-          sx={{
-            display: `grid`,
-            gridGap: [4, 4, 4, 5],
-            gridTemplateColumns: [`1fr`, `1fr`, `repeat(2, 1fr)`],
-            h2: { gridColumn: `-1/1`, color: `white !important` },
-          }}
-        >
-          <ProjectsMDX />
-        </div>
-      </Inner>
+      <div
+        sx={{
+          width: `full`,
+          maxWidth: `1120px`,
+          mx: `auto`,
+          px: [4, `1.5rem`, `1.5rem`, `2.5rem`],
+          display: `grid`,
+          gridGap: [4, 4, 4, 5],
+          gridTemplateColumns: [`1fr`, `1fr`, `repeat(2, 1fr)`],
+          h2: { gridColumn: `-1/1`, color: `white !important` },
+        }}
+      >
+        <ProjectsMDX />
+      </div>
     </Content>
     <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
       <UpDown>

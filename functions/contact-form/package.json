@@ -4,13 +4,13 @@
   "description": "GCP Cloud Function for handling portfolio contact form submissions",
   "main": "index.js",
   "scripts": {
-    "start": "functions-framework --target=handleContactForm --port=8080",
+    "start": "functions-framework --target=handleContactForm --port=8080 --host=0.0.0.0",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "tsc",
-    "dev": "tsc --watch & nodemon --exec 'functions-framework --target=handleContactForm --port=8080'"
+    "dev": "tsc --watch & nodemon --exec 'functions-framework --target=handleContactForm --port=8080 --host=0.0.0.0'"
   },
   "dependencies": {
     "@google-cloud/functions-framework": "^3.4.6",
