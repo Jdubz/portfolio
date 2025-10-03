@@ -5,7 +5,7 @@
 A professional portfolio showcasing multidisciplinary engineering projects that blend software development, electronics design, and digital fabrication.
 
 **Josh Wentworth**
-*Multidisciplinary Engineer*
+_Multidisciplinary Engineer_
 
 - **Email**: hello@joshwentworth.com
 - **LinkedIn**: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)
@@ -52,6 +52,37 @@ npm run build
 
 # Serve production build locally
 npm run serve
+
+# Run tests
+npm test
+
+# Lint code
+npm run lint
+```
+
+### Performance Analysis
+
+Use Chrome DevTools Lighthouse for performance analysis:
+
+1. Build and serve the production site:
+
+   ```bash
+   npm run build
+   npm run serve
+   ```
+
+2. Open http://localhost:9000 in Chrome
+
+3. Open DevTools (F12) → Lighthouse tab → Generate report
+
+Alternatively, use the CLI tools:
+
+```bash
+# Run Lighthouse analysis (requires build to be running)
+npm run lighthouse
+
+# View previous Lighthouse results
+npm run lighthouse:view
 ```
 
 ## 📁 Project Structure
@@ -78,6 +109,7 @@ npm run serve
 ## 🔧 Engineering Focus
 
 This portfolio specifically highlights expertise in:
+
 - **Software Development** - Full-stack applications and embedded systems
 - **Electronics Design** - PCB design, embedded firmware, and hardware integration
 - **Digital Fabrication** - CNC machining, 3D modeling, and custom tooling
@@ -85,4 +117,4 @@ This portfolio specifically highlights expertise in:
 
 ---
 
-*Built with precision engineering and attention to detail.*
+_Built with precision engineering and attention to detail._

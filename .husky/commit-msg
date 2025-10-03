@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+
+# Get the commit message
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Conventional commit pattern
+PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?(!)?: .+"
+
+# Check if commit message follows conventional commits
+if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+  echo ""
+  echo "⚠️  WARNING: Commit message doesn't follow Conventional Commits format"
+  echo ""
+  echo "Expected format:"
+  echo "  <type>(<scope>): <subject>"
+  echo ""
+  echo "Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+  echo ""
+  echo "Examples:"
+  echo "  feat: add new search feature"
+  echo "  fix(auth): resolve login timeout issue"
+  echo "  feat!: breaking change to API"
+  echo ""
+  echo "Your message: $COMMIT_MSG"
+  echo ""
+  echo "⚠️  Continuing anyway (non-blocking)..."
+  echo ""
+fi
+
+# Always exit 0 to allow commit to proceed (non-blocking)
+exit 0

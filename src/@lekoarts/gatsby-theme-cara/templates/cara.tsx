@@ -15,9 +15,12 @@ export const ParallaxContext = React.createContext<React.RefObject<IParallax> | 
 export const useParallaxScroll = () => {
   const parallaxRef = React.useContext(ParallaxContext)
 
-  const scrollToSection = React.useCallback((offset: number) => {
-    parallaxRef?.current?.scrollTo(offset)
-  }, [parallaxRef])
+  const scrollToSection = React.useCallback(
+    (offset: number) => {
+      parallaxRef?.current?.scrollTo(offset)
+    },
+    [parallaxRef]
+  )
 
   return scrollToSection
 }

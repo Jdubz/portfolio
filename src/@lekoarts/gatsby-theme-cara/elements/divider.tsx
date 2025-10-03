@@ -1,5 +1,5 @@
-// @ts-nocheck - React 18 type compatibility
 /** @jsx jsx */
+import * as React from "react"
 import { jsx } from "theme-ui"
 import { ParallaxLayer } from "@react-spring/parallax"
 
@@ -24,6 +24,7 @@ const Divider = ({
   children = null,
   className = ``,
 }: DividerProps) => (
+  // @ts-expect-error - ParallaxLayer sx prop type issue with React 18
   <ParallaxLayer
     sx={{
       position: `absolute`,
