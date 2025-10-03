@@ -29,10 +29,11 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
               inset: 0,
               backgroundImage: "url(/jw-logo-mono.svg)",
               backgroundRepeat: "no-repeat",
-              backgroundPosition: "center 30%",
+              backgroundPosition: "center 150%",
               backgroundSize: "min(440px, 54vw)",
               opacity: 0.05,
               pointerEvents: "none",
+              transform: "scaleY(-1)",
             },
             path: { animation: waveAnimation(`20s`) },
           }}
