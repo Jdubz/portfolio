@@ -43,10 +43,19 @@ export class EmailService {
 
   constructor(secretManager: SecretManagerService, logger?: SimpleLogger) {
     this.secretManager = secretManager
+    
+    const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
+    
     this.logger = logger || {
-      info: (message: string, data?: any) => console.log(`[INFO] ${message}`, data || ""),
-      warning: (message: string, data?: any) => console.warn(`[WARN] ${message}`, data || ""),
-      error: (message: string, data?: any) => console.error(`[ERROR] ${message}`, data || ""),
+      info: (message: string, data?: any) => {
+        if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
+      },
+      warning: (message: string, data?: any) => {
+        if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
+      },
+      error: (message: string, data?: any) => {
+        if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
+      },
     }
   }
 
