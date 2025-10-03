@@ -52,6 +52,37 @@ npm run build
 
 # Serve production build locally
 npm run serve
+
+# Run tests
+npm test
+
+# Lint code
+npm run lint
+```
+
+### Performance Analysis
+
+Use Chrome DevTools Lighthouse for performance analysis:
+
+1. Build and serve the production site:
+
+   ```bash
+   npm run build
+   npm run serve
+   ```
+
+2. Open http://localhost:9000 in Chrome
+
+3. Open DevTools (F12) → Lighthouse tab → Generate report
+
+Alternatively, use the CLI tools:
+
+```bash
+# Run Lighthouse analysis (requires build to be running)
+npm run lighthouse
+
+# View previous Lighthouse results
+npm run lighthouse:view
 ```
 
 ## 📁 Project Structure
