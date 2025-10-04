@@ -137,11 +137,6 @@ jobs:
       - name: Create screenshot gallery for PR
         id: gallery
         run: |
-          # Load image URLs
-          if [ -f image_urls.env ]; then
-            source image_urls.env
-          fi
-
           echo "## 📸 Component Screenshots" > comment.md
           echo "" >> comment.md
           echo "Screenshots generated at breakpoints: Mobile (480px) and Desktop (1280px)" >> comment.md
@@ -152,8 +147,8 @@ jobs:
             mobile_key="${component}-mobile.png"
             desktop_key="${component}-desktop.png"
 
-            mobile_url=$(grep "^$mobile_key=" image_urls.env 2>/dev/null | cut -d= -f2-)
-            desktop_url=$(grep "^$desktop_key=" image_urls.env 2>/dev/null | cut -d= -f2-)
+            mobile_url=$(grep "^${mobile_key}=" image_urls.env 2>/dev/null | cut -d= -f2-)
+            desktop_url=$(grep "^${desktop_key}=" image_urls.env 2>/dev/null | cut -d= -f2-)
 
             if [ -n "$mobile_url" ] || [ -n "$desktop_url" ]; then
               echo "### ${component^}" >> comment.md
