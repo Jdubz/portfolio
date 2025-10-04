@@ -1,0 +1,144 @@
+<!-- Josh Wentworth Brand Icon Sprite -->
+<svg xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Blueprint icon - replaces triangle -->
+    <symbol id="triangle" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 14h30a6 6 0 0 1 6 6v24H14z"/>
+        <path d="M14 30h36"/>
+        <path d="M26 22h12v8H26z"/>
+      </g>
+    </symbol>
+
+    <!-- Chip icon - replaces circle -->
+    <symbol id="circle" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="16" y="16" width="32" height="32" rx="4"/>
+        <rect x="24" y="24" width="16" height="16" rx="2"/>
+        <path d="M16 12v6 M24 12v6 M32 12v6 M40 12v6 M48 12v6"/>
+        <path d="M16 52v-6 M24 52v-6 M32 52v-6 M40 52v-6 M48 52v-6"/>
+        <path d="M12 16h6 M12 24h6 M12 32h6 M12 40h6 M12 48h6"/>
+        <path d="M52 16h-6 M52 24h-6 M52 32h-6 M52 40h-6 M52 48h-6"/>
+      </g>
+    </symbol>
+
+    <!-- Terminal icon - replaces arrowUp -->
+    <symbol id="arrowUp" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="12" width="48" height="40" rx="4"/>
+        <path d="M18 26l6 4-6 4"/>
+        <path d="M32 34h8"/>
+        <circle cx="14" cy="18" r="1.5"/>
+        <circle cx="20" cy="18" r="1.5"/>
+        <circle cx="26" cy="18" r="1.5"/>
+      </g>
+    </symbol>
+
+    <!-- Oscilloscope icon - replaces upDown -->
+    <symbol id="upDown" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="12" width="48" height="40" rx="4"/>
+        <path d="M16 32c4 0 4-8 8-8s4 8 8 8 4-8 8-8 4 8 8 8"/>
+        <path d="M12 16h4"/>
+        <path d="M12 20h4"/>
+        <path d="M12 24h4"/>
+        <path d="M48 16h4"/>
+        <path d="M48 20h4"/>
+        <path d="M48 24h4"/>
+      </g>
+    </symbol>
+
+    <!-- Container icon - replaces box -->
+    <symbol id="box" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20l20-8 20 8v32l-20 8-20-8V20z"/>
+        <path d="M12 20l20 8 20-8"/>
+        <path d="M32 28v24"/>
+        <path d="M22 16l10-4 10 4"/>
+      </g>
+    </symbol>
+
+    <!-- Gear icon - replaces hexa -->
+    <symbol id="hexa" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="6"/>
+        <path d="M32 18v-6 M32 52v-6 M46 32h6 M12 32h6"/>
+        <path d="M43 21l4-4 M17 47l4-4 M21 21l-4-4 M47 47l-4-4"/>
+        <circle cx="32" cy="32" r="14"/>
+      </g>
+    </symbol>
+
+    <!-- API icon - replaces cross -->
+    <symbol id="cross" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="16" cy="16" r="6"/>
+        <circle cx="48" cy="16" r="6"/>
+        <circle cx="32" cy="32" r="6"/>
+        <circle cx="16" cy="48" r="6"/>
+        <circle cx="48" cy="48" r="6"/>
+        <path d="M22 16h20"/>
+        <path d="M26 26l6 6"/>
+        <path d="M38 26l-6 6"/>
+        <path d="M22 48h20"/>
+        <path d="M16 22v20"/>
+        <path d="M48 22v20"/>
+      </g>
+    </symbol>
+
+    <!-- Additional brand icons for variety -->
+    <symbol id="rocket" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M32 8c8 0 16 8 16 16 0 8-4 12-8 16l-8 8-8-8c-4-4-8-8-8-16 0-8 8-16 16-16z"/>
+        <circle cx="32" cy="20" r="4"/>
+        <path d="M20 40l-8 8v8l8-8"/>
+        <path d="M44 40l8 8v8l-8-8"/>
+        <path d="M28 48l8 8"/>
+      </g>
+    </symbol>
+
+    <symbol id="code-brackets" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 16l-8 8 8 8"/>
+        <path d="M44 16l8 8-8 8"/>
+        <path d="M36 12l-8 16"/>
+        <path d="M20 40l-8 8 8 8"/>
+        <path d="M44 40l8 8-8 8"/>
+        <path d="M36 36l-8 16"/>
+      </g>
+    </symbol>
+
+    <symbol id="resistor" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 32h8"/>
+        <path d="M48 32h8"/>
+        <rect x="16" y="24" width="32" height="16" rx="2"/>
+        <path d="M20 20v8"/>
+        <path d="M24 20v8"/>
+        <path d="M28 20v8"/>
+        <path d="M32 20v8"/>
+        <path d="M36 20v8"/>
+        <path d="M40 20v8"/>
+        <path d="M44 20v8"/>
+      </g>
+    </symbol>
+
+    <symbol id="wifi" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 32c13-13 35-13 48 0"/>
+        <path d="M16 40c9-9 23-9 32 0"/>
+        <path d="M24 48c5-5 11-5 16 0"/>
+        <circle cx="32" cy="52" r="2"/>
+      </g>
+    </symbol>
+
+    <symbol id="database" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="32" cy="16" rx="20" ry="6"/>
+        <ellipse cx="32" cy="32" rx="20" ry="6"/>
+        <ellipse cx="32" cy="48" rx="20" ry="6"/>
+        <path d="M12 16v32c0 3 9 6 20 6s20-3 20-6V16"/>
+        <path d="M12 32c0 3 9 6 20 6s20-3 20-6"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>

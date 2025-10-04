@@ -28,7 +28,10 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+            functions/package-lock.json
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
@@ -51,7 +54,7 @@ jobs:
         run: |
           echo "## 📸 Component Screenshots" > comment.md
           echo "" >> comment.md
-          echo "Screenshots generated at breakpoints: 480px, 768px, 1024px, 1280px, 1440px" >> comment.md
+          echo "Screenshots generated at breakpoints: Mobile (480px) and Desktop (1280px)" >> comment.md
           echo "" >> comment.md
 
           # Group by component
@@ -62,19 +65,34 @@ jobs:
               echo "<details>" >> comment.md
               echo "<summary>View ${component} screenshots</summary>" >> comment.md
               echo "" >> comment.md
-
-              for file in screenshots/images/${component}-*.png; do
-                if [ -f "$file" ]; then
-                  filename=$(basename "$file")
-                  breakpoint=$(echo "$filename" | sed "s/${component}-\(.*\)\.png/\1/")
-                  echo "#### ${breakpoint}" >> comment.md
-                  # Base64 encode the image and embed it
-                  base64_img=$(base64 -w 0 "$file")
-                  echo "![${component} at ${breakpoint}](data:image/png;base64,${base64_img})" >> comment.md
-                  echo "" >> comment.md
-                fi
-              done
-
+              echo "<table>" >> comment.md
+              echo "<tr>" >> comment.md
+              
+              # Mobile screenshot
+              mobile_file="screenshots/images/${component}-mobile.png"
+              desktop_file="screenshots/images/${component}-desktop.png"
+              
+              if [ -f "$mobile_file" ]; then
+                echo "<td>" >> comment.md
+                echo "**Mobile (480px)**" >> comment.md
+                echo "" >> comment.md
+                base64_mobile=$(base64 -w 0 "$mobile_file")
+                echo "![${component} mobile](data:image/png;base64,${base64_mobile})" >> comment.md
+                echo "</td>" >> comment.md
+              fi
+              
+              # Desktop screenshot  
+              if [ -f "$desktop_file" ]; then
+                echo "<td>" >> comment.md
+                echo "**Desktop (1280px)**" >> comment.md
+                echo "" >> comment.md
+                base64_desktop=$(base64 -w 0 "$desktop_file")
+                echo "![${component} desktop](data:image/png;base64,${base64_desktop})" >> comment.md
+                echo "</td>" >> comment.md
+              fi
+              
+              echo "</tr>" >> comment.md
+              echo "</table>" >> comment.md
               echo "</details>" >> comment.md
               echo "" >> comment.md
             fi
