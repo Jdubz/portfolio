@@ -73,50 +73,31 @@ jobs:
           echo "" >> comment.md
           echo "Screenshots generated at breakpoints: Mobile (480px) and Desktop (1280px)" >> comment.md
           echo "" >> comment.md
+          echo "📦 **[Download all screenshots](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**" >> comment.md
+          echo "" >> comment.md
 
-          # Group by component
+          # List screenshots with file sizes
           for component in intro projects about contact; do
             if ls screenshots/images/${component}-*.png 1> /dev/null 2>&1; then
               echo "### ${component^}" >> comment.md
               echo "" >> comment.md
-              echo "<details>" >> comment.md
-              echo "<summary>View ${component} screenshots</summary>" >> comment.md
-              echo "" >> comment.md
-              echo "<table>" >> comment.md
-              echo "<tr>" >> comment.md
-              
-              # Mobile screenshot
-              mobile_file="screenshots/images/${component}-mobile.png"
-              desktop_file="screenshots/images/${component}-desktop.png"
-              
-              if [ -f "$mobile_file" ]; then
-                echo "<td>" >> comment.md
-                echo "**Mobile (480px)**" >> comment.md
-                echo "" >> comment.md
-                base64_mobile=$(base64 -w 0 "$mobile_file")
-                echo "![${component} mobile](data:image/png;base64,${base64_mobile})" >> comment.md
-                echo "</td>" >> comment.md
-              fi
-              
-              # Desktop screenshot  
-              if [ -f "$desktop_file" ]; then
-                echo "<td>" >> comment.md
-                echo "**Desktop (1280px)**" >> comment.md
-                echo "" >> comment.md
-                base64_desktop=$(base64 -w 0 "$desktop_file")
-                echo "![${component} desktop](data:image/png;base64,${base64_desktop})" >> comment.md
-                echo "</td>" >> comment.md
-              fi
-              
-              echo "</tr>" >> comment.md
-              echo "</table>" >> comment.md
-              echo "</details>" >> comment.md
+
+              for file in screenshots/images/${component}-*.png; do
+                if [ -f "$file" ]; then
+                  filename=$(basename "$file")
+                  size=$(ls -lh "$file" | awk '{print $5}')
+                  breakpoint=$(echo "$filename" | sed "s/${component}-\(.*\)\.png/\1/")
+                  echo "- **${breakpoint^}**: \`$size\`" >> comment.md
+                fi
+              done
               echo "" >> comment.md
             fi
           done
 
           echo "---" >> comment.md
           echo "*Generated from commit ${{ github.event.pull_request.head.sha }}*" >> comment.md
+          echo "" >> comment.md
+          echo "> **Note**: Due to size constraints, screenshots are available as downloadable artifacts. Click the link above to view and download them." >> comment.md
 
       - name: Find existing screenshot comment
         uses: peter-evans/find-comment@v3
