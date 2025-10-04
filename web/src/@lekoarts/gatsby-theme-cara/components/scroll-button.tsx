@@ -1,4 +1,5 @@
-/** @jsxImportSource theme-ui */
+/** @jsx jsx */
+import { jsx } from "theme-ui"
 import * as React from "react"
 import { useParallaxScroll } from "../templates/cara"
 
