@@ -23,9 +23,6 @@ jobs:
   test:
     name: Test Function
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: functions
 
     steps:
       - name: Checkout repository
@@ -43,21 +40,21 @@ jobs:
 
       - name: Run linting
         run: npm run lint
+        working-directory: functions
 
       - name: Run tests
         run: npm test
+        working-directory: functions
 
       - name: Build TypeScript
         run: npm run build
+        working-directory: functions
 
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
-    defaults:
-      run:
-        working-directory: functions
     environment:
       name: staging
       url: https://us-central1-static-sites-257923.cloudfunctions.net/contact-form
@@ -78,6 +75,7 @@ jobs:
 
       - name: Build function
         run: npm run build
+        working-directory: functions
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -95,7 +93,7 @@ jobs:
             --gen2 \
             --runtime=nodejs20 \
             --region=${{ env.FUNCTION_REGION }} \
-            --source=. \
+            --source=functions \
             --entry-point=handleContactForm \
             --trigger-http \
             --allow-unauthenticated \
@@ -125,9 +123,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    defaults:
-      run:
-        working-directory: functions
     environment:
       name: production
       url: https://us-central1-static-sites-257923.cloudfunctions.net/contact-form
@@ -148,6 +143,7 @@ jobs:
 
       - name: Build function
         run: npm run build
+        working-directory: functions
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -165,7 +161,7 @@ jobs:
             --gen2 \
             --runtime=nodejs20 \
             --region=${{ env.FUNCTION_REGION }} \
-            --source=. \
+            --source=functions \
             --entry-point=handleContactForm \
             --trigger-http \
             --allow-unauthenticated \
