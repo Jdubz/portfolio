@@ -12,13 +12,10 @@ const { execSync } = require('child_process');
  */
 
 // Configuration
-const BREAKPOINTS = ['480', '768', '1024', '1280', '1440'];
+const BREAKPOINTS = ['480', '1280'];
 const BREAKPOINT_LABELS = {
   '480': 'mobile',
-  '768': 'tablet', 
-  '1024': 'desktop-small',
-  '1280': 'desktop',
-  '1440': 'desktop-large'
+  '1280': 'desktop'
 };
 
 const OUTPUT_DIR = path.join(__dirname, '..', '..', 'screenshots', 'images');
