@@ -12,7 +12,7 @@ type ProjectCardProps = {
   tags?: string
 }
 
-const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags }: ProjectCardProps) => {
+const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags: _tags }: ProjectCardProps) => {
   return (
     <div
       aria-label={`Project: ${title}`}

@@ -14,7 +14,7 @@ const Seo = ({
 }) => {
   const site = useSiteMetadata()
 
-  const { siteTitle, siteTitleAlt, siteHeadline, siteUrl, siteDescription, siteImage, siteLanguage, author } = site
+  const { siteTitle, siteTitleAlt, siteHeadline: _siteHeadline, siteUrl, siteDescription, siteImage, siteLanguage, author } = site
 
   const seo = {
     title: title ?? siteTitleAlt,
