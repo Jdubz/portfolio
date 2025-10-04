@@ -2,7 +2,7 @@ import ContactForm from "../../../components/ContactForm"
 
 export default () => (
   <>
-    <div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-10">
+    <div className="mx-auto max-w-[1120px]">
       <h2 sx={{ variant: 'text.sectionTitle' }}>Get in touch</h2>
 
       <div className="grid grid-cols-1 md:[grid-template-columns:1fr_280px] gap-6 md:gap-10 items-start">
@@ -39,9 +39,10 @@ export default () => (
         </div>
       </div>
 
-      <div className="mt-8 mb-24">
+      <div sx={{ mt: 4, mb: [10, 12] }}>
         <ContactForm />
       </div>
     </div>
+
   </>
 )
