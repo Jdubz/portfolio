@@ -68,7 +68,9 @@ jobs:
                   filename=$(basename "$file")
                   breakpoint=$(echo "$filename" | sed "s/${component}-\(.*\)\.png/\1/")
                   echo "#### ${breakpoint}" >> comment.md
-                  echo "![${component} at ${breakpoint}](https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/screenshots/images/${filename})" >> comment.md
+                  # Base64 encode the image and embed it
+                  base64_img=$(base64 -w 0 "$file")
+                  echo "![${component} at ${breakpoint}](data:image/png;base64,${base64_img})" >> comment.md
                   echo "" >> comment.md
                 fi
               done

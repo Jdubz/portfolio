@@ -75,8 +75,8 @@ const customTheme = merge(originalTheme, {
   // Consistent spacing scale
   space: [0, 4, 8, 12, 16, 20, 24, 28, 32, 40, 48, 56, 64, 80, 96, 128],
 
-  // Modern responsive breakpoints
-  breakpoints: ["480px", "768px", "1024px", "1280px", "1440px"],
+  // Modern responsive breakpoints - capped at 1280px, larger screens just get more margin
+  breakpoints: ["480px", "768px", "1024px", "1280px"],
 
   // Enhanced shadows for premium feel
   shadows: {

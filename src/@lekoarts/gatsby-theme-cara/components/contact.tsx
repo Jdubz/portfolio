@@ -4,8 +4,8 @@ import Divider from "@lekoarts/gatsby-theme-cara/src/elements/divider"
 import Inner from "@lekoarts/gatsby-theme-cara/src/elements/inner"
 import Content from "@lekoarts/gatsby-theme-cara/src/elements/content"
 import Svg from "./svg"
-import { UpDown, UpDownWide, waveAnimation } from "@lekoarts/gatsby-theme-cara/src/styles/animations"
 import Footer from "./footer"
+import { UpDown, UpDownWide, waveAnimation } from "@lekoarts/gatsby-theme-cara/src/styles/animations"
 import ContactMDX from "../sections/contact.mdx"
 
 const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
@@ -17,12 +17,14 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
     aria-label="Contact"
   >
     <Divider fill="divider" speed={0.2} offset={offset} factor={factor}>
-      <div sx={{ position: `absolute`, bottom: 0, width: `full`, transform: `matrix(1, 0, 0, -1, 0, 0)` }}>
+      <div
+        sx={{ position: `absolute`, bottom: 0, width: `full`, height: `100%`, transform: `matrix(1, 0, 0, -1, 0, 0)` }}
+      >
         <div
           sx={{
             position: `relative`,
-            height: `full`,
-            svg: { width: `100%`, height: `40vh` },
+            height: `100%`,
+            svg: { width: `100%`, height: `100%` },
             "::before": {
               content: '""',
               position: "absolute",
@@ -51,7 +53,7 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
         </div>
       </div>
     </Divider>
-    <Content speed={0.4} offset={offset} factor={factor} className="content">
+    <Content speed={0.4} offset={offset} factor={factor} className="content mb-16">
       <Inner>
         <ContactMDX />
       </Inner>

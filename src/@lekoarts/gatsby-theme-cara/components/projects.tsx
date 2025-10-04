@@ -37,15 +37,17 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
     />
     <Content speed={0.4} offset={offset + 0.2} factor={factor} className="content">
       <Inner>
-        <div
-          sx={{
-            display: `grid`,
-            gridGap: [4, 4, 4, 5],
-            gridTemplateColumns: [`1fr`, `1fr`, `repeat(2, 1fr)`],
-            h2: { gridColumn: `-1/1`, color: `white !important` },
-          }}
-        >
-          <ProjectsMDX />
+        <div className="mx-auto max-w-[1120px]">
+          <div
+            sx={{
+              display: `grid`,
+              gridGap: [4, 4, 4, 5],
+              gridTemplateColumns: [`1fr`, `1fr`, `repeat(2, 1fr)`],
+              h2: { gridColumn: `-1/1`, color: `white !important` },
+            }}
+          >
+            <ProjectsMDX />
+          </div>
         </div>
       </Inner>
     </Content>

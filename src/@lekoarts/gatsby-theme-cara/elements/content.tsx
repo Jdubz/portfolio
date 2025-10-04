@@ -20,7 +20,8 @@ const Content = ({ speed, offset, children, className = ``, factor = 1 }: Conten
     // @ts-expect-error - ParallaxLayer sx prop type issue with React 18
     <ParallaxLayer
       sx={{
-        padding: [3, 4, 4, 5],
+        px: [4, `1.5rem`, `1.5rem`, `2.5rem`],
+        py: 0,
         display: `flex`,
         flexDirection: `column`,
         alignItems: `center`,
@@ -34,6 +35,7 @@ const Content = ({ speed, offset, children, className = ``, factor = 1 }: Conten
     >
       <div
         sx={{
+          width: `100%`,
           position: `relative`,
           "::before": {
             content: '""',
