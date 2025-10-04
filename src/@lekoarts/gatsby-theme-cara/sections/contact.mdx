@@ -3,44 +3,72 @@ import { GradientGlow } from "../../../components/GradientGlow"
 
 export default () => (
   <>
-    <div className="mx-auto max-w-[1120px]">
+    <div sx={{ mx: 'auto', maxWidth: '1120px' }}>
       <h2 sx={{ variant: 'text.sectionTitle' }}>Get in touch</h2>
 
-      <div className="grid grid-cols-1 md:[grid-template-columns:1fr_280px] gap-6 md:gap-10 items-start">
+      <div sx={{
+        display: 'grid',
+        gridTemplateColumns: ['1fr', null, '1fr 280px'],
+        gap: [3, null, 5],
+        alignItems: 'start',
+      }}>
         <div>
-          <p className="mb-6 text-[16px] md:text-[18px] leading-[1.55]">
+          <p sx={{
+            mb: 3,
+            fontSize: [2, 3],
+            lineHeight: 1.55,
+          }}>
             Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
           </p>
 
-          <div className="space-y-3">
-            <p className="mb-2">
-              <strong className="font-semibold text-slate-900">Email:</strong>{' '}
-              <a href="mailto:hello@joshwentworth.com" className="text-brand hover:underline">
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <p sx={{ mb: 1 }}>
+              <strong sx={{ fontWeight: 600, color: 'text' }}>Email:</strong>{' '}
+              <a href="mailto:hello@joshwentworth.com" sx={{
+                color: 'primary',
+                '&:hover': { textDecoration: 'underline' }
+              }}>
                 hello@joshwentworth.com
               </a>
             </p>
-            <p className="mb-2">
-              <strong className="font-semibold text-slate-900">LinkedIn:</strong>{' '}
-              <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
+            <p sx={{ mb: 1 }}>
+              <strong sx={{ fontWeight: 600, color: 'text' }}>LinkedIn:</strong>{' '}
+              <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{
+                color: 'primary',
+                '&:hover': { textDecoration: 'underline' }
+              }}>
                 linkedin.com/in/joshwentworth
               </a>
             </p>
-            <p className="mb-0">
-              <strong className="font-semibold text-slate-900">GitHub:</strong>{' '}
-              <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
+            <p sx={{ mb: 0 }}>
+              <strong sx={{ fontWeight: 600, color: 'text' }}>GitHub:</strong>{' '}
+              <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{
+                color: 'primary',
+                '&:hover': { textDecoration: 'underline' }
+              }}>
                 github.com/joshwentworth
               </a>
             </p>
           </div>
         </div>
 
-        <div className="relative w-[200px] md:w-[280px] aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-[0_24px_60px_rgba(2,6,23,.10)] mx-auto md:mx-0">
+        <div sx={{
+          position: 'relative',
+          width: ['200px', '280px'],
+          aspectRatio: '1',
+          borderRadius: 'lg',
+          overflow: 'hidden',
+          border: '1px solid',
+          borderColor: 'border',
+          boxShadow: 'softLg',
+          mx: ['auto', null, 0],
+        }}>
           <GradientGlow />
-          <img src="/avatar2.jpg" alt="Josh Wentworth" className="w-full h-full object-cover" />
+          <img src="/avatar2.jpg" alt="Josh Wentworth" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
       </div>
 
-      <div sx={{ mt: 4, mb: 100 }}>
+      <div sx={{ mt: 4, mb: [10, 12] }}>
         <ContactForm />
       </div>
     </div>
