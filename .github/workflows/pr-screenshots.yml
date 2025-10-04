@@ -66,57 +66,50 @@ jobs:
           path: screenshots/images/*.png
           retention-days: 30
 
-      - name: Upload images to GitHub and extract URLs
-        id: upload
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          # Create associative array to store URLs
-          declare -A image_urls
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
-          # Upload each image via temporary comment and extract the hosted URL
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Upload screenshots to Google Cloud Storage
+        id: upload
+        run: |
+          # Extract project ID from service account
+          PROJECT_ID=$(echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | jq -r '.project_id')
+          BUCKET="${PROJECT_ID}.appspot.com"
+
+          # Create path for this PR's screenshots
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+          GCS_PATH="pr-screenshots/pr-${PR_NUMBER}/${COMMIT_SHA:0:7}"
+
+          echo "Uploading screenshots to gs://${BUCKET}/${GCS_PATH}/"
+
+          # Upload each screenshot and collect public URLs
+          > image_urls.env
+
           for file in screenshots/images/*.png; do
             if [ -f "$file" ]; then
               filename=$(basename "$file")
-              echo "Uploading $filename to GitHub..."
+              echo "Uploading $filename..."
 
-              # Create temporary comment with image
-              # GitHub automatically uploads the image and embeds the URL
-              comment_body="![temp-upload]($file)"
+              # Upload to GCS with public-read ACL
+              gsutil -m cp "$file" "gs://${BUCKET}/${GCS_PATH}/${filename}"
+              gsutil acl ch -u AllUsers:R "gs://${BUCKET}/${GCS_PATH}/${filename}"
 
-              # Post comment and capture the response
-              comment_response=$(gh api \
-                --method POST \
-                -H "Accept: application/vnd.github+json" \
-                "/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
-                -f "body=$comment_body" 2>&1)
+              # Generate public URL
+              PUBLIC_URL="https://storage.googleapis.com/${BUCKET}/${GCS_PATH}/${filename}"
+              echo "✓ Uploaded: $PUBLIC_URL"
 
-              # Extract comment ID and body from response
-              comment_id=$(echo "$comment_response" | jq -r '.id')
-              comment_body_returned=$(echo "$comment_response" | jq -r '.body')
-
-              # Extract the GitHub-hosted image URL
-              image_url=$(echo "$comment_body_returned" | grep -oP 'https://[^\)]+\.png' | head -1)
-
-              if [ -n "$image_url" ]; then
-                echo "✓ Uploaded $filename -> $image_url"
-                image_urls["$filename"]="$image_url"
-
-                # Delete the temporary comment
-                gh api \
-                  --method DELETE \
-                  -H "Accept: application/vnd.github+json" \
-                  "/repos/${{ github.repository }}/issues/comments/$comment_id" || true
-              else
-                echo "✗ Failed to extract URL for $filename"
-              fi
+              # Save to env file
+              echo "${filename}=${PUBLIC_URL}" >> image_urls.env
             fi
           done
 
-          # Save URLs to file for next step
-          for key in "${!image_urls[@]}"; do
-            echo "$key=${image_urls[$key]}" >> image_urls.env
-          done
+          echo "✅ All screenshots uploaded to GCS"
 
       - name: Create screenshot gallery for PR
         id: gallery
