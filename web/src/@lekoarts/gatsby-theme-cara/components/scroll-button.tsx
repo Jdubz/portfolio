@@ -1,10 +1,10 @@
-/** @jsx jsx */
-import { jsx, SxProp } from "theme-ui"
+/** @jsxImportSource theme-ui */
 import * as React from "react"
 import { useParallaxScroll } from "../templates/cara"
 
-interface ScrollButtonProps extends SxProp {
+interface ScrollButtonProps {
   offset: number
+  sx?: any
   children: React.ReactNode
 }
 

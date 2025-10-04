@@ -1,3 +1,5 @@
+import "./src/styles/tailwind.css"
+
 // Log app version to console
 export const onClientEntry = () => {
   const { version, name } = require("./package.json")
