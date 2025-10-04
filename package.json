@@ -2,7 +2,7 @@
   "private": true,
   "name": "josh-wentworth-portfolio",
   "description": "Josh Wentworth - Multidisciplinary engineer portfolio featuring software, hardware, and fabrication projects",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "author": "Josh Wentworth",
   "license": "0BSD",
   "scripts": {
