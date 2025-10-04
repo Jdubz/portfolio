@@ -32,22 +32,25 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+            functions/package-lock.json
 
       - name: Cache Jest
         uses: actions/cache@v4
         with:
           path: .jest-cache
-          key: jest-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          key: jest-${{ runner.os }}-${{ hashFiles('package-lock.json', 'web/package-lock.json') }}-${{ github.sha }}
           restore-keys: |
-            jest-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            jest-${{ runner.os }}-${{ hashFiles('package-lock.json', 'web/package-lock.json') }}-
             jest-${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
 
-      - name: Run tests
-        run: npm test
+      - name: Run web tests
+        run: npm run test:web
         continue-on-error: false
 
       - name: Summary

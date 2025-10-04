@@ -1,4 +1,4 @@
-# Josh Wentworth - Portfolio
+# Josh Wentworth - Portfolio (Monorepo)
 
 > **Software × Hardware × Fabrication**
 
@@ -11,12 +11,106 @@ _Multidisciplinary Engineer_
 - **LinkedIn**: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)
 - **GitHub**: [github.com/joshwentworth](https://github.com/joshwentworth)
 
+## 📁 Monorepo Structure
+
+This project is organized as a Firebase monorepo with the following structure:
+
+```
+portfolio/
+├── web/                    # Gatsby static site
+│   ├── src/               # React components and pages
+│   ├── static/            # Static assets
+│   ├── gatsby-*.ts        # Gatsby configuration
+│   └── package.json       # Web dependencies
+│
+├── functions/             # Cloud Functions
+│   ├── src/              # Function source code
+│   │   ├── index.ts      # Main entry point
+│   │   └── services/     # Business logic
+│   ├── package.json      # Function dependencies
+│   └── tsconfig.json     # TypeScript config
+│
+├── firebase.json         # Firebase configuration
+├── .firebaserc          # Firebase project targets
+└── package.json         # Root workspace config
+```
+
 ## 🔧 Built With
 
+### Web Stack
 - **Gatsby** - React-based static site generator
 - **Theme UI** - Constraint-based styling system
 - **React Spring** - Smooth parallax animations
 - **Custom Brand System** - Implementing Josh Wentworth's professional brand guidelines
+
+### Functions Stack
+- **Cloud Functions Gen 2** - Serverless compute
+- **TypeScript** - Type-safe function development
+- **Nodemailer** - Email service integration
+- **Joi** - Request validation
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js >= 20.0.0
+- npm >= 10.0.0
+
+### Installation
+
+```bash
+# Install all dependencies (root + workspaces)
+npm install
+
+# Or install individually
+npm install              # Root dependencies
+cd web && npm install   # Web dependencies
+cd functions && npm install  # Functions dependencies
+```
+
+### Development
+
+```bash
+# Web development (port 8000)
+npm run dev
+# or
+make dev
+
+# Functions development (port 8080)
+npm run dev:functions
+# or
+make dev-functions
+
+# Run Firebase emulators (hosting + functions)
+npm run firebase:serve
+# or
+make firebase-serve
+```
+
+### Building
+
+```bash
+# Build web
+npm run build:web
+
+# Build functions
+npm run build:functions
+
+# Build all
+npm run build
+```
+
+### Testing
+
+```bash
+# Test web
+npm run test:web
+
+# Test functions
+npm run test:functions
+
+# Test all
+npm test
+```
 
 ## 🎨 Brand Implementation
 
@@ -27,94 +121,85 @@ This portfolio implements Josh's complete brand identity:
 - **Engineering Icons**: Custom technical iconography representing software, hardware, and fabrication
 - **Professional Content**: Focused on multidisciplinary engineering expertise
 
-## 🚀 Features
+## 📦 Deployment
 
-- **Responsive Design** - Optimized for all devices
-- **Parallax Animations** - Smooth scrolling effects with engineering-themed background icons
-- **Dark/Light Mode** - Adaptive theme switching
-- **Professional Sections**:
-  - Hero introduction with tagline
-  - About section highlighting technical expertise
-  - Project showcase with engineering focus
-  - Contact information and professional links
-
-## 💻 Development
+### Staging
 
 ```bash
-# Install dependencies
-npm install
+# Deploy web to staging
+npm run deploy:staging
+# or
+make deploy-staging
 
-# Start development server
-npm run develop
-
-# Build for production
-npm run build
-
-# Serve production build locally
-npm run serve
-
-# Run tests
-npm test
-
-# Lint code
-npm run lint
+# Deploy functions to staging
+npm run deploy:functions:staging
 ```
 
-### Performance Analysis
-
-Use Chrome DevTools Lighthouse for performance analysis:
-
-1. Build and serve the production site:
-
-   ```bash
-   npm run build
-   npm run serve
-   ```
-
-2. Open http://localhost:9000 in Chrome
-
-3. Open DevTools (F12) → Lighthouse tab → Generate report
-
-Alternatively, use the CLI tools:
+### Production
 
 ```bash
-# Run Lighthouse analysis (requires build to be running)
-npm run lighthouse
+# Deploy web to production
+npm run deploy:production
+# or
+make deploy-prod
 
-# View previous Lighthouse results
-npm run lighthouse:view
+# Deploy functions to production
+npm run deploy:functions:production
 ```
 
-## 📁 Project Structure
+## 🛠️ Available Commands
 
+### Root Commands
+```bash
+npm run dev                      # Start web dev server
+npm run dev:functions            # Start functions dev server
+npm run build                    # Build web
+npm run build:web               # Build web
+npm run build:functions         # Build functions
+npm test                        # Run all tests
+npm run lint                    # Lint all workspaces
+npm run clean                   # Clean web cache
 ```
-├── src/
-│   ├── @lekoarts/gatsby-theme-cara/    # Shadowed theme components
-│   │   ├── components/                 # Custom components with brand icons
-│   │   └── sections/                   # Content sections (intro, about, projects, contact)
-│   ├── gatsby-plugin-theme-ui/         # Brand theme configuration
-│   └── pages/                          # Additional pages
-├── static/                             # Static assets (icons, logos, favicon)
-├── brand/                              # Brand assets and guidelines
-└── gatsby-config.ts                    # Site configuration
+
+### Makefile Commands
+```bash
+make help                # Show all available commands
+make dev                 # Start web dev server
+make dev-functions       # Start functions dev server
+make build               # Build web
+make test                # Run web tests
+make test-functions      # Run functions tests
+make clean               # Clean web cache
+make firebase-serve      # Run Firebase emulators
+make deploy-staging      # Deploy to staging
+make deploy-prod         # Deploy to production
 ```
 
-## 🎯 Content Sections
+## 📝 Documentation
 
-- **Intro**: Professional introduction with multidisciplinary tagline
-- **About**: Technical expertise and engineering approach
-- **Projects**: Showcase of software, hardware, and fabrication projects
-- **Contact**: Professional contact information and links
+- [Deployment Guide](./DEPLOYMENT.md)
+- [Contact Function Setup](./CONTACT_FUNCTION_SETUP.md)
+- [Versioning Strategy](./VERSIONING.md)
+- [Known Issues](./KNOWN_ISSUES.md)
+- [Changelog](./CHANGELOG.md)
+- [Audit Report](./AUDIT-REPORT.md)
 
-## 🔧 Engineering Focus
+## 🔒 Environment Variables
 
-This portfolio specifically highlights expertise in:
+### Web (.env in web/)
+```
+GATSBY_CONTACT_FUNCTION_URL=https://...cloudfunctions.net/contact-form
+```
 
-- **Software Development** - Full-stack applications and embedded systems
-- **Electronics Design** - PCB design, embedded firmware, and hardware integration
-- **Digital Fabrication** - CNC machining, 3D modeling, and custom tooling
-- **System Integration** - End-to-end problem solving across disciplines
+### Functions (.env in functions/)
+See [functions/.env.example](./functions/.env.example)
 
----
+## 📜 License
 
-_Built with precision engineering and attention to detail._
+0BSD - See [LICENSE](./LICENSE)
+
+## 🤝 Contact
+
+For questions or collaborations:
+- Email: hello@joshwentworth.com
+- LinkedIn: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)
