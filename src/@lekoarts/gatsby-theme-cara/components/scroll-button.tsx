@@ -5,22 +5,23 @@ import { useParallaxScroll } from "../templates/cara"
 
 interface ScrollButtonProps extends SxProp {
   offset: number
-  href: string
   children: React.ReactNode
 }
 
-const ScrollButton: React.FC<ScrollButtonProps> = ({ offset, href, sx, children }) => {
+const ScrollButton: React.FC<ScrollButtonProps> = ({ offset, sx, children }) => {
   const scrollToSection = useParallaxScroll()
 
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()
-    scrollToSection(offset)
-  }
-
   return (
-    <a href={href} sx={sx} onClick={handleClick}>
+    <button
+      type="button"
+      sx={{
+        variant: "buttons.primary",
+        ...sx,
+      }}
+      onClick={() => scrollToSection(offset)}
+    >
       {children}
-    </a>
+    </button>
   )
 }
 
