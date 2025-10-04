@@ -160,12 +160,11 @@ const customTheme = merge(originalTheme, {
       lineHeight: [1.18, 1.12, 1.08],
     },
     heroKicker: {
-      fontWeight: 600,
+      fontWeight: 700,
       color: "text",
-      letterSpacing: "0.05em",
-      fontSize: [0, 1], // 12px, 14px
-      textTransform: "uppercase",
-      fontFamily: "body",
+      letterSpacing: ".01em",
+      fontSize: [2, 3], // 16px, 18px
+      fontFamily: "heading",
     },
     heroSub: {
       color: "muted",

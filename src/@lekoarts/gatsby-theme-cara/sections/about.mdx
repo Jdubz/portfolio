@@ -2,74 +2,38 @@ import { GradientGlow } from "../../../components/GradientGlow"
 
 export default () => (
   <>
-    <div sx={{ mx: 'auto', maxWidth: 1120 }}>
-      <h2 sx={{ variant: 'text.sectionTitle', color: 'white' }}>About</h2>
+    <div className="mx-auto max-w-[1120px]">
+      <h2 className="text-white text-[28px] md:text-[32px] lg:text-[36px] font-bold mb-8 md:mb-10">About</h2>
 
-      <div sx={{
-        display: 'grid',
-        gridTemplateColumns: ['1fr', null, '1fr 280px'],
-        gap: [4, null, 5],
-        alignItems: 'start',
-      }}>
+      <div className="grid grid-cols-1 md:[grid-template-columns:1fr_280px] gap-8 md:gap-10 items-start">
         <div>
-          <blockquote sx={{
-            fontSize: [3, 4],
-            fontStyle: 'italic',
-            borderLeft: '4px solid',
-            borderColor: '#cbd5e0',
-            pl: 3,
-            mb: 4,
-            color: '#e2e8f0',
-            lineHeight: 1.6,
-          }}>
-            An idea machine for turning ideas into machines.
-          </blockquote>
+          <div>
+            <blockquote className="text-[18px] md:text-[20px] italic border-l-4 border-slate-300 pl-5 mb-8 text-slate-200 leading-[1.6]">
+              An idea machine for turning ideas into machines.
+            </blockquote>
 
-          <p sx={{
-            mb: 3,
-            color: 'rgba(226, 232, 240, 0.9)',
-            fontSize: [2, 3],
-            lineHeight: 1.55,
-          }}>
-            I'm a multidisciplinary engineer who thrives at the intersection of software development, electronics design, and digital fabrication. My approach combines technical precision with creative problem-solving to build end-to-end solutions.
-          </p>
+            <p className="mb-6 text-slate-200/90 text-[16px] md:text-[18px] leading-[1.55]">
+              I'm a multidisciplinary engineer who thrives at the intersection of software development, electronics design, and digital fabrication. My approach combines technical precision with creative problem-solving to build end-to-end solutions.
+            </p>
 
-          <p sx={{
-            mb: 3,
-            color: 'rgba(226, 232, 240, 0.9)',
-            fontSize: [2, 3],
-            lineHeight: 1.55,
-          }}>
-            Whether it's developing embedded systems, crafting interactive installations, or engineering custom lighting solutions, I believe in the power of bringing together different domains to create something greater than the sum of its parts.
-          </p>
+            <p className="mb-6 text-slate-200/90 text-[16px] md:text-[18px] leading-[1.55]">
+              Whether it's developing embedded systems, crafting interactive installations, or engineering custom lighting solutions, I believe in the power of bringing together different domains to create something greater than the sum of its parts.
+            </p>
 
-          <p sx={{
-            mb: 4,
-            color: 'rgba(226, 232, 240, 0.9)',
-            fontSize: [2, 3],
-            lineHeight: 1.55,
-          }}>
-            My work spans from writing clean, efficient code to designing PCBs and fabricating custom enclosures. I'm passionate about projects that challenge conventional boundaries and require inventive thinking.
-          </p>
+            <p className="mb-8 text-slate-200/90 text-[16px] md:text-[18px] leading-[1.55]">
+              My work spans from writing clean, efficient code to designing PCBs and fabricating custom enclosures. I'm passionate about projects that challenge conventional boundaries and require inventive thinking.
+            </p>
+          </div>
 
-          <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" sx={{ variant: 'buttons.primary', mt: 4 }}>
+          <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" className="btn btn-primary mt-8">
             Download resume
           </a>
         </div>
 
-        <div sx={{ mx: ['auto', null, 0], mt: [4, null, 0] }}>
-          <div sx={{
-            position: 'relative',
-            width: ['200px', '280px'],
-            height: ['200px', '280px'],
-            borderRadius: 'lg',
-            overflow: 'hidden',
-            border: '1px solid',
-            borderColor: 'rgba(226, 232, 240, 0.2)',
-            boxShadow: '0 24px 60px rgba(2, 6, 23, 0.2)',
-          }}>
+        <div className="mx-auto md:mx-0" sx={{ mt: [8, 0] }}>
+          <div className="relative w-[200px] md:w-[280px] aspect-square rounded-2xl overflow-hidden border border-slate-200/20 shadow-[0_24px_60px_rgba(2,6,23,.20)]">
             <GradientGlow />
-            <img src="/synth.jpg" alt="Custom synthesizer hardware project" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="/synth.jpg" alt="Custom synthesizer hardware project" className="w-full h-full object-cover" />
           </div>
         </div>
       </div>

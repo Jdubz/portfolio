@@ -12,17 +12,9 @@ type ContentProps = {
 }
 
 const Content = ({ speed, offset, children, className = ``, factor = 1 }: ContentProps) => {
-  const { footer, otherChildren } = React.useMemo(() => {
-    const childrenArray = React.Children.toArray(children)
-    const footerChild = childrenArray.find(
-      (child): child is React.ReactElement =>
-        React.isValidElement(child) && (child.type as { name?: string })?.name === "Footer"
-    )
-    const otherChildrenArray = childrenArray.filter(
-      (child) => !(React.isValidElement(child) && (child.type as { name?: string })?.name === "Footer")
-    )
-    return { footer: footerChild, otherChildren: otherChildrenArray }
-  }, [children])
+  const childrenArray = React.Children.toArray(children)
+  const footer = childrenArray.find((child: any) => child?.type?.name === "Footer")
+  const otherChildren = childrenArray.filter((child: any) => child?.type?.name !== "Footer")
 
   return (
     // @ts-expect-error - ParallaxLayer sx prop type issue with React 18

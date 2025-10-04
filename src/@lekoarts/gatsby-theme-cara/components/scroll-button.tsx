@@ -1,15 +1,14 @@
-/** @jsx jsx */
-import { jsx, SxProp } from "theme-ui"
 import * as React from "react"
 import { useParallaxScroll } from "../templates/cara"
 
-interface ScrollButtonProps extends SxProp {
+interface ScrollButtonProps {
   offset: number
   href: string
+  className?: string
   children: React.ReactNode
 }
 
-const ScrollButton: React.FC<ScrollButtonProps> = ({ offset, href, sx, children }) => {
+const ScrollButton: React.FC<ScrollButtonProps> = ({ offset, href, className, children }) => {
   const scrollToSection = useParallaxScroll()
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -18,7 +17,7 @@ const ScrollButton: React.FC<ScrollButtonProps> = ({ offset, href, sx, children 
   }
 
   return (
-    <a href={href} sx={sx} onClick={handleClick}>
+    <a href={href} className={className} onClick={handleClick}>
       {children}
     </a>
   )
