@@ -113,3 +113,8 @@ deploy-staging:
 deploy-prod:
 	@echo "Deploying to production..."
 	npm run deploy:production
+
+# Screenshots
+screenshot:
+	@echo "Generating component screenshots..."
+	cd web && npx playwright test --config=playwright.config.ts
