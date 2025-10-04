@@ -22,14 +22,10 @@ export default function ContactForm() {
     setStatus("submitting")
 
     try {
-      // Determine function URL based on environment
-      const isProduction =
-        typeof window !== "undefined" &&
-        (window.location.hostname === "joshwentworth.com" || window.location.hostname === "www.joshwentworth.com")
-
-      const functionUrl = isProduction
-        ? "https://us-central1-static-sites-257923.cloudfunctions.net/contact-form"
-        : "https://us-central1-static-sites-257923.cloudfunctions.net/contact-form-staging"
+      // Use environment variable for function URL, fallback to staging
+      const functionUrl =
+        process.env.GATSBY_CONTACT_FUNCTION_URL ??
+        "https://us-central1-static-sites-257923.cloudfunctions.net/contact-form-staging"
 
       const response = await fetch(functionUrl, {
         method: "POST",
