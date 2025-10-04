@@ -55,14 +55,14 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
             "--icon-motion": "0",
           },
           "*": {
-            animationDuration: "0.01ms !important" as any,
-            animationIterationCount: "1 !important" as any,
-            transitionDuration: "0.01ms !important" as any,
-            scrollBehavior: "auto" as any,
+            animationDuration: "0.01ms !important",
+            animationIterationCount: "1 !important",
+            transitionDuration: "0.01ms !important",
+            scrollBehavior: "auto",
           },
           // Step 6: Disable parallax transforms for reduced motion
           ".iconCanvas > *": {
-            transform: "none !important" as any,
+            transform: "none !important",
           },
         },
         // Mobile responsive icon settings
