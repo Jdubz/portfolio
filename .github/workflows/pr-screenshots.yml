@@ -42,6 +42,23 @@ jobs:
       - name: Generate screenshots
         run: make screenshot
 
+      - name: Optimize screenshots
+        run: |
+          # Install pngquant for PNG compression
+          sudo apt-get update && sudo apt-get install -y pngquant
+
+          # Compress all screenshots (reduce to ~50-70% quality, significant size reduction)
+          for file in screenshots/images/*.png; do
+            if [ -f "$file" ]; then
+              echo "Compressing $file..."
+              pngquant --quality=50-70 --force --ext .png "$file"
+            fi
+          done
+
+          echo "✅ Screenshot optimization complete"
+          echo "📊 Compressed file sizes:"
+          ls -lh screenshots/images/*.png
+
       - name: Upload screenshots as artifact
         uses: actions/upload-artifact@v4
         with:
