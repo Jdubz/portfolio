@@ -79,12 +79,36 @@ jobs:
         run: |
           # Extract project ID from service account
           PROJECT_ID=$(echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | jq -r '.project_id')
-          BUCKET="${PROJECT_ID}.appspot.com"
+          BUCKET="${PROJECT_ID}-screenshots"
 
           # Create path for this PR's screenshots
           PR_NUMBER="${{ github.event.pull_request.number }}"
           COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
           GCS_PATH="pr-screenshots/pr-${PR_NUMBER}/${COMMIT_SHA:0:7}"
+
+          echo "Checking/creating bucket gs://${BUCKET}..."
+
+          # Check if bucket exists, create if not
+          if ! gsutil ls -b "gs://${BUCKET}" 2>/dev/null; then
+            echo "Creating bucket ${BUCKET}..."
+            gsutil mb -p "${PROJECT_ID}" -l us-central1 "gs://${BUCKET}"
+
+            # Make bucket publicly readable
+            gsutil iam ch allUsers:objectViewer "gs://${BUCKET}"
+
+            # Set CORS for browser access
+            cat > cors.json << 'EOF'
+          [
+            {
+              "origin": ["*"],
+              "method": ["GET"],
+              "responseHeader": ["Content-Type"],
+              "maxAgeSeconds": 3600
+            }
+          ]
+          EOF
+            gsutil cors set cors.json "gs://${BUCKET}"
+          fi
 
           echo "Uploading screenshots to gs://${BUCKET}/${GCS_PATH}/"
 
@@ -96,9 +120,8 @@ jobs:
               filename=$(basename "$file")
               echo "Uploading $filename..."
 
-              # Upload to GCS with public-read ACL
+              # Upload to GCS
               gsutil -m cp "$file" "gs://${BUCKET}/${GCS_PATH}/${filename}"
-              gsutil acl ch -u AllUsers:R "gs://${BUCKET}/${GCS_PATH}/${filename}"
 
               # Generate public URL
               PUBLIC_URL="https://storage.googleapis.com/${BUCKET}/${GCS_PATH}/${filename}"
