@@ -1,16 +1,17 @@
-name: Deploy to Production
+name: Deploy to Firebase
 
 on:
   push:
     branches:
       - main
+      - staging
 
 permissions:
   contents: read
 
 jobs:
   deploy:
-    name: Build and Deploy (production)
+    name: Build and Deploy (${{ github.ref_name }})
     runs-on: ubuntu-latest
 
     steps:
@@ -72,16 +73,24 @@ jobs:
       - name: Clean Gatsby cache
         run: npm run clean
 
+      - name: Set build environment (staging)
+        if: github.ref_name == 'staging'
+        run: |
+          echo "GATSBY_BUILD_ENVIRONMENT=staging" >> $GITHUB_ENV
+          echo "GATSBY_BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
+          echo "GATSBY_BUILD_COMMIT=${GITHUB_SHA}" >> $GITHUB_ENV
+
       - name: Build
         run: npm run build
         env:
-          NODE_OPTIONS: "--max-old-space-size=8192"
+          NODE_OPTIONS: ${{ github.ref_name == 'main' && '--max-old-space-size=8192' || '--max-old-space-size=6144' }}
+          GATSBY_EXPERIMENTAL_FAST_DEV: ${{ github.ref_name == 'staging' && 'true' || '' }}
 
-      - name: Deploy to Firebase Hosting (production)
+      - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           projectId: static-sites-257923
           channelId: live
-          target: production
+          target: ${{ github.ref_name }}
