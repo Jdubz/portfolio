@@ -85,6 +85,7 @@ jobs:
         env:
           NODE_OPTIONS: ${{ github.ref_name == 'main' && '--max-old-space-size=8192' || '--max-old-space-size=6144' }}
           GATSBY_EXPERIMENTAL_FAST_DEV: ${{ github.ref_name == 'staging' && 'true' || '' }}
+          GATSBY_CONTACT_FUNCTION_URL: ${{ github.ref_name == 'main' && 'https://us-central1-static-sites-257923.cloudfunctions.net/contact-form' || 'https://us-central1-static-sites-257923.cloudfunctions.net/contact-form-staging' }}
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -93,4 +94,4 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           projectId: static-sites-257923
           channelId: live
-          target: ${{ github.ref_name }}
+          target: ${{ github.ref_name == 'main' && 'production' || 'staging' }}

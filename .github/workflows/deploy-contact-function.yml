@@ -97,7 +97,7 @@ jobs:
             --region=${{ env.FUNCTION_REGION }} \
             --source=. \
             --entry-point=handleContactForm \
-            --trigger=http \
+            --trigger-http \
             --allow-unauthenticated \
             --memory=256Mi \
             --timeout=60s \
@@ -167,7 +167,7 @@ jobs:
             --region=${{ env.FUNCTION_REGION }} \
             --source=. \
             --entry-point=handleContactForm \
-            --trigger=http \
+            --trigger-http \
             --allow-unauthenticated \
             --memory=512Mi \
             --timeout=60s \

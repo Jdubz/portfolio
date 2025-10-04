@@ -1,3 +1,5 @@
+import { GradientGlow } from "../../../components/GradientGlow"
+
 export default () => (
   <>
     <div className="mx-auto max-w-[1120px]">
@@ -30,7 +32,7 @@ export default () => (
 
         <div className="mx-auto md:mx-0" sx={{ mt: [8, 0] }}>
           <div className="relative w-[200px] md:w-[280px] aspect-square rounded-2xl overflow-hidden border border-slate-200/20 shadow-[0_24px_60px_rgba(2,6,23,.20)]">
-            <div className="absolute -inset-0.5 rounded-2xl bg-[linear-gradient(120deg,#7C3AED,#06B6D4)] blur-md opacity-20 -z-10" />
+            <GradientGlow />
             <img src="/synth.jpg" alt="Custom synthesizer hardware project" className="w-full h-full object-cover" />
           </div>
         </div>
