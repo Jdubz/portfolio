@@ -37,7 +37,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
     />
     <Content speed={0.4} offset={offset + 0.2} factor={factor} className="content">
       <Inner>
-        <div sx={{ mx: 'auto', maxWidth: 1120 }}>
+        <div sx={{ mx: "auto", maxWidth: 1120 }}>
           <div
             sx={{
               display: `grid`,
