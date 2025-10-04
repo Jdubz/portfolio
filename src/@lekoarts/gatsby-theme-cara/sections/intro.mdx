@@ -4,47 +4,72 @@ import { GradientGlow } from "../../../components/GradientGlow"
 export default () => (
   <>
     {/* Mask background icons behind text to prevent collision */}
-    <div className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(220px_140px_at_22%_44%,transparent_0,black_60%)]" />
+    <div sx={{
+      pointerEvents: 'none',
+      position: 'absolute',
+      inset: 0,
+      maskImage: 'radial-gradient(220px 140px at 22% 44%, transparent 0, black 60%)',
+      WebkitMaskImage: 'radial-gradient(220px 140px at 22% 44%, transparent 0, black 60%)',
+    }} />
 
-    <div className="mx-auto max-w-[1120px] grid grid-cols-1 md:[grid-template-columns:minmax(44ch,50ch)_248px] items-start gap-6 md:gap-10">
-      {/* LEFT: text */}
-      <div className="space-y-3">
-        <p className="font-semibold tracking-wide text-[12px] sm:text-[13px] uppercase text-slate-900">
+    <div sx={{
+      mx: 'auto',
+      maxWidth: 1120,
+      display: 'grid',
+      gridTemplateColumns: ['1fr', null, 'minmax(44ch, 50ch) 248px'],
+      alignItems: 'start',
+      gap: [3, null, 5],
+    }}>
+      <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <p sx={{ variant: 'text.heroKicker' }}>
           Software × Hardware × Fabrication
         </p>
 
-        <h1 className="font-extrabold tracking-[-0.015em] text-[clamp(30px,6vw,36px)] md:text-[clamp(36px,5vw,48px)] lg:text-[clamp(42px,4vw,56px)] leading-[1.18] md:leading-[1.12] lg:leading-[1.08]">
+        <h1 sx={{ variant: 'text.heroTitle' }}>
           Josh Wentworth
         </h1>
 
-        <p className="text-slate-600 text-[16px] md:text-[18px] leading-[1.55] max-w-[46rem]">
+        <p sx={{ variant: 'text.heroSub' }}>
           Full-stack engineer with a workshop habit. I ship web apps (React/Angular + TypeScript, Node.js/Python) and the systems behind them (Kubernetes on GCP), and I also prototype electronics, lighting, and fabricated parts when software needs a body.
         </p>
 
-        {/* CTAs */}
-        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap pt-2">
-          <ScrollButton href="#projects" className="btn btn-primary" offset={1.65}>
+        <div sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          flexWrap: ['wrap', null, 'nowrap'],
+          pt: 1,
+        }}>
+          <ScrollButton href="#projects" sx={{ variant: 'buttons.primary' }} offset={1.65}>
             See what I've built
           </ScrollButton>
-          <ScrollButton href="#contact" className="btn btn-secondary" offset={4}>
+          <ScrollButton href="#contact" sx={{ variant: 'buttons.secondary' }} offset={4}>
             Say hello
           </ScrollButton>
         </div>
 
-        <p className="text-slate-600 text-[15.5px] leading-[1.55] max-w-[46rem]">
+        <p sx={{ variant: 'text.heroProof' }}>
           Most recently: cloud architecture and partner integrations for robotic grocery fulfillment at Fulfil Solutions.
         </p>
 
-        <p className="text-slate-600 text-[14.5px] opacity-95">
+        <p sx={{ variant: 'text.micro' }}>
           React • Angular • TypeScript • Node.js • Python • Kubernetes • GCP • MySQL/Redis • Grafana/Loki/Elastic
         </p>
       </div>
 
-      {/* RIGHT: avatar */}
-      <div className="grid place-items-start pt-1">
-        <div className="relative w-[176px] md:w-[208px] lg:w-[232px] aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-[0_24px_60px_rgba(2,6,23,.10)]">
+      <div sx={{ pt: 1 }}>
+        <div sx={{
+          position: 'relative',
+          width: ['176px', '208px', '232px'],
+          height: ['176px', '208px', '232px'],
+          borderRadius: 'lg',
+          overflow: 'hidden',
+          border: '1px solid',
+          borderColor: 'border',
+          boxShadow: 'softLg',
+        }}>
           <GradientGlow />
-          <img src="/avatar.jpg" alt="Josh Wentworth headshot" className="w-full h-full object-cover" />
+          <img src="/avatar.jpg" alt="Josh Wentworth headshot" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
       </div>
     </div>
