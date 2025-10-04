@@ -40,8 +40,8 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
           display: `none`,
         },
         "::selection": {
-          backgroundColor: get(t, `colors.primary`),
-          color: get(t, `colors.background`),
+          backgroundColor: get(t, `colors.primary`) as string,
+          color: get(t, `colors.background`) as string,
         },
         // Focus ring styles for accessibility
         ":where(a, button, [role='button'], .card):focus-visible": {

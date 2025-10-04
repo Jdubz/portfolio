@@ -8,13 +8,13 @@ import { SecretManagerService } from "./services/secret-manager.service"
 const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
 
 const logger = {
-  info: (message: string, data?: any) => {
+  info: (message: string, data?: unknown) => {
     if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
   },
-  warning: (message: string, data?: any) => {
+  warning: (message: string, data?: unknown) => {
     if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
   },
-  error: (message: string, data?: any) => {
+  error: (message: string, data?: unknown) => {
     if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
   },
 }

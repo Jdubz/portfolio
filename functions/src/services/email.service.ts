@@ -2,9 +2,9 @@ import nodemailer from "nodemailer"
 import { SecretManagerService } from "./secret-manager.service"
 
 type SimpleLogger = {
-  info: (message: string, data?: any) => void
-  warning: (message: string, data?: any) => void
-  error: (message: string, data?: any) => void
+  info: (message: string, data?: unknown) => void
+  warning: (message: string, data?: unknown) => void
+  error: (message: string, data?: unknown) => void
 }
 
 export interface ContactFormNotificationData {
@@ -47,13 +47,13 @@ export class EmailService {
     const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
 
     this.logger = logger || {
-      info: (message: string, data?: any) => {
+      info: (message: string, data?: unknown) => {
         if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
       },
-      warning: (message: string, data?: any) => {
+      warning: (message: string, data?: unknown) => {
         if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
       },
-      error: (message: string, data?: any) => {
+      error: (message: string, data?: unknown) => {
         if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
       },
     }
