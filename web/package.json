@@ -27,6 +27,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "screenshot": "node ../scripts/screenshot/capture.js",
     "lighthouse": "lhci autorun",
     "lighthouse:view": "lhci open",
     "lighthouse:local": "npm run build && npm run serve & npx wait-on http://localhost:9000 && lighthouse http://localhost:9000 --view --preset=desktop --output=html --output-path=./lighthouse-report.html; kill $!",

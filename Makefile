@@ -117,7 +117,4 @@ deploy-prod:
 # Screenshots
 screenshot:
 	@echo "Generating component screenshots..."
-	@echo "Creating placeholder screenshots directory..."
-	@mkdir -p screenshots/images
-	@echo "📸 Screenshot generation not yet implemented for monorepo structure" > screenshots/images/placeholder.txt
-	@echo "✅ Screenshot task completed (placeholder)"
+	cd web && npm run screenshot

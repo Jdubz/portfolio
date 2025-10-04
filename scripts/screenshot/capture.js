@@ -62,7 +62,7 @@ async function cleanupOldScreenshots() {
 }
 
 async function discoverComponents() {
-  const componentDir = path.join(__dirname, '..', '..', 'src', '@lekoarts', 'gatsby-theme-cara');
+  const componentDir = path.join(__dirname, '..', '..', 'web', 'src', '@lekoarts', 'gatsby-theme-cara');
   const components = new Set();
   
   // Check sections directory
@@ -99,7 +99,7 @@ function runGatsbyClean() {
   try {
     execSync('npx gatsby clean', { 
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..', '..')
+      cwd: path.join(__dirname, '..', '..', 'web')
     });
     console.log('✓ Gatsby clean completed');
   } catch (error) {
@@ -112,7 +112,7 @@ function runGatsbyBuild() {
   try {
     execSync('npx gatsby build', { 
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..', '..')
+      cwd: path.join(__dirname, '..', '..', 'web')
     });
     console.log('✓ Gatsby build completed');
   } catch (error) {
@@ -134,7 +134,7 @@ function startGatsbyServe() {
     
     const gatsbyProcess = spawn(command, ['gatsby', 'serve', '-p', PORT.toString()], {
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..', '..'),
+      cwd: path.join(__dirname, '..', '..', 'web'),
       detached: false,
       shell: isWindows  // Enable shell on Windows
     });

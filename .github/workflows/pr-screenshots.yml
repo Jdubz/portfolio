@@ -42,6 +42,18 @@ jobs:
       - name: Generate screenshots
         run: make screenshot
 
+      - name: Commit and push screenshots
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add screenshots/images/*.png || true
+          if ! git diff --staged --quiet; then
+            git commit -m "📸 Update component screenshots"
+            git push
+          else
+            echo "No new screenshots to commit"
+          fi
+
       - name: Upload screenshots as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -71,9 +83,7 @@ jobs:
                   filename=$(basename "$file")
                   breakpoint=$(echo "$filename" | sed "s/${component}-\(.*\)\.png/\1/")
                   echo "#### ${breakpoint}" >> comment.md
-                  # Base64 encode the image and embed it
-                  base64_img=$(base64 -w 0 "$file")
-                  echo "![${component} at ${breakpoint}](data:image/png;base64,${base64_img})" >> comment.md
+                  echo "![${component} at ${breakpoint}](https://github.com/${{ github.repository }}/raw/${{ github.event.pull_request.head.sha }}/screenshots/images/${filename})" >> comment.md
                   echo "" >> comment.md
                 fi
               done
