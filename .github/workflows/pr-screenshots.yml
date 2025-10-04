@@ -66,21 +66,80 @@ jobs:
           path: screenshots/images/*.png
           retention-days: 30
 
+      - name: Upload images to GitHub and extract URLs
+        id: upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Create associative array to store URLs
+          declare -A image_urls
+
+          # Upload each image via temporary comment and extract the hosted URL
+          for file in screenshots/images/*.png; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              echo "Uploading $filename to GitHub..."
+
+              # Create temporary comment with image
+              # GitHub automatically uploads the image and embeds the URL
+              comment_body="![temp-upload]($file)"
+
+              # Post comment and capture the response
+              comment_response=$(gh api \
+                --method POST \
+                -H "Accept: application/vnd.github+json" \
+                "/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+                -f "body=$comment_body" 2>&1)
+
+              # Extract comment ID and body from response
+              comment_id=$(echo "$comment_response" | jq -r '.id')
+              comment_body_returned=$(echo "$comment_response" | jq -r '.body')
+
+              # Extract the GitHub-hosted image URL
+              image_url=$(echo "$comment_body_returned" | grep -oP 'https://[^\)]+\.png' | head -1)
+
+              if [ -n "$image_url" ]; then
+                echo "✓ Uploaded $filename -> $image_url"
+                image_urls["$filename"]="$image_url"
+
+                # Delete the temporary comment
+                gh api \
+                  --method DELETE \
+                  -H "Accept: application/vnd.github+json" \
+                  "/repos/${{ github.repository }}/issues/comments/$comment_id" || true
+              else
+                echo "✗ Failed to extract URL for $filename"
+              fi
+            fi
+          done
+
+          # Save URLs to file for next step
+          for key in "${!image_urls[@]}"; do
+            echo "$key=${image_urls[$key]}" >> image_urls.env
+          done
+
       - name: Create screenshot gallery for PR
         id: gallery
         run: |
+          # Load image URLs
+          if [ -f image_urls.env ]; then
+            source image_urls.env
+          fi
+
           echo "## 📸 Component Screenshots" > comment.md
           echo "" >> comment.md
           echo "Screenshots generated at breakpoints: Mobile (480px) and Desktop (1280px)" >> comment.md
           echo "" >> comment.md
 
-          # Since GitHub's API doesn't support direct file uploads in comments,
-          # we'll use optimized base64 with better compression
+          # Build gallery using hosted URLs
           for component in intro projects about contact; do
-            mobile_file="screenshots/images/${component}-mobile.png"
-            desktop_file="screenshots/images/${component}-desktop.png"
+            mobile_key="${component}-mobile.png"
+            desktop_key="${component}-desktop.png"
 
-            if [ -f "$mobile_file" ] || [ -f "$desktop_file" ]; then
+            mobile_url=$(grep "^$mobile_key=" image_urls.env 2>/dev/null | cut -d= -f2-)
+            desktop_url=$(grep "^$desktop_key=" image_urls.env 2>/dev/null | cut -d= -f2-)
+
+            if [ -n "$mobile_url" ] || [ -n "$desktop_url" ]; then
               echo "### ${component^}" >> comment.md
               echo "" >> comment.md
               echo "<details open>" >> comment.md
@@ -88,26 +147,22 @@ jobs:
               echo "" >> comment.md
               echo "<table><tr>" >> comment.md
 
-              if [ -f "$mobile_file" ]; then
-                size=$(du -h "$mobile_file" | cut -f1)
+              if [ -n "$mobile_url" ]; then
                 echo "<td width=\"50%\">" >> comment.md
                 echo "" >> comment.md
-                echo "**Mobile (480px)** • $size" >> comment.md
+                echo "**Mobile (480px)**" >> comment.md
                 echo "" >> comment.md
-                base64_data=$(base64 -w 0 "$mobile_file")
-                echo "<img src=\"data:image/png;base64,$base64_data\" width=\"100%\" />" >> comment.md
+                echo "![${component} mobile]($mobile_url)" >> comment.md
                 echo "" >> comment.md
                 echo "</td>" >> comment.md
               fi
 
-              if [ -f "$desktop_file" ]; then
-                size=$(du -h "$desktop_file" | cut -f1)
+              if [ -n "$desktop_url" ]; then
                 echo "<td width=\"50%\">" >> comment.md
                 echo "" >> comment.md
-                echo "**Desktop (1280px)** • $size" >> comment.md
+                echo "**Desktop (1280px)**" >> comment.md
                 echo "" >> comment.md
-                base64_data=$(base64 -w 0 "$desktop_file")
-                echo "<img src=\"data:image/png;base64,$base64_data\" width=\"100%\" />" >> comment.md
+                echo "![${component} desktop]($desktop_url)" >> comment.md
                 echo "" >> comment.md
                 echo "</td>" >> comment.md
               fi
