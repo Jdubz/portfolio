@@ -24,7 +24,7 @@ export default function ContactForm() {
     try {
       // Use environment variable for function URL, fallback to staging
       const functionUrl =
-        process.env.GATSBY_CONTACT_FUNCTION_URL ||
+        process.env.GATSBY_CONTACT_FUNCTION_URL ??
         "https://us-central1-static-sites-257923.cloudfunctions.net/contact-form-staging"
 
       const response = await fetch(functionUrl, {
