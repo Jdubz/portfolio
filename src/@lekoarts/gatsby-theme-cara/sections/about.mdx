@@ -2,13 +2,8 @@ import { GradientGlow } from "../../../components/GradientGlow"
 
 export default () => (
   <>
-    <div sx={{ mx: 'auto', maxWidth: '1120px' }}>
-      <h2 sx={{
-        color: 'white',
-        fontSize: [5, 6, 7],
-        fontWeight: 700,
-        mb: [4, 5],
-      }}>About</h2>
+    <div sx={{ mx: 'auto', maxWidth: 1120 }}>
+      <h2 sx={{ variant: 'text.sectionTitle', color: 'white' }}>About</h2>
 
       <div sx={{
         display: 'grid',
@@ -17,47 +12,45 @@ export default () => (
         alignItems: 'start',
       }}>
         <div>
-          <div>
-            <blockquote sx={{
-              fontSize: [3, 4],
-              fontStyle: 'italic',
-              borderLeft: '4px solid',
-              borderColor: 'rgba(203, 213, 224, 1)',
-              pl: 3,
-              mb: 4,
-              color: 'rgba(226, 232, 240, 1)',
-              lineHeight: 1.6,
-            }}>
-              An idea machine for turning ideas into machines.
-            </blockquote>
+          <blockquote sx={{
+            fontSize: [3, 4],
+            fontStyle: 'italic',
+            borderLeft: '4px solid',
+            borderColor: '#cbd5e0',
+            pl: 3,
+            mb: 4,
+            color: '#e2e8f0',
+            lineHeight: 1.6,
+          }}>
+            An idea machine for turning ideas into machines.
+          </blockquote>
 
-            <p sx={{
-              mb: 3,
-              color: 'rgba(226, 232, 240, 0.9)',
-              fontSize: [2, 3],
-              lineHeight: 1.55,
-            }}>
-              I'm a multidisciplinary engineer who thrives at the intersection of software development, electronics design, and digital fabrication. My approach combines technical precision with creative problem-solving to build end-to-end solutions.
-            </p>
+          <p sx={{
+            mb: 3,
+            color: 'rgba(226, 232, 240, 0.9)',
+            fontSize: [2, 3],
+            lineHeight: 1.55,
+          }}>
+            I'm a multidisciplinary engineer who thrives at the intersection of software development, electronics design, and digital fabrication. My approach combines technical precision with creative problem-solving to build end-to-end solutions.
+          </p>
 
-            <p sx={{
-              mb: 3,
-              color: 'rgba(226, 232, 240, 0.9)',
-              fontSize: [2, 3],
-              lineHeight: 1.55,
-            }}>
-              Whether it's developing embedded systems, crafting interactive installations, or engineering custom lighting solutions, I believe in the power of bringing together different domains to create something greater than the sum of its parts.
-            </p>
+          <p sx={{
+            mb: 3,
+            color: 'rgba(226, 232, 240, 0.9)',
+            fontSize: [2, 3],
+            lineHeight: 1.55,
+          }}>
+            Whether it's developing embedded systems, crafting interactive installations, or engineering custom lighting solutions, I believe in the power of bringing together different domains to create something greater than the sum of its parts.
+          </p>
 
-            <p sx={{
-              mb: 4,
-              color: 'rgba(226, 232, 240, 0.9)',
-              fontSize: [2, 3],
-              lineHeight: 1.55,
-            }}>
-              My work spans from writing clean, efficient code to designing PCBs and fabricating custom enclosures. I'm passionate about projects that challenge conventional boundaries and require inventive thinking.
-            </p>
-          </div>
+          <p sx={{
+            mb: 4,
+            color: 'rgba(226, 232, 240, 0.9)',
+            fontSize: [2, 3],
+            lineHeight: 1.55,
+          }}>
+            My work spans from writing clean, efficient code to designing PCBs and fabricating custom enclosures. I'm passionate about projects that challenge conventional boundaries and require inventive thinking.
+          </p>
 
           <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" sx={{ variant: 'buttons.primary', mt: 4 }}>
             Download resume
@@ -68,7 +61,7 @@ export default () => (
           <div sx={{
             position: 'relative',
             width: ['200px', '280px'],
-            aspectRatio: '1',
+            height: ['200px', '280px'],
             borderRadius: 'lg',
             overflow: 'hidden',
             border: '1px solid',

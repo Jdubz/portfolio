@@ -3,7 +3,7 @@ import { GradientGlow } from "../../../components/GradientGlow"
 
 export default () => (
   <>
-    <div sx={{ mx: 'auto', maxWidth: '1120px' }}>
+    <div sx={{ mx: 'auto', maxWidth: 1120 }}>
       <h2 sx={{ variant: 'text.sectionTitle' }}>Get in touch</h2>
 
       <div sx={{
@@ -13,39 +13,24 @@ export default () => (
         alignItems: 'start',
       }}>
         <div>
-          <p sx={{
-            mb: 3,
-            fontSize: [2, 3],
-            lineHeight: 1.55,
-          }}>
+          <p sx={{ mb: 3, fontSize: [2, 3], lineHeight: 1.55 }}>
             Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
           </p>
 
           <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <p sx={{ mb: 1 }}>
-              <strong sx={{ fontWeight: 600, color: 'text' }}>Email:</strong>{' '}
-              <a href="mailto:hello@joshwentworth.com" sx={{
-                color: 'primary',
-                '&:hover': { textDecoration: 'underline' }
-              }}>
-                hello@joshwentworth.com
-              </a>
+            <p>
+              <strong sx={{ fontWeight: 600 }}>Email:</strong>{' '}
+              <a href="mailto:hello@joshwentworth.com">hello@joshwentworth.com</a>
             </p>
-            <p sx={{ mb: 1 }}>
-              <strong sx={{ fontWeight: 600, color: 'text' }}>LinkedIn:</strong>{' '}
-              <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{
-                color: 'primary',
-                '&:hover': { textDecoration: 'underline' }
-              }}>
+            <p>
+              <strong sx={{ fontWeight: 600 }}>LinkedIn:</strong>{' '}
+              <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer">
                 linkedin.com/in/joshwentworth
               </a>
             </p>
-            <p sx={{ mb: 0 }}>
-              <strong sx={{ fontWeight: 600, color: 'text' }}>GitHub:</strong>{' '}
-              <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{
-                color: 'primary',
-                '&:hover': { textDecoration: 'underline' }
-              }}>
+            <p>
+              <strong sx={{ fontWeight: 600 }}>GitHub:</strong>{' '}
+              <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer">
                 github.com/joshwentworth
               </a>
             </p>
@@ -55,7 +40,7 @@ export default () => (
         <div sx={{
           position: 'relative',
           width: ['200px', '280px'],
-          aspectRatio: '1',
+          height: ['200px', '280px'],
           borderRadius: 'lg',
           overflow: 'hidden',
           border: '1px solid',

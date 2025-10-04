@@ -14,21 +14,14 @@ export default () => (
 
     <div sx={{
       mx: 'auto',
-      maxWidth: '1120px',
+      maxWidth: 1120,
       display: 'grid',
       gridTemplateColumns: ['1fr', null, 'minmax(44ch, 50ch) 248px'],
       alignItems: 'start',
       gap: [3, null, 5],
     }}>
-      {/* LEFT: text */}
       <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <p sx={{
-          fontWeight: 600,
-          letterSpacing: '0.05em',
-          fontSize: [0, 1],
-          textTransform: 'uppercase',
-          color: 'text',
-        }}>
+        <p sx={{ variant: 'text.heroKicker' }}>
           Software × Hardware × Fabrication
         </p>
 
@@ -40,7 +33,6 @@ export default () => (
           Full-stack engineer with a workshop habit. I ship web apps (React/Angular + TypeScript, Node.js/Python) and the systems behind them (Kubernetes on GCP), and I also prototype electronics, lighting, and fabricated parts when software needs a body.
         </p>
 
-        {/* CTAs */}
         <div sx={{
           display: 'flex',
           alignItems: 'center',
@@ -60,21 +52,16 @@ export default () => (
           Most recently: cloud architecture and partner integrations for robotic grocery fulfillment at Fulfil Solutions.
         </p>
 
-        <p sx={{ variant: 'text.micro', opacity: 0.95 }}>
+        <p sx={{ variant: 'text.micro' }}>
           React • Angular • TypeScript • Node.js • Python • Kubernetes • GCP • MySQL/Redis • Grafana/Loki/Elastic
         </p>
       </div>
 
-      {/* RIGHT: avatar */}
-      <div sx={{
-        display: 'grid',
-        placeItems: 'start',
-        pt: 1,
-      }}>
+      <div sx={{ pt: 1 }}>
         <div sx={{
           position: 'relative',
           width: ['176px', '208px', '232px'],
-          aspectRatio: '1',
+          height: ['176px', '208px', '232px'],
           borderRadius: 'lg',
           overflow: 'hidden',
           border: '1px solid',
