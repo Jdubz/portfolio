@@ -53,7 +53,7 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
         </div>
       </div>
     </Divider>
-    <Content speed={0.4} offset={offset} factor={factor} className="content">
+    <Content speed={0.4} offset={offset} factor={factor} className="content mb-16">
       <Inner>
         <ContactMDX />
       </Inner>
