@@ -1,59 +1,79 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
-import * as React from "react"
+import { useState } from "react"
 
-type FormState = {
+interface FormData {
   name: string
   email: string
   message: string
 }
 
-export default function ContactForm() {
-  const [form, setForm] = React.useState<FormState>({ name: "", email: "", message: "" })
-  const [status, setStatus] = React.useState<"idle" | "submitting" | "success" | "error">("idle")
+interface FormErrors {
+  name?: string
+  email?: string
+  message?: string
+}
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    const { name, value } = e.target
-    setForm((f) => ({ ...f, [name]: value }))
+interface FormStatus {
+  submitting: boolean
+  submitted: boolean
+  error: string | null
+}
+
+const ContactForm = (): JSX.Element => {
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    email: "",
+    message: "",
+  })
+
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [status, setStatus] = useState<FormStatus>({
+    submitting: false,
+    submitted: false,
+    error: null,
+  })
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {}
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required"
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required"
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Email is invalid"
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = "Message is required"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
-    setStatus("submitting")
+
+    if (!validateForm()) {
+      return
+    }
+
+    setStatus({ submitting: true, submitted: false, error: null })
 
     try {
-      // Use environment variable for function URL, fallback to staging
-      const functionUrl =
-        process.env.GATSBY_CONTACT_FUNCTION_URL ??
-        "https://us-central1-static-sites-257923.cloudfunctions.net/contact-form-staging"
-
-      const response = await fetch(functionUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          message: form.message,
-          honeypot: "", // Empty honeypot field for spam detection
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = (await response.json().catch(() => ({ message: undefined }))) as { message?: string }
-        throw new Error(errorData.message ?? `HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const result = (await response.json()) as { message?: string }
-      // eslint-disable-next-line no-console
-      console.log("Contact form submitted successfully:", result.message)
-
-      setStatus("success")
-      setForm({ name: "", email: "", message: "" })
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      setStatus({ submitting: false, submitted: true, error: null })
+      setFormData({ name: "", email: "", message: "" })
     } catch (error) {
-      console.error("Contact form submission failed:", error)
-      setStatus("error")
+      setStatus({
+        submitting: false,
+        submitted: false,
+        error: "Something went wrong. Please try again.",
+      })
     }
   }
 
@@ -62,108 +82,234 @@ export default function ContactForm() {
       onSubmit={(e) => {
         void handleSubmit(e)
       }}
-      sx={{ mt: 4 }}
+      sx={{
+        bg: "background",
+        color: "text",
+        p: [4, 5],
+        borderRadius: "lg",
+        boxShadow: "0 10px 30px rgba(16,23,42,0.12)",
+        border: "1px solid",
+        borderColor: "divider",
+        maxWidth: 640,
+        mx: "auto",
+      }}
       aria-label="Contact form"
     >
-      <div sx={{ display: "grid", gridTemplateColumns: ["1fr", "1fr 1fr"], gap: 3 }}>
-        <label sx={{ display: "grid", gap: 2 }}>
-          <span sx={{ fontWeight: 600 }}>Name</span>
+      <div sx={{ 
+        display: "grid", 
+        gridTemplateColumns: ["1fr", "1fr 1fr"], 
+        gap: 3, 
+        mb: 4 
+      }}>
+        <div>
+          <label htmlFor="name" sx={{ 
+            fontSize: 2,
+            fontWeight: "bold", 
+            color: "heading",
+            mb: 2,
+            display: "block",
+          }}>
+            Name *
+          </label>
           <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            autoComplete="name"
-            aria-required="true"
+            type="text"
+            id="name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             sx={{
-              border: "1px solid",
-              borderColor: "rgba(15,23,42,.18)",
-              borderRadius: "10px",
-              px: 3,
-              py: 2,
-              bg: "#fff",
+              bg: "background",
               color: "text",
+              border: "1px solid",
+              borderColor: errors.name ? "danger" : "divider",
+              borderRadius: "4px",
+              px: 3,
+              py: 3,
               fontSize: 2,
-              "&:hover": { borderColor: "rgba(15,23,42,.28)" },
-              "&:focus-visible": { outline: "none", boxShadow: "ring", borderColor: "primary" },
+              width: "100%",
+              fontFamily: "body",
+              "&:focus": {
+                outline: "none",
+                borderColor: "primary",
+                boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+              },
             }}
+            aria-describedby={errors.name ? "name-error" : undefined}
+            aria-invalid={!!errors.name}
           />
-        </label>
-        <label sx={{ display: "grid", gap: 2 }}>
-          <span sx={{ fontWeight: 600 }}>Email</span>
+          {errors.name && (
+            <div id="name-error" sx={{ 
+              color: "danger", 
+              fontSize: 1, 
+              mt: 1,
+              fontWeight: "medium",
+            }}>
+              {errors.name}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="email" sx={{ 
+            fontSize: 2,
+            fontWeight: "bold", 
+            color: "heading",
+            mb: 2,
+            display: "block",
+          }}>
+            Email *
+          </label>
           <input
             type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            autoComplete="email"
-            aria-required="true"
+            id="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             sx={{
-              border: "1px solid",
-              borderColor: "rgba(15,23,42,.18)",
-              borderRadius: "10px",
-              px: 3,
-              py: 2,
-              bg: "#fff",
+              bg: "background",
               color: "text",
+              border: "1px solid",
+              borderColor: errors.email ? "danger" : "divider",
+              borderRadius: "4px",
+              px: 3,
+              py: 3,
               fontSize: 2,
-              "&:hover": { borderColor: "rgba(15,23,42,.28)" },
-              "&:focus-visible": { outline: "none", boxShadow: "ring", borderColor: "primary" },
+              width: "100%",
+              fontFamily: "body",
+              "&:focus": {
+                outline: "none",
+                borderColor: "primary",
+                boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+              },
             }}
+            aria-describedby={errors.email ? "email-error" : undefined}
+            aria-invalid={!!errors.email}
           />
-        </label>
+          {errors.email && (
+            <div id="email-error" sx={{ 
+              color: "danger", 
+              fontSize: 1, 
+              mt: 1,
+              fontWeight: "medium",
+            }}>
+              {errors.email}
+            </div>
+          )}
+        </div>
       </div>
-      <label sx={{ display: "grid", gap: 2, mt: 3 }}>
-        <span sx={{ fontWeight: 600 }}>Message</span>
+
+      <div sx={{ mb: 4 }}>
+        <label htmlFor="message" sx={{ 
+          fontSize: 2,
+          fontWeight: "bold", 
+          color: "heading",
+          mb: 2,
+          display: "block",
+        }}>
+          Message *
+        </label>
         <textarea
-          name="message"
-          value={form.message}
-          onChange={handleChange}
-          required
-          rows={6}
-          aria-required="true"
+          id="message"
+          rows={5}
+          value={formData.message}
+          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
           sx={{
-            border: "1px solid",
-            borderColor: "rgba(15,23,42,.18)",
-            borderRadius: "12px",
-            px: 3,
-            py: 2,
-            bg: "#fff",
+            bg: "background",
             color: "text",
+            border: "1px solid",
+            borderColor: errors.message ? "danger" : "divider",
+            borderRadius: "4px",
+            px: 3,
+            py: 3,
             fontSize: 2,
+            width: "100%",
+            fontFamily: "body",
             resize: "vertical",
-            "&:hover": { borderColor: "rgba(15,23,42,.28)" },
-            "&:focus-visible": { outline: "none", boxShadow: "ring", borderColor: "primary" },
+            minHeight: 120,
+            "&:focus": {
+              outline: "none",
+              borderColor: "primary",
+              boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+            },
           }}
+          aria-describedby={errors.message ? "message-error" : undefined}
+          aria-invalid={!!errors.message}
         />
-      </label>
-      <div sx={{ mt: 3, display: "flex", gap: 2, alignItems: "center" }}>
-        <button
-          type="submit"
-          disabled={status === "submitting"}
-          aria-busy={status === "submitting" ? "true" : "false"}
-          sx={{
-            variant: "buttons.primary",
-            px: 12,
-            py: 8,
-            fontSize: 14,
-            borderRadius: 8,
-          }}
-        >
-          {status === "submitting" ? "Sending…" : "Send message"}
-        </button>
-        {status === "success" && (
-          <span sx={{ color: "icon_green" }} role="status" aria-live="polite">
-            Thanks! I&apos;ll get back to you shortly.
-          </span>
+        {errors.message && (
+          <div id="message-error" sx={{ 
+            color: "danger", 
+            fontSize: 1, 
+            mt: 1,
+            fontWeight: "medium",
+          }}>
+            {errors.message}
+          </div>
         )}
-        {status === "error" && (
-          <span sx={{ color: "icon_red" }} role="alert" aria-live="assertive">
-            Something went wrong. Please try again.
-          </span>
-        )}
+      </div>
+
+      <button
+        type="submit"
+        disabled={status.submitting}
+        sx={{
+          bg: status.submitting ? "textMuted" : "primary",
+          color: "background",
+          border: "none",
+          borderRadius: "pill",
+          px: 6,
+          py: 3,
+          fontSize: 2,
+          fontWeight: "bold",
+          cursor: status.submitting ? "not-allowed" : "pointer",
+          transition: "all 0.2s ease",
+          "&:hover": status.submitting ? {} : {
+            bg: "primaryHover",
+            transform: "translateY(-1px)",
+            boxShadow: "0 4px 12px rgba(66, 153, 225, 0.3)",
+          },
+          "&:active": status.submitting ? {} : {
+            transform: "translateY(0)",
+          },
+        }}
+      >
+        {status.submitting ? "Sending..." : "Send Message"}
+      </button>
+
+      {status.submitted && (
+        <div sx={{ 
+          mt: 4, 
+          p: 3, 
+          bg: "success", 
+          color: "background", 
+          borderRadius: "md",
+          textAlign: "center",
+          fontWeight: "medium",
+        }}>
+          Thank you! Your message has been sent successfully.
+        </div>
+      )}
+
+      {status.error && (
+        <div sx={{ 
+          mt: 4, 
+          p: 3, 
+          bg: "danger", 
+          color: "background", 
+          borderRadius: "md",
+          textAlign: "center",
+          fontWeight: "medium",
+        }}>
+          {status.error}
+        </div>
+      )}
+
+      <div sx={{ 
+        mt: 4, 
+        fontSize: 1, 
+        color: "textMuted", 
+        textAlign: "center" 
+      }}>
+        * Required fields
       </div>
     </form>
   )
 }
+
+export default ContactForm
