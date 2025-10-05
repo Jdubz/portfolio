@@ -17,8 +17,8 @@ const theme = merge(baseTheme, {
       fontSize: [2, 3],
       fontWeight: "bold",
       px: 4,
-      height: 48,
-      minHeight: 48,
+      height: 20,
+      minHeight: 20,
       borderRadius: "pill",
       border: "none",
       cursor: "pointer",
@@ -44,8 +44,8 @@ const theme = merge(baseTheme, {
       fontSize: [2, 3],
       fontWeight: "bold",
       px: 4,
-      height: 48,
-      minHeight: 48,
+      height: 20,
+      minHeight: 20,
       borderRadius: "pill",
       border: "2px solid",
       borderColor: "divider",
@@ -196,6 +196,25 @@ const theme = merge(baseTheme, {
     icon_blue: "#0EA5E9", // Ensure blue icons use brand blue
     icon_teal: "#00C9A7", // Teal accent
     icon_indigo: "#667eea", // Indigo for variety
+    // Color modes - override light mode to use blue instead of orange
+    modes: {
+      ...(baseTheme.colors?.modes || {}),
+      light: {
+        ...(baseTheme.colors?.modes?.light || {}),
+        primary: "#0EA5E9",
+        primaryHover: "#0284c7",
+        highlight: "#00C9A7",
+        gradA: "#0ea5e9",
+        gradB: "#00c9a7",
+        icon_orange: "#0EA5E9",
+        icon_brightest: "#00C9A7",
+        icon_darker: "#0284c7",
+        icon_darkest: "#0369a1",
+        icon_blue: "#0EA5E9",
+        icon_teal: "#00C9A7",
+        icon_indigo: "#667eea",
+      },
+    },
   } as any,
   cards: {
     elevated: {
