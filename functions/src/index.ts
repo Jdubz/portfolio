@@ -2,6 +2,7 @@ import { Request, Response } from "express"
 import cors from "cors"
 import Joi from "joi"
 import { EmailService } from "./services/email.service"
+import { FirestoreService } from "./services/firestore.service"
 import { SecretManagerService } from "./services/secret-manager.service"
 
 // Simple logger for cloud functions
@@ -22,6 +23,7 @@ const logger = {
 // Initialize services
 const secretManager = new SecretManagerService()
 const emailService = new EmailService(secretManager)
+const firestoreService = new FirestoreService(logger)
 
 // CORS configuration
 const corsOptions = {
@@ -140,6 +142,17 @@ export const handleContactForm = async (req: Request, res: Response) => {
       })
 
       try {
+        // Save contact submission to Firestore
+        const docId = await firestoreService.saveContactSubmission({
+          name: data.name,
+          email: data.email,
+          message: data.message,
+          metadata,
+          requestId,
+        })
+
+        log.info("Contact submission saved to Firestore", { requestId, docId })
+
         // Send email notification
         await emailService.sendContactFormNotification({
           name: data.name,
@@ -156,7 +169,7 @@ export const handleContactForm = async (req: Request, res: Response) => {
           requestId,
         })
 
-        log.info("Contact form processed successfully", { requestId })
+        log.info("Contact form processed successfully", { requestId, docId })
 
         // Add rate limiting headers
         res.set({
@@ -170,15 +183,15 @@ export const handleContactForm = async (req: Request, res: Response) => {
           message: "Thank you for your message! I'll get back to you soon.",
           requestId,
         })
-      } catch (emailError) {
-        log.error("Failed to send email", {
-          error: emailError,
+      } catch (serviceError) {
+        log.error("Failed to process contact form", {
+          error: serviceError,
           requestId,
           data: { name: data.name, email: data.email },
         })
 
         return res.status(500).json({
-          error: "Email Service Error",
+          error: "Service Error",
           message: "Failed to process your message. Please try again later.",
           requestId,
         })

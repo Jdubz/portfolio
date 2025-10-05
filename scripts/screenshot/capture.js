@@ -223,7 +223,7 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
     // Get parallax offsets from cara.tsx (Hero=0, Projects=1, About=3, Contact=4)
     const parallaxOffsets = {
       intro: 0, // Hero offset={0}
-      projects: 1.5, // Projects offset={1} + factor={2}, capture middle at offset 1.5
+      projects: 1.4, // Projects offset={1} + factor={2}, capture middle at offset 1.5
       about: 3, // About offset={3}
       contact: 4, // Contact offset={4}
     }

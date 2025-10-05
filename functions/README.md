@@ -1,27 +1,84 @@
 # Contact Form Cloud Function
 
-## Local Development
+A serverless Cloud Function for handling contact form submissions on the portfolio website.
+
+## Features
+
+- ✅ Input validation with Joi schema
+- ✅ Bot detection via honeypot field
+- ✅ Email notifications via Mailgun
+- ✅ Auto-reply emails to users
+- ✅ Contact submission storage in Firestore
+- ✅ Comprehensive logging and error handling
+- ✅ CORS support for frontend integration
+- ✅ TypeScript for type safety
+- ✅ Secret management via GCP Secret Manager
+
+## Tech Stack
+
+- **Runtime**: Node.js 20
+- **Language**: TypeScript
+- **Email Service**: Mailgun
+- **Database**: Google Cloud Firestore
+- **Secrets**: GCP Secret Manager
+- **Validation**: Joi
+- **Framework**: Google Cloud Functions (Gen 2)
+
+## Project Structure
+
+```
+functions/
+├── src/
+│   ├── index.ts                      # Main function handler
+│   └── services/
+│       ├── email.service.ts          # Mailgun email service
+│       ├── firestore.service.ts      # Firestore database service
+│       └── secret-manager.service.ts # GCP Secret Manager service
+├── .env.local                        # Local environment variables (gitignored)
+├── .env.example                      # Example environment variables
+├── setup-secrets.sh                  # Script to create GCP secrets
+├── DEPLOYMENT.md                     # Deployment guide
+├── package.json                      # Dependencies and scripts
+└── tsconfig.json                     # TypeScript configuration
+```
+
+## Development
+
+### Prerequisites
+
+- Node.js 20+
+- npm or yarn
+- Google Cloud SDK (for deployment)
+- Mailgun account
+
+### Local Setup
 
 1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```bash
-cd functions/contact-form
-npm install
-```
+2. Copy and configure environment variables:
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your Mailgun credentials
+   ```
 
-2. Create local environment file:
+3. Build TypeScript:
+   ```bash
+   npm run build
+   ```
 
-```bash
-cp .env.example .env.local
-```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-3. Run function locally:
+   The function will be available at: `http://localhost:8080`
 
-```bash
-npm start
-```
+### Testing Locally
 
-4. Test the function:
+Test with curl:
 
 ```bash
 curl -X POST http://localhost:8080 \
@@ -29,86 +86,11 @@ curl -X POST http://localhost:8080 \
   -d '{
     "name": "Test User",
     "email": "test@example.com",
-    "message": "This is a test message from local development."
+    "message": "This is a test message."
   }'
 ```
 
-## Environment Variables
-
-### Local Development (.env.local)
-
-```
-NODE_ENV=development
-FROM_EMAIL=noreply@localhost
-TO_EMAIL=your-email@example.com
-REPLY_TO_EMAIL=hello@localhost
-```
-
-### Google Cloud Secrets (Production/Staging)
-
-The following secrets should be created in Google Secret Manager:
-
-- `smtp-host` - SMTP server hostname (e.g., smtp.sendgrid.net)
-- `smtp-user` - SMTP username
-- `smtp-password` - SMTP password/API key
-- `from-email` - From email address (e.g., noreply@joshwentworth.com)
-- `to-email` - Your email address to receive notifications
-- `reply-to-email` - Reply-to address (e.g., hello@joshwentworth.com)
-
-Create secrets using:
-
-```bash
-echo -n "your-smtp-host" | gcloud secrets create smtp-host --data-file=-
-echo -n "your-smtp-user" | gcloud secrets create smtp-user --data-file=-
-echo -n "your-smtp-password" | gcloud secrets create smtp-password --data-file=-
-echo -n "noreply@joshwentworth.com" | gcloud secrets create from-email --data-file=-
-echo -n "your-email@example.com" | gcloud secrets create to-email --data-file=-
-echo -n "hello@joshwentworth.com" | gcloud secrets create reply-to-email --data-file=-
-```
-
-## Deployment
-
-### Automatic Deployment via GitHub Actions
-
-- Push to `staging` branch → deploys to staging environment
-- Push to `main` branch → deploys to production environment
-
-### Manual Deployment
-
-```bash
-# Build function
-npm run build
-
-# Deploy to staging
-gcloud functions deploy contact-form-staging \
-  --gen2 \
-  --runtime=nodejs20 \
-  --region=us-central1 \
-  --source=. \
-  --entry-point=handleContactForm \
-  --trigger=http \
-  --allow-unauthenticated \
-  --memory=256Mi \
-  --timeout=60s \
-  --set-env-vars="NODE_ENV=staging,ENVIRONMENT=staging"
-
-# Deploy to production
-gcloud functions deploy contact-form \
-  --gen2 \
-  --runtime=nodejs20 \
-  --region=us-central1 \
-  --source=. \
-  --entry-point=handleContactForm \
-  --trigger=http \
-  --allow-unauthenticated \
-  --memory=512Mi \
-  --timeout=60s \
-  --set-env-vars="NODE_ENV=production,ENVIRONMENT=production"
-```
-
-## Testing
-
-Run all tests:
+### Running Tests
 
 ```bash
 npm test
@@ -120,45 +102,209 @@ Run tests in watch mode:
 npm run test:watch
 ```
 
-Run linting:
+### Linting
 
 ```bash
 npm run lint
+```
+
+Auto-fix linting issues:
+
+```bash
 npm run lint:fix
 ```
 
-## Function URLs
+## Deployment
 
-### Staging
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
-`https://us-central1-static-sites-257923.cloudfunctions.net/contact-form-staging`
+### Quick Deployment
 
-### Production
+1. Set up GCP secrets:
+   ```bash
+   ./setup-secrets.sh
+   ```
 
-`https://us-central1-static-sites-257923.cloudfunctions.net/contact-form`
+2. Build and deploy:
+   ```bash
+   npm run build
+   npm run deploy
+   ```
 
-## Integration with Frontend
+3. View logs:
+   ```bash
+   npm run logs
+   ```
 
-Update your contact form to POST to the appropriate function URL:
+### Deployment Environments
+
+- **Production**: `npm run deploy`
+  - Function name: `handleContactForm`
+  - Max instances: 10
+
+- **Staging**: `npm run deploy:staging`
+  - Function name: `handleContactForm-staging`
+  - Max instances: 5
+
+## Environment Variables
+
+### Local Development (.env.local)
+
+```bash
+NODE_ENV=development
+FUNCTIONS_EMULATOR=true
+MAILGUN_API_KEY=your-mailgun-api-key
+MAILGUN_DOMAIN=your-domain.com
+FROM_EMAIL=noreply@your-domain.com
+TO_EMAIL=your-email@example.com
+REPLY_TO_EMAIL=hello@your-domain.com
+GCP_PROJECT=static-sites-257923
+```
+
+### Production (GCP Secret Manager)
+
+All sensitive credentials are stored in GCP Secret Manager:
+- `mailgun-api-key`
+- `mailgun-domain`
+- `from-email`
+- `to-email`
+- `reply-to-email`
+
+## API Reference
+
+### POST /
+
+Submit a contact form.
+
+**Request Body:**
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "message": "Hello, I'd like to discuss a project."
+}
+```
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "message": "Thank you for your message! I'll get back to you soon.",
+  "requestId": "req_1234567890_abc123"
+}
+```
+
+**Error Response (400):**
+
+```json
+{
+  "error": "Validation Error",
+  "message": "\"email\" must be a valid email",
+  "requestId": "req_1234567890_abc123"
+}
+```
+
+**Error Response (500):**
+
+```json
+{
+  "error": "Service Error",
+  "message": "Failed to process your message. Please try again later.",
+  "requestId": "req_1234567890_abc123"
+}
+```
+
+## Firestore Schema
+
+### Collection: `contact-submissions`
 
 ```typescript
-const response = await fetch("https://us-central1-static-sites-257923.cloudfunctions.net/contact-form", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    name: formData.name,
-    email: formData.email,
-    message: formData.message,
-    honeypot: "", // Add honeypot field for spam detection
-  }),
-})
-
-if (!response.ok) {
-  throw new Error("Failed to send message")
+{
+  name: string
+  email: string
+  message: string
+  metadata: {
+    ip?: string
+    userAgent?: string
+    timestamp: string
+    referrer?: string
+  }
+  requestId: string
+  status: "new" | "read" | "replied" | "spam"
+  createdAt: Date
+  updatedAt: Date
 }
-
-const result = await response.json()
-console.log("Success:", result.message)
 ```
+
+## Email Templates
+
+The function sends two types of emails:
+
+1. **Notification Email**: Sent to `TO_EMAIL` with the contact form details
+2. **Auto-Reply Email**: Sent to the user confirming receipt of their message
+
+Both emails are sent in HTML and plain text formats.
+
+## Security
+
+- ✅ Input validation and sanitization
+- ✅ Bot detection via honeypot field
+- ✅ CORS restrictions to allowed origins
+- ✅ Secrets managed via GCP Secret Manager
+- ✅ XSS protection in email templates
+- ✅ Rate limiting headers (informational)
+
+### CORS Allowed Origins
+
+- `https://joshwentworth.com`
+- `https://staging.joshwentworth.com`
+- `http://localhost:8000`
+- `http://localhost:3000`
+
+To add more origins, edit the `corsOptions` in [src/index.ts](./src/index.ts).
+
+## Monitoring
+
+View function logs in Google Cloud Console:
+- [Cloud Functions Logs](https://console.cloud.google.com/functions)
+- [Cloud Logging](https://console.cloud.google.com/logs)
+
+Or via CLI:
+
+```bash
+npm run logs
+```
+
+## Troubleshooting
+
+### Function returns 500 error
+
+Check the logs:
+```bash
+npm run logs
+```
+
+Common issues:
+- Mailgun API key is incorrect or expired
+- Secrets not accessible by the service account
+- Firestore not initialized
+- CORS origin not in allowlist
+
+### Emails not being sent
+
+1. Verify Mailgun domain is verified
+2. Check DNS records (SPF, DKIM)
+3. Review function logs for Mailgun errors
+4. Test Mailgun credentials directly via API
+
+### Firestore errors
+
+1. Ensure Firestore is initialized in Native Mode
+2. Check IAM permissions for Cloud Functions service account
+3. Verify network connectivity
+
+## License
+
+MIT

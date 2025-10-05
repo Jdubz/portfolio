@@ -1,4 +1,5 @@
-import nodemailer from "nodemailer"
+import Mailgun from "mailgun.js"
+import formData from "form-data"
 import { SecretManagerService } from "./secret-manager.service"
 
 type SimpleLogger = {
@@ -27,19 +28,17 @@ export interface AutoReplyData {
 }
 
 export interface EmailConfig {
-  smtpHost?: string
-  smtpPort?: number
-  smtpUser?: string
-  smtpPassword?: string
-  fromEmail?: string
-  toEmail?: string
-  replyToEmail?: string
+  mailgunApiKey: string
+  mailgunDomain: string
+  fromEmail: string
+  toEmail: string
+  replyToEmail: string
 }
 
 export class EmailService {
   private logger: SimpleLogger
   private secretManager: SecretManagerService
-  private transporter: nodemailer.Transporter | null = null
+  private mailgunClient: ReturnType<Mailgun["client"]> | null = null
 
   constructor(secretManager: SecretManagerService, logger?: SimpleLogger) {
     this.secretManager = secretManager
@@ -60,55 +59,26 @@ export class EmailService {
   }
 
   /**
-   * Initialize the email transporter with configuration
+   * Initialize the Mailgun client with configuration
    */
-  private async initializeTransporter(): Promise<nodemailer.Transporter> {
-    if (this.transporter) {
-      return this.transporter
+  private async initializeMailgun(): Promise<ReturnType<Mailgun["client"]>> {
+    if (this.mailgunClient) {
+      return this.mailgunClient
     }
 
     try {
       const config = await this.getEmailConfig()
 
-      // For local development, use Ethereal test account
-      if (this.secretManager.isLocalDevelopment()) {
-        const testAccount = await nodemailer.createTestAccount()
+      const mailgun = new Mailgun(formData)
+      this.mailgunClient = mailgun.client({
+        username: "api",
+        key: config.mailgunApiKey,
+      })
 
-        this.transporter = nodemailer.createTransport({
-          host: "smtp.ethereal.email",
-          port: 587,
-          secure: false,
-          auth: {
-            user: testAccount.user,
-            pass: testAccount.pass,
-          },
-        })
-
-        this.logger.info("Using Ethereal test account for local development", {
-          user: testAccount.user,
-        })
-      } else {
-        // Production/staging configuration
-        this.transporter = nodemailer.createTransport({
-          host: config.smtpHost,
-          port: config.smtpPort || 587,
-          secure: config.smtpPort === 465,
-          auth: {
-            user: config.smtpUser,
-            pass: config.smtpPassword,
-          },
-        })
-      }
-
-      // Verify connection
-      if (this.transporter) {
-        await this.transporter.verify()
-        this.logger.info("Email transporter initialized successfully")
-        return this.transporter
-      }
-      throw new Error("Failed to create transporter")
+      this.logger.info("Mailgun client initialized successfully")
+      return this.mailgunClient
     } catch (error) {
-      this.logger.error("Failed to initialize email transporter", { error })
+      this.logger.error("Failed to initialize Mailgun client", { error })
       throw new Error("Email service configuration failed")
     }
   }
@@ -119,26 +89,26 @@ export class EmailService {
   private async getEmailConfig(): Promise<EmailConfig> {
     if (this.secretManager.isLocalDevelopment()) {
       return {
-        fromEmail: process.env.FROM_EMAIL || "noreply@localhost",
-        toEmail: process.env.TO_EMAIL || "test@localhost",
-        replyToEmail: process.env.REPLY_TO_EMAIL || "hello@localhost",
+        mailgunApiKey: process.env.MAILGUN_API_KEY || "",
+        mailgunDomain: process.env.MAILGUN_DOMAIN || "joshwentworth.com",
+        fromEmail: process.env.FROM_EMAIL || "noreply@joshwentworth.com",
+        toEmail: process.env.TO_EMAIL || "contact-form@joshwentworth.com",
+        replyToEmail: process.env.REPLY_TO_EMAIL || "hello@joshwentworth.com",
       }
     }
 
     try {
       const secrets = await this.secretManager.getSecrets([
-        "smtp-host",
-        "smtp-user",
-        "smtp-password",
+        "mailgun-api-key",
+        "mailgun-domain",
         "from-email",
         "to-email",
         "reply-to-email",
       ])
 
       return {
-        smtpHost: secrets["smtp-host"],
-        smtpUser: secrets["smtp-user"],
-        smtpPassword: secrets["smtp-password"],
+        mailgunApiKey: secrets["mailgun-api-key"],
+        mailgunDomain: secrets["mailgun-domain"],
         fromEmail: secrets["from-email"],
         toEmail: secrets["to-email"],
         replyToEmail: secrets["reply-to-email"],
@@ -154,36 +124,27 @@ export class EmailService {
    */
   async sendContactFormNotification(data: ContactFormNotificationData): Promise<void> {
     try {
-      const transporter = await this.initializeTransporter()
+      const client = await this.initializeMailgun()
       const config = await this.getEmailConfig()
 
-      const mailOptions = {
+      const messageData = {
         from: config.fromEmail,
         to: config.toEmail,
-        replyTo: data.email,
+        "h:Reply-To": data.email,
         subject: `New Contact Form Submission from ${data.name}`,
         html: this.generateNotificationHtml(data),
         text: this.generateNotificationText(data),
-        headers: {
-          "X-Request-ID": data.requestId,
-        },
+        "h:X-Request-ID": data.requestId,
       }
 
-      const info = await transporter.sendMail(mailOptions)
+      const result = await client.messages.create(config.mailgunDomain, messageData)
 
       this.logger.info("Contact form notification sent", {
         requestId: data.requestId,
-        messageId: info.messageId,
+        messageId: result.id,
         from: data.email,
         name: data.name,
       })
-
-      // Log preview URL for development
-      if (this.secretManager.isLocalDevelopment()) {
-        this.logger.info("Preview URL", {
-          url: nodemailer.getTestMessageUrl(info),
-        })
-      }
     } catch (error) {
       this.logger.error("Failed to send notification email", {
         error,
@@ -198,26 +159,24 @@ export class EmailService {
    */
   async sendAutoReply(data: AutoReplyData): Promise<void> {
     try {
-      const transporter = await this.initializeTransporter()
+      const client = await this.initializeMailgun()
       const config = await this.getEmailConfig()
 
-      const mailOptions = {
+      const messageData = {
         from: config.fromEmail,
         to: data.email,
-        replyTo: config.replyToEmail,
+        "h:Reply-To": config.replyToEmail,
         subject: "Thank you for your message!",
         html: this.generateAutoReplyHtml(data),
         text: this.generateAutoReplyText(data),
-        headers: {
-          "X-Request-ID": data.requestId,
-        },
+        "h:X-Request-ID": data.requestId,
       }
 
-      const info = await transporter.sendMail(mailOptions)
+      const result = await client.messages.create(config.mailgunDomain, messageData)
 
       this.logger.info("Auto-reply sent", {
         requestId: data.requestId,
-        messageId: info.messageId,
+        messageId: result.id,
         to: data.email,
       })
     } catch (error) {
