@@ -1,6 +1,6 @@
 import { Theme } from "theme-ui"
 
-// Extend Theme to include gradients and backgrounds
+// Extend Theme to include gradients, backgrounds, and masks
 interface CustomTheme extends Theme {
   gradients?: {
     primary: string
@@ -8,6 +8,9 @@ interface CustomTheme extends Theme {
   }
   backgrounds?: {
     watermark: Record<string, string | number>
+  }
+  masks?: {
+    soft: Record<string, string | number | Record<string, string | number>>
   }
 }
 
@@ -234,8 +237,23 @@ const theme: CustomTheme = {
       gap: [5, null, 6],
       alignItems: "start",
     },
+    section: {
+      position: "relative",
+      py: [6, 7, 7],
+    },
+    content: {
+      variant: "layout.container",
+      maxWidth: 1120,
+    },
+    measure: {
+      maxWidth: "60ch",
+    },
   },
   buttons: {
+    sizes: {
+      sm: { px: 3, py: 2, fontSize: 2, height: 36 },
+      md: { px: 4, py: 3, fontSize: 3, height: 40 },
+    },
     primary: {
       bg: "primary",
       color: "white",
@@ -290,6 +308,24 @@ const theme: CustomTheme = {
         outlineOffset: "2px",
       },
     },
+    ghost: {
+      bg: "transparent",
+      color: "text",
+      fontWeight: "bold",
+      px: 0,
+      py: 0,
+      border: "none",
+      cursor: "pointer",
+      "&:hover": {
+        color: "primary",
+        textDecoration: "underline",
+      },
+      "&:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "primary",
+        outlineOffset: "2px",
+      },
+    },
     toggle: {
       color: "background",
       border: "none",
@@ -310,6 +346,21 @@ const theme: CustomTheme = {
       "&:hover": {
         color: "primaryHover",
         textDecoration: "underline",
+      },
+      "&:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "primary",
+        outlineOffset: "2px",
+        borderRadius: "2px",
+      },
+    },
+    underline: {
+      color: "primary",
+      textDecoration: "underline",
+      textUnderlineOffset: "4px",
+      transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
+      "&:hover": {
+        color: "primaryHover",
       },
       "&:focus-visible": {
         outline: "3px solid",
@@ -368,7 +419,7 @@ const theme: CustomTheme = {
     h1: {
       variant: "text.heading",
       fontSize: [9, 10, 11],
-      letterSpacing: "-0.01em",
+      letterSpacing: "-0.015em",
       lineHeight: 1.12,
       mt: 3,
       mb: 2,
@@ -376,20 +427,20 @@ const theme: CustomTheme = {
     h2: {
       variant: "text.heading",
       fontSize: [5, 6, 7],
-      letterSpacing: "-0.01em",
+      letterSpacing: "-0.012em",
       mb: 2,
     },
     lead: {
       fontSize: [3, 4, 5],
       color: "textMuted",
       lineHeight: 1.65,
-      maxWidth: "68ch",
+      maxWidth: "60ch",
     },
     body: {
       fontSize: [2, 3],
       lineHeight: 1.65,
       color: "textMuted",
-      maxWidth: "64ch",
+      maxWidth: "60ch",
     },
     heroKicker: {
       fontSize: [2, 3],
@@ -489,6 +540,47 @@ const theme: CustomTheme = {
       textDecoration: "none",
       transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
     },
+    portrait: {
+      position: "relative",
+      borderRadius: "lg",
+      overflow: "hidden",
+      border: "1px solid",
+      borderColor: "divider",
+      boxShadow: "xl",
+      img: {
+        display: "block",
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+      },
+      "&::before": {
+        content: '""',
+        position: "absolute",
+        inset: "-2px",
+        borderRadius: "inherit",
+        background: "linear-gradient(120deg, #7C3AED, #06B6D4)",
+        filter: "blur(10px)",
+        opacity: 0.18,
+        zIndex: -1,
+      },
+    },
+    projectOverlay: {
+      position: "absolute",
+      inset: 0,
+      background: "linear-gradient(180deg, rgba(0,0,0,.0) 35%, rgba(0,0,0,.72) 95%)",
+    },
+    projectText: {
+      position: "absolute",
+      left: 4,
+      right: 4,
+      bottom: 4,
+      "@media screen and (min-width: 900px)": {
+        left: 5,
+        right: 5,
+        bottom: 5,
+      },
+      color: "white",
+    },
   },
   forms: {
     input: {
@@ -566,6 +658,20 @@ const theme: CustomTheme = {
       backgroundRepeat: "no-repeat",
       opacity: 0.06,
       pointerEvents: "none",
+    },
+  },
+  masks: {
+    soft: {
+      position: "relative",
+      "&::before": {
+        content: '""',
+        position: "absolute",
+        inset: 0,
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        pointerEvents: "none",
+        zIndex: -1,
+      },
     },
   },
 }
