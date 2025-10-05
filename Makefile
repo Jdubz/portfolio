@@ -1,4 +1,4 @@
-.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshot dev-functions test test-functions
+.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -28,6 +28,11 @@ help:
 	@echo "  make serve            - Serve production build (port 9000)"
 	@echo "  make clean            - Clean Gatsby cache and build files"
 	@echo "  make test             - Run web tests"
+	@echo "  make screenshot       - Generate component screenshots (full quality)"
+	@echo "  make screenshot-ci    - Generate screenshots (CI mode - fast, lower quality)"
+	@echo "  make screenshot-quick - Generate screenshots (skip build, use existing)"
+	@echo "  make lint-web         - Lint web code (TypeScript, ESLint, Prettier)"
+	@echo "  make lint-web-fix     - Auto-fix web linting issues"
 	@echo ""
 	@echo "Functions Development:"
 	@echo "  make dev-functions    - Start Functions development server (port 8080)"
@@ -116,5 +121,34 @@ deploy-prod:
 
 # Screenshots
 screenshot:
-	@echo "Generating component screenshots..."
+	@echo "Generating component screenshots (full quality)..."
 	cd web && npm run screenshot
+
+screenshot-ci:
+	@echo "Generating component screenshots (CI mode - fast & optimized)..."
+	cd web && CI_MODE=true SKIP_BUILD=false npm run screenshot
+
+screenshot-quick:
+	@echo "Generating component screenshots (using existing build)..."
+	cd web && SKIP_BUILD=true npm run screenshot
+
+# Linting
+lint-web:
+	@echo "Linting web code..."
+	cd web && npm run lint
+
+lint-web-fix:
+	@echo "Auto-fixing web linting issues..."
+	cd web && npm run lint:fix
+
+lint-functions:
+	@echo "Linting functions code..."
+	cd functions && npm run lint
+
+lint-functions-fix:
+	@echo "Auto-fixing functions linting issues..."
+	cd functions && npm run lint:fix
+
+lint: lint-web lint-functions
+
+lint-fix: lint-web-fix lint-functions-fix

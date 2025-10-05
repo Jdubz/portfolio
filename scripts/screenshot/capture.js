@@ -12,6 +12,9 @@ const { execSync } = require('child_process');
  */
 
 // Configuration
+const CI_MODE = process.env.CI_MODE === 'true';
+const SKIP_BUILD = process.env.SKIP_BUILD === 'true';
+
 const BREAKPOINTS = ['480', '1280'];
 const BREAKPOINT_LABELS = {
   '480': 'mobile',
@@ -19,6 +22,10 @@ const BREAKPOINT_LABELS = {
 };
 
 const OUTPUT_DIR = path.join(__dirname, '..', '..', 'screenshots', 'images');
+
+// Screenshot quality settings
+const SCREENSHOT_QUALITY = CI_MODE ? 70 : 90;
+const ANIMATION_WAIT_TIME = CI_MODE ? 500 : 2000;
 
 // Global variables
 let PORT;
@@ -270,21 +277,25 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
     }, targetOffset);
     
     // Wait for parallax animations to settle
-    await page.waitForTimeout(2000);
-    
+    await page.waitForTimeout(ANIMATION_WAIT_TIME);
+
     console.log(`📍 Scrolled using ${actualScrollResult.method}: ${actualScrollResult.scrollPos}px (target: ${actualScrollResult.targetPos}px)`);
-    
+
     // Wait for any lazy loading or animations to complete
     await page.waitForLoadState('networkidle');
-    
+
     // Additional wait to ensure parallax layers have updated
-    await page.waitForTimeout(1000);    // Take a screenshot of the current viewport
+    await page.waitForTimeout(CI_MODE ? 500 : 1000);
+
+    // Take a screenshot of the current viewport
     const screenshot = await page.screenshot({
       fullPage: false, // Just capture what's visible
-      animations: 'disabled'
+      animations: 'disabled',
+      quality: SCREENSHOT_QUALITY,
+      type: 'jpeg'
     });
     
-    const filename = `${component}-${breakpointLabel}.png`;
+    const filename = `${component}-${breakpointLabel}.jpg`;
     const filepath = path.join(OUTPUT_DIR, filename);
     
     await fs.writeFile(filepath, screenshot);
@@ -304,153 +315,28 @@ async function captureScreenshots(targetComponent = null) {
   let gatsbyProcess = null;
   
   try {
-    console.log('🚀 Starting screenshot capture...');
-    
-    // Setup
-    await ensureOutputDirectory();
-    await cleanupOldScreenshots();
-    const components = await discoverComponents();
-
-    // For parallax layouts, we need to manually determine the full content height
-    // The @react-spring/parallax component creates a custom scroll container with pages={5}
-    
-    // First, scroll through the entire page to trigger all content loading
-    const { contentHeight, viewportHeight, parallaxHeight } = await page.evaluate(async () => {
-      // Look for the parallax container which should contain the actual content
-      const parallaxContainer = document.querySelector('[style*="scroll"]') || 
-                                document.querySelector('[style*="overflow"]') ||
-                                document.querySelector('div[style*="height"]');
-      
-      // Get various height measurements
-      const documentHeight = Math.max(
-        document.body.scrollHeight,
-        document.body.offsetHeight,
-        document.documentElement.clientHeight,
-        document.documentElement.scrollHeight,
-        document.documentElement.offsetHeight
-      );
-      
-      // Check for react-spring parallax content area
-      let reactSpringHeight = documentHeight;
-      if (parallaxContainer) {
-        const computedStyle = window.getComputedStyle(parallaxContainer);
-        const containerHeight = parseInt(computedStyle.height) || documentHeight;
-        if (containerHeight > documentHeight) {
-          reactSpringHeight = containerHeight;
-        }
-      }
-      
-      // For Cara theme with pages={5}, each page should be viewport height
-      // So total content should be approximately 5 * viewport height
-      const expectedParallaxHeight = window.innerHeight * 5;
-      
-      // Scroll to bottom to ensure all content is loaded
-      const maxScroll = Math.max(documentHeight, reactSpringHeight, expectedParallaxHeight);
-      window.scrollTo(0, maxScroll);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Scroll back to top
-      window.scrollTo(0, 0);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      return {
-        contentHeight: Math.max(documentHeight, reactSpringHeight, expectedParallaxHeight),
-        viewportHeight: window.innerHeight,
-        parallaxHeight: expectedParallaxHeight
-      };
-    });
-
-    console.log(`📏 Content: ${contentHeight}px, Viewport: ${viewportHeight}px, Expected parallax: ${parallaxHeight}px for ${breakpointLabel}`);
-
-    // Take full page screenshot - try fullPage first, if it doesn't capture the full height, use manual approach
-    let screenshot;
-    
-    // First attempt with fullPage
-    screenshot = await page.screenshot({
-      fullPage: true,
-      animations: 'disabled'
-    });
-    
-    // Check if we need to manually capture the full parallax height
-    if (contentHeight > viewportHeight * 1.5 && parallaxHeight > viewportHeight * 1.5) {
-      console.log(`� Content appears larger than captured, trying manual parallax capture for ${breakpointLabel}`);
-      
-      try {
-        // For parallax layouts, manually scroll through and capture the full height
-        // Set a temporary height to capture more content
-        await page.setViewportSize({ 
-          width: parseInt(breakpoint), 
-          height: Math.min(parallaxHeight, 8000) // Cap at 8000px to avoid memory issues
-        });
-        
-        // Scroll to bottom to ensure all content is loaded
-        await page.evaluate((maxHeight) => {
-          window.scrollTo(0, maxHeight);
-        }, parallaxHeight);
-        
-        await page.waitForTimeout(1000);
-        
-        // Scroll back to top
-        await page.evaluate(() => {
-          window.scrollTo(0, 0);
-        });
-        
-        await page.waitForTimeout(500);
-        
-        // Take screenshot with extended height
-        screenshot = await page.screenshot({
-          fullPage: true,
-          animations: 'disabled'
-        });
-        
-        console.log(`✅ Manual parallax capture completed for ${breakpointLabel}`);
-        
-      } catch (manualError) {
-        console.log(`⚠️  Manual parallax capture failed for ${breakpointLabel}: ${manualError.message}`);
-        // Reset viewport and use standard screenshot
-        await page.setViewportSize({ 
-          width: parseInt(breakpoint), 
-          height: 1080
-        });
-        screenshot = await page.screenshot({
-          fullPage: true,
-          animations: 'disabled'
-        });
-      }
-    } else {
-      console.log(`📸 Standard full page screenshot for ${breakpointLabel} - Content: ${Math.round(contentHeight/viewportHeight)}x viewport height`);
+    console.log(`🚀 Starting screenshot capture...${CI_MODE ? ' (CI Mode - Fast & Optimized)' : ''}`);
+    if (SKIP_BUILD) {
+      console.log('⏭️  Build will be skipped');
     }
-    
-    const filename = `full-${breakpointLabel}.png`;
-    const filepath = path.join(OUTPUT_DIR, filename);
-    
-    await fs.writeFile(filepath, screenshot);
-    console.log(`✓ Generated full page: ${filename} (${breakpoint}px viewport, content: ${contentHeight}px)`);
+    if (CI_MODE) {
+      console.log(`⚡ Quality: ${SCREENSHOT_QUALITY}, Animation wait: ${ANIMATION_WAIT_TIME}ms, Format: JPEG`);
+    }
 
-    return { filename, filepath };
-
-  } finally {
-    await context.close();
-  }
-}
-
-/**
- * Main execution function
- */
-async function captureScreenshots(targetComponent = null) {
-  let gatsbyProcess = null;
-  
-  try {
-    console.log('🚀 Starting screenshot capture...');
-    
     // Setup
     await ensureOutputDirectory();
     await cleanupOldScreenshots();
     const components = await discoverComponents();
     
     // Build process
-    runGatsbyClean();
-    runGatsbyBuild();
+    if (!SKIP_BUILD) {
+      if (!CI_MODE) {
+        runGatsbyClean();
+      }
+      runGatsbyBuild();
+    } else {
+      console.log('⏭️  Skipping build (using existing build)');
+    }
     gatsbyProcess = await startGatsbyServe();
     
     // Launch browser
