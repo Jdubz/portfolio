@@ -88,7 +88,7 @@ const ProjectCard = ({ link, title, children, bg, bgImage }: ProjectCardProps) =
         sx={{
           position: `absolute`,
           inset: 0,
-          p: ["24px", "32px"],
+          p: "24px",
           display: `flex`,
           flexDirection: `column`,
           justifyContent: `space-between`,
@@ -105,6 +105,7 @@ const ProjectCard = ({ link, title, children, bg, bgImage }: ProjectCardProps) =
             letterSpacing: `-0.01em`,
             textShadow: `0 2px 10px rgba(0, 0, 0, 0.5)`,
             mb: 0,
+            mt: 2,
           }}
         >
           {title}
@@ -117,6 +118,7 @@ const ProjectCard = ({ link, title, children, bg, bgImage }: ProjectCardProps) =
               fontSize: "16px",
               lineHeight: 1.65,
               margin: 0,
+              color: "inherit",
             },
           }}
         >
