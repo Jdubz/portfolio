@@ -1,3 +1,5 @@
+@eslint-disable no-console */
+
 const fs = require('fs').promises;
 const path = require('path');
 const playwright = require('playwright');
@@ -5,7 +7,7 @@ const { execSync } = require('child_process');
 
 /**
  * Portfolio Screenshot Tool - Component & Full Page Capture
- * 
+ *
  * Generates responsive screenshots of portfolio components and full pages.
  * Uses Playwright for automated browser testing and screenshot generation,
  * with automatic Gatsby build and serve management.
@@ -50,14 +52,14 @@ async function ensureOutputDirectory() {
 async function cleanupOldScreenshots() {
   try {
     const files = await fs.readdir(OUTPUT_DIR);
-    const imageFiles = files.filter(file => 
+    const imageFiles = files.filter(file =>
       file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg')
     );
-    
+
     for (const file of imageFiles) {
       await fs.unlink(path.join(OUTPUT_DIR, file));
     }
-    
+
     if (imageFiles.length > 0) {
       console.log(`✓ Cleaned up ${imageFiles.length} old screenshot(s)`);
     }
@@ -69,7 +71,7 @@ async function cleanupOldScreenshots() {
 async function discoverComponents() {
   const componentDir = path.join(__dirname, '..', '..', 'web', 'src', '@lekoarts', 'gatsby-theme-cara');
   const components = new Set();
-  
+
   // Check sections directory
   try {
     const sectionsDir = path.join(componentDir, 'sections');
@@ -81,7 +83,7 @@ async function discoverComponents() {
   } catch (error) {
     // Sections directory might not exist
   }
-  
+
   // Check components directory
   try {
     const componentsDir = path.join(componentDir, 'components');
@@ -93,7 +95,7 @@ async function discoverComponents() {
   } catch (error) {
     // Components directory might not exist
   }
-  
+
   const componentList = Array.from(components).sort();
   console.log(`✓ Discovered components: ${componentList.join(', ')}`);
   return componentList;
@@ -102,7 +104,7 @@ async function discoverComponents() {
 function runGatsbyClean() {
   console.log('🔨 Running gatsby clean...');
   try {
-    execSync('npx gatsby clean', { 
+    execSync('npx gatsby clean', {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..', '..', 'web')
     });
@@ -115,7 +117,7 @@ function runGatsbyClean() {
 function runGatsbyBuild() {
   console.log('🔨 Running gatsby build...');
   try {
-    execSync('npx gatsby build', { 
+    execSync('npx gatsby build', {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..', '..', 'web')
     });
@@ -129,21 +131,21 @@ function startGatsbyServe() {
   console.log('🚀 Starting Gatsby serve...');
   PORT = generateRandomPort();
   console.log(`📡 Using port: ${PORT}`);
-  
+
   try {
     const { spawn } = require('child_process');
-    
+
     // Use shell: true for Windows compatibility
     const isWindows = process.platform === 'win32';
     const command = isWindows ? 'npx.cmd' : 'npx';
-    
+
     const gatsbyProcess = spawn(command, ['gatsby', 'serve', '-p', PORT.toString()], {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..', '..', 'web'),
       detached: false,
       shell: isWindows  // Enable shell on Windows
     });
-    
+
     // Give server time to start
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -163,7 +165,7 @@ function stopGatsbyServe(gatsbyProcess) {
   console.log('🛑 Stopping Gatsby server...');
   if (gatsbyProcess && !gatsbyProcess.killed) {
     gatsbyProcess.kill('SIGTERM');
-    
+
     setTimeout(() => {
       if (!gatsbyProcess.killed) {
         gatsbyProcess.kill('SIGKILL');
@@ -177,8 +179,8 @@ function stopGatsbyServe(gatsbyProcess) {
  */
 async function captureComponentScreenshot(browser, component, breakpoint, breakpointLabel, serverPort) {
   const context = await browser.newContext({
-    viewport: { 
-      width: parseInt(breakpoint), 
+    viewport: {
+      width: parseInt(breakpoint),
       height: 1080 // Use normal viewport height
     }
   });
@@ -198,7 +200,7 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
       // Scroll to bottom to trigger any lazy loading/animations
       window.scrollTo(0, document.body.scrollHeight);
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Scroll back to top
       window.scrollTo(0, 0);
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -208,14 +210,14 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
     await page.waitForTimeout(2000);
 
     // Debug: Check what sections exist
-    const allSections = await page.$$eval('[data-screenshot-section]', elements => 
+    const allSections = await page.$$eval('[data-screenshot-section]', elements =>
       elements.map(el => el.getAttribute('data-screenshot-section'))
     );
     console.log(`🔍 Found sections: ${allSections.join(', ')}`);
 
     // SIMPLIFIED APPROACH: Scroll to section position and take viewport screenshot
     // This parallax layout is too complex for full page cropping approach
-    
+
     // Define scroll positions for each section based on the theme layout
     // Get parallax offsets from cara.tsx (Hero=0, Projects=1, About=3, Contact=4)
     const parallaxOffsets = {
@@ -224,21 +226,21 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
       about: 3,      // About offset={3}
       contact: 4     // Contact offset={4}
     };
-    
+
     const targetOffset = parallaxOffsets[component];
     if (targetOffset === undefined) {
       throw new Error(`No parallax offset defined for component: ${component}`);
     }
 
     console.log(`🎯 Scrolling to ${component} at parallax offset ${targetOffset}`);
-    
+
     // Use parallax scrollTo method instead of window.scrollTo
     const actualScrollResult = await page.evaluate(async (offset) => {
       // Calculate target position: offset * viewport height
       const targetPos = offset * window.innerHeight;
-      
+
       // Try multiple approaches to find and scroll the parallax container
-      
+
       // Approach 1: Look for overflow-y auto/scroll container (typical for parallax)
       const scrollContainers = document.querySelectorAll('[style*="overflow"], [style*="scroll"]');
       for (const container of scrollContainers) {
@@ -249,7 +251,7 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
           return { method: 'overflow-container', scrollPos: container.scrollTop, targetPos };
         }
       }
-      
+
       // Approach 2: Look for the main content container with transform
       const parallaxContent = document.querySelector('[style*="transform"]');
       if (parallaxContent && parallaxContent.parentElement) {
@@ -257,7 +259,7 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
         await new Promise(resolve => setTimeout(resolve, 500));
         return { method: 'transform-parent', scrollPos: parallaxContent.parentElement.scrollTop, targetPos };
       }
-      
+
       // Approach 3: Direct DOM manipulation - set transforms on parallax layers
       const parallaxLayers = document.querySelectorAll('[style*="transform"]');
       if (parallaxLayers.length > 0) {
@@ -269,14 +271,14 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
         });
         return { method: 'manual-transform', scrollPos: targetPos, targetPos };
       }
-      
+
       // Approach 4: Try window scroll as fallback
       window.scrollTo({ top: targetPos, behavior: 'instant' });
       await new Promise(resolve => setTimeout(resolve, 500));
       return { method: 'window-scroll', scrollPos: window.pageYOffset, targetPos };
-      
+
     }, targetOffset);
-    
+
     // Wait for parallax animations to settle
     await page.waitForTimeout(ANIMATION_WAIT_TIME);
 
@@ -305,7 +307,7 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
     const extension = SCREENSHOT_TYPE === 'jpeg' ? 'jpg' : 'png';
     const filename = `${component}-${breakpointLabel}.${extension}`;
     const filepath = path.join(OUTPUT_DIR, filename);
-    
+
     await fs.writeFile(filepath, screenshot);
     console.log(`✓ Generated: ${filename} (viewport screenshot @ ${breakpoint}px, offset: ${targetOffset})`);
 
@@ -321,7 +323,7 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
  */
 async function captureScreenshots(targetComponent = null) {
   let gatsbyProcess = null;
-  
+
   try {
     console.log(`🚀 Starting screenshot capture...${CI_MODE ? ' (CI Mode - Fast & Optimized)' : ''}`);
     if (SKIP_BUILD) {
@@ -337,7 +339,7 @@ async function captureScreenshots(targetComponent = null) {
     await ensureOutputDirectory();
     await cleanupOldScreenshots();
     const components = await discoverComponents();
-    
+
     // Build process
     if (!SKIP_BUILD) {
       if (!CI_MODE) {
@@ -348,7 +350,7 @@ async function captureScreenshots(targetComponent = null) {
       console.log('⏭️  Skipping build (using existing build)');
     }
     gatsbyProcess = await startGatsbyServe();
-    
+
     // Launch browser
     const browser = await playwright.chromium.launch({
       headless: true,
@@ -357,8 +359,8 @@ async function captureScreenshots(targetComponent = null) {
 
     // Define which components have scroll positions
     const validComponents = ['intro', 'projects', 'about', 'contact'];
-    
-    const componentsToCapture = targetComponent 
+
+    const componentsToCapture = targetComponent
       ? (validComponents.includes(targetComponent) ? [targetComponent] : [])
       : validComponents;
 
@@ -371,7 +373,7 @@ async function captureScreenshots(targetComponent = null) {
     // Capture component screenshots
     for (const component of componentsToCapture) {
       console.log(`📷 Processing component: ${component}`);
-      
+
       for (const breakpoint of BREAKPOINTS) {
         const breakpointLabel = BREAKPOINT_LABELS[breakpoint];
         try {
@@ -384,10 +386,10 @@ async function captureScreenshots(targetComponent = null) {
     }
 
     await browser.close();
-    
+
     console.log(`\n✅ Screenshot capture complete!`);
     console.log(`Generated ${totalScreenshots} screenshots in ${path.relative(process.cwd(), OUTPUT_DIR)}/`);
-    
+
   } catch (error) {
     console.error(`❌ Screenshot capture failed: ${error.message}`);
     process.exit(1);
@@ -401,7 +403,7 @@ async function captureScreenshots(targetComponent = null) {
 // CLI execution
 if (require.main === module) {
   const targetComponent = process.env.COMPONENT || process.argv[2] || null;
-  
+
   if (targetComponent) {
     console.log(`Generating component screenshots...`);
     console.log(`Target component: ${targetComponent}`);
@@ -409,7 +411,7 @@ if (require.main === module) {
     console.log(`Generating component screenshots...`);
     console.log(`Generating screenshots for all components`);
   }
-  
+
   captureScreenshots(targetComponent)
     .then(() => {
       console.log(`\n🎉 Success! Generated screenshot(s)`);
