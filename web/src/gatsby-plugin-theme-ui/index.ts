@@ -173,15 +173,24 @@ const theme = merge(baseTheme, {
   },
   colors: {
     ...baseTheme.colors,
+    // Brand blue palette - Sky Blue 500/600
     primary: "#0EA5E9",
     primaryHover: "#0284c7",
+    // Accent colors
     highlight: "#00C9A7",
     danger: "#ef4444",
     success: "#10b981",
-    panel: baseTheme.colors?.background,
-    hairline: baseTheme.colors?.divider,
+    // Gradient colors for backgrounds and frames
     gradA: "#0ea5e9",
     gradB: "#00c9a7",
+    // Surface colors
+    panel: baseTheme.colors?.background,
+    hairline: baseTheme.colors?.divider,
+    // Icon colors - override base theme orange with blue variants
+    icon_orange: "#0EA5E9", // Override orange with brand blue
+    icon_brightest: "#00C9A7", // Keep teal highlight
+    icon_darker: "#0284c7", // Darker blue
+    icon_darkest: "#0369a1", // Darkest blue (Sky 700)
   } as any,
   cards: {
     elevated: {
