@@ -22,11 +22,11 @@ const Content = ({ speed, offset, children, className = ``, factor = 1 }: Conten
     <ParallaxLayer
       sx={{
         px: [4, `1.5rem`, `1.5rem`, `2.5rem`],
-        py: 0,
+        py: [`80px`, `100px`, `120px`],
         display: `flex`,
         flexDirection: `column`,
         alignItems: `center`,
-        justifyContent: `center`,
+        justifyContent: `flex-start`,
         zIndex: 50,
       }}
       speed={speed}
