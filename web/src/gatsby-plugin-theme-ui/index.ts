@@ -182,6 +182,8 @@ const theme = merge(baseTheme, {
     highlight: "#00C9A7",
     danger: "#ef4444",
     success: "#10b981",
+    // Wave/footer color - dark in both modes
+    wave: "#0a0f1a",
     // Gradient colors for backgrounds and frames
     gradA: "#0ea5e9",
     gradB: "#00c9a7",
@@ -204,6 +206,7 @@ const theme = merge(baseTheme, {
         primary: "#0EA5E9",
         primaryHover: "#0284c7",
         highlight: "#00C9A7",
+        wave: "#0a0f1a",
         gradA: "#0ea5e9",
         gradB: "#00c9a7",
         icon_orange: "#0EA5E9",

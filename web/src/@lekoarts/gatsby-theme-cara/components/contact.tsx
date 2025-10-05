@@ -16,7 +16,7 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
     data-icon-preset="contact"
     aria-label="Contact"
   >
-    <Divider fill="background" speed={0.2} offset={offset} factor={factor}>
+    <Divider fill="wave" speed={0.2} offset={offset} factor={factor}>
       <div
         sx={{ position: `absolute`, bottom: 0, width: `full`, height: `100%`, transform: `matrix(1, 0, 0, -1, 0, 0)` }}
       >
