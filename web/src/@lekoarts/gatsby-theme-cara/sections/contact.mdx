@@ -1,5 +1,5 @@
 import ContactForm from "../../../components/ContactForm"
-import { GradientGlow } from "../../../components/GradientGlow"
+import { GlowImage } from "../../../components/GlowImage"
 
 export default () => (
   <>
@@ -44,23 +44,10 @@ export default () => (
         </div>
 
         <div sx={{ justifySelf: ['center', null, 'end'], alignSelf: 'start', mt: [4, null, 0] }}>
-          <div sx={{
-            p: 2,
-            borderRadius: 'md',
-            background: (t) => `linear-gradient(90deg, ${t.colors.gradA}, ${t.colors.gradB})`,
-            boxShadow: 'md',
-          }}>
-            <img
-              src="/avatar2.jpg"
-              alt="Josh Wentworth"
-              sx={{
-                width: [260, 320],
-                borderRadius: 'md',
-                display: 'block',
-                boxShadow: 'sm',
-              }}
-            />
-          </div>
+          <GlowImage
+            src="/avatar2.jpg"
+            alt="Josh Wentworth"
+          />
         </div>
       </div>
     </div>

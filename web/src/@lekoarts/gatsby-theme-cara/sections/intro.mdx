@@ -1,5 +1,5 @@
 import ScrollButton from "../components/scroll-button"
-import { GradientGlow } from "../../../components/GradientGlow"
+import { GlowImage } from "../../../components/GlowImage"
 
 export default () => (
   <>
@@ -95,35 +95,11 @@ export default () => (
         alignSelf: 'start',
         mt: [4, null, 0],
       }}>
-        <div sx={{
-          position: 'relative',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-          '::before': {
-            content: '""',
-            position: 'absolute',
-            inset: '-2px',
-            borderRadius: 'inherit',
-            background: (t) => `linear-gradient(135deg, ${t.colors.gradA}, ${t.colors.gradB})`,
-            padding: '2px',
-            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-            WebkitMaskComposite: 'xor',
-            maskComposite: 'exclude',
-            zIndex: -1,
-          },
-        }}>
-          <img
-            src="/avatar.jpg"
-            alt="Josh Wentworth headshot"
-            sx={{
-              display: 'block',
-              width: ['200px', '240px'],
-              height: 'auto',
-              borderRadius: '12px',
-            }}
-          />
-        </div>
+        <GlowImage
+          src="/avatar.jpg"
+          alt="Josh Wentworth headshot"
+          width={[200, 240]}
+        />
       </div>
     </div>
 
