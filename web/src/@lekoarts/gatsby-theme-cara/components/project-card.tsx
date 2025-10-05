@@ -48,14 +48,6 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
               outlineOffset: "2px",
             }
           : {},
-        "&::before": {
-          content: `""`,
-          position: `absolute`,
-          inset: 0,
-          background: `linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 35%, rgba(0,0,0,0.1) 65%, rgba(0,0,0,0.7) 100%)`,
-          zIndex: 1,
-          pointerEvents: `none`,
-        },
       }}
     >
       <img
@@ -71,22 +63,16 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
           zIndex: 0,
         }}
       />
-      <div
-        sx={{
-          position: `absolute`,
-          inset: 0,
-          p: "24px",
-          display: `flex`,
-          flexDirection: `column`,
-          justifyContent: `space-between`,
-          zIndex: 2,
-        }}
-      >
+      <div sx={{ variant: "cards.projectOverlay" }} />
+      <div sx={{ variant: "cards.projectText" }}>
         <h3 sx={{ variant: "text.cardTitle" }}>{title}</h3>
         <div
           sx={{
-            color: `white`,
-            maxWidth: `60ch`,
+            mt: 2,
+            fontSize: 2,
+            color: "white",
+            opacity: 0.85,
+            maxWidth: "58ch",
             p: {
               fontSize: 2,
               lineHeight: "body",

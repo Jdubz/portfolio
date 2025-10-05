@@ -1,6 +1,6 @@
 import { Theme } from "theme-ui"
 
-// Extend Theme to include gradients and backgrounds
+// Extend Theme to include gradients, backgrounds, and masks
 interface CustomTheme extends Theme {
   gradients?: {
     primary: string
@@ -8,6 +8,9 @@ interface CustomTheme extends Theme {
   }
   backgrounds?: {
     watermark: Record<string, string | number>
+  }
+  masks?: {
+    soft: Record<string, string | number | Record<string, string | number>>
   }
 }
 
@@ -47,23 +50,24 @@ const theme: CustomTheme = {
   // Breakpoints
   breakpoints: ["400px", "600px", "900px", "1200px", "1600px"],
   fonts: {
-    body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-    heading: "inherit",
+    body: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+    heading:
+      'Poppins, Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
     monospace: "Menlo, monospace",
   },
   fontWeights: {
     body: 400,
+    medium: 500,
     heading: 700,
     bold: 700,
-    medium: 500,
   },
   lineHeights: {
     body: 1.65,
-    heading: 1.2,
+    heading: 1.15,
   },
   letterSpacings: {
     body: "normal",
-    wide: "0.05em",
+    wide: "0.04em",
   },
   styles: {
     root: {
@@ -79,6 +83,7 @@ const theme: CustomTheme = {
       color: "text",
       backgroundColor: "background",
       WebkitTextSizeAdjust: "100%",
+      fontFeatureSettings: "'cv05','ss01','case','liga','calt'",
     },
     a: {
       color: "primary",
@@ -97,25 +102,29 @@ const theme: CustomTheme = {
       fontSize: "1em",
     },
     p: {
+      fontFamily: "body",
       fontSize: [1, 2],
       letterSpacing: "-0.003em",
       lineHeight: "body",
       color: "text",
     },
     h1: {
+      fontFamily: "heading",
       fontSize: [6, 7, 8],
       fontWeight: "heading",
       lineHeight: "heading",
+      letterSpacing: "-0.015em",
       mt: 2,
       mb: 3,
       textShadow: "rgba(255, 255, 255, 0.15) 0px 5px 35px",
-      letterSpacing: "wide",
       color: "heading",
     },
     h2: {
+      fontFamily: "heading",
       fontSize: [4, 5, 6],
       fontWeight: "heading",
       lineHeight: "heading",
+      letterSpacing: "-0.012em",
       mt: 2,
       mb: 2,
       color: "heading",
@@ -225,17 +234,32 @@ const theme: CustomTheme = {
       position: "absolute",
       bottom: 0,
       color: "textMuted",
-      px: [2, 3],
+      px: [0, 3],
       py: [3, 4],
     },
     twoColSection: {
-      display: ["block", null, "grid"],
-      gridTemplateColumns: ["1fr", null, "1.25fr .75fr"],
-      gap: [5, null, 6],
+      display: ["block", null, null, "grid"],
+      gridTemplateColumns: ["1fr", null, null, "1.25fr .75fr"],
+      gap: [5, null, null, 6],
       alignItems: "start",
+    },
+    section: {
+      position: "relative",
+      py: [6, 7, 7],
+    },
+    content: {
+      variant: "layout.container",
+      maxWidth: 1120,
+    },
+    measure: {
+      maxWidth: "60ch",
     },
   },
   buttons: {
+    sizes: {
+      sm: { px: 3, py: 2, fontSize: 2, height: 36 },
+      md: { px: 4, py: 3, fontSize: 3, height: 40 },
+    },
     primary: {
       bg: "primary",
       color: "white",
@@ -290,6 +314,24 @@ const theme: CustomTheme = {
         outlineOffset: "2px",
       },
     },
+    ghost: {
+      bg: "transparent",
+      color: "text",
+      fontWeight: "bold",
+      px: 0,
+      py: 0,
+      border: "none",
+      cursor: "pointer",
+      "&:hover": {
+        color: "primary",
+        textDecoration: "underline",
+      },
+      "&:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "primary",
+        outlineOffset: "2px",
+      },
+    },
     toggle: {
       color: "background",
       border: "none",
@@ -310,6 +352,21 @@ const theme: CustomTheme = {
       "&:hover": {
         color: "primaryHover",
         textDecoration: "underline",
+      },
+      "&:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "primary",
+        outlineOffset: "2px",
+        borderRadius: "2px",
+      },
+    },
+    underline: {
+      color: "primary",
+      textDecoration: "underline",
+      textUnderlineOffset: "4px",
+      transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
+      "&:hover": {
+        color: "primaryHover",
       },
       "&:focus-visible": {
         outline: "3px solid",
@@ -368,7 +425,7 @@ const theme: CustomTheme = {
     h1: {
       variant: "text.heading",
       fontSize: [9, 10, 11],
-      letterSpacing: "-0.01em",
+      letterSpacing: "-0.015em",
       lineHeight: 1.12,
       mt: 3,
       mb: 2,
@@ -376,20 +433,22 @@ const theme: CustomTheme = {
     h2: {
       variant: "text.heading",
       fontSize: [5, 6, 7],
-      letterSpacing: "-0.01em",
+      letterSpacing: "-0.012em",
       mb: 2,
     },
     lead: {
+      fontFamily: "body",
       fontSize: [3, 4, 5],
       color: "textMuted",
       lineHeight: 1.65,
-      maxWidth: "68ch",
+      maxWidth: "60ch",
     },
     body: {
+      fontFamily: "body",
       fontSize: [2, 3],
       lineHeight: 1.65,
       color: "textMuted",
-      maxWidth: "64ch",
+      maxWidth: "60ch",
     },
     heroKicker: {
       fontSize: [2, 3],
@@ -399,15 +458,17 @@ const theme: CustomTheme = {
       textTransform: "uppercase",
     },
     heroTitle: {
+      fontFamily: "heading",
       fontSize: [7, 8, 9],
       fontWeight: "heading",
-      lineHeight: "heading",
+      lineHeight: 1.12,
+      letterSpacing: "-0.015em",
       color: "heading",
       textShadow: "rgba(255, 255, 255, 0.15) 0px 5px 35px",
-      letterSpacing: "wide",
       mb: 3,
     },
     heroSub: {
+      fontFamily: "body",
       fontSize: [3, 4],
       lineHeight: 1.5,
       color: "textMuted",
@@ -428,14 +489,16 @@ const theme: CustomTheme = {
       opacity: 0.7,
     },
     sectionTitle: {
+      fontFamily: "heading",
       fontSize: "40px",
       fontWeight: 700,
       lineHeight: 1.2,
+      letterSpacing: "-0.012em",
       color: "heading",
-      letterSpacing: "-0.01em",
       mb: "40px",
     },
     bodyParagraph: {
+      fontFamily: "body",
       fontSize: [2, 3],
       lineHeight: 1.65,
       color: "textMuted",
@@ -452,11 +515,12 @@ const theme: CustomTheme = {
       py: 2,
     },
     cardTitle: {
+      fontFamily: "heading",
       fontSize: [5, 6],
       fontWeight: "heading",
       lineHeight: "heading",
-      color: "white",
       letterSpacing: "-0.01em",
+      color: "white",
       textShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
       mb: 0,
       mt: 2,
@@ -488,6 +552,47 @@ const theme: CustomTheme = {
       overflow: "hidden",
       textDecoration: "none",
       transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
+    },
+    portrait: {
+      position: "relative",
+      borderRadius: "lg",
+      overflow: "hidden",
+      border: "1px solid",
+      borderColor: "divider",
+      boxShadow: "xl",
+      img: {
+        display: "block",
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+      },
+      "&::before": {
+        content: '""',
+        position: "absolute",
+        inset: "-2px",
+        borderRadius: "inherit",
+        background: "linear-gradient(120deg, #7C3AED, #06B6D4)",
+        filter: "blur(10px)",
+        opacity: 0.18,
+        zIndex: -1,
+      },
+    },
+    projectOverlay: {
+      position: "absolute",
+      inset: 0,
+      background: "linear-gradient(180deg, rgba(0,0,0,.0) 35%, rgba(0,0,0,.72) 95%)",
+    },
+    projectText: {
+      position: "absolute",
+      left: 4,
+      right: 4,
+      bottom: 4,
+      "@media screen and (min-width: 900px)": {
+        left: 5,
+        right: 5,
+        bottom: 5,
+      },
+      color: "white",
     },
   },
   forms: {
@@ -566,6 +671,26 @@ const theme: CustomTheme = {
       backgroundRepeat: "no-repeat",
       opacity: 0.06,
       pointerEvents: "none",
+    },
+  },
+  masks: {
+    soft: {
+      position: "absolute",
+      inset: "-16px",
+      backdropFilter: "blur(6px)",
+      WebkitBackdropFilter: "blur(6px)",
+      maskImage: `
+        linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)
+      `,
+      WebkitMaskImage: `
+        linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)
+      `,
+      maskComposite: "intersect",
+      WebkitMaskComposite: "source-in",
+      pointerEvents: "none",
+      zIndex: -1,
     },
   },
 }

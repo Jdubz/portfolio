@@ -1,0 +1,17 @@
+/* Inter — variable */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Poppins — variable */
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/Poppins-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}

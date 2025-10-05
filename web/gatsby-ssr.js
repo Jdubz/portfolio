@@ -1,7 +1,22 @@
 import React from "react"
 
-// Fix icons.svg preload - remove it entirely to avoid warning
-// The browser will fetch it when the SVG <use> elements reference it
 export const onRenderBody = ({ setHeadComponents }) => {
-  // Don't preload icons.svg - it's not immediately needed on page load
+  setHeadComponents([
+    <link
+      key="preload-inter"
+      rel="preload"
+      href="/fonts/Inter-Variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossOrigin="anonymous"
+    />,
+    <link
+      key="preload-poppins"
+      rel="preload"
+      href="/fonts/Poppins-Variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossOrigin="anonymous"
+    />,
+  ])
 }

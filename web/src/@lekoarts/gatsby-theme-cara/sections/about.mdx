@@ -3,10 +3,17 @@ import { GlowImage } from "../../../components/GlowImage"
 export default () => (
   <>
     <div sx={{ variant: 'layout.container', py: [6, 7] }}>
-      <h2 sx={{ variant: 'text.sectionTitle' }}>About</h2>
+      <h2 sx={{ variant: 'text.sectionTitle', position: 'relative' }}>
+        {/* Backdrop blur layer behind title */}
+        <div sx={{ variant: 'masks.soft' }} />
+        About
+      </h2>
 
       <div sx={{ variant: 'layout.twoColSection' }}>
-        <div sx={{ maxWidth: '64ch' }}>
+        <div sx={{ maxWidth: '64ch', position: 'relative' }}>
+          {/* Backdrop blur layer behind all text */}
+          <div sx={{ variant: 'masks.soft' }} />
+
           <div sx={{
             borderLeft: '3px solid',
             borderColor: 'primary',
@@ -44,7 +51,7 @@ export default () => (
           </a>
         </div>
 
-        <div sx={{ justifySelf: ['center', null, 'end'], alignSelf: 'start', mt: [5, null, 0] }}>
+        <div sx={{ justifySelf: ['center', null, null, 'end'], alignSelf: 'start', mt: [5, null, null, 0] }}>
           <GlowImage
             src="/synth.jpg"
             alt="Custom synthesizer hardware project"
