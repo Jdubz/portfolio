@@ -3,15 +3,6 @@ import { GlowImage } from "../../../components/GlowImage"
 
 export default () => (
   <>
-    {/* Mask background icons behind text to prevent collision */}
-    <div sx={{
-      pointerEvents: 'none',
-      position: 'absolute',
-      inset: 0,
-      maskImage: 'radial-gradient(220px 140px at 22% 44%, transparent 0, black 60%)',
-      WebkitMaskImage: 'radial-gradient(220px 140px at 22% 44%, transparent 0, black 60%)',
-    }} />
-
     <div sx={{
       variant: 'layout.container',
       display: ['block', null, 'grid'],
@@ -21,17 +12,20 @@ export default () => (
     }}>
       <div sx={{ display: 'flex', flexDirection: 'column' }}>
         <span sx={{
-          variant: 'text.overline',
+          variant: 'masks.soft',
           fontSize: [1, 1],
           fontWeight: 600,
           color: 'primary',
           letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          opacity: 0.9,
           mb: 3,
         }}>
           SOFTWARE × HARDWARE × FABRICATION
         </span>
 
         <h1 sx={{
+          variant: 'masks.soft',
           fontSize: ['48px', '52px', '56px'],
           fontWeight: 700,
           lineHeight: 1.12,
@@ -42,7 +36,7 @@ export default () => (
           Josh Wentworth
         </h1>
 
-        <p sx={{ variant: 'text.bodyParagraph' }}>
+        <p sx={{ variant: 'masks.soft', fontSize: [2, 3], lineHeight: 1.65, color: 'textMuted', maxWidth: '64ch', mb: 4 }}>
           Full-stack engineer with a workshop habit. I ship web apps (React/Angular + TypeScript, Node.js/Python) and the systems behind them (Kubernetes on GCP), and I also prototype electronics, lighting, and fabricated parts when software needs a body.
         </p>
 
@@ -60,11 +54,12 @@ export default () => (
           </ScrollButton>
         </div>
 
-        <p sx={{ variant: 'text.accentQuote', mb: 3 }}>
+        <p sx={{ variant: 'masks.soft', fontSize: [2, 3], fontStyle: 'italic', color: 'text', borderLeft: '3px solid', borderColor: 'primary', pl: 3, py: 2, opacity: 0.95, mb: 3 }}>
           Most recently: cloud architecture and partner integrations for robotic grocery fulfillment at Fulfil Solutions.
         </p>
 
         <p sx={{
+          variant: 'masks.soft',
           fontSize: '14px',
           color: 'textMuted',
           opacity: 0.75,

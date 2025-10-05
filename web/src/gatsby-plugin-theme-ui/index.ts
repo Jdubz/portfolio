@@ -663,15 +663,20 @@ const theme: CustomTheme = {
   masks: {
     soft: {
       position: "relative",
-      "&::before": {
-        content: '""',
-        position: "absolute",
-        inset: 0,
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
-        pointerEvents: "none",
-        zIndex: -1,
-      },
+      padding: "16px 20px",
+      margin: "-16px -20px",
+      backdropFilter: "blur(6px)",
+      WebkitBackdropFilter: "blur(6px)",
+      maskImage: `
+        linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)
+      `,
+      WebkitMaskImage: `
+        linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)
+      `,
+      maskComposite: "intersect",
+      WebkitMaskComposite: "source-in",
     },
   },
 }

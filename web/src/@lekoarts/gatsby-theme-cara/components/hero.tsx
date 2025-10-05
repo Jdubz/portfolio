@@ -22,7 +22,7 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
         position: "relative",
         "::after": {
           variant: "backgrounds.watermark",
-          backgroundPosition: ["center 18%", "center 20%", "center 22%"],
+          backgroundPosition: ["center 85%", "center 88%", "center 90%"],
           backgroundSize: ["min(360px,70vw)", "min(520px,60vw)", "min(640px,48vw)"],
         },
       }}
