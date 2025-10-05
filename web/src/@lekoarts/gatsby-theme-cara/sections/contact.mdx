@@ -12,7 +12,12 @@ export default () => (
         gap: [4, null, 5],
         alignItems: 'start',
       }}>
-        <div>
+        <div sx={{
+          bg: 'panel',
+          p: [4, 5],
+          borderRadius: '16px',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+        }}>
           <p sx={{ variant: 'text.lead', mb: 3 }}>
             Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
           </p>
