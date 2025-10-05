@@ -5,12 +5,22 @@ import * as React from "react"
 export function SearchBar() {
   const [query, setQuery] = React.useState("")
   const [isFocused, setIsFocused] = React.useState(false)
+  const [message, setMessage] = React.useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle search logic here
-    // eslint-disable-next-line no-console
-    console.log("Search query:", query)
+
+    if (!query.trim()) {
+      setMessage("Please enter a search query")
+      return
+    }
+
+    // TODO: Implement search functionality when backend is ready
+    // For now, show a helpful message
+    setMessage(`Search functionality coming soon! You searched for: "${query}"`)
+
+    // Clear message after 5 seconds
+    setTimeout(() => setMessage(""), 5000)
   }
 
   return (
@@ -94,6 +104,21 @@ export function SearchBar() {
       >
         Search
       </button>
+      {message && (
+        <div
+          sx={{
+            mt: 3,
+            p: 3,
+            bg: "divider",
+            color: "text",
+            borderRadius: "8px",
+            fontSize: 2,
+            textAlign: "center",
+          }}
+        >
+          {message}
+        </div>
+      )}
     </form>
   )
 }
