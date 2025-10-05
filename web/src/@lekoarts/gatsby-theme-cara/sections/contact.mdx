@@ -1,61 +1,39 @@
-import ContactForm from "../../../components/ContactForm"
+import NavButton from "../components/nav-button"
 import { GlowImage } from "../../../components/GlowImage"
+
+export { GlowImage, NavButton }
 
 export default () => (
   <>
-    <div sx={{ variant: 'layout.container', py: [5, 6] }}>
+    <div sx={{ variant: 'layout.container', py: [6, 7] }}>
       <h2 sx={{ variant: 'text.sectionTitle' }}>Get in touch</h2>
 
       <div sx={{
         display: ['block', null, 'grid'],
-        gridTemplateColumns: ['1fr', null, '1.2fr .8fr'],
-        gap: [4, null, 5],
+        gridTemplateColumns: ['1fr', null, '1.25fr .75fr'],
+        gap: [5, null, 6],
         alignItems: 'start',
       }}>
         <div>
-          <div sx={{ variant: 'cards.white' }}>
-            <p sx={{
-              fontSize: [3, 4],
-              lineHeight: 1.65,
-              maxWidth: '64ch',
-              mb: 3,
-              mt: 1,
-              color: 'dark',
-            }}>
-              Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
-            </p>
-
-            <div sx={{ display: 'grid', gap: 3 }}>
-              <div>
-                <span sx={{ color: 'grayDark', mr: 2 }}>Email:</span>
-                <a href="mailto:hello@joshwentworth.com" sx={{ variant: 'links.primary' }}>
-                  hello@joshwentworth.com
-                </a>
-              </div>
-              <div>
-                <span sx={{ color: 'grayDark', mr: 2 }}>LinkedIn:</span>
-                <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary' }}>
-                  linkedin.com/in/joshwentworth
-                </a>
-              </div>
-              <div>
-                <span sx={{ color: 'grayDark', mr: 2 }}>GitHub:</span>
-                <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary' }}>
-                  github.com/joshwentworth
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div sx={{ maxWidth: 720 }}>
-            <ContactForm />
-          </div>
+          <p sx={{
+            fontSize: 2,
+            lineHeight: 'body',
+            color: 'textMuted',
+            mb: 5,
+            maxWidth: '64ch',
+          }}>
+            Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
+          </p>
+          <NavButton to="/contact">
+            Contact Me
+          </NavButton>
         </div>
 
-        <div sx={{ justifySelf: ['center', null, 'end'], alignSelf: 'start', mt: [4, null, 0] }}>
+        <div sx={{ justifySelf: ['center', null, 'end'], alignSelf: 'start', mt: [5, null, 0] }}>
           <GlowImage
             src="/avatar2.jpg"
             alt="Josh Wentworth"
+            width={[180, 192]}
           />
         </div>
       </div>

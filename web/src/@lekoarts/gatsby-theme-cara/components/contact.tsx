@@ -31,9 +31,9 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
               inset: 0,
               backgroundImage: "url(/jw-logo-mono.svg)",
               backgroundRepeat: "no-repeat",
-              backgroundPosition: "center 150%",
+              backgroundPosition: "center 120%",
               backgroundSize: "min(440px, 54vw)",
-              opacity: 0.05,
+              opacity: 0.08,
               pointerEvents: "none",
               transform: "scaleY(-1)",
             },
@@ -59,7 +59,7 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          minHeight: "100vh",
+          minHeight: "calc(100vh - 160px)",
           width: "100%",
         }}
       >

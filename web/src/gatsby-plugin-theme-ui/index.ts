@@ -157,7 +157,7 @@ const theme: CustomTheme = {
     divider: "#1e293b",
     textMuted: "#94a3b8",
     dark: "#0f172a",
-    wave: "#0a0f1a",
+    wave: "#334155",
     white: "#ffffff",
     grayDark: "#64748b",
     // Gradient colors
@@ -190,7 +190,7 @@ const theme: CustomTheme = {
         divider: "#e2e8f0",
         textMuted: "#64748b",
         dark: "#0f172a",
-        wave: "#0a0f1a",
+        wave: "#334155",
         white: "#ffffff",
         grayDark: "#64748b",
         gradA: "#0ea5e9",
