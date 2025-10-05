@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/prefer-nullish-coalescing */
 import { Theme } from "theme-ui"
 
-const theme: Theme = {
+// Extend Theme to include gradients
+interface CustomTheme extends Theme {
+  gradients?: {
+    primary: string
+    project: string
+  }
+}
+
+const theme: CustomTheme = {
   config: {
     initialColorModeName: "dark",
     useCustomProperties: true,
