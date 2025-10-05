@@ -1,5 +1,3 @@
-import { GradientGlow } from "../../../components/GradientGlow"
-
 export default () => (
   <>
     <div sx={{ variant: 'layout.container', py: ['48px', '80px'] }}>
@@ -86,31 +84,19 @@ export default () => (
 
         <div sx={{ justifySelf: ['center', null, 'end'], alignSelf: 'start', mt: ['32px', null, 0] }}>
           <div sx={{
-            position: 'relative',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-            '::before': {
-              content: '""',
-              position: 'absolute',
-              inset: '-2px',
-              borderRadius: 'inherit',
-              background: (t) => `linear-gradient(135deg, ${t.colors.gradA}, ${t.colors.gradB})`,
-              padding: '2px',
-              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-              WebkitMaskComposite: 'xor',
-              maskComposite: 'exclude',
-              zIndex: -1,
-            },
+            p: 2,
+            borderRadius: 'md',
+            background: (t) => `linear-gradient(90deg, ${t.colors.gradA}, ${t.colors.gradB})`,
+            boxShadow: 'md',
           }}>
             <img
               src="/synth.jpg"
               alt="Custom synthesizer hardware project"
               sx={{
+                width: [260, 320],
+                borderRadius: 'md',
                 display: 'block',
-                borderRadius: '12px',
-                width: ['280px', '320px'],
-                height: 'auto',
+                boxShadow: 'sm',
               }}
             />
           </div>
