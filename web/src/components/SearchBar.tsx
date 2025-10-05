@@ -20,7 +20,7 @@ export function SearchBar() {
     setMessage(`Search functionality coming soon! You searched for: "${query}"`)
 
     // Clear message after 5 seconds
-    setTimeout(() => setMessage(""), 5000)
+    window.setTimeout(() => setMessage(""), 5000)
   }
 
   return (
