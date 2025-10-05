@@ -13,11 +13,10 @@ export default () => (
       </h2>
 
       <div sx={{ variant: 'layout.twoColSection' }}>
-        <div sx={{ position: 'relative' }}>
-          {/* Backdrop blur layer behind text */}
-          <div sx={{ variant: 'masks.soft' }} />
-
-          <p sx={{ variant: 'text.bodyParagraph', mb: 5 }}>
+        <div>
+          <p sx={{ variant: 'text.bodyParagraph', mb: 5, position: 'relative' }}>
+            {/* Backdrop blur layer behind paragraph only */}
+            <div sx={{ variant: 'masks.soft' }} />
             Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
           </p>
           <NavButton to="/contact">
