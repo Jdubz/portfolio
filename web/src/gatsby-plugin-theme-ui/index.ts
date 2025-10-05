@@ -16,38 +16,38 @@ const theme: CustomTheme = {
   },
   // Font sizes: rem based scale
   fontSizes: [
-    "0.75rem",   // 0: 12px
-    "0.875rem",  // 1: 14px
-    "1rem",      // 2: 16px
-    "1.125rem",  // 3: 18px
-    "1.25rem",   // 4: 20px
-    "1.5rem",    // 5: 24px
-    "2rem",      // 6: 32px
-    "2.5rem",    // 7: 40px
-    "3rem",      // 8: 48px
-    "4rem",      // 9: 64px
-    "5rem",      // 10: 80px
-    "6rem",      // 11: 96px
+    "0.75rem", // 0: 12px
+    "0.875rem", // 1: 14px
+    "1rem", // 2: 16px
+    "1.125rem", // 3: 18px
+    "1.25rem", // 4: 20px
+    "1.5rem", // 5: 24px
+    "2rem", // 6: 32px
+    "2.5rem", // 7: 40px
+    "3rem", // 8: 48px
+    "4rem", // 9: 64px
+    "5rem", // 10: 80px
+    "6rem", // 11: 96px
   ],
   // Spacing scale
   space: [
-    0,           // 0
-    "0.25rem",   // 1: 4px
-    "0.5rem",    // 2: 8px
-    "1rem",      // 3: 16px
-    "1.5rem",    // 4: 24px
-    "2rem",      // 5: 32px
-    "3rem",      // 6: 48px
-    "4rem",      // 7: 64px
-    "6rem",      // 8: 96px
-    "8rem",      // 9: 128px
+    0, // 0
+    "0.25rem", // 1: 4px
+    "0.5rem", // 2: 8px
+    "1rem", // 3: 16px
+    "1.5rem", // 4: 24px
+    "2rem", // 5: 32px
+    "3rem", // 6: 48px
+    "4rem", // 7: 64px
+    "6rem", // 8: 96px
+    "8rem", // 9: 128px
   ],
   // Breakpoints
   breakpoints: ["400px", "600px", "900px", "1200px", "1600px"],
   fonts: {
     body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-    heading: 'inherit',
-    monospace: 'Menlo, monospace',
+    heading: "inherit",
+    monospace: "Menlo, monospace",
   },
   fontWeights: {
     body: 400,
@@ -388,12 +388,12 @@ const theme: CustomTheme = {
       opacity: 0.7,
     },
     sectionTitle: {
-      fontSize: '40px',
+      fontSize: "40px",
       fontWeight: 700,
       lineHeight: 1.2,
       color: "heading",
-      letterSpacing: '-0.01em',
-      mb: '40px',
+      letterSpacing: "-0.01em",
+      mb: "40px",
     },
   },
   cards: {

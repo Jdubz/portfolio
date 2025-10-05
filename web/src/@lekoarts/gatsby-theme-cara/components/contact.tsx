@@ -54,13 +54,15 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
       </div>
     </Divider>
     <Content speed={0.4} offset={offset} factor={factor} className="content">
-      <div sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        minHeight: '100vh',
-        width: '100%',
-      }}>
+      <div
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          minHeight: "100vh",
+          width: "100%",
+        }}
+      >
         <Inner>
           <ContactMDX />
         </Inner>
