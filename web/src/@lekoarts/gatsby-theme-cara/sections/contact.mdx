@@ -10,7 +10,25 @@ export default () => (
 
       <div sx={{ variant: 'layout.twoColSection' }}>
         <div>
-          <p sx={{ variant: ['masks.soft', 'text.bodyParagraph'], mb: 5 }}>
+          <p sx={{
+            variant: 'text.bodyParagraph',
+            position: 'relative',
+            padding: '12px 6px',
+            margin: '-12px -6px',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            maskImage: `
+              linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%),
+              linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)
+            `,
+            WebkitMaskImage: `
+              linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%),
+              linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)
+            `,
+            maskComposite: 'intersect',
+            WebkitMaskComposite: 'source-in',
+            mb: 5
+          }}>
             Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
           </p>
           <NavButton to="/contact">
