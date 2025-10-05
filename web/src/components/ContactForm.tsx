@@ -103,7 +103,7 @@ const ContactForm = (): React.JSX.Element => {
       sx={{
         bg: "background",
         color: "text",
-        p: [4, 5],
+        p: "2rem",
         borderRadius: "lg",
         boxShadow: "0 10px 30px rgba(16,23,42,0.12)",
         border: "1px solid",
