@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
 import { jsx } from "theme-ui"
 import * as React from "react"
 import { navigate } from "gatsby"

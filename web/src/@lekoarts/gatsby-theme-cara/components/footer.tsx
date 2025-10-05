@@ -16,9 +16,7 @@ const Footer = () => {
         color: "textMuted",
       }}
     >
-      <div sx={{ mb: 3 }}>
-        Copyright &copy; {new Date().getFullYear()}. All rights reserved.
-      </div>
+      <div sx={{ mb: 3 }}>Copyright &copy; {new Date().getFullYear()}. All rights reserved.</div>
       <div sx={{ fontSize: 1, display: "flex", gap: 4, justifyContent: "center", flexWrap: "wrap" }}>
         <a href="/privacy" sx={{ variant: "links.primary", color: "textMuted", "&:hover": { color: "primary" } }}>
           Privacy Policy

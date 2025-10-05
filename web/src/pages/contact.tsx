@@ -55,7 +55,8 @@ const ContactPage = () => {
               color: "textMuted",
             }}
           >
-            Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
+            Let&apos;s collaborate on your next engineering challenge. Whether you need software development,
+            electronics design, or fabrication expertise, I&apos;m ready to help bring your ideas to life.
           </p>
 
           <div
