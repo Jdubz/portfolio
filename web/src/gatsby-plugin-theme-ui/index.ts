@@ -25,7 +25,7 @@ const theme = merge(baseTheme, {
       "&:hover": {
         bg: "primaryHover",
         transform: "translateY(-2px)",
-        boxShadow: "0 4px 12px rgba(251, 146, 60, 0.4)",
+        boxShadow: "0 4px 12px rgba(14, 165, 233, 0.4)",
       },
       "&:active": {
         transform: "translateY(0)",
@@ -47,7 +47,7 @@ const theme = merge(baseTheme, {
         borderColor: "primary",
         color: "primary",
         transform: "translateY(-2px)",
-        boxShadow: "0 4px 12px rgba(251, 146, 60, 0.2)",
+        boxShadow: "0 4px 12px rgba(14, 165, 233, 0.2)",
       },
       "&:active": {
         transform: "translateY(0)",
@@ -153,12 +153,13 @@ const theme = merge(baseTheme, {
   },
   colors: {
     ...baseTheme.colors,
-    primaryHover: "#f97316",
+    primary: "#0EA5E9",
+    primaryHover: "#0284c7",
+    highlight: "#00C9A7",
     danger: "#ef4444",
     success: "#10b981",
     panel: baseTheme.colors?.background,
     hairline: baseTheme.colors?.divider,
-    highlight: baseTheme.colors?.primary,
     gradA: "#0ea5e9",
     gradB: "#00c9a7",
   } as any,

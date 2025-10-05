@@ -58,20 +58,28 @@ export default () => (
         display: ['none', null, 'flex'],
         justifySelf: ['center', null, 'end'],
         alignSelf: 'start',
+        mt: [4, null, 0],
       }}>
-        <img
-          src="/avatar.jpg"
-          alt="Josh Wentworth headshot"
-          sx={{
-            width: [96, 120],
-            height: 'auto',
-            borderRadius: 'md',
-            boxShadow: 'md',
-            border: '1px solid',
-            borderColor: 'hairline',
-            transform: ['translateY(0)', 'translate(4px, -6px)'],
-          }}
-        />
+        <div sx={{
+          p: 2,
+          borderRadius: 'md',
+          background: (t) => `linear-gradient(90deg, ${t.colors.gradA}, ${t.colors.gradB})`,
+          boxShadow: 'md',
+          transform: ['none', 'translate(4px, -6px)'],
+        }}>
+          <img
+            src="/avatar.jpg"
+            alt="Josh Wentworth headshot"
+            sx={{
+              display: 'block',
+              width: [96, 120],
+              height: 'auto',
+              borderRadius: 'md',
+              boxShadow: 'sm',
+              bg: 'background',
+            }}
+          />
+        </div>
       </div>
     </div>
 
