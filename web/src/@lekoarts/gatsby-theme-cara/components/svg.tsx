@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-redundant-type-constituents */
 import { jsx } from "theme-ui"
 import { withPrefix } from "gatsby"
 import { hidden } from "@lekoarts/gatsby-theme-cara/src/styles/utils"

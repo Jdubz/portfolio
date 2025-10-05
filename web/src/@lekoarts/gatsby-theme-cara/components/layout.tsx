@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
 import * as React from "react"
 import { get } from "theme-ui"
 import { MDXProvider } from "@mdx-js/react"

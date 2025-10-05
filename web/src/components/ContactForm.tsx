@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
-import { useState } from "react"
+import React, { useState } from "react"
 
 interface FormData {
   name: string
@@ -20,7 +20,7 @@ interface FormStatus {
   error: string | null
 }
 
-const ContactForm = (): JSX.Element => {
+const ContactForm = (): React.JSX.Element => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -65,10 +65,10 @@ const ContactForm = (): JSX.Element => {
     setStatus({ submitting: true, submitted: false, error: null })
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => window.setTimeout(resolve, 1000))
       setStatus({ submitting: false, submitted: true, error: null })
       setFormData({ name: "", email: "", message: "" })
-    } catch (error) {
+    } catch (_error) {
       setStatus({
         submitting: false,
         submitted: false,
@@ -95,20 +95,25 @@ const ContactForm = (): JSX.Element => {
       }}
       aria-label="Contact form"
     >
-      <div sx={{ 
-        display: "grid", 
-        gridTemplateColumns: ["1fr", "1fr 1fr"], 
-        gap: 3, 
-        mb: 4 
-      }}>
+      <div
+        sx={{
+          display: "grid",
+          gridTemplateColumns: ["1fr", "1fr 1fr"],
+          gap: 3,
+          mb: 4,
+        }}
+      >
         <div>
-          <label htmlFor="name" sx={{ 
-            fontSize: 2,
-            fontWeight: "bold", 
-            color: "heading",
-            mb: 2,
-            display: "block",
-          }}>
+          <label
+            htmlFor="name"
+            sx={{
+              fontSize: 2,
+              fontWeight: "bold",
+              color: "heading",
+              mb: 2,
+              display: "block",
+            }}
+          >
             Name *
           </label>
           <input
@@ -137,25 +142,31 @@ const ContactForm = (): JSX.Element => {
             aria-invalid={!!errors.name}
           />
           {errors.name && (
-            <div id="name-error" sx={{ 
-              color: "danger", 
-              fontSize: 1, 
-              mt: 1,
-              fontWeight: "medium",
-            }}>
+            <div
+              id="name-error"
+              sx={{
+                color: "danger",
+                fontSize: 1,
+                mt: 1,
+                fontWeight: "medium",
+              }}
+            >
               {errors.name}
             </div>
           )}
         </div>
 
         <div>
-          <label htmlFor="email" sx={{ 
-            fontSize: 2,
-            fontWeight: "bold", 
-            color: "heading",
-            mb: 2,
-            display: "block",
-          }}>
+          <label
+            htmlFor="email"
+            sx={{
+              fontSize: 2,
+              fontWeight: "bold",
+              color: "heading",
+              mb: 2,
+              display: "block",
+            }}
+          >
             Email *
           </label>
           <input
@@ -184,12 +195,15 @@ const ContactForm = (): JSX.Element => {
             aria-invalid={!!errors.email}
           />
           {errors.email && (
-            <div id="email-error" sx={{ 
-              color: "danger", 
-              fontSize: 1, 
-              mt: 1,
-              fontWeight: "medium",
-            }}>
+            <div
+              id="email-error"
+              sx={{
+                color: "danger",
+                fontSize: 1,
+                mt: 1,
+                fontWeight: "medium",
+              }}
+            >
               {errors.email}
             </div>
           )}
@@ -197,13 +211,16 @@ const ContactForm = (): JSX.Element => {
       </div>
 
       <div sx={{ mb: 4 }}>
-        <label htmlFor="message" sx={{ 
-          fontSize: 2,
-          fontWeight: "bold", 
-          color: "heading",
-          mb: 2,
-          display: "block",
-        }}>
+        <label
+          htmlFor="message"
+          sx={{
+            fontSize: 2,
+            fontWeight: "bold",
+            color: "heading",
+            mb: 2,
+            display: "block",
+          }}
+        >
           Message *
         </label>
         <textarea
@@ -234,12 +251,15 @@ const ContactForm = (): JSX.Element => {
           aria-invalid={!!errors.message}
         />
         {errors.message && (
-          <div id="message-error" sx={{ 
-            color: "danger", 
-            fontSize: 1, 
-            mt: 1,
-            fontWeight: "medium",
-          }}>
+          <div
+            id="message-error"
+            sx={{
+              color: "danger",
+              fontSize: 1,
+              mt: 1,
+              fontWeight: "medium",
+            }}
+          >
             {errors.message}
           </div>
         )}
@@ -259,53 +279,63 @@ const ContactForm = (): JSX.Element => {
           fontWeight: "bold",
           cursor: status.submitting ? "not-allowed" : "pointer",
           transition: "all 0.2s ease",
-          "&:hover": status.submitting ? {} : {
-            bg: "primaryHover",
-            transform: "translateY(-1px)",
-            boxShadow: "0 4px 12px rgba(66, 153, 225, 0.3)",
-          },
-          "&:active": status.submitting ? {} : {
-            transform: "translateY(0)",
-          },
+          "&:hover": status.submitting
+            ? {}
+            : {
+                bg: "primaryHover",
+                transform: "translateY(-1px)",
+                boxShadow: "0 4px 12px rgba(66, 153, 225, 0.3)",
+              },
+          "&:active": status.submitting
+            ? {}
+            : {
+                transform: "translateY(0)",
+              },
         }}
       >
         {status.submitting ? "Sending..." : "Send Message"}
       </button>
 
       {status.submitted && (
-        <div sx={{ 
-          mt: 4, 
-          p: 3, 
-          bg: "success", 
-          color: "background", 
-          borderRadius: "md",
-          textAlign: "center",
-          fontWeight: "medium",
-        }}>
+        <div
+          sx={{
+            mt: 4,
+            p: 3,
+            bg: "success",
+            color: "background",
+            borderRadius: "md",
+            textAlign: "center",
+            fontWeight: "medium",
+          }}
+        >
           Thank you! Your message has been sent successfully.
         </div>
       )}
 
       {status.error && (
-        <div sx={{ 
-          mt: 4, 
-          p: 3, 
-          bg: "danger", 
-          color: "background", 
-          borderRadius: "md",
-          textAlign: "center",
-          fontWeight: "medium",
-        }}>
+        <div
+          sx={{
+            mt: 4,
+            p: 3,
+            bg: "danger",
+            color: "background",
+            borderRadius: "md",
+            textAlign: "center",
+            fontWeight: "medium",
+          }}
+        >
           {status.error}
         </div>
       )}
 
-      <div sx={{ 
-        mt: 4, 
-        fontSize: 1, 
-        color: "textMuted", 
-        textAlign: "center" 
-      }}>
+      <div
+        sx={{
+          mt: 4,
+          fontSize: 1,
+          color: "textMuted",
+          textAlign: "center",
+        }}
+      >
         * Required fields
       </div>
     </form>

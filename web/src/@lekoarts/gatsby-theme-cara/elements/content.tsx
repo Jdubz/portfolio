@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */
 import * as React from "react"
 import { jsx } from "theme-ui"
 import { ParallaxLayer } from "@react-spring/parallax"

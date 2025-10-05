@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/prefer-nullish-coalescing */
 import { merge } from "theme-ui"
 import baseTheme from "@lekoarts/gatsby-theme-cara/src/gatsby-plugin-theme-ui"
 

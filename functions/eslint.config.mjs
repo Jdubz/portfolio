@@ -11,6 +11,8 @@ export default [
       "coverage/**",
       "*.config.js",
       "*.config.mjs",
+      "**/dist/**",
+      "contact-form/dist/**",
     ],
   },
 
