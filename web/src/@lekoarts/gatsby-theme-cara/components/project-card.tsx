@@ -20,96 +20,98 @@ const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags: _tags
       sx={{
         display: `block`,
         width: `100%`,
-        minHeight: [`240px`, `260px`, `280px`],
-        boxShadow: `elevated`,
+        minHeight: [280, 340],
+        boxShadow: `md`,
         position: `relative`,
-        borderRadius: `md`,
-        px: [4, 5],
-        py: [4, 5],
-        color: `white`,
-        background: bgImage ? `none` : bg || `none`,
-        backgroundImage: bgImage ? `url(${bgImage})` : `none`,
-        backgroundSize: `cover`,
-        backgroundPosition: `center`,
+        borderRadius: `lg`,
         overflow: `hidden`,
+        transition: `all 0.2s ease`,
+        "&:hover": {
+          transform: `translateY(-4px)`,
+          boxShadow: `lg`,
+        },
         "&::before": {
           content: `""`,
           position: `absolute`,
           inset: 0,
           background: bgImage
-            ? `radial-gradient(ellipse 120% 90% at 50% 100%, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.65) 100%)`
-            : `linear-gradient(180deg, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0.32) 100%)`,
-          borderRadius: `md`,
+            ? `linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 75%)`
+            : `linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 75%)`,
           zIndex: 0,
+          pointerEvents: `none`,
         },
       }}
     >
+      {bgImage && (
+        <img
+          src={bgImage}
+          alt=""
+          sx={{
+            position: `absolute`,
+            inset: 0,
+            width: `100%`,
+            height: `100%`,
+            objectFit: `cover`,
+            zIndex: 0,
+          }}
+        />
+      )}
       <div
         sx={{
-          position: `relative`,
-          zIndex: 1,
-          height: `100%`,
+          position: `absolute`,
+          inset: 0,
+          p: [4, 5],
           display: `flex`,
           flexDirection: `column`,
-          justifyContent: `space-between`,
+          justifyContent: `flex-end`,
+          zIndex: 1,
+          background: bgImage ? `none` : bg || `none`,
         }}
       >
-        <div>
-          <div
+        <h3
+          sx={{
+            variant: `text.h2`,
+            color: `white`,
+            letterSpacing: `-0.01em`,
+            mb: 2,
+            textShadow: `0 2px 10px rgba(0, 0, 0, 0.5)`,
+          }}
+        >
+          {title}
+        </h3>
+        <div
+          sx={{
+            color: `rgba(255,255,255,0.9)`,
+            maxWidth: `60ch`,
+            mb: 3,
+            p: {
+              fontSize: [1, 2],
+              lineHeight: 1.6,
+              margin: 0,
+            },
+          }}
+        >
+          {children}
+        </div>
+        {link && linkText && (
+          <a
+            href={link}
+            target="_blank"
+            rel="noreferrer noopener"
             sx={{
-              textTransform: `uppercase`,
-              letterSpacing: `wide`,
-              fontSize: [4, 5, 6],
-              fontWeight: `heading`,
-              lineHeight: `heading`,
-              color: `#FFFFFF`,
-              textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
-              mb: 3,
-            }}
-          >
-            {title}
-          </div>
-          <div
-            sx={{
-              opacity: 0.95,
-              textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
-              p: {
-                fontSize: [1, 2],
-                color: `#E6F0F2`,
-                margin: 0,
-                lineHeight: 1.6,
+              color: `white`,
+              fontWeight: `bold`,
+              textDecoration: `none`,
+              fontSize: [1, 2],
+              transition: `all 0.2s ease`,
+              "&:hover": {
+                color: `highlight`,
               },
             }}
           >
-            {children}
-          </div>
-        </div>
-        <div>
-          {link && linkText && (
-            <a
-              href={link}
-              target="_blank"
-              rel="noreferrer noopener"
-              sx={{
-                display: `inline-flex`,
-                alignItems: `center`,
-                gap: 1,
-                fontSize: [1, 2],
-                color: `#FFFFFF`,
-                textDecoration: `none`,
-                fontWeight: 600,
-                textShadow: `0 2px 10px rgba(0, 0, 0, 0.5)`,
-                transition: `all 0.2s ease`,
-                "&:hover": {
-                  transform: `translateX(4px)`,
-                  color: `#00C9A7`,
-                },
-              }}
-            >
-              {linkText}
-            </a>
-          )}
-        </div>
+            {linkText}
+          </a>
+        )}
       </div>
     </div>
   )

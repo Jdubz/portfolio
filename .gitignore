@@ -65,9 +65,12 @@ typings/
 **/.cache
 web/public
 web/.cache
+public/
 
 # Functions build
 functions/lib
+functions/**/dist/
+functions/**/node_modules/
 functions/**/*.js
 functions/**/*.d.ts
 !functions/jest.config.js
@@ -109,3 +112,8 @@ lighthouse-*.json
 # Generated Partytown assets (should be copied from node_modules during build)
 web/public/~partytown/
 public/~partytown/
+
+# Test and dev files
+web/src/components/*Test.tsx
+web/src/components/FORMS_GUIDE.md
+web/src/test-theme.ts

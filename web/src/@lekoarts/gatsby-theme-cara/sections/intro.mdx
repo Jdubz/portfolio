@@ -13,37 +13,34 @@ export default () => (
     }} />
 
     <div sx={{
-      mx: 'auto',
-      maxWidth: 1120,
-      display: 'grid',
-      gridTemplateColumns: ['1fr', null, 'minmax(44ch, 50ch) 248px'],
+      variant: 'layout.container',
+      display: ['block', null, 'grid'],
+      gridTemplateColumns: ['1fr', null, '2fr 1fr'],
       alignItems: 'start',
-      gap: [3, null, 5],
+      gap: [4, null, 5],
     }}>
-      <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <p sx={{ variant: 'text.heroKicker' }}>
-          Software × Hardware × Fabrication
-        </p>
+      <div sx={{ display: 'flex', flexDirection: 'column' }}>
+        <span sx={{ variant: 'text.overline' }}>
+          SOFTWARE × HARDWARE × FABRICATION
+        </span>
 
-        <h1 sx={{ variant: 'text.heroTitle' }}>
+        <h1 sx={{ variant: 'text.h1' }}>
           Josh Wentworth
         </h1>
 
-        <p sx={{ variant: 'text.heroSub' }}>
+        <p sx={{ variant: 'text.lead', mt: 2, mb: 3 }}>
           Full-stack engineer with a workshop habit. I ship web apps (React/Angular + TypeScript, Node.js/Python) and the systems behind them (Kubernetes on GCP), and I also prototype electronics, lighting, and fabricated parts when software needs a body.
         </p>
 
         <div sx={{
           display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          flexWrap: ['wrap', null, 'nowrap'],
-          pt: 1,
+          gap: 3,
+          mt: [3, 3],
         }}>
           <ScrollButton offset={1.65}>
             See what I've built
           </ScrollButton>
-          <ScrollButton offset={4}>
+          <ScrollButton offset={4} sx={{ variant: 'buttons.secondary' }}>
             Say hello
           </ScrollButton>
         </div>
@@ -57,21 +54,26 @@ export default () => (
         </p>
       </div>
 
-      <div sx={{ pt: 1 }}>
-        <div sx={{
-          position: 'relative',
-          width: ['176px', '208px', '232px'],
-          height: ['176px', '208px', '232px'],
-          borderRadius: 'lg',
-          overflow: 'hidden',
-          border: '1px solid',
-          borderColor: 'border',
-          boxShadow: 'softLg',
-        }}>
-          <GradientGlow />
-          <img src="/avatar.jpg" alt="Josh Wentworth headshot" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
+      <div sx={{
+        display: ['none', null, 'flex'],
+        justifySelf: ['center', null, 'end'],
+        alignSelf: 'start',
+      }}>
+        <img
+          src="/avatar.jpg"
+          alt="Josh Wentworth headshot"
+          sx={{
+            width: [96, 120],
+            height: 'auto',
+            borderRadius: 'md',
+            boxShadow: 'md',
+            border: '1px solid',
+            borderColor: 'hairline',
+            transform: ['translateY(0)', 'translate(4px, -6px)'],
+          }}
+        />
       </div>
     </div>
+
   </>
 )

@@ -36,6 +36,7 @@ const Content = ({ speed, offset, children, className = ``, factor = 1 }: Conten
       <div
         sx={{
           width: `100%`,
+          maxWidth: `1120px`,
           position: `relative`,
           "::before": {
             content: '""',
