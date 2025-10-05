@@ -54,10 +54,18 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
       </div>
     </Divider>
     <Content speed={0.4} offset={offset} factor={factor} className="content">
-      <Inner>
-        <ContactMDX />
-      </Inner>
-      <Footer />
+      <div sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        minHeight: '100vh',
+        width: '100%',
+      }}>
+        <Inner>
+          <ContactMDX />
+        </Inner>
+        <Footer />
+      </div>
     </Content>
     <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
       <UpDown>

@@ -15,7 +15,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
     aria-label="Projects"
   >
     <Divider
-      bg="linear-gradient(to right, SlateBlue 0%, DeepSkyBlue 100%)"
+      bg="gradients.project"
       sx={{
         clipPath: `polygon(0 15%, 100% 25%, 100% 85%, 0 75%)`,
         position: "relative",
@@ -37,13 +37,18 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
     />
     <Content speed={0.4} offset={offset + 0.2} factor={factor} className="content">
       <Inner>
-        <div className="mx-auto max-w-[1120px]">
+        <div
+          sx={{
+            maxWidth: 1120,
+            mx: "auto",
+          }}
+        >
           <div
             sx={{
               display: `grid`,
               gridGap: [4, 4, 4, 5],
               gridTemplateColumns: [`1fr`, `1fr`, `repeat(2, 1fr)`],
-              h2: { gridColumn: `-1/1`, color: `white !important` },
+              h2: { gridColumn: `-1/1` },
             }}
           >
             <ProjectsMDX />

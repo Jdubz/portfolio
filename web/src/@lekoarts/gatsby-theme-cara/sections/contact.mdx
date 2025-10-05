@@ -13,16 +13,9 @@ export default () => (
         alignItems: 'start',
       }}>
         <div>
-          <div sx={{
-            bg: 'white',
-            color: 'dark',
-            p: 4,
-            borderRadius: '16px',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-            mb: 4,
-          }}>
+          <div sx={{ variant: 'cards.white' }}>
             <p sx={{
-              fontSize: ['18px', '20px'],
+              fontSize: [3, 4],
               lineHeight: 1.65,
               maxWidth: '64ch',
               mb: 3,
@@ -35,19 +28,19 @@ export default () => (
             <div sx={{ display: 'grid', gap: 3 }}>
               <div>
                 <span sx={{ color: 'grayDark', mr: 2 }}>Email:</span>
-                <a href="mailto:hello@joshwentworth.com" sx={{ color: 'primary', textDecoration: 'none', fontWeight: 'bold', '&:hover': { textDecoration: 'underline' } }}>
+                <a href="mailto:hello@joshwentworth.com" sx={{ variant: 'links.primary' }}>
                   hello@joshwentworth.com
                 </a>
               </div>
               <div>
                 <span sx={{ color: 'grayDark', mr: 2 }}>LinkedIn:</span>
-                <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ color: 'primary', textDecoration: 'none', fontWeight: 'bold', '&:hover': { textDecoration: 'underline' } }}>
+                <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary' }}>
                   linkedin.com/in/joshwentworth
                 </a>
               </div>
               <div>
                 <span sx={{ color: 'grayDark', mr: 2 }}>GitHub:</span>
-                <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ color: 'primary', textDecoration: 'none', fontWeight: 'bold', '&:hover': { textDecoration: 'underline' } }}>
+                <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary' }}>
                   github.com/joshwentworth
                 </a>
               </div>

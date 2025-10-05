@@ -1,25 +1,233 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/prefer-nullish-coalescing */
-import { merge } from "theme-ui"
-import baseTheme from "@lekoarts/gatsby-theme-cara/src/gatsby-plugin-theme-ui"
+import { Theme } from "theme-ui"
 
-const theme = merge(baseTheme, {
+const theme: Theme = {
+  config: {
+    initialColorModeName: "dark",
+    useCustomProperties: true,
+  },
+  // Font sizes: rem based scale
+  fontSizes: [
+    "0.75rem",   // 0: 12px
+    "0.875rem",  // 1: 14px
+    "1rem",      // 2: 16px
+    "1.125rem",  // 3: 18px
+    "1.25rem",   // 4: 20px
+    "1.5rem",    // 5: 24px
+    "2rem",      // 6: 32px
+    "2.5rem",    // 7: 40px
+    "3rem",      // 8: 48px
+    "4rem",      // 9: 64px
+    "5rem",      // 10: 80px
+    "6rem",      // 11: 96px
+  ],
+  // Spacing scale
+  space: [
+    0,           // 0
+    "0.25rem",   // 1: 4px
+    "0.5rem",    // 2: 8px
+    "1rem",      // 3: 16px
+    "1.5rem",    // 4: 24px
+    "2rem",      // 5: 32px
+    "3rem",      // 6: 48px
+    "4rem",      // 7: 64px
+    "6rem",      // 8: 96px
+    "8rem",      // 9: 128px
+  ],
+  // Breakpoints
+  breakpoints: ["400px", "600px", "900px", "1200px", "1600px"],
+  fonts: {
+    body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+    heading: 'inherit',
+    monospace: 'Menlo, monospace',
+  },
+  fontWeights: {
+    body: 400,
+    heading: 700,
+    bold: 700,
+    medium: 500,
+  },
+  lineHeights: {
+    body: 1.65,
+    heading: 1.2,
+  },
+  letterSpacings: {
+    body: "normal",
+    wide: "0.05em",
+  },
+  styles: {
+    root: {
+      margin: 0,
+      padding: 0,
+      boxSizing: "border-box",
+      textRendering: "optimizeLegibility",
+      WebkitFontSmoothing: "antialiased",
+      MozOsxFontSmoothing: "grayscale",
+      fontFamily: "body",
+      lineHeight: "body",
+      fontWeight: "body",
+      color: "text",
+      backgroundColor: "background",
+      WebkitTextSizeAdjust: "100%",
+    },
+    a: {
+      color: "primary",
+      textDecoration: "none",
+      transition: "all 0.3s ease-in-out",
+      "&:hover": {
+        color: "primary",
+        textDecoration: "none",
+      },
+    },
+    img: {
+      borderStyle: "none",
+    },
+    pre: {
+      fontFamily: "monospace",
+      fontSize: "1em",
+    },
+    p: {
+      fontSize: [1, 2],
+      letterSpacing: "-0.003em",
+      lineHeight: "body",
+      color: "text",
+    },
+    h1: {
+      fontSize: [6, 7, 8],
+      fontWeight: "heading",
+      lineHeight: "heading",
+      mt: 2,
+      mb: 3,
+      textShadow: "rgba(255, 255, 255, 0.15) 0px 5px 35px",
+      letterSpacing: "wide",
+      color: "heading",
+    },
+    h2: {
+      fontSize: [4, 5, 6],
+      fontWeight: "heading",
+      lineHeight: "heading",
+      mt: 2,
+      mb: 2,
+      color: "heading",
+    },
+    h3: {
+      fontSize: [3, 4, 5],
+      fontWeight: "heading",
+      lineHeight: "heading",
+      mt: 3,
+      color: "heading",
+    },
+    h4: {
+      fontSize: [2, 3, 4],
+      fontWeight: "heading",
+      lineHeight: "heading",
+      color: "heading",
+    },
+    h5: {
+      fontSize: [1, 2, 3],
+      fontWeight: "heading",
+      lineHeight: "heading",
+      color: "heading",
+    },
+    h6: {
+      fontSize: 1,
+      fontWeight: "heading",
+      lineHeight: "heading",
+      mb: 2,
+      color: "heading",
+    },
+  },
+  colors: {
+    // Dark mode (default)
+    text: "#e2e8f0",
+    heading: "#ffffff",
+    background: "#141821",
+    primary: "#0EA5E9",
+    primaryHover: "#0284c7",
+    highlight: "#00C9A7",
+    danger: "#ef4444",
+    success: "#10b981",
+    divider: "#1e293b",
+    textMuted: "#94a3b8",
+    dark: "#0f172a",
+    wave: "#0a0f1a",
+    white: "#ffffff",
+    grayDark: "#64748b",
+    // Gradient colors
+    gradA: "#0ea5e9",
+    gradB: "#00c9a7",
+    // Icon colors
+    icon_brightest: "#00C9A7",
+    icon_darker: "#0284c7",
+    icon_darkest: "#0369a1",
+    icon_blue: "#0EA5E9",
+    icon_teal: "#00C9A7",
+    icon_indigo: "#667eea",
+    icon_red: "#ef4444",
+    icon_orange: "#0EA5E9",
+    icon_yellow: "#fbbf24",
+    icon_pink: "#ec4899",
+    icon_purple: "#a855f7",
+    icon_green: "#10b981",
+    // Light mode
+    modes: {
+      light: {
+        text: "#1e293b",
+        heading: "#0f172a",
+        background: "#f8fafc",
+        primary: "#0EA5E9",
+        primaryHover: "#0284c7",
+        highlight: "#00C9A7",
+        danger: "#ef4444",
+        success: "#10b981",
+        divider: "#e2e8f0",
+        textMuted: "#64748b",
+        dark: "#0f172a",
+        wave: "#0a0f1a",
+        white: "#ffffff",
+        grayDark: "#64748b",
+        gradA: "#0ea5e9",
+        gradB: "#00c9a7",
+        icon_brightest: "#00C9A7",
+        icon_darker: "#0284c7",
+        icon_darkest: "#0369a1",
+        icon_blue: "#0EA5E9",
+        icon_teal: "#00C9A7",
+        icon_indigo: "#667eea",
+        icon_red: "#ef4444",
+        icon_orange: "#0EA5E9",
+        icon_yellow: "#fbbf24",
+        icon_pink: "#ec4899",
+        icon_purple: "#a855f7",
+        icon_green: "#10b981",
+      },
+    },
+  },
   layout: {
     container: {
       maxWidth: 1200,
       mx: "auto",
       px: [3, 4],
     },
+    footer: {
+      textAlign: "center",
+      display: "block",
+      position: "absolute",
+      bottom: 0,
+      color: "textMuted",
+      px: [2, 3],
+      py: [3, 4],
+    },
   },
   buttons: {
     primary: {
       bg: "primary",
-      color: "background",
+      color: "white",
       fontSize: [2, 3],
       fontWeight: "bold",
       px: 4,
-      height: 20,
-      minHeight: 20,
-      borderRadius: "pill",
+      py: 3,
+      borderRadius: "9999px",
       border: "none",
       cursor: "pointer",
       transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
@@ -44,9 +252,8 @@ const theme = merge(baseTheme, {
       fontSize: [2, 3],
       fontWeight: "bold",
       px: 4,
-      height: 20,
-      minHeight: 20,
-      borderRadius: "pill",
+      py: 3,
+      borderRadius: "9999px",
       border: "2px solid",
       borderColor: "divider",
       cursor: "pointer",
@@ -67,7 +274,16 @@ const theme = merge(baseTheme, {
         outlineOffset: "2px",
       },
     },
-    ...(baseTheme.buttons || {}),
+    toggle: {
+      color: "background",
+      border: "none",
+      backgroundColor: "text",
+      cursor: "pointer",
+      alignSelf: "center",
+      px: 3,
+      py: 2,
+      ml: 3,
+    },
   },
   links: {
     primary: {
@@ -164,76 +380,40 @@ const theme = merge(baseTheme, {
       opacity: 0.7,
     },
     sectionTitle: {
-      fontSize: [5, 6, 7],
-      fontWeight: "heading",
+      fontSize: '40px',
+      fontWeight: 700,
+      lineHeight: 1.2,
       color: "heading",
-      mb: [4, 5],
-      letterSpacing: "wide",
+      letterSpacing: '-0.01em',
+      mb: '40px',
     },
   },
-  colors: {
-    // Spread base colors first, then override
-    ...(baseTheme.colors || {}),
-    // Brand blue palette - Sky Blue 500/600
-    // IMPORTANT: These must come AFTER the spread to override base theme orange
-    primary: "#0EA5E9",
-    primaryHover: "#0284c7",
-    // Accent colors
-    highlight: "#00C9A7",
-    danger: "#ef4444",
-    success: "#10b981",
-    // Wave/footer color - dark in both modes
-    wave: "#0a0f1a",
-    // Gradient colors for backgrounds and frames
-    gradA: "#0ea5e9",
-    gradB: "#00c9a7",
-    // Surface colors
-    panel: baseTheme.colors?.background,
-    hairline: baseTheme.colors?.divider,
-    // Icon colors - override base theme orange with blue variants
-    icon_orange: "#0EA5E9", // Override orange with brand blue
-    icon_brightest: "#00C9A7", // Keep teal highlight
-    icon_darker: "#0284c7", // Darker blue
-    icon_darkest: "#0369a1", // Darkest blue (Sky 700)
-    icon_blue: "#0EA5E9", // Ensure blue icons use brand blue
-    icon_teal: "#00C9A7", // Teal accent
-    icon_indigo: "#667eea", // Indigo for variety
-    // Color modes - override light mode to use blue instead of orange
-    modes: {
-      ...(baseTheme.colors?.modes || {}),
-      light: {
-        ...(baseTheme.colors?.modes?.light || {}),
-        primary: "#0EA5E9",
-        primaryHover: "#0284c7",
-        highlight: "#00C9A7",
-        wave: "#0a0f1a",
-        gradA: "#0ea5e9",
-        gradB: "#00c9a7",
-        icon_orange: "#0EA5E9",
-        icon_brightest: "#00C9A7",
-        icon_darker: "#0284c7",
-        icon_darkest: "#0369a1",
-        icon_blue: "#0EA5E9",
-        icon_teal: "#00C9A7",
-        icon_indigo: "#667eea",
-      },
-    },
-  } as any,
   cards: {
-    elevated: {
-      bg: "panel",
-      borderRadius: "16px",
-      border: "1px solid",
-      borderColor: "hairline",
-      boxShadow: "md",
-    },
-    form: {
+    primary: {
       bg: "background",
-      p: [4, 5],
-      borderRadius: "16px",
-      boxShadow: "0 10px 30px rgba(16,23,42,0.12)",
+      borderRadius: "xl",
       border: "1px solid",
       borderColor: "divider",
+      boxShadow: "lg",
+    },
+    white: {
+      bg: "white",
+      color: "dark",
+      p: 4,
+      borderRadius: "xl",
+      boxShadow: "lg",
+      mb: 4,
+    },
+    project: {
+      display: "block",
+      width: "100%",
+      minHeight: ["340px", "380px"],
+      boxShadow: "lg",
+      position: "relative",
+      borderRadius: "xl",
+      overflow: "hidden",
+      textDecoration: "none",
+      transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
     },
   },
   forms: {
@@ -283,16 +463,26 @@ const theme = merge(baseTheme, {
     },
   },
   shadows: {
-    ...baseTheme.shadows,
-    softLg: "0 10px 30px rgba(16, 23, 42, 0.15), 0 0 1px rgba(16, 23, 42, 0.1)",
-    elevated: "0 20px 50px rgba(0, 0, 0, 0.3)",
+    sm: "0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)",
+    md: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    lg: "0 10px 20px rgba(0, 0, 0, 0.15)",
+    xl: "0 20px 25px rgba(0, 0, 0, 0.15)",
   },
   radii: {
-    ...baseTheme.radii,
-    pill: "9999px",
-    lg: "12px",
+    sm: "4px",
     md: "8px",
+    lg: "12px",
+    xl: "16px",
+    pill: "9999px",
   },
-})
+  sizes: {
+    container: 1200,
+    full: "100%",
+  },
+  gradients: {
+    primary: "linear-gradient(135deg, #667eea 0%, #0ea5e9 100%)",
+    project: "linear-gradient(135deg, #667eea 0%, #0ea5e9 100%)",
+  },
+}
 
 export default theme

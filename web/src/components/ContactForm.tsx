@@ -101,13 +101,8 @@ const ContactForm = (): React.JSX.Element => {
         void handleSubmit(e)
       }}
       sx={{
-        bg: "background",
-        color: "text",
-        p: "2rem",
-        borderRadius: "lg",
-        boxShadow: "0 10px 30px rgba(16,23,42,0.12)",
-        border: "1px solid",
-        borderColor: "divider",
+        variant: "cards.primary",
+        p: 5,
         maxWidth: 640,
         mx: "auto",
       }}
@@ -125,11 +120,7 @@ const ContactForm = (): React.JSX.Element => {
           <label
             htmlFor="name"
             sx={{
-              fontSize: 2,
-              fontWeight: "bold",
-              color: "heading",
-              mb: 2,
-              display: "block",
+              variant: "forms.label",
             }}
           >
             Name *
@@ -140,23 +131,9 @@ const ContactForm = (): React.JSX.Element => {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             sx={{
-              bg: "background",
-              color: "text",
-              border: "1px solid",
+              variant: "forms.input",
               borderColor: errors.name ? "danger" : "divider",
-              borderRadius: "4px",
-              px: 3,
-              py: 3,
-              fontSize: 2,
               width: "100%",
-              fontFamily: "body",
-              transition:
-                "border-color 200ms cubic-bezier(.22,.61,.36,1), box-shadow 200ms cubic-bezier(.22,.61,.36,1)",
-              "&:focus": {
-                outline: "none",
-                borderColor: "primary",
-                boxShadow: "0 0 0 3px rgba(14, 165, 233, 0.15)",
-              },
             }}
             aria-describedby={errors.name ? "name-error" : undefined}
             aria-invalid={!!errors.name}
@@ -180,11 +157,7 @@ const ContactForm = (): React.JSX.Element => {
           <label
             htmlFor="email"
             sx={{
-              fontSize: 2,
-              fontWeight: "bold",
-              color: "heading",
-              mb: 2,
-              display: "block",
+              variant: "forms.label",
             }}
           >
             Email *
@@ -195,23 +168,9 @@ const ContactForm = (): React.JSX.Element => {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             sx={{
-              bg: "background",
-              color: "text",
-              border: "1px solid",
+              variant: "forms.input",
               borderColor: errors.email ? "danger" : "divider",
-              borderRadius: "4px",
-              px: 3,
-              py: 3,
-              fontSize: 2,
               width: "100%",
-              fontFamily: "body",
-              transition:
-                "border-color 200ms cubic-bezier(.22,.61,.36,1), box-shadow 200ms cubic-bezier(.22,.61,.36,1)",
-              "&:focus": {
-                outline: "none",
-                borderColor: "primary",
-                boxShadow: "0 0 0 3px rgba(14, 165, 233, 0.15)",
-              },
             }}
             aria-describedby={errors.email ? "email-error" : undefined}
             aria-invalid={!!errors.email}
@@ -236,11 +195,7 @@ const ContactForm = (): React.JSX.Element => {
         <label
           htmlFor="message"
           sx={{
-            fontSize: 2,
-            fontWeight: "bold",
-            color: "heading",
-            mb: 2,
-            display: "block",
+            variant: "forms.label",
           }}
         >
           Message *
@@ -251,24 +206,9 @@ const ContactForm = (): React.JSX.Element => {
           value={formData.message}
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
           sx={{
-            bg: "background",
-            color: "text",
-            border: "1px solid",
+            variant: "forms.textarea",
             borderColor: errors.message ? "danger" : "divider",
-            borderRadius: "4px",
-            px: 3,
-            py: 3,
-            fontSize: 2,
             width: "100%",
-            fontFamily: "body",
-            resize: "vertical",
-            minHeight: 120,
-            transition: "border-color 200ms cubic-bezier(.22,.61,.36,1), box-shadow 200ms cubic-bezier(.22,.61,.36,1)",
-            "&:focus": {
-              outline: "none",
-              borderColor: "primary",
-              boxShadow: "0 0 0 3px rgba(14, 165, 233, 0.15)",
-            },
           }}
           aria-describedby={errors.message ? "message-error" : undefined}
           aria-invalid={!!errors.message}

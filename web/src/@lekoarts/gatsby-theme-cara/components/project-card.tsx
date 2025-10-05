@@ -27,20 +27,12 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
       aria-label={`Project: ${title}`}
       className="card"
       sx={{
-        display: `block`,
-        width: `100%`,
-        minHeight: ["340px", "380px"],
-        boxShadow: `0 10px 30px rgba(0,0,0,0.12)`,
-        position: `relative`,
-        borderRadius: `16px`,
-        overflow: `hidden`,
-        textDecoration: `none`,
+        variant: "cards.project",
         cursor: link ? `pointer` : `default`,
-        transition: `all 200ms cubic-bezier(.22,.61,.36,1)`,
         "&:hover": link
           ? {
               transform: `translateY(-4px)`,
-              boxShadow: `0 14px 40px rgba(0,0,0,0.24)`,
+              boxShadow: `xl`,
             }
           : {},
         "&:active": link
@@ -92,9 +84,9 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
       >
         <h3
           sx={{
-            fontSize: ["28px", "32px"],
-            fontWeight: 700,
-            lineHeight: 1.2,
+            fontSize: [5, 6],
+            fontWeight: "heading",
+            lineHeight: "heading",
             color: `white`,
             letterSpacing: `-0.01em`,
             textShadow: `0 2px 10px rgba(0, 0, 0, 0.5)`,
@@ -109,8 +101,8 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
             color: `white`,
             maxWidth: `60ch`,
             p: {
-              fontSize: "16px",
-              lineHeight: 1.65,
+              fontSize: 2,
+              lineHeight: "body",
               margin: 0,
               color: "inherit",
             },
