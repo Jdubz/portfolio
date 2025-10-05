@@ -61,7 +61,7 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
           position: `absolute`,
           inset: 0,
           background: `linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 35%, rgba(0,0,0,0.1) 65%, rgba(0,0,0,0.7) 100%)`,
-          zIndex: 0,
+          zIndex: 1,
           pointerEvents: `none`,
         },
       }}
@@ -87,7 +87,7 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
           display: `flex`,
           flexDirection: `column`,
           justifyContent: `space-between`,
-          zIndex: 1,
+          zIndex: 2,
         }}
       >
         <h3
