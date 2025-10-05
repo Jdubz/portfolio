@@ -24,6 +24,7 @@ const BREAKPOINT_LABELS = {
 const OUTPUT_DIR = path.join(__dirname, '..', '..', 'screenshots', 'images');
 
 // Screenshot quality settings
+const SCREENSHOT_TYPE = CI_MODE ? 'jpeg' : 'png';
 const SCREENSHOT_QUALITY = CI_MODE ? 70 : 90;
 const ANIMATION_WAIT_TIME = CI_MODE ? 500 : 2000;
 
@@ -288,14 +289,21 @@ async function captureComponentScreenshot(browser, component, breakpoint, breakp
     await page.waitForTimeout(CI_MODE ? 500 : 1000);
 
     // Take a screenshot of the current viewport
-    const screenshot = await page.screenshot({
+    const screenshotOptions = {
       fullPage: false, // Just capture what's visible
       animations: 'disabled',
-      quality: SCREENSHOT_QUALITY,
-      type: 'jpeg'
-    });
-    
-    const filename = `${component}-${breakpointLabel}.jpg`;
+      type: SCREENSHOT_TYPE,
+    };
+
+    // Only add quality for JPEG
+    if (SCREENSHOT_TYPE === 'jpeg') {
+      screenshotOptions.quality = SCREENSHOT_QUALITY;
+    }
+
+    const screenshot = await page.screenshot(screenshotOptions);
+
+    const extension = SCREENSHOT_TYPE === 'jpeg' ? 'jpg' : 'png';
+    const filename = `${component}-${breakpointLabel}.${extension}`;
     const filepath = path.join(OUTPUT_DIR, filename);
     
     await fs.writeFile(filepath, screenshot);
@@ -320,7 +328,9 @@ async function captureScreenshots(targetComponent = null) {
       console.log('⏭️  Build will be skipped');
     }
     if (CI_MODE) {
-      console.log(`⚡ Quality: ${SCREENSHOT_QUALITY}, Animation wait: ${ANIMATION_WAIT_TIME}ms, Format: JPEG`);
+      console.log(`⚡ Quality: ${SCREENSHOT_QUALITY}, Animation wait: ${ANIMATION_WAIT_TIME}ms, Format: ${SCREENSHOT_TYPE.toUpperCase()}`);
+    } else {
+      console.log(`📸 Format: ${SCREENSHOT_TYPE.toUpperCase()}, Quality: ${SCREENSHOT_QUALITY}, Animation wait: ${ANIMATION_WAIT_TIME}ms`);
     }
 
     // Setup
