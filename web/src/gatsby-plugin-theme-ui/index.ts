@@ -675,21 +675,12 @@ const theme: CustomTheme = {
   },
   masks: {
     soft: {
-      position: "relative",
-      padding: "12px 6px",
-      margin: "-12px -6px",
+      position: "absolute",
+      inset: "-16px",
       backdropFilter: "blur(6px)",
       WebkitBackdropFilter: "blur(6px)",
-      maskImage: `
-        linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%),
-        linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)
-      `,
-      WebkitMaskImage: `
-        linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%),
-        linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)
-      `,
-      maskComposite: "intersect",
-      WebkitMaskComposite: "source-in",
+      pointerEvents: "none",
+      zIndex: -1,
     },
   },
 }

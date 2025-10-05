@@ -3,12 +3,18 @@ import { GlowImage } from "../../../components/GlowImage"
 export default () => (
   <>
     <div sx={{ variant: 'layout.container', py: [6, 7] }}>
-      <h2 sx={{ variant: ['masks.soft', 'text.sectionTitle'] }}>About</h2>
+      <h2 sx={{ variant: 'text.sectionTitle', position: 'relative' }}>
+        {/* Backdrop blur layer behind title */}
+        <div sx={{ variant: 'masks.soft' }} />
+        About
+      </h2>
 
       <div sx={{ variant: 'layout.twoColSection' }}>
-        <div sx={{ maxWidth: '64ch' }}>
+        <div sx={{ maxWidth: '64ch', position: 'relative' }}>
+          {/* Backdrop blur layer behind all text */}
+          <div sx={{ variant: 'masks.soft' }} />
+
           <div sx={{
-            variant: 'masks.soft',
             borderLeft: '3px solid',
             borderColor: 'primary',
             pl: 3,
@@ -25,15 +31,15 @@ export default () => (
             </p>
           </div>
 
-          <p sx={{ variant: ['masks.soft', 'text.bodyParagraph'] }}>
+          <p sx={{ variant: 'text.bodyParagraph' }}>
             I'm a multidisciplinary engineer who thrives at the intersection of software development, electronics design, and digital fabrication. My approach combines technical precision with creative problem-solving to build end-to-end solutions.
           </p>
 
-          <p sx={{ variant: ['masks.soft', 'text.bodyParagraph'] }}>
+          <p sx={{ variant: 'text.bodyParagraph' }}>
             Whether it's developing embedded systems, crafting interactive installations, or engineering custom lighting solutions, I believe in the power of bringing together different domains to create something greater than the sum of its parts.
           </p>
 
-          <p sx={{ variant: ['masks.soft', 'text.bodyParagraph'] }}>
+          <p sx={{ variant: 'text.bodyParagraph' }}>
             My work spans from writing clean, efficient code to designing PCBs and fabricating custom enclosures. I'm passionate about projects that challenge conventional boundaries and require inventive thinking.
           </p>
 
