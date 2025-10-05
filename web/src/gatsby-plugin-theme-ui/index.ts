@@ -172,8 +172,10 @@ const theme = merge(baseTheme, {
     },
   },
   colors: {
-    ...baseTheme.colors,
+    // Spread base colors first, then override
+    ...(baseTheme.colors || {}),
     // Brand blue palette - Sky Blue 500/600
+    // IMPORTANT: These must come AFTER the spread to override base theme orange
     primary: "#0EA5E9",
     primaryHover: "#0284c7",
     // Accent colors
@@ -191,6 +193,9 @@ const theme = merge(baseTheme, {
     icon_brightest: "#00C9A7", // Keep teal highlight
     icon_darker: "#0284c7", // Darker blue
     icon_darkest: "#0369a1", // Darkest blue (Sky 700)
+    icon_blue: "#0EA5E9", // Ensure blue icons use brand blue
+    icon_teal: "#00C9A7", // Teal accent
+    icon_indigo: "#667eea", // Indigo for variety
   } as any,
   cards: {
     elevated: {
