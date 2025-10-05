@@ -73,7 +73,6 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
             color: "white",
             opacity: 0.85,
             maxWidth: "58ch",
-            display: ["none", null, "block"],
             p: {
               fontSize: 2,
               lineHeight: "body",
