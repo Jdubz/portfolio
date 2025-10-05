@@ -3,65 +3,65 @@ import { GradientGlow } from "../../../components/GradientGlow"
 
 export default () => (
   <>
-    <div sx={{ mx: 'auto', maxWidth: 1120 }}>
+    <div sx={{ variant: 'layout.container', py: [5, 6] }}>
       <h2 sx={{ variant: 'text.sectionTitle' }}>Get in touch</h2>
 
       <div sx={{
-        display: 'grid',
-        gridTemplateColumns: ['1fr', null, '1fr 280px'],
-        gap: [3, null, 5],
+        display: ['block', null, 'grid'],
+        gridTemplateColumns: ['1fr', null, '1.2fr .8fr'],
+        gap: [4, null, 5],
         alignItems: 'start',
       }}>
         <div>
-          <p sx={{
-            mb: 3,
-            fontSize: [2, 3],
-            lineHeight: 1.55,
-            color: 'textMuted',
-          }}>
+          <p sx={{ variant: 'text.lead', mb: 3 }}>
             Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
           </p>
 
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <p sx={{ mb: 1 }}>
-              <strong sx={{ fontWeight: 600, color: 'text' }}>Email:</strong>{' '}
-              <a href="mailto:hello@joshwentworth.com" sx={{ variant: 'links.primary' }}>
+          <div sx={{ display: 'grid', gap: 3, mb: 4 }}>
+            <div>
+              <span sx={{ color: 'textMuted', mr: 2 }}>Email:</span>
+              <a href="mailto:hello@joshwentworth.com" sx={{ variant: 'links.primary', fontWeight: 'bold' }}>
                 hello@joshwentworth.com
               </a>
-            </p>
-            <p sx={{ mb: 1 }}>
-              <strong sx={{ fontWeight: 600, color: 'text' }}>LinkedIn:</strong>{' '}
-              <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary' }}>
+            </div>
+            <div>
+              <span sx={{ color: 'textMuted', mr: 2 }}>LinkedIn:</span>
+              <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary', fontWeight: 'bold' }}>
                 linkedin.com/in/joshwentworth
               </a>
-            </p>
-            <p sx={{ mb: 0 }}>
-              <strong sx={{ fontWeight: 600, color: 'text' }}>GitHub:</strong>{' '}
-              <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary' }}>
+            </div>
+            <div>
+              <span sx={{ color: 'textMuted', mr: 2 }}>GitHub:</span>
+              <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary', fontWeight: 'bold' }}>
                 github.com/joshwentworth
               </a>
-            </p>
+            </div>
+          </div>
+
+          <div sx={{ maxWidth: 720 }}>
+            <ContactForm />
           </div>
         </div>
 
-        <div sx={{
-          position: 'relative',
-          width: ['200px', '280px'],
-          aspectRatio: '1',
-          borderRadius: 'lg',
-          overflow: 'hidden',
-          border: '1px solid',
-          borderColor: 'divider',
-          boxShadow: 'softLg',
-          mx: ['auto', null, 0],
-        }}>
-          <GradientGlow />
-          <img src="/avatar2.jpg" alt="Josh Wentworth" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div sx={{ justifySelf: ['center', null, 'end'], alignSelf: 'start', mt: [4, null, 0] }}>
+          <div sx={{
+            p: 2,
+            borderRadius: 'md',
+            background: (t) => `linear-gradient(90deg, ${t.colors.gradA}, ${t.colors.gradB})`,
+            boxShadow: 'md',
+          }}>
+            <img
+              src="/avatar2.jpg"
+              alt="Josh Wentworth"
+              sx={{
+                width: [260, 320],
+                borderRadius: 'md',
+                display: 'block',
+                boxShadow: 'sm',
+              }}
+            />
+          </div>
         </div>
-      </div>
-
-      <div sx={{ mt: 4, mb: 100 }}>
-        <ContactForm />
       </div>
     </div>
 

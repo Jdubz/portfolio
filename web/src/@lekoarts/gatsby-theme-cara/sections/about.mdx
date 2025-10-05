@@ -2,74 +2,68 @@ import { GradientGlow } from "../../../components/GradientGlow"
 
 export default () => (
   <>
-    <div sx={{ mx: 'auto', maxWidth: 1120 }}>
+    <div sx={{ variant: 'layout.container', py: [5, 6] }}>
       <h2 sx={{ variant: 'text.sectionTitle' }}>About</h2>
 
       <div sx={{
-        display: 'grid',
-        gridTemplateColumns: ['1fr', null, '1fr 280px'],
+        display: ['block', null, 'grid'],
+        gridTemplateColumns: ['1fr', null, '1.25fr .75fr'],
         gap: [4, null, 5],
         alignItems: 'start',
       }}>
-        <div>
-          <blockquote sx={{
-            fontSize: [3, 4],
-            fontStyle: 'italic',
+        <div sx={{ maxWidth: '68ch' }}>
+          <div sx={{
             borderLeft: '4px solid',
-            borderColor: 'muted',
+            borderColor: 'highlight',
             pl: 3,
-            mb: 4,
-            color: 'text',
-            lineHeight: 1.6,
-          }}>
-            An idea machine for turning ideas into machines.
-          </blockquote>
-
-          <p sx={{
             mb: 3,
-            color: 'textMuted',
-            fontSize: [2, 3],
-            lineHeight: 1.55,
           }}>
+            <p sx={{
+              fontStyle: 'italic',
+              fontSize: [5, 6],
+              lineHeight: 1.35,
+              color: 'heading',
+            }}>
+              An idea machine for turning ideas into machines.
+            </p>
+          </div>
+
+          <p sx={{ variant: 'text.body', mb: [3, 4] }}>
             I'm a multidisciplinary engineer who thrives at the intersection of software development, electronics design, and digital fabrication. My approach combines technical precision with creative problem-solving to build end-to-end solutions.
           </p>
 
-          <p sx={{
-            mb: 3,
-            color: 'textMuted',
-            fontSize: [2, 3],
-            lineHeight: 1.55,
-          }}>
+          <p sx={{ variant: 'text.body', mb: [3, 4] }}>
             Whether it's developing embedded systems, crafting interactive installations, or engineering custom lighting solutions, I believe in the power of bringing together different domains to create something greater than the sum of its parts.
           </p>
 
-          <p sx={{
-            mb: 4,
-            color: 'textMuted',
-            fontSize: [2, 3],
-            lineHeight: 1.55,
-          }}>
+          <p sx={{ variant: 'text.body', mb: 3 }}>
             My work spans from writing clean, efficient code to designing PCBs and fabricating custom enclosures. I'm passionate about projects that challenge conventional boundaries and require inventive thinking.
           </p>
 
-          <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" sx={{ variant: 'links.primary' }}>
+          <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" sx={{ variant: 'links.primary', fontWeight: 'medium' }}>
             Download resume
           </a>
         </div>
 
-        <div sx={{ mx: ['auto', null, 0], mt: [4, null, 0] }}>
+        <div sx={{ justifySelf: ['center', null, 'end'], alignSelf: 'start', mt: [4, null, 0] }}>
           <div sx={{
-            position: 'relative',
-            width: ['200px', '280px'],
-            height: ['200px', '280px'],
-            borderRadius: 'lg',
-            overflow: 'hidden',
-            border: '1px solid',
-            borderColor: 'divider',
-            boxShadow: 'softLg',
+            p: 2,
+            borderRadius: 'md',
+            background: (t) => `linear-gradient(90deg, ${t.colors.gradA}, ${t.colors.gradB})`,
+            boxShadow: 'md',
           }}>
-            <GradientGlow />
-            <img src="/synth.jpg" alt="Custom synthesizer hardware project" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img
+              src="/synth.jpg"
+              alt="Custom synthesizer hardware project"
+              sx={{
+                display: 'block',
+                borderRadius: 'md',
+                width: [260, 320],
+                height: 'auto',
+                boxShadow: 'sm',
+                bg: 'background',
+              }}
+            />
           </div>
         </div>
       </div>
