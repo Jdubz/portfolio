@@ -18,7 +18,7 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
   >
     <Divider fill="wave" speed={0.2} offset={offset} factor={factor}>
       <div
-        sx={{ position: `absolute`, bottom: 0, width: `full`, height: `100%`, transform: `matrix(1, 0, 0, -1, 0, 0)` }}
+        sx={{ position: `absolute`, bottom: 0, width: `full`, height: `70%`, transform: `matrix(1, 0, 0, -1, 0, 0)` }}
       >
         <div
           sx={{
@@ -26,15 +26,10 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
             height: `100%`,
             svg: { width: `100%`, height: `100%` },
             "::before": {
-              content: '""',
-              position: "absolute",
-              inset: 0,
-              backgroundImage: "url(/jw-logo-mono.svg)",
-              backgroundRepeat: "no-repeat",
+              variant: "backgrounds.watermark",
               backgroundPosition: "center 120%",
               backgroundSize: "min(440px, 54vw)",
               opacity: 0.08,
-              pointerEvents: "none",
               transform: "scaleY(-1)",
             },
             path: { animation: waveAnimation(`20s`) },

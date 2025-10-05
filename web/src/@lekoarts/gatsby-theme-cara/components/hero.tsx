@@ -21,15 +21,9 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
       sx={{
         position: "relative",
         "::after": {
-          content: '""',
-          position: "absolute",
-          inset: 0,
-          backgroundImage: "url(/jw-logo-mono.svg)",
-          backgroundRepeat: "no-repeat",
+          variant: "backgrounds.watermark",
           backgroundPosition: ["center 18%", "center 20%", "center 22%"],
           backgroundSize: ["min(360px,70vw)", "min(520px,60vw)", "min(640px,48vw)"],
-          opacity: 0.06,
-          pointerEvents: "none",
         },
       }}
     />

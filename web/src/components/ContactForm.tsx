@@ -103,7 +103,6 @@ const ContactForm = (): React.JSX.Element => {
       sx={{
         variant: "cards.primary",
         p: 5,
-        maxWidth: 640,
         mx: "auto",
       }}
       aria-label="Contact form"
@@ -233,27 +232,18 @@ const ContactForm = (): React.JSX.Element => {
         disabled={status.submitting}
         sx={{
           variant: "buttons.primary",
-          bg: status.submitting ? "textMuted" : "primary",
-          cursor: status.submitting ? "not-allowed" : "pointer",
-          transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
-          "&:hover": status.submitting
-            ? {}
-            : {
-                bg: "primaryHover",
-                transform: "translateY(-2px)",
-                boxShadow: "0 4px 12px rgba(14, 165, 233, 0.4)",
-              },
-          "&:active": status.submitting
-            ? {}
-            : {
-                transform: "translateY(0)",
-                transition: "all 160ms cubic-bezier(.22,.61,.36,1)",
-              },
-          "&:focus-visible": {
-            outline: "3px solid",
-            outlineColor: "primary",
-            outlineOffset: "2px",
-          },
+          ...(status.submitting && {
+            bg: "textMuted",
+            cursor: "not-allowed",
+            "&:hover": {
+              bg: "textMuted",
+              transform: "none",
+              boxShadow: "none",
+            },
+            "&:active": {
+              transform: "none",
+            },
+          }),
         }}
       >
         {status.submitting ? "Sending..." : "Send Message"}

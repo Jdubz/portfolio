@@ -82,20 +82,7 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
           zIndex: 2,
         }}
       >
-        <h3
-          sx={{
-            fontSize: [5, 6],
-            fontWeight: "heading",
-            lineHeight: "heading",
-            color: `white`,
-            letterSpacing: `-0.01em`,
-            textShadow: `0 2px 10px rgba(0, 0, 0, 0.5)`,
-            mb: 0,
-            mt: 2,
-          }}
-        >
-          {title}
-        </h3>
+        <h3 sx={{ variant: "text.cardTitle" }}>{title}</h3>
         <div
           sx={{
             color: `white`,

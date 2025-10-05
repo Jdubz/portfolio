@@ -1,10 +1,13 @@
 import { Theme } from "theme-ui"
 
-// Extend Theme to include gradients
+// Extend Theme to include gradients and backgrounds
 interface CustomTheme extends Theme {
   gradients?: {
     primary: string
     project: string
+  }
+  backgrounds?: {
+    watermark: Record<string, string | number>
   }
 }
 
@@ -225,6 +228,12 @@ const theme: CustomTheme = {
       px: [2, 3],
       py: [3, 4],
     },
+    twoColSection: {
+      display: ["block", null, "grid"],
+      gridTemplateColumns: ["1fr", null, "1.25fr .75fr"],
+      gap: [5, null, 6],
+      alignItems: "start",
+    },
   },
   buttons: {
     primary: {
@@ -300,6 +309,38 @@ const theme: CustomTheme = {
       transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
       "&:hover": {
         color: "primaryHover",
+        textDecoration: "underline",
+      },
+      "&:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "primary",
+        outlineOffset: "2px",
+        borderRadius: "2px",
+      },
+    },
+    white: {
+      color: "white",
+      textDecoration: "none",
+      fontWeight: 600,
+      transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
+      "&:hover": {
+        color: "primaryHover",
+        textDecoration: "underline",
+      },
+      "&:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "primary",
+        outlineOffset: "2px",
+        borderRadius: "2px",
+      },
+    },
+    muted: {
+      color: "textMuted",
+      textDecoration: "none",
+      fontWeight: 600,
+      transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
+      "&:hover": {
+        color: "primary",
         textDecoration: "underline",
       },
       "&:focus-visible": {
@@ -393,6 +434,32 @@ const theme: CustomTheme = {
       color: "heading",
       letterSpacing: "-0.01em",
       mb: "40px",
+    },
+    bodyParagraph: {
+      fontSize: [2, 3],
+      lineHeight: 1.65,
+      color: "textMuted",
+      maxWidth: "64ch",
+      mb: 4,
+    },
+    accentQuote: {
+      fontSize: [2, 3],
+      fontStyle: "italic",
+      color: "text",
+      borderLeft: "3px solid",
+      borderColor: "primary",
+      pl: 3,
+      py: 2,
+    },
+    cardTitle: {
+      fontSize: [5, 6],
+      fontWeight: "heading",
+      lineHeight: "heading",
+      color: "white",
+      letterSpacing: "-0.01em",
+      textShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+      mb: 0,
+      mt: 2,
     },
   },
   cards: {
@@ -489,6 +556,17 @@ const theme: CustomTheme = {
   gradients: {
     primary: "linear-gradient(135deg, #667eea 0%, #0ea5e9 100%)",
     project: "linear-gradient(135deg, #667eea 0%, #0ea5e9 100%)",
+  },
+  backgrounds: {
+    watermark: {
+      content: '""',
+      position: "absolute",
+      inset: 0,
+      backgroundImage: "url(/jw-logo-mono.svg)",
+      backgroundRepeat: "no-repeat",
+      opacity: 0.06,
+      pointerEvents: "none",
+    },
   },
 }
 

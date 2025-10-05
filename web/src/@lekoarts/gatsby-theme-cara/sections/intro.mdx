@@ -16,8 +16,8 @@ export default () => (
       variant: 'layout.container',
       display: ['block', null, 'grid'],
       gridTemplateColumns: ['1fr', null, '2fr 1fr'],
-      alignItems: 'start',
       gap: [4, null, 5],
+      alignItems: 'start',
     }}>
       <div sx={{ display: 'flex', flexDirection: 'column' }}>
         <span sx={{
@@ -42,13 +42,7 @@ export default () => (
           Josh Wentworth
         </h1>
 
-        <p sx={{
-          fontSize: ['18px', '20px'],
-          lineHeight: 1.65,
-          color: 'textMuted',
-          maxWidth: '64ch',
-          mb: 4,
-        }}>
+        <p sx={{ variant: 'text.bodyParagraph' }}>
           Full-stack engineer with a workshop habit. I ship web apps (React/Angular + TypeScript, Node.js/Python) and the systems behind them (Kubernetes on GCP), and I also prototype electronics, lighting, and fabricated parts when software needs a body.
         </p>
 
@@ -66,16 +60,7 @@ export default () => (
           </ScrollButton>
         </div>
 
-        <p sx={{
-          fontSize: ['16px', '18px'],
-          fontStyle: 'italic',
-          color: 'text',
-          borderLeft: '3px solid',
-          borderColor: 'primary',
-          pl: 3,
-          py: 2,
-          mb: 3,
-        }}>
+        <p sx={{ variant: 'text.accentQuote', mb: 3 }}>
           Most recently: cloud architecture and partner integrations for robotic grocery fulfillment at Fulfil Solutions.
         </p>
 

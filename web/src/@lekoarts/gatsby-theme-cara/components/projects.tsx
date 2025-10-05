@@ -20,15 +20,9 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
         clipPath: `polygon(0 15%, 100% 25%, 100% 85%, 0 75%)`,
         position: "relative",
         "::after": {
-          content: '""',
-          position: "absolute",
-          inset: 0,
-          backgroundImage: "url(/jw-logo-mono.svg)",
-          backgroundRepeat: "no-repeat",
+          variant: "backgrounds.watermark",
           backgroundPosition: "center 30%",
           backgroundSize: "min(520px, 60vw)",
-          opacity: 0.06,
-          pointerEvents: "none",
         },
       }}
       speed={-0.2}
