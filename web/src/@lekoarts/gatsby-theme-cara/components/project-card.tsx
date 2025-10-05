@@ -7,12 +7,11 @@ type ProjectCardProps = {
   linkText?: string
   title: string
   children: React.ReactNode
-  bg: string
-  bgImage?: string
+  bgImage: string
   tags?: string
 }
 
-const ProjectCard = ({ link, title, children, bg, bgImage }: ProjectCardProps) => {
+const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
   const CardWrapper = link ? `a` : `div`
   const cardProps = link
     ? {
@@ -61,29 +60,25 @@ const ProjectCard = ({ link, title, children, bg, bgImage }: ProjectCardProps) =
           content: `""`,
           position: `absolute`,
           inset: 0,
-          background: bgImage
-            ? `linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%)`
-            : `linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%)`,
+          background: `linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 35%, rgba(0,0,0,0.1) 65%, rgba(0,0,0,0.7) 100%)`,
           zIndex: 0,
           pointerEvents: `none`,
         },
       }}
     >
-      {bgImage && (
-        <img
-          src={bgImage}
-          alt=""
-          aria-hidden="true"
-          sx={{
-            position: `absolute`,
-            inset: 0,
-            width: `100%`,
-            height: `100%`,
-            objectFit: `cover`,
-            zIndex: 0,
-          }}
-        />
-      )}
+      <img
+        src={bgImage}
+        alt=""
+        aria-hidden="true"
+        sx={{
+          position: `absolute`,
+          inset: 0,
+          width: `100%`,
+          height: `100%`,
+          objectFit: `cover`,
+          zIndex: 0,
+        }}
+      />
       <div
         sx={{
           position: `absolute`,
@@ -93,7 +88,6 @@ const ProjectCard = ({ link, title, children, bg, bgImage }: ProjectCardProps) =
           flexDirection: `column`,
           justifyContent: `space-between`,
           zIndex: 1,
-          background: bgImage ? `none` : bg || `none`,
         }}
       >
         <h3
