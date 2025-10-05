@@ -13,19 +13,19 @@ const Footer = () => {
         mt: "auto",
       }}
     >
-      <div sx={{ mb: 3 }}>Copyright &copy; {new Date().getFullYear()}. All rights reserved.</div>
-      <div sx={{ fontSize: 1, display: "flex", gap: 4, justifyContent: "center", flexWrap: "wrap" }}>
-        <a href="/privacy" sx={{ variant: "links.muted" }}>
+      <div sx={{ mb: 3, color: "white" }}>Copyright &copy; {new Date().getFullYear()}. All rights reserved.</div>
+      <div sx={{ fontSize: 1, display: "flex", gap: [3], justifyContent: "center", flexWrap: "wrap" }}>
+        <a href="/privacy" sx={{ variant: "links.white" }}>
           Privacy Policy
         </a>
-        <a href="/terms" sx={{ variant: "links.muted" }}>
+        <a href="/terms" sx={{ variant: "links.white" }}>
           Terms of Service
         </a>
         <a
           href="https://github.com/Jdubz/portfolio"
           target="_blank"
           rel="noopener noreferrer"
-          sx={{ variant: "links.muted" }}
+          sx={{ variant: "links.white" }}
         >
           Source Code
         </a>

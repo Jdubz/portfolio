@@ -5,9 +5,9 @@ export default () => (
   <>
     <div sx={{
       variant: 'layout.container',
-      display: ['block', null, 'grid'],
-      gridTemplateColumns: ['1fr', null, '2fr 1fr'],
-      gap: [4, null, 5],
+      display: ['block', null, null, 'grid'],
+      gridTemplateColumns: ['1fr', null, null, '2fr 1fr'],
+      gap: [4, null, null, 5],
       alignItems: 'start',
     }}>
       <div sx={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -70,10 +70,10 @@ export default () => (
       </div>
 
       <div sx={{
-        display: ['none', null, 'flex'],
-        justifySelf: ['center', null, 'end'],
+        display: 'flex',
+        justifySelf: ['center', null, null, 'end'],
         alignSelf: 'start',
-        mt: [4, null, 0],
+        mt: [4, null, null, 0],
       }}>
         <GlowImage
           src="/avatar.jpg"

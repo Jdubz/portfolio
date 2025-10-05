@@ -234,13 +234,13 @@ const theme: CustomTheme = {
       position: "absolute",
       bottom: 0,
       color: "textMuted",
-      px: [2, 3],
+      px: [0, 3],
       py: [3, 4],
     },
     twoColSection: {
-      display: ["block", null, "grid"],
-      gridTemplateColumns: ["1fr", null, "1.25fr .75fr"],
-      gap: [5, null, 6],
+      display: ["block", null, null, "grid"],
+      gridTemplateColumns: ["1fr", null, null, "1.25fr .75fr"],
+      gap: [5, null, null, 6],
       alignItems: "start",
     },
     section: {
