@@ -132,10 +132,12 @@ const ContactForm = (): React.JSX.Element => {
               fontSize: 2,
               width: "100%",
               fontFamily: "body",
+              transition:
+                "border-color 200ms cubic-bezier(.22,.61,.36,1), box-shadow 200ms cubic-bezier(.22,.61,.36,1)",
               "&:focus": {
                 outline: "none",
                 borderColor: "primary",
-                boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+                boxShadow: "0 0 0 3px rgba(14, 165, 233, 0.15)",
               },
             }}
             aria-describedby={errors.name ? "name-error" : undefined}
@@ -185,10 +187,12 @@ const ContactForm = (): React.JSX.Element => {
               fontSize: 2,
               width: "100%",
               fontFamily: "body",
+              transition:
+                "border-color 200ms cubic-bezier(.22,.61,.36,1), box-shadow 200ms cubic-bezier(.22,.61,.36,1)",
               "&:focus": {
                 outline: "none",
                 borderColor: "primary",
-                boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+                boxShadow: "0 0 0 3px rgba(14, 165, 233, 0.15)",
               },
             }}
             aria-describedby={errors.email ? "email-error" : undefined}
@@ -241,10 +245,11 @@ const ContactForm = (): React.JSX.Element => {
             fontFamily: "body",
             resize: "vertical",
             minHeight: 120,
+            transition: "border-color 200ms cubic-bezier(.22,.61,.36,1), box-shadow 200ms cubic-bezier(.22,.61,.36,1)",
             "&:focus": {
               outline: "none",
               borderColor: "primary",
-              boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+              boxShadow: "0 0 0 3px rgba(14, 165, 233, 0.15)",
             },
           }}
           aria-describedby={errors.message ? "message-error" : undefined}
@@ -275,22 +280,30 @@ const ContactForm = (): React.JSX.Element => {
           borderRadius: "pill",
           px: 6,
           py: 3,
+          height: 48,
+          minHeight: 48,
           fontSize: 2,
           fontWeight: "bold",
           cursor: status.submitting ? "not-allowed" : "pointer",
-          transition: "all 0.2s ease",
+          transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
           "&:hover": status.submitting
             ? {}
             : {
                 bg: "primaryHover",
-                transform: "translateY(-1px)",
-                boxShadow: "0 4px 12px rgba(66, 153, 225, 0.3)",
+                transform: "translateY(-2px)",
+                boxShadow: "0 4px 12px rgba(14, 165, 233, 0.4)",
               },
           "&:active": status.submitting
             ? {}
             : {
                 transform: "translateY(0)",
+                transition: "all 160ms cubic-bezier(.22,.61,.36,1)",
               },
+          "&:focus-visible": {
+            outline: "3px solid",
+            outlineColor: "primary",
+            outlineOffset: "2px",
+          },
         }}
       >
         {status.submitting ? "Sending..." : "Send Message"}

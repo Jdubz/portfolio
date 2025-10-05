@@ -2,66 +2,115 @@ import { GradientGlow } from "../../../components/GradientGlow"
 
 export default () => (
   <>
-    <div sx={{ variant: 'layout.container', py: [5, 6] }}>
-      <h2 sx={{ variant: 'text.sectionTitle' }}>About</h2>
+    <div sx={{ variant: 'layout.container', py: ['48px', '80px'] }}>
+      <h2 sx={{
+        fontSize: ['36px', '40px'],
+        fontWeight: 700,
+        lineHeight: 1.2,
+        color: 'heading',
+        letterSpacing: '-0.01em',
+        mb: ['32px', '40px'],
+      }}>About</h2>
 
       <div sx={{
         display: ['block', null, 'grid'],
         gridTemplateColumns: ['1fr', null, '1.25fr .75fr'],
-        gap: [4, null, 5],
+        gap: ['32px', null, '40px'],
         alignItems: 'start',
       }}>
-        <div sx={{ maxWidth: '68ch' }}>
+        <div sx={{ maxWidth: '64ch' }}>
           <div sx={{
-            borderLeft: '4px solid',
-            borderColor: 'highlight',
+            borderLeft: '3px solid',
+            borderColor: 'primary',
             pl: 3,
-            mb: 3,
+            mb: 4,
           }}>
             <p sx={{
               fontStyle: 'italic',
-              fontSize: [5, 6],
-              lineHeight: 1.35,
+              fontSize: ['24px', '28px'],
+              lineHeight: 1.4,
               color: 'heading',
+              fontWeight: 400,
             }}>
               An idea machine for turning ideas into machines.
             </p>
           </div>
 
-          <p sx={{ variant: 'text.body', mb: [3, 4] }}>
+          <p sx={{
+            fontSize: '16px',
+            lineHeight: 1.65,
+            color: 'textMuted',
+            mb: '24px',
+          }}>
             I'm a multidisciplinary engineer who thrives at the intersection of software development, electronics design, and digital fabrication. My approach combines technical precision with creative problem-solving to build end-to-end solutions.
           </p>
 
-          <p sx={{ variant: 'text.body', mb: [3, 4] }}>
+          <p sx={{
+            fontSize: '16px',
+            lineHeight: 1.65,
+            color: 'textMuted',
+            mb: '24px',
+          }}>
             Whether it's developing embedded systems, crafting interactive installations, or engineering custom lighting solutions, I believe in the power of bringing together different domains to create something greater than the sum of its parts.
           </p>
 
-          <p sx={{ variant: 'text.body', mb: 3 }}>
+          <p sx={{
+            fontSize: '16px',
+            lineHeight: 1.65,
+            color: 'textMuted',
+            mb: '24px',
+          }}>
             My work spans from writing clean, efficient code to designing PCBs and fabricating custom enclosures. I'm passionate about projects that challenge conventional boundaries and require inventive thinking.
           </p>
 
-          <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" sx={{ variant: 'links.primary', fontWeight: 'medium' }}>
+          <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" sx={{
+            color: 'primary',
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: '16px',
+            transition: 'all 200ms cubic-bezier(.22,.61,.36,1)',
+            '&:hover': {
+              color: 'primaryHover',
+              textDecoration: 'underline',
+            },
+            '&:focus-visible': {
+              outline: '3px solid',
+              outlineColor: 'primary',
+              outlineOffset: '2px',
+              borderRadius: '2px',
+            },
+          }}>
             Download resume
           </a>
         </div>
 
-        <div sx={{ justifySelf: ['center', null, 'end'], alignSelf: 'start', mt: [4, null, 0] }}>
+        <div sx={{ justifySelf: ['center', null, 'end'], alignSelf: 'start', mt: ['32px', null, 0] }}>
           <div sx={{
-            p: 2,
-            borderRadius: 'md',
-            background: (t) => `linear-gradient(90deg, ${t.colors.gradA}, ${t.colors.gradB})`,
-            boxShadow: 'md',
+            position: 'relative',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+            '::before': {
+              content: '""',
+              position: 'absolute',
+              inset: '-2px',
+              borderRadius: 'inherit',
+              background: (t) => `linear-gradient(135deg, ${t.colors.gradA}, ${t.colors.gradB})`,
+              padding: '2px',
+              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              WebkitMaskComposite: 'xor',
+              maskComposite: 'exclude',
+              zIndex: -1,
+            },
           }}>
             <img
               src="/synth.jpg"
               alt="Custom synthesizer hardware project"
               sx={{
                 display: 'block',
-                borderRadius: 'md',
-                width: [260, 320],
+                borderRadius: '12px',
+                width: ['280px', '320px'],
                 height: 'auto',
-                boxShadow: 'sm',
-                bg: 'background',
               }}
             />
           </div>

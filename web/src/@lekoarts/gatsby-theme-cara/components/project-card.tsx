@@ -12,31 +12,58 @@ type ProjectCardProps = {
   tags?: string
 }
 
-const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags: _tags }: ProjectCardProps) => {
+const ProjectCard = ({ link, title, children, bg, bgImage }: ProjectCardProps) => {
+  const CardWrapper = link ? `a` : `div`
+  const cardProps = link
+    ? {
+        href: link,
+        target: "_blank",
+        rel: "noreferrer noopener",
+      }
+    : {}
+
   return (
-    <div
+    <CardWrapper
+      {...cardProps}
       aria-label={`Project: ${title}`}
       className="card"
       sx={{
         display: `block`,
         width: `100%`,
-        minHeight: [280, 340],
-        boxShadow: `md`,
+        minHeight: ["340px", "380px"],
+        boxShadow: `0 10px 30px rgba(0,0,0,0.12)`,
         position: `relative`,
-        borderRadius: `lg`,
+        borderRadius: `16px`,
         overflow: `hidden`,
-        transition: `all 0.2s ease`,
-        "&:hover": {
-          transform: `translateY(-4px)`,
-          boxShadow: `lg`,
-        },
+        textDecoration: `none`,
+        cursor: link ? `pointer` : `default`,
+        transition: `all 200ms cubic-bezier(.22,.61,.36,1)`,
+        "&:hover": link
+          ? {
+              transform: `translateY(-4px)`,
+              boxShadow: `0 14px 40px rgba(0,0,0,0.24)`,
+            }
+          : {},
+        "&:active": link
+          ? {
+              transform: `translateY(-2px)`,
+              transition: `all 160ms cubic-bezier(.22,.61,.36,1)`,
+            }
+          : {},
+        "&:focus-visible": link
+          ? {
+              outline: "3px solid",
+              outlineColor: "highlight",
+              outlineOffset: "2px",
+            }
+          : {},
         "&::before": {
           content: `""`,
           position: `absolute`,
           inset: 0,
           background: bgImage
-            ? `linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 75%)`
-            : `linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 75%)`,
+            ? `linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%)`
+            : `linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%)`,
           zIndex: 0,
           pointerEvents: `none`,
         },
@@ -46,6 +73,7 @@ const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags: _tags
         <img
           src={bgImage}
           alt=""
+          aria-hidden="true"
           sx={{
             position: `absolute`,
             inset: 0,
@@ -60,60 +88,42 @@ const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags: _tags
         sx={{
           position: `absolute`,
           inset: 0,
-          p: [4, 5],
+          p: ["24px", "32px"],
           display: `flex`,
           flexDirection: `column`,
-          justifyContent: `flex-end`,
+          justifyContent: `space-between`,
           zIndex: 1,
           background: bgImage ? `none` : bg || `none`,
         }}
       >
         <h3
           sx={{
-            variant: `text.h2`,
+            fontSize: ["28px", "32px"],
+            fontWeight: 700,
+            lineHeight: 1.2,
             color: `white`,
             letterSpacing: `-0.01em`,
-            mb: 2,
             textShadow: `0 2px 10px rgba(0, 0, 0, 0.5)`,
+            mb: 0,
           }}
         >
           {title}
         </h3>
         <div
           sx={{
-            color: `rgba(255,255,255,0.9)`,
+            color: `white`,
             maxWidth: `60ch`,
-            mb: 3,
             p: {
-              fontSize: [1, 2],
-              lineHeight: 1.6,
+              fontSize: "16px",
+              lineHeight: 1.65,
               margin: 0,
             },
           }}
         >
           {children}
         </div>
-        {link && linkText && (
-          <a
-            href={link}
-            target="_blank"
-            rel="noreferrer noopener"
-            sx={{
-              color: `white`,
-              fontWeight: `bold`,
-              textDecoration: `none`,
-              fontSize: [1, 2],
-              transition: `all 0.2s ease`,
-              "&:hover": {
-                color: `highlight`,
-              },
-            }}
-          >
-            {linkText}
-          </a>
-        )}
       </div>
-    </div>
+    </CardWrapper>
   )
 }
 

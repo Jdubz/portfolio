@@ -18,10 +18,11 @@ const theme = merge(baseTheme, {
       fontWeight: "bold",
       px: 4,
       height: 48,
+      minHeight: 48,
       borderRadius: "pill",
       border: "none",
       cursor: "pointer",
-      transition: "all 0.2s ease",
+      transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
       "&:hover": {
         bg: "primaryHover",
         transform: "translateY(-2px)",
@@ -29,6 +30,12 @@ const theme = merge(baseTheme, {
       },
       "&:active": {
         transform: "translateY(0)",
+        transition: "all 160ms cubic-bezier(.22,.61,.36,1)",
+      },
+      "&:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "primary",
+        outlineOffset: "2px",
       },
     },
     secondary: {
@@ -38,11 +45,12 @@ const theme = merge(baseTheme, {
       fontWeight: "bold",
       px: 4,
       height: 48,
+      minHeight: 48,
       borderRadius: "pill",
       border: "2px solid",
       borderColor: "divider",
       cursor: "pointer",
-      transition: "all 0.2s ease",
+      transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
       "&:hover": {
         borderColor: "primary",
         color: "primary",
@@ -51,6 +59,12 @@ const theme = merge(baseTheme, {
       },
       "&:active": {
         transform: "translateY(0)",
+        transition: "all 160ms cubic-bezier(.22,.61,.36,1)",
+      },
+      "&:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "primary",
+        outlineOffset: "2px",
       },
     },
     ...(baseTheme.buttons || {}),
@@ -60,10 +74,16 @@ const theme = merge(baseTheme, {
       color: "primary",
       textDecoration: "none",
       fontWeight: 600,
-      transition: "all 0.2s ease",
+      transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
       "&:hover": {
         color: "primaryHover",
         textDecoration: "underline",
+      },
+      "&:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "primary",
+        outlineOffset: "2px",
+        borderRadius: "2px",
       },
     },
   },
@@ -166,7 +186,7 @@ const theme = merge(baseTheme, {
   cards: {
     elevated: {
       bg: "panel",
-      borderRadius: "lg",
+      borderRadius: "16px",
       border: "1px solid",
       borderColor: "hairline",
       boxShadow: "md",
@@ -174,7 +194,7 @@ const theme = merge(baseTheme, {
     form: {
       bg: "background",
       p: [4, 5],
-      borderRadius: "lg",
+      borderRadius: "16px",
       boxShadow: "0 10px 30px rgba(16,23,42,0.12)",
       border: "1px solid",
       borderColor: "divider",
@@ -192,10 +212,11 @@ const theme = merge(baseTheme, {
       fontSize: 2,
       fontFamily: "body",
       height: [46, 48],
+      transition: "border-color 200ms cubic-bezier(.22,.61,.36,1), box-shadow 200ms cubic-bezier(.22,.61,.36,1)",
       "&:focus": {
         outline: "none",
         borderColor: "primary",
-        boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+        boxShadow: "0 0 0 3px rgba(14, 165, 233, 0.15)",
       },
     },
     textarea: {
@@ -210,10 +231,11 @@ const theme = merge(baseTheme, {
       fontFamily: "body",
       minHeight: 140,
       resize: "vertical",
+      transition: "border-color 200ms cubic-bezier(.22,.61,.36,1), box-shadow 200ms cubic-bezier(.22,.61,.36,1)",
       "&:focus": {
         outline: "none",
         borderColor: "primary",
-        boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
+        boxShadow: "0 0 0 3px rgba(14, 165, 233, 0.15)",
       },
     },
     label: {

@@ -20,22 +20,43 @@ export default () => (
       gap: [4, null, 5],
     }}>
       <div sx={{ display: 'flex', flexDirection: 'column' }}>
-        <span sx={{ variant: 'text.overline' }}>
+        <span sx={{
+          variant: 'text.overline',
+          fontSize: [1, 1],
+          fontWeight: 600,
+          color: 'primary',
+          letterSpacing: '0.08em',
+          mb: 3,
+        }}>
           SOFTWARE × HARDWARE × FABRICATION
         </span>
 
-        <h1 sx={{ variant: 'text.h1' }}>
+        <h1 sx={{
+          fontSize: ['48px', '52px', '56px'],
+          fontWeight: 700,
+          lineHeight: 1.12,
+          color: 'heading',
+          letterSpacing: '-0.01em',
+          mb: 3,
+        }}>
           Josh Wentworth
         </h1>
 
-        <p sx={{ variant: 'text.lead', mt: 2, mb: 3 }}>
+        <p sx={{
+          fontSize: ['18px', '20px'],
+          lineHeight: 1.65,
+          color: 'textMuted',
+          maxWidth: '64ch',
+          mb: 4,
+        }}>
           Full-stack engineer with a workshop habit. I ship web apps (React/Angular + TypeScript, Node.js/Python) and the systems behind them (Kubernetes on GCP), and I also prototype electronics, lighting, and fabricated parts when software needs a body.
         </p>
 
         <div sx={{
           display: 'flex',
           gap: 3,
-          mt: [3, 3],
+          mt: 4,
+          mb: 4,
         }}>
           <ScrollButton offset={1.65}>
             See what I've built
@@ -45,11 +66,25 @@ export default () => (
           </ScrollButton>
         </div>
 
-        <p sx={{ variant: 'text.heroProof' }}>
+        <p sx={{
+          fontSize: ['16px', '18px'],
+          fontStyle: 'italic',
+          color: 'text',
+          borderLeft: '3px solid',
+          borderColor: 'primary',
+          pl: 3,
+          py: 2,
+          mb: 3,
+        }}>
           Most recently: cloud architecture and partner integrations for robotic grocery fulfillment at Fulfil Solutions.
         </p>
 
-        <p sx={{ variant: 'text.micro' }}>
+        <p sx={{
+          fontSize: '14px',
+          color: 'textMuted',
+          opacity: 0.75,
+          lineHeight: 1.5,
+        }}>
           React • Angular • TypeScript • Node.js • Python • Kubernetes • GCP • MySQL/Redis • Grafana/Loki/Elastic
         </p>
       </div>
@@ -61,22 +96,31 @@ export default () => (
         mt: [4, null, 0],
       }}>
         <div sx={{
-          p: 2,
-          borderRadius: 'md',
-          background: (t) => `linear-gradient(90deg, ${t.colors.gradA}, ${t.colors.gradB})`,
-          boxShadow: 'md',
-          transform: ['none', 'translate(4px, -6px)'],
+          position: 'relative',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+          '::before': {
+            content: '""',
+            position: 'absolute',
+            inset: '-2px',
+            borderRadius: 'inherit',
+            background: (t) => `linear-gradient(135deg, ${t.colors.gradA}, ${t.colors.gradB})`,
+            padding: '2px',
+            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            WebkitMaskComposite: 'xor',
+            maskComposite: 'exclude',
+            zIndex: -1,
+          },
         }}>
           <img
             src="/avatar.jpg"
             alt="Josh Wentworth headshot"
             sx={{
               display: 'block',
-              width: [96, 120],
+              width: ['200px', '240px'],
               height: 'auto',
-              borderRadius: 'md',
-              boxShadow: 'sm',
-              bg: 'background',
+              borderRadius: '12px',
             }}
           />
         </div>
