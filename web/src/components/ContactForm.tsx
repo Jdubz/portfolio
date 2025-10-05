@@ -65,14 +65,32 @@ const ContactForm = (): React.JSX.Element => {
     setStatus({ submitting: true, submitted: false, error: null })
 
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, 1000))
+      const functionUrl = process.env.GATSBY_CONTACT_FUNCTION_URL
+
+      if (!functionUrl) {
+        throw new Error("Contact form URL not configured")
+      }
+
+      const response = await fetch(functionUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        const errorData = (await response.json()) as { message?: string }
+        throw new Error(errorData.message ?? "Failed to send message")
+      }
+
       setStatus({ submitting: false, submitted: true, error: null })
       setFormData({ name: "", email: "", message: "" })
-    } catch (_error) {
+    } catch (error) {
       setStatus({
         submitting: false,
         submitted: false,
-        error: "Something went wrong. Please try again.",
+        error: error instanceof Error ? error.message : "Something went wrong. Please try again.",
       })
     }
   }

@@ -40,21 +40,6 @@ The following `@ts-expect-error` comments are present in the codebase due to lib
 
 **Workaround:** Type suppression; styling works correctly via Theme UI's babel plugin.
 
-## Future Improvements
-
-### Search Functionality
-
-**File:** `web/src/components/SearchBar.tsx`
-
-**Status:** Component is fully styled and functional, but search logic is stubbed out.
-
-**Next Steps:**
-- Implement client-side search with Fuse.js or similar
-- OR integrate with Algolia/search service
-- OR implement Gatsby's built-in search
-
-**Current Behavior:** Shows a "coming soon" message to users who submit searches.
-
 ## Dependencies
 
 ### Flagged as "Unused" by depcheck
