@@ -1,4 +1,4 @@
-.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
+.PHONY: help dev dev-clean build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -24,6 +24,7 @@ help:
 	@echo ""
 	@echo "Web Development:"
 	@echo "  make dev              - Start Gatsby development server (port 8000)"
+	@echo "  make dev-clean        - Clean cache and start fresh dev server"
 	@echo "  make build            - Build production bundle"
 	@echo "  make serve            - Serve production build (port 9000)"
 	@echo "  make clean            - Clean Gatsby cache and build files"
@@ -61,8 +62,13 @@ help:
 
 # Web commands
 dev:
-	@echo "Starting Gatsby development server..."
+	@echo "Starting Gatsby development server (port 8000)..."
+	@echo "Watch patterns optimized - ignoring build artifacts, screenshots, logs"
 	cd web && npm run develop
+
+dev-clean:
+	@echo "Cleaning cache and starting fresh development server..."
+	cd web && npm run clean && npm run develop
 
 build:
 	@echo "Building production bundle..."

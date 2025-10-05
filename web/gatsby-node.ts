@@ -10,6 +10,26 @@ export const onCreateWebpackConfig: GatsbyNode["onCreateWebpackConfig"] = ({ act
         "@": path.resolve(__dirname, "src"),
       },
     },
+    // Add watch options to ignore unnecessary files
+    ...(stage === "develop" && {
+      watchOptions: {
+        ignored: [
+          "**/node_modules",
+          "**/.cache",
+          "**/public",
+          "**/.git",
+          "**/dist",
+          "**/coverage",
+          "**/.DS_Store",
+          "**/npm-debug.log*",
+          "**/yarn-debug.log*",
+          "**/yarn-error.log*",
+          "**/.env*",
+          "**/screenshots",
+          "**/lighthouse-*.{html,json}",
+        ],
+      },
+    }),
   })
 
   // Remove ESLint plugin to avoid compatibility issues with Gatsby's outdated version
