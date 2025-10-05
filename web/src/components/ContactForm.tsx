@@ -274,16 +274,8 @@ const ContactForm = (): React.JSX.Element => {
         type="submit"
         disabled={status.submitting}
         sx={{
+          variant: "buttons.primary",
           bg: status.submitting ? "textMuted" : "primary",
-          color: "background",
-          border: "none",
-          borderRadius: "pill",
-          px: 6,
-          py: 3,
-          height: 48,
-          minHeight: 48,
-          fontSize: 2,
-          fontWeight: "bold",
           cursor: status.submitting ? "not-allowed" : "pointer",
           transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
           "&:hover": status.submitting
