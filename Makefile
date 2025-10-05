@@ -1,4 +1,4 @@
-.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshot dev-functions test test-functions
+.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshot dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -28,14 +28,22 @@ help:
 	@echo "  make serve            - Serve production build (port 9000)"
 	@echo "  make clean            - Clean Gatsby cache and build files"
 	@echo "  make test             - Run web tests"
+	@echo "  make screenshot       - Generate component screenshots"
+	@echo "  make lint-web         - Lint web code (TypeScript, ESLint, Prettier)"
+	@echo "  make lint-web-fix     - Auto-fix web linting issues"
 	@echo ""
 	@echo "Functions Development:"
 	@echo "  make dev-functions    - Start Functions development server (port 8080)"
 	@echo "  make test-functions   - Run functions tests"
+	@echo "  make lint-functions   - Lint functions code"
+	@echo "  make lint-functions-fix - Auto-fix functions linting issues"
+	@echo ""
+	@echo "Linting (All):"
+	@echo "  make lint             - Lint all code (web + functions)"
+	@echo "  make lint-fix         - Auto-fix all linting issues"
 	@echo ""
 	@echo "Process Management:"
-	@echo "  make kill             - Kill all Node.js processes"
-	@echo "  make status           - Check what's running on dev ports"
+	@echo "  make kill             - Clean Gatsby cache (stops dev server indirectly)"
 	@echo ""
 	@echo "Versioning:"
 	@echo "  make version-patch    - Bump patch version (1.0.0 -> 1.0.1)"
@@ -94,8 +102,18 @@ version-major:
 
 # Process management
 kill:
-	@echo "Killing processes..."
-	cd web && npm run clean || true
+	@echo "Killing dev servers..."
+	@echo "Stopping Gatsby dev server (port 8000)..."
+	@lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Gatsby serve (port 9000)..."
+	@lsof -ti:9000 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Functions dev server (port 8080)..."
+	@lsof -ti:8080 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Firebase emulators (port 5000)..."
+	@lsof -ti:5000 | xargs kill -9 2>/dev/null || true
+	@echo "Cleaning Gatsby cache..."
+	@cd web && npm run clean || true
+	@echo "✓ All dev servers stopped and cache cleaned"
 
 # Firebase commands
 firebase-serve:
@@ -118,3 +136,24 @@ deploy-prod:
 screenshot:
 	@echo "Generating component screenshots..."
 	cd web && npm run screenshot
+
+# Linting
+lint-web:
+	@echo "Linting web code..."
+	cd web && npm run lint
+
+lint-web-fix:
+	@echo "Auto-fixing web linting issues..."
+	cd web && npm run lint:fix
+
+lint-functions:
+	@echo "Linting functions code..."
+	cd functions && npm run lint
+
+lint-functions-fix:
+	@echo "Auto-fixing functions linting issues..."
+	cd functions && npm run lint:fix
+
+lint: lint-web lint-functions
+
+lint-fix: lint-web-fix lint-functions-fix

@@ -3,7 +3,7 @@ import { GradientGlow } from "../../../components/GradientGlow"
 export default () => (
   <>
     <div sx={{ mx: 'auto', maxWidth: 1120 }}>
-      <h2 sx={{ variant: 'text.sectionTitle', color: 'white' }}>About</h2>
+      <h2 sx={{ variant: 'text.sectionTitle' }}>About</h2>
 
       <div sx={{
         display: 'grid',
@@ -16,10 +16,10 @@ export default () => (
             fontSize: [3, 4],
             fontStyle: 'italic',
             borderLeft: '4px solid',
-            borderColor: '#cbd5e0',
+            borderColor: 'muted',
             pl: 3,
             mb: 4,
-            color: '#e2e8f0',
+            color: 'text',
             lineHeight: 1.6,
           }}>
             An idea machine for turning ideas into machines.
@@ -27,7 +27,7 @@ export default () => (
 
           <p sx={{
             mb: 3,
-            color: 'rgba(226, 232, 240, 0.9)',
+            color: 'textMuted',
             fontSize: [2, 3],
             lineHeight: 1.55,
           }}>
@@ -36,7 +36,7 @@ export default () => (
 
           <p sx={{
             mb: 3,
-            color: 'rgba(226, 232, 240, 0.9)',
+            color: 'textMuted',
             fontSize: [2, 3],
             lineHeight: 1.55,
           }}>
@@ -45,14 +45,14 @@ export default () => (
 
           <p sx={{
             mb: 4,
-            color: 'rgba(226, 232, 240, 0.9)',
+            color: 'textMuted',
             fontSize: [2, 3],
             lineHeight: 1.55,
           }}>
             My work spans from writing clean, efficient code to designing PCBs and fabricating custom enclosures. I'm passionate about projects that challenge conventional boundaries and require inventive thinking.
           </p>
 
-          <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf">
+          <a href="/resume.pdf" download="Josh_Wentworth_Resume.pdf" sx={{ variant: 'links.primary' }}>
             Download resume
           </a>
         </div>
@@ -65,8 +65,8 @@ export default () => (
             borderRadius: 'lg',
             overflow: 'hidden',
             border: '1px solid',
-            borderColor: 'rgba(226, 232, 240, 0.2)',
-            boxShadow: '0 24px 60px rgba(2, 6, 23, 0.2)',
+            borderColor: 'divider',
+            boxShadow: 'softLg',
           }}>
             <GradientGlow />
             <img src="/synth.jpg" alt="Custom synthesizer hardware project" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />

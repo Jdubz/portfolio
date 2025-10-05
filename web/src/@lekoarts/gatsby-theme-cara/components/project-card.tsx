@@ -62,7 +62,7 @@ const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags: _tags
               fontSize: [4, 5, 6],
               fontWeight: `heading`,
               lineHeight: `heading`,
-              color: `#FFFFFF`,
+              color: `white`,
               textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
               mb: 3,
             }}
@@ -75,7 +75,8 @@ const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags: _tags
               textShadow: `0 2px 10px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4)`,
               p: {
                 fontSize: [1, 2],
-                color: `#E6F0F2`,
+                color: `white`,
+                opacity: 0.9,
                 margin: 0,
                 lineHeight: 1.6,
               },
@@ -95,14 +96,14 @@ const ProjectCard = ({ link, linkText, title, children, bg, bgImage, tags: _tags
                 alignItems: `center`,
                 gap: 1,
                 fontSize: [1, 2],
-                color: `#FFFFFF`,
+                color: `white`,
                 textDecoration: `none`,
                 fontWeight: 600,
                 textShadow: `0 2px 10px rgba(0, 0, 0, 0.5)`,
                 transition: `all 0.2s ease`,
                 "&:hover": {
                   transform: `translateX(4px)`,
-                  color: `#00C9A7`,
+                  color: `highlight`,
                 },
               }}
             >

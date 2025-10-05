@@ -6,7 +6,7 @@ const Footer = () => {
     // @ts-expect-error - React 18 type compatibility
     <Box
       as="footer"
-      variant="footer"
+      variant="layout.footer"
       sx={{
         width: "100%",
         textAlign: "center",

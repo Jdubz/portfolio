@@ -16,9 +16,10 @@ export default () => (
       mx: 'auto',
       maxWidth: 1120,
       display: 'grid',
-      gridTemplateColumns: ['1fr', null, 'minmax(44ch, 50ch) 248px'],
+      gridTemplateColumns: ['1fr', null, '1fr auto'],
       alignItems: 'start',
-      gap: [3, null, 5],
+      gap: [4, null, 5],
+      px: [3, 4],
     }}>
       <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <p sx={{ variant: 'text.heroKicker' }}>
@@ -43,7 +44,7 @@ export default () => (
           <ScrollButton offset={1.65}>
             See what I've built
           </ScrollButton>
-          <ScrollButton offset={4}>
+          <ScrollButton offset={4} sx={{ variant: 'buttons.secondary' }}>
             Say hello
           </ScrollButton>
         </div>
@@ -57,21 +58,27 @@ export default () => (
         </p>
       </div>
 
-      <div sx={{ pt: 1 }}>
+      <div sx={{
+        display: ['none', 'flex', 'flex'],
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+      }}>
         <div sx={{
           position: 'relative',
-          width: ['176px', '208px', '232px'],
-          height: ['176px', '208px', '232px'],
+          width: ['200px', '220px', '240px'],
+          height: ['200px', '220px', '240px'],
           borderRadius: 'lg',
           overflow: 'hidden',
           border: '1px solid',
-          borderColor: 'border',
+          borderColor: 'divider',
           boxShadow: 'softLg',
+          flexShrink: 0,
         }}>
           <GradientGlow />
           <img src="/avatar.jpg" alt="Josh Wentworth headshot" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
       </div>
     </div>
+
   </>
 )
