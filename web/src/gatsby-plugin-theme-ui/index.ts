@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/prefer-nullish-coalescing */
 import { Theme } from "theme-ui"
 
 // Extend Theme to include gradients
