@@ -12,34 +12,44 @@ export default () => (
         gap: [4, null, 5],
         alignItems: 'start',
       }}>
-        <div sx={{
-          bg: 'panel',
-          p: [4, 5],
-          borderRadius: '16px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-        }}>
-          <p sx={{ variant: 'text.lead', mb: 3 }}>
-            Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
-          </p>
+        <div>
+          <div sx={{
+            bg: 'white',
+            color: 'dark',
+            p: [4, 5],
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+            mb: 4,
+          }}>
+            <p sx={{
+              fontSize: ['18px', '20px'],
+              lineHeight: 1.65,
+              maxWidth: '64ch',
+              mb: 3,
+              color: 'dark',
+            }}>
+              Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
+            </p>
 
-          <div sx={{ display: 'grid', gap: 3, mb: 4 }}>
-            <div>
-              <span sx={{ color: 'textMuted', mr: 2 }}>Email:</span>
-              <a href="mailto:hello@joshwentworth.com" sx={{ variant: 'links.primary', fontWeight: 'bold' }}>
-                hello@joshwentworth.com
-              </a>
-            </div>
-            <div>
-              <span sx={{ color: 'textMuted', mr: 2 }}>LinkedIn:</span>
-              <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary', fontWeight: 'bold' }}>
-                linkedin.com/in/joshwentworth
-              </a>
-            </div>
-            <div>
-              <span sx={{ color: 'textMuted', mr: 2 }}>GitHub:</span>
-              <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ variant: 'links.primary', fontWeight: 'bold' }}>
-                github.com/joshwentworth
-              </a>
+            <div sx={{ display: 'grid', gap: 3 }}>
+              <div>
+                <span sx={{ color: 'grayDark', mr: 2 }}>Email:</span>
+                <a href="mailto:hello@joshwentworth.com" sx={{ color: 'primary', textDecoration: 'none', fontWeight: 'bold', '&:hover': { textDecoration: 'underline' } }}>
+                  hello@joshwentworth.com
+                </a>
+              </div>
+              <div>
+                <span sx={{ color: 'grayDark', mr: 2 }}>LinkedIn:</span>
+                <a href="https://linkedin.com/in/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ color: 'primary', textDecoration: 'none', fontWeight: 'bold', '&:hover': { textDecoration: 'underline' } }}>
+                  linkedin.com/in/joshwentworth
+                </a>
+              </div>
+              <div>
+                <span sx={{ color: 'grayDark', mr: 2 }}>GitHub:</span>
+                <a href="https://github.com/joshwentworth" target="_blank" rel="noopener noreferrer" sx={{ color: 'primary', textDecoration: 'none', fontWeight: 'bold', '&:hover': { textDecoration: 'underline' } }}>
+                  github.com/joshwentworth
+                </a>
+              </div>
             </div>
           </div>
 
