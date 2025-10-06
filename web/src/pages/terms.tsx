@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/* eslint-disable react/no-unescaped-entities */
 import { jsx } from "theme-ui"
 import { Link } from "gatsby"
 import Layout from "../@lekoarts/gatsby-theme-cara/components/layout"
