@@ -1,6 +1,8 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
 import React, { useState } from "react"
+import { getToken } from "firebase/app-check"
+import { getAppCheckInstance } from "../utils/firebase-app-check"
 
 interface FormData {
   name: string
@@ -71,11 +73,25 @@ const ContactForm = (): React.JSX.Element => {
         throw new Error("Contact form URL not configured")
       }
 
+      // Get App Check token
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      }
+
+      try {
+        const appCheckInstance = getAppCheckInstance()
+        if (appCheckInstance) {
+          const appCheckToken = await getToken(appCheckInstance, /* forceRefresh */ false)
+          headers["X-Firebase-AppCheck"] = appCheckToken.token
+        }
+      } catch (appCheckError) {
+        console.warn("[AppCheck] Failed to get token, continuing without it:", appCheckError)
+        // Continue anyway - in development, App Check might not be fully configured
+      }
+
       const response = await fetch(functionUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify(formData),
       })
 

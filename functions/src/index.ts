@@ -6,6 +6,8 @@ import Joi from "joi"
 import { EmailService } from "./services/email.service"
 import { FirestoreService } from "./services/firestore.service"
 import { SecretManagerService } from "./services/secret-manager.service"
+import { verifyAppCheck } from "./middleware/app-check.middleware"
+import { contactFormRateLimiter } from "./middleware/rate-limit.middleware"
 
 // Error codes for contact form API
 const ERROR_CODES = {
@@ -60,7 +62,7 @@ const corsOptions = {
     "http://localhost:3000",
   ],
   methods: ["POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Firebase-AppCheck"],
   credentials: true,
 }
 
@@ -112,6 +114,22 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
         res.status(204).send("")
         return
       }
+
+      // Apply rate limiting
+      await new Promise<void>((resolve, reject) => {
+        contactFormRateLimiter(req, res, (err) => {
+          if (err) reject(err)
+          else resolve()
+        })
+      })
+
+      // Verify App Check token (defense in depth)
+      await new Promise<void>((resolve, reject) => {
+        verifyAppCheck(req, res, (err) => {
+          if (err) reject(err)
+          else resolve()
+        })
+      })
 
       // Only allow POST requests
       if (req.method !== "POST") {
