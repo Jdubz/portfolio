@@ -1,5 +1,6 @@
 import "./src/styles/fonts.css"
 import { initializeFirebaseAppCheck } from "./src/utils/firebase-app-check"
+import { initializeFirebaseAnalytics } from "./src/utils/firebase-analytics"
 
 // Log app version to console
 export const onClientEntry = () => {
@@ -19,4 +20,7 @@ export const onClientEntry = () => {
 
   // Initialize Firebase App Check
   initializeFirebaseAppCheck()
+
+  // Initialize Firebase Analytics (after App Check)
+  initializeFirebaseAnalytics()
 }

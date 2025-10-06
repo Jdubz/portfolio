@@ -329,7 +329,7 @@ Current implementation provides:
 For issues or questions:
 1. Check Firebase Console → App Check → Metrics
 2. Review Cloud Function logs
-3. See [WORKLOAD_IDENTITY_SETUP.md](./WORKLOAD_IDENTITY_SETUP.md) for IAM issues
+3. See [workload-identity-setup.md](../deployment/workload-identity-setup.md) for IAM issues
 
 ## References
 

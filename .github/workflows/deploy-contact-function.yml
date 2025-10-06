@@ -96,13 +96,14 @@ jobs:
           cd functions
           # Create a clean deployment directory
           mkdir -p deploy
-          # Copy only necessary files for deployment
-          cp package.json deploy/
-          cp package-lock.json deploy/ 2>/dev/null || cp ../package-lock.json deploy/
-          cp -r dist deploy/
-          cp -r node_modules deploy/ 2>/dev/null || true
-          # Create a minimal package.json without gcp-build to skip compilation
-          jq 'del(.scripts["gcp-build"]) | del(.devDependencies)' package.json > deploy/package.json
+          # Copy compiled JavaScript files
+          cp -r dist/* deploy/
+          # Copy package.json and modify it for deployment
+          jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' package.json > deploy/package.json
+          # Copy package-lock.json if it exists
+          cp package-lock.json deploy/ 2>/dev/null || true
+          echo "Deployment package created successfully"
+          ls -la deploy/
 
       - name: Deploy to Cloud Functions (Staging)
         run: |
@@ -184,13 +185,14 @@ jobs:
           cd functions
           # Create a clean deployment directory
           mkdir -p deploy
-          # Copy only necessary files for deployment
-          cp package.json deploy/
-          cp package-lock.json deploy/ 2>/dev/null || cp ../package-lock.json deploy/
-          cp -r dist deploy/
-          cp -r node_modules deploy/ 2>/dev/null || true
-          # Create a minimal package.json without gcp-build to skip compilation
-          jq 'del(.scripts["gcp-build"]) | del(.devDependencies)' package.json > deploy/package.json
+          # Copy compiled JavaScript files
+          cp -r dist/* deploy/
+          # Copy package.json and modify it for deployment
+          jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' package.json > deploy/package.json
+          # Copy package-lock.json if it exists
+          cp package-lock.json deploy/ 2>/dev/null || true
+          echo "Deployment package created successfully"
+          ls -la deploy/
 
       - name: Deploy to Cloud Functions (Production)
         run: |

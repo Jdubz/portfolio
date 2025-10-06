@@ -147,8 +147,8 @@ new file:   docs/SECURITY_IMPROVEMENTS_SUMMARY.md
 
 ## Documentation
 
-- **[GITHUB_ACTIONS_ANALYSIS.md](./GITHUB_ACTIONS_ANALYSIS.md)** - Analysis of current setup vs best practices
-- **[WORKLOAD_IDENTITY_SETUP.md](./WORKLOAD_IDENTITY_SETUP.md)** - Detailed setup documentation and troubleshooting
+- **[github-actions-analysis.md](../deployment/github-actions-analysis.md)** - Analysis of current setup vs best practices
+- **[workload-identity-setup.md](../deployment/workload-identity-setup.md)** - Detailed setup documentation and troubleshooting
 
 ## Troubleshooting
 
@@ -158,7 +158,7 @@ If deployment fails, check:
 2. **Permission Error**: Verify service account IAM bindings
 3. **Artifact Registry Error**: Verify cloud-functions-builder has writer role on gcf-artifacts
 
-See [WORKLOAD_IDENTITY_SETUP.md](./WORKLOAD_IDENTITY_SETUP.md#troubleshooting) for detailed troubleshooting steps.
+See [workload-identity-setup.md](../deployment/workload-identity-setup.md#troubleshooting) for detailed troubleshooting steps.
 
 ## Compliance & Best Practices
 

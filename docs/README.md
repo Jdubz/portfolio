@@ -27,6 +27,12 @@ docs/
 - **[Firebase Emulators](./setup/FIREBASE_EMULATORS.md)**
   Local development environment setup using Firebase emulators for functions and hosting.
 
+- **[Firebase Analytics](./setup/firebase-analytics.md)**
+  Firebase Analytics integration guide with environment configuration, custom event tracking, and usage examples.
+
+- **[Security Setup](./setup/security-setup.md)**
+  Cloud Function security setup including Firebase App Check, rate limiting, and CORS configuration.
+
 ### Deployment
 
 - **[Deployment Guide](./deployment/DEPLOYMENT.md)**
@@ -34,6 +40,15 @@ docs/
 
 - **[Functions Deployment](./deployment/functions-deployment.md)**
   Cloud Functions-specific deployment instructions, including staging vs production environments.
+
+- **[Deployment Verification](./deployment/deployment-verification.md)**
+  Pre-deployment checklist for Workload Identity Federation, service accounts, and CI/CD verification.
+
+- **[GitHub Actions Analysis](./deployment/github-actions-analysis.md)**
+  Analysis of GitHub Actions deployment pipeline security improvements and best practices.
+
+- **[Workload Identity Setup](./deployment/workload-identity-setup.md)**
+  Detailed Workload Identity Federation configuration for secure GitHub Actions deployments.
 
 - **[Versioning Strategy](./deployment/VERSIONING.md)**
   Semantic versioning guidelines and automated release process documentation.
@@ -57,6 +72,9 @@ docs/
 - **[Security Audit](./audit/SECURITY_AUDIT.md)**
   Security findings, exposed secrets analysis, and remediation recommendations.
 
+- **[Security Improvements](./audit/security-improvements.md)**
+  Summary of GitHub Actions security upgrades from service account keys to Workload Identity Federation.
+
 ### Brand Assets
 
 - **[Brand Guidelines](./brand/README.md)**
@@ -73,12 +91,14 @@ docs/
 ### Getting Started
 1. Read [Contact Form Setup](./setup/CONTACT_FORM_SETUP.md) for initial configuration
 2. Check [Firebase Emulators](./setup/FIREBASE_EMULATORS.md) for local development
-3. Review [Deployment Guide](./deployment/DEPLOYMENT.md) before deploying
+3. Review [Firebase Analytics](./setup/firebase-analytics.md) for tracking setup
+4. Review [Deployment Guide](./deployment/DEPLOYMENT.md) before deploying
 
 ### Troubleshooting
 1. Check [Known Issues](./development/KNOWN_ISSUES.md) first
 2. Review relevant setup guides
 3. Check [Security Audit](./audit/SECURITY_AUDIT.md) for environment variable issues
+4. Review [Deployment Verification](./deployment/deployment-verification.md) for deployment issues
 
 ### Making Changes
 1. Review [Code Audit Report](./audit/code-audit.md) for code quality standards
@@ -114,4 +134,4 @@ When adding or updating documentation:
 
 ---
 
-**Last Updated:** 2025-10-05
+**Last Updated:** 2025-10-06

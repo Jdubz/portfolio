@@ -3,6 +3,7 @@ import { jsx } from "theme-ui"
 import React, { useState } from "react"
 import { getToken } from "firebase/app-check"
 import { getAppCheckInstance } from "../utils/firebase-app-check"
+import { analyticsEvents } from "../utils/firebase-analytics"
 
 interface FormData {
   name: string
@@ -102,12 +103,18 @@ const ContactForm = (): React.JSX.Element => {
 
       setStatus({ submitting: false, submitted: true, error: null })
       setFormData({ name: "", email: "", message: "" })
+
+      // Track successful form submission
+      analyticsEvents.contactFormSubmitted(true)
     } catch (error) {
       setStatus({
         submitting: false,
         submitted: false,
         error: error instanceof Error ? error.message : "Something went wrong. Please try again.",
       })
+
+      // Track failed form submission
+      analyticsEvents.contactFormSubmitted(false)
     }
   }
 

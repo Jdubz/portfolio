@@ -7,7 +7,7 @@
 
 ## What Was Changed
 
-All security issues identified below have been **resolved**. See [SECURITY_IMPROVEMENTS_SUMMARY.md](./SECURITY_IMPROVEMENTS_SUMMARY.md) for details.
+All security issues identified below have been **resolved**. See [security-improvements.md](../audit/security-improvements.md) for details.
 
 ---
 
@@ -284,4 +284,4 @@ gcloud projects add-iam-policy-binding static-sites-257923 \
 | Artifact Registry Permissions | ✅ Resolved | Granted to custom build SA, removed from default account |
 | Deployer IAM Permissions | ✅ Resolved | `github-actions-deployer@` has proper roles |
 
-**See [SECURITY_IMPROVEMENTS_SUMMARY.md](./SECURITY_IMPROVEMENTS_SUMMARY.md) for complete details.**
+**See [security-improvements.md](../audit/security-improvements.md) for complete details.**
