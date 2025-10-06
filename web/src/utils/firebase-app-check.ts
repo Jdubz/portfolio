@@ -22,8 +22,7 @@ const firebaseConfig = {
 }
 
 // reCAPTCHA v3 site key for App Check
-// TODO: Get this from Firebase Console > App Check > reCAPTCHA v3
-const RECAPTCHA_V3_SITE_KEY = process.env.GATSBY_RECAPTCHA_V3_SITE_KEY ?? "your-recaptcha-site-key"
+const RECAPTCHA_V3_SITE_KEY = process.env.GATSBY_RECAPTCHA_V3_SITE_KEY ?? "6LexneArAAAAAGyuHn3uhITuLCqtRfwigr0v5j8j"
 
 let appCheckInstance: ReturnType<typeof initializeAppCheck> | null = null
 
