@@ -51,8 +51,18 @@ export class FirestoreService {
   async saveContactSubmission(data: Omit<ContactSubmission, "status" | "createdAt" | "updatedAt">): Promise<string> {
     try {
       const now = new Date()
+
+      // Remove undefined values from metadata (Firestore doesn't allow undefined)
+      const metadata: Record<string, string> = {
+        timestamp: data.metadata.timestamp,
+      }
+      if (data.metadata.ip) metadata.ip = data.metadata.ip
+      if (data.metadata.userAgent) metadata.userAgent = data.metadata.userAgent
+      if (data.metadata.referrer) metadata.referrer = data.metadata.referrer
+
       const submission: ContactSubmission = {
         ...data,
+        metadata: metadata as ContactSubmission["metadata"],
         status: "new",
         createdAt: now,
         updatedAt: now,

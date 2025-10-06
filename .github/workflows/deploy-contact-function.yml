@@ -101,6 +101,7 @@ jobs:
             --timeout=60s \
             --max-instances=10 \
             --set-env-vars="NODE_ENV=staging,ENVIRONMENT=staging" \
+            --set-secrets="MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest" \
             --quiet
 
       - name: Get function URL
@@ -169,6 +170,7 @@ jobs:
             --timeout=60s \
             --max-instances=50 \
             --set-env-vars="NODE_ENV=production,ENVIRONMENT=production" \
+            --set-secrets="MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest" \
             --quiet
 
       - name: Get function URL

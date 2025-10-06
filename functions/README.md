@@ -37,7 +37,6 @@ functions/
 ├── .env.local                        # Local environment variables (gitignored)
 ├── .env.example                      # Example environment variables
 ├── setup-secrets.sh                  # Script to create GCP secrets
-├── DEPLOYMENT.md                     # Deployment guide
 ├── package.json                      # Dependencies and scripts
 └── tsconfig.json                     # TypeScript configuration
 ```

@@ -55,7 +55,9 @@ describe("handleContactForm", () => {
     expect(mockStatus).toHaveBeenCalledWith(405)
     expect(mockJson).toHaveBeenCalledWith(
       expect.objectContaining({
-        error: "Method Not Allowed",
+        success: false,
+        error: "METHOD_NOT_ALLOWED",
+        errorCode: "CF_REQ_001",
       })
     )
   })
@@ -72,7 +74,9 @@ describe("handleContactForm", () => {
     expect(mockStatus).toHaveBeenCalledWith(400)
     expect(mockJson).toHaveBeenCalledWith(
       expect.objectContaining({
-        error: "Validation Error",
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: "CF_VAL_001",
       })
     )
   })
