@@ -2,7 +2,41 @@
 
 This document tracks future enhancements, optimizations, and technical debt that should be addressed.
 
+**Last Audit:** October 6, 2025 - Overall Health: A- (90/100)
+**See:** [AUDIT_REPORT.md](../../AUDIT_REPORT.md) for comprehensive analysis
+
+---
+
+## ✅ Recently Completed (Oct 2025)
+
+### Critical Production Fixes
+- [x] Fix CSP blocking Firebase App Check endpoints
+- [x] Fix CSP blocking reCAPTCHA API endpoints
+- [x] Add 30-second timeout to contact form requests
+- [x] Implement full-stack request tracing (trace/span IDs)
+- [x] Switch fonts to Bunny CDN (privacy-friendly)
+- [x] Fix semantic commit enforcement (Husky)
+- [x] Add GitHub Actions Cloud Run permissions
+- [x] Update Mailgun credentials and add region support
+- [x] Configure Firestore named database ("portfolio")
+
+---
+
 ## 🎯 High Priority
+
+### 🔴 Critical (Week 1)
+
+#### Security & Dependencies
+- [ ] **Update security dependencies** (10 vulnerabilities: 3 moderate, 7 low)
+  - Run `npm audit fix && npm update --workspaces`
+  - Test thoroughly after updates
+  - Priority: ASAP
+
+#### Production Verification
+- [ ] **Test contact form in production** (www.joshwentworth.com)
+  - Verify App Check token generation
+  - Test email delivery end-to-end
+  - Check browser console for CSP errors
 
 ### Analytics Enhancements
 - [ ] Add cookie consent banner for GDPR compliance
@@ -14,10 +48,16 @@ This document tracks future enhancements, optimizations, and technical debt that
   - Section navigation
 
 ### Performance Optimization
-- [ ] Implement code splitting for better initial load
+- [ ] **Bundle size optimization** (Current: ~600KB, Target: <500KB)
+  - Lazy load Firebase (~200KB savings)
+  - Route-based code splitting
+  - Optimize images (WebP, responsive sizes)
+  - Effort: 4-6 hours
+- [ ] **Add bundle size tracking to PR pipeline** (visibility into changes)
+  - Use size-limit-action
+  - Effort: 2 hours
 - [ ] Add service worker for offline support
 - [ ] Optimize background icon SVG rendering
-- [ ] Review and optimize bundle size (current Lighthouse recommendations)
 
 ### Contact Form
 - [ ] Add form validation feedback animations
@@ -28,10 +68,20 @@ This document tracks future enhancements, optimizations, and technical debt that
 ## 🔧 Medium Priority
 
 ### Testing
-- [ ] Increase test coverage to 80%+
-- [ ] Add E2E tests using Playwright
+- [ ] **Add E2E tests for contact form** (HIGH PRIORITY - Playwright installed but no tests)
+  - Test form submission flow
+  - Test validation errors
+  - Test network failures
+  - Effort: 4-6 hours
+- [ ] **Increase test coverage to 70%+** (Currently ~50% web, ~65% functions)
+  - ContactForm edge cases (network errors, timeout)
+  - Error boundaries
+  - Firebase initialization
+  - Effort: 6-8 hours
 - [ ] Add visual regression testing for component screenshots
 - [ ] Test Firebase Analytics event tracking
+- [ ] **Add Lighthouse CI to PR pipeline** (prevent performance regressions)
+  - Effort: 2 hours
 
 ### Documentation
 - [ ] Create architecture diagrams for system overview
@@ -40,10 +90,14 @@ This document tracks future enhancements, optimizations, and technical debt that
 - [ ] Create troubleshooting FAQ
 
 ### Developer Experience
-- [ ] Add pre-commit hooks for automated formatting
+- [x] Add pre-commit hooks for automated formatting (COMPLETED - Husky configured)
+- [ ] **Add environment variable validation** (fail fast on misconfiguration)
+  - Use Joi/Zod at startup
+  - Effort: 2 hours
 - [ ] Create Storybook for component development
 - [ ] Improve error messages in Cloud Functions
-- [ ] Add TypeScript strict mode gradually
+- [ ] **Replace console.log with structured logging** (winston/pino)
+  - Effort: 3-4 hours
 
 ## 🚀 Low Priority / Future
 
@@ -57,8 +111,13 @@ This document tracks future enhancements, optimizations, and technical debt that
 ### Infrastructure
 - [ ] Set up staging environment preview URLs for PRs
 - [ ] Implement automated dependency updates (Renovate/Dependabot)
-- [ ] Add automated Lighthouse CI checks to PRs
+- [x] Add automated Lighthouse CI checks to PRs (PARTIAL - manual runs only, not in PR pipeline yet)
 - [ ] Create backup strategy for Firestore data
+- [ ] **Add deployment notifications** (Slack/Discord/email)
+  - Effort: 1-2 hours
+- [ ] **Add performance monitoring** (Firebase Performance Monitoring)
+  - Track FCP, LCP, CLS, custom traces
+  - Effort: 2-3 hours
 
 ### Accessibility
 - [ ] Full WCAG 2.1 Level AA audit
@@ -128,5 +187,32 @@ This document tracks future enhancements, optimizations, and technical debt that
 
 ---
 
+## 📊 Audit Summary (Oct 2025)
+
+### Overall Health: A- (90/100)
+
+| Category | Score | Status |
+|----------|-------|--------|
+| Project Structure | 95/100 | ✅ Excellent |
+| Code Quality | 93/100 | ✅ Excellent |
+| Security | 95/100 | ✅ Excellent |
+| CI/CD | 92/100 | ✅ Excellent |
+| Documentation | 94/100 | ✅ Excellent |
+| Dependencies | 85/100 | ⚠️ Good (10 vulns) |
+| Performance | 87/100 | ⚠️ Good |
+| Configuration | 88/100 | ⚠️ Good |
+| Testing | 80/100 | ⚠️ Good (coverage gaps) |
+
+**Top 3 Priorities:**
+1. Update security dependencies (10 vulnerabilities)
+2. Add E2E tests for contact form
+3. Improve test coverage to 70%+
+
+See [AUDIT_REPORT.md](../../AUDIT_REPORT.md) for full details.
+
+---
+
 **Last Updated:** 2025-10-06
+**Last Audit:** 2025-10-06
 **Review Frequency:** Quarterly
+**Next Review:** 2026-01-06
