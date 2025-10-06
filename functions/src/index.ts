@@ -1,4 +1,6 @@
-import { Request, Response } from "express"
+import { https } from "firebase-functions/v2"
+import type { Request } from "firebase-functions/v2/https"
+import type { Response } from "express"
 import cors from "cors"
 import Joi from "joi"
 import { EmailService } from "./services/email.service"
@@ -74,7 +76,7 @@ interface ContactFormMetadata {
  * - Email service abstraction (ready for SendGrid, SES, etc.)
  * - Error handling with appropriate HTTP status codes
  */
-export const handleContactForm = async (req: Request, res: Response) => {
+const handleContactFormHandler = async (req: Request, res: Response): Promise<void> => {
   const log = logger
   const requestId = generateRequestId()
 
@@ -84,11 +86,12 @@ export const handleContactForm = async (req: Request, res: Response) => {
       // Only allow POST requests
       if (req.method !== "POST") {
         log.warning(`Invalid method: ${req.method}`, { requestId })
-        return res.status(405).json({
+        res.status(405).json({
           error: "Method Not Allowed",
           message: "Only POST requests are allowed",
           requestId,
         })
+        return
       }
 
       // Validate and parse request body
@@ -100,11 +103,12 @@ export const handleContactForm = async (req: Request, res: Response) => {
           requestId,
           body: req.body,
         })
-        return res.status(400).json({
+        res.status(400).json({
           error: "Validation Error",
           message: error.details[0].message,
           requestId,
         })
+        return
       }
 
       const data: ContactFormData = formData
@@ -118,11 +122,12 @@ export const handleContactForm = async (req: Request, res: Response) => {
           userAgent: req.get("User-Agent"),
         })
         // Return success to not reveal the honeypot to bots
-        return res.status(200).json({
+        res.status(200).json({
           success: true,
           message: "Thank you for your message!",
           requestId,
         })
+        return
       }
 
       // Collect metadata
@@ -178,7 +183,7 @@ export const handleContactForm = async (req: Request, res: Response) => {
           "X-RateLimit-Reset": String(Math.floor(Date.now() / 1000) + 3600),
         })
 
-        return res.status(200).json({
+        res.status(200).json({
           success: true,
           message: "Thank you for your message! I'll get back to you soon.",
           requestId,
@@ -190,7 +195,7 @@ export const handleContactForm = async (req: Request, res: Response) => {
           data: { name: data.name, email: data.email },
         })
 
-        return res.status(500).json({
+        res.status(500).json({
           error: "Service Error",
           message: "Failed to process your message. Please try again later.",
           requestId,
@@ -205,7 +210,7 @@ export const handleContactForm = async (req: Request, res: Response) => {
       url: req.url,
     })
 
-    return res.status(500).json({
+    res.status(500).json({
       error: "Internal Server Error",
       message: "An unexpected error occurred. Please try again later.",
       requestId,
@@ -219,3 +224,24 @@ export const handleContactForm = async (req: Request, res: Response) => {
 function generateRequestId(): string {
   return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
+
+/**
+ * Export as Firebase HTTP Function (v2)
+ * Deployed via: firebase deploy --only functions
+ */
+export const handleContactForm = https.onRequest(
+  {
+    region: "us-central1",
+    secrets: [
+      "mailgun-api-key",
+      "mailgun-domain",
+      "from-email",
+      "to-email",
+      "reply-to-email",
+    ],
+    memory: "256MiB",
+    maxInstances: 10,
+    timeoutSeconds: 60,
+  },
+  handleContactFormHandler
+)
