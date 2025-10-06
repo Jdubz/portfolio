@@ -13,12 +13,13 @@ import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check"
 // Firebase configuration
 // Note: These are public API keys and safe to commit
 const firebaseConfig = {
-  apiKey: "AIzaSyBpO5zlIHmvdwvNtOZgVT8R8rPWXOZr1YQ",
+  apiKey: "AIzaSyAxzl0u55AkWKTKLjGJRX1pxtApS8yC39c",
   authDomain: "static-sites-257923.firebaseapp.com",
   projectId: "static-sites-257923",
   storageBucket: "static-sites-257923.firebasestorage.app",
   messagingSenderId: "789847666726",
   appId: "1:789847666726:web:2128b2081a8c38ba5f76e7",
+  measurementId: "G-DV9P4HR219",
 }
 
 // reCAPTCHA v3 site key for App Check
