@@ -18,7 +18,7 @@ const firebaseConfig = {
   projectId: "static-sites-257923",
   storageBucket: "static-sites-257923.firebasestorage.app",
   messagingSenderId: "789847666726",
-  appId: "1:789847666726:web:YOUR_APP_ID", // TODO: Replace with actual app ID
+  appId: "1:789847666726:web:2128b2081a8c38ba5f76e7",
 }
 
 // reCAPTCHA v3 site key for App Check
