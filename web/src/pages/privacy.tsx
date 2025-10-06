@@ -49,11 +49,14 @@ const PrivacyPage = () => {
             Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           </p>
 
-          <div sx={{ "& > section": { mb: 5 }, "& p": { lineHeight: "relaxed" }, "& ul": { pl: 4, "& li": { mb: 2 } } }}>
+          <div
+            sx={{ "& > section": { mb: 5 }, "& p": { lineHeight: "relaxed" }, "& ul": { pl: 4, "& li": { mb: 2 } } }}
+          >
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>1. Introduction</h2>
               <p>
-                This Privacy Policy describes how joshwentworth.com ("we", "us", or "our") collects, uses, and protects your personal information when you visit our website and use our contact form.
+                This Privacy Policy describes how joshwentworth.com ("we", "us", or "our") collects, uses, and protects
+                your personal information when you visit our website and use our contact form.
               </p>
             </section>
 
@@ -88,7 +91,8 @@ const PrivacyPage = () => {
                 <li>Secure email delivery via Mailgun</li>
               </ul>
               <p sx={{ mt: 3 }}>
-                We retain your contact form submissions for as long as necessary to respond to your inquiry and maintain business records. You may request deletion of your data at any time.
+                We retain your contact form submissions for as long as necessary to respond to your inquiry and maintain
+                business records. You may request deletion of your data at any time.
               </p>
             </section>
 
@@ -96,19 +100,24 @@ const PrivacyPage = () => {
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>5. Third-Party Services</h2>
               <p sx={{ mb: 2 }}>We use the following third-party services:</p>
               <ul>
-                <li><strong>Google Cloud Platform:</strong> For hosting and data storage</li>
-                <li><strong>Mailgun:</strong> For email delivery</li>
-                <li><strong>Firebase:</strong> For website hosting and serverless functions</li>
+                <li>
+                  <strong>Google Cloud Platform:</strong> For hosting and data storage
+                </li>
+                <li>
+                  <strong>Mailgun:</strong> For email delivery
+                </li>
+                <li>
+                  <strong>Firebase:</strong> For website hosting and serverless functions
+                </li>
               </ul>
-              <p sx={{ mt: 3 }}>
-                These services have their own privacy policies and we encourage you to review them.
-              </p>
+              <p sx={{ mt: 3 }}>These services have their own privacy policies and we encourage you to review them.</p>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>6. Cookies and Analytics</h2>
               <p>
-                This website does not use cookies or tracking analytics. We respect your privacy and do not track your browsing behavior.
+                This website does not use cookies or tracking analytics. We respect your privacy and do not track your
+                browsing behavior.
               </p>
             </section>
 
@@ -127,21 +136,24 @@ const PrivacyPage = () => {
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>8. Children's Privacy</h2>
               <p>
-                This website is not intended for children under 13 years of age. We do not knowingly collect personal information from children.
+                This website is not intended for children under 13 years of age. We do not knowingly collect personal
+                information from children.
               </p>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>9. Changes to This Policy</h2>
               <p>
-                We may update this Privacy Policy from time to time. The updated version will be indicated by the "Last updated" date at the top of this page.
+                We may update this Privacy Policy from time to time. The updated version will be indicated by the "Last
+                updated" date at the top of this page.
               </p>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>10. Contact Us</h2>
               <p>
-                If you have any questions about this Privacy Policy or wish to exercise your rights, please contact us at:{" "}
+                If you have any questions about this Privacy Policy or wish to exercise your rights, please contact us
+                at:{" "}
                 <a href="mailto:hello@joshwentworth.com" sx={{ color: "primary", textDecoration: "underline" }}>
                   hello@joshwentworth.com
                 </a>

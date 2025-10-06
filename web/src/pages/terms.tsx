@@ -49,18 +49,23 @@ const TermsPage = () => {
             Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           </p>
 
-          <div sx={{ "& > section": { mb: 5 }, "& p": { lineHeight: "relaxed" }, "& ul": { pl: 4, "& li": { mb: 2 } } }}>
+          <div
+            sx={{ "& > section": { mb: 5 }, "& p": { lineHeight: "relaxed" }, "& ul": { pl: 4, "& li": { mb: 2 } } }}
+          >
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>1. Acceptance of Terms</h2>
               <p>
-                By accessing and using joshwentworth.com (the "Website"), you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use this Website.
+                By accessing and using joshwentworth.com (the "Website"), you accept and agree to be bound by these
+                Terms of Service. If you do not agree to these terms, please do not use this Website.
               </p>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>2. Description of Service</h2>
               <p>
-                This Website is a personal portfolio showcasing Josh Wentworth's professional work, projects, and skills in software development, hardware engineering, and digital fabrication. The Website includes a contact form for professional inquiries.
+                This Website is a personal portfolio showcasing Josh Wentworth's professional work, projects, and skills
+                in software development, hardware engineering, and digital fabrication. The Website includes a contact
+                form for professional inquiries.
               </p>
             </section>
 
@@ -79,7 +84,10 @@ const TermsPage = () => {
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>4. Contact Form Usage</h2>
-              <p sx={{ mb: 2 }}>The contact form is provided for legitimate professional inquiries only. By using the contact form, you agree that:</p>
+              <p sx={{ mb: 2 }}>
+                The contact form is provided for legitimate professional inquiries only. By using the contact form, you
+                agree that:
+              </p>
               <ul>
                 <li>You will provide accurate and truthful information</li>
                 <li>You will not send spam, solicitations, or marketing materials</li>
@@ -99,7 +107,8 @@ const TermsPage = () => {
                 <li>Project descriptions and case studies</li>
               </ul>
               <p sx={{ mt: 3 }}>
-                ...are the property of Josh Wentworth or used with permission, and are protected by copyright and intellectual property laws.
+                ...are the property of Josh Wentworth or used with permission, and are protected by copyright and
+                intellectual property laws.
               </p>
             </section>
 
@@ -122,28 +131,35 @@ const TermsPage = () => {
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>7. Third-Party Links</h2>
               <p>
-                This Website may contain links to third-party websites (GitHub, LinkedIn, etc.). We are not responsible for the content, privacy policies, or practices of these external sites. Accessing third-party links is at your own risk.
+                This Website may contain links to third-party websites (GitHub, LinkedIn, etc.). We are not responsible
+                for the content, privacy policies, or practices of these external sites. Accessing third-party links is
+                at your own risk.
               </p>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>8. Disclaimer of Warranties</h2>
               <p>
-                This Website is provided "as is" without warranties of any kind, either express or implied. We do not warrant that the Website will be uninterrupted, secure, or error-free. We make no guarantees about the accuracy or completeness of the content.
+                This Website is provided "as is" without warranties of any kind, either express or implied. We do not
+                warrant that the Website will be uninterrupted, secure, or error-free. We make no guarantees about the
+                accuracy or completeness of the content.
               </p>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>9. Limitation of Liability</h2>
               <p>
-                To the fullest extent permitted by law, Josh Wentworth shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use this Website.
+                To the fullest extent permitted by law, Josh Wentworth shall not be liable for any indirect, incidental,
+                special, consequential, or punitive damages resulting from your use or inability to use this Website.
               </p>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>10. Modifications to Service</h2>
               <p>
-                We reserve the right to modify, suspend, or discontinue any part of this Website at any time without notice. We may also update these Terms of Service at any time. Continued use of the Website after changes constitutes acceptance of the modified terms.
+                We reserve the right to modify, suspend, or discontinue any part of this Website at any time without
+                notice. We may also update these Terms of Service at any time. Continued use of the Website after
+                changes constitutes acceptance of the modified terms.
               </p>
             </section>
 
@@ -161,7 +177,8 @@ const TermsPage = () => {
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>12. Governing Law</h2>
               <p>
-                These Terms of Service shall be governed by and construed in accordance with the laws of the United States, without regard to conflict of law provisions.
+                These Terms of Service shall be governed by and construed in accordance with the laws of the United
+                States, without regard to conflict of law provisions.
               </p>
             </section>
 
