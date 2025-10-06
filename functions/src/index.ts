@@ -107,6 +107,17 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
   const log = logger
   const requestId = generateRequestId()
 
+  // Extract trace context for debugging (Cloud Trace integration)
+  const traceHeader = req.header("x-cloud-trace-context")
+  let traceId: string | undefined
+  let spanId: string | undefined
+
+  if (traceHeader) {
+    const [trace, span] = traceHeader.split("/")
+    traceId = trace
+    spanId = span?.split(";")[0]
+  }
+
   try {
     // Handle CORS preflight
     corsHandler(req, res, async () => {
@@ -134,7 +145,7 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
 
       // Only allow POST requests
       if (req.method !== "POST") {
-        log.warning(`Invalid method: ${req.method}`, { requestId })
+        log.warning(`Invalid method: ${req.method}`, { requestId, traceId, spanId })
         const err = ERROR_CODES.METHOD_NOT_ALLOWED
         res.status(err.status).json({
           success: false,
@@ -142,6 +153,8 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
           errorCode: err.code,
           message: err.message,
           requestId,
+          ...(traceId && { traceId }),
+          ...(spanId && { spanId }),
         })
         return
       }
@@ -153,6 +166,8 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
         log.warning("Validation failed", {
           error: error.details,
           requestId,
+          traceId,
+          spanId,
           body: req.body,
         })
         const err = ERROR_CODES.VALIDATION_FAILED
@@ -163,6 +178,8 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
           message: error.details[0].message,
           details: error.details,
           requestId,
+          ...(traceId && { traceId }),
+          ...(spanId && { spanId }),
         })
         return
       }
@@ -241,17 +258,25 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
         log.error("Failed to send email notification", {
           error: emailError,
           requestId,
+          traceId,
+          spanId,
           data: { name: data.name, email: data.email },
         })
 
-        // Email failure is critical - return specific error code
-        const err = ERROR_CODES.EMAIL_DELIVERY_FAILED
+        // Determine if it's a configuration error or delivery error
+        const errorMessage = emailError instanceof Error ? emailError.message : String(emailError)
+        const isConfigError = errorMessage.includes("configuration") || errorMessage.includes("Unauthorized")
+
+        const err = isConfigError ? ERROR_CODES.EMAIL_SERVICE_ERROR : ERROR_CODES.EMAIL_DELIVERY_FAILED
+
         res.status(err.status).json({
           success: false,
-          error: "EMAIL_DELIVERY_FAILED",
+          error: isConfigError ? "EMAIL_SERVICE_ERROR" : "EMAIL_DELIVERY_FAILED",
           errorCode: err.code,
           message: err.message,
           requestId,
+          ...(traceId && { traceId }),
+          ...(spanId && { spanId }),
         })
         return
       }
@@ -297,6 +322,8 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
     log.error("Unexpected error in contact form handler", {
       error,
       requestId,
+      traceId,
+      spanId,
       method: req.method,
       url: req.url,
     })
@@ -308,6 +335,8 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
       errorCode: err.code,
       message: err.message,
       requestId,
+      ...(traceId && { traceId }),
+      ...(spanId && { spanId }),
     })
   }
 }
