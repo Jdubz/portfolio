@@ -28,7 +28,10 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+            functions/package-lock.json
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
@@ -39,6 +42,23 @@ jobs:
       - name: Generate screenshots
         run: make screenshot
 
+      - name: Optimize screenshots
+        run: |
+          # Install pngquant for PNG compression
+          sudo apt-get update && sudo apt-get install -y pngquant
+
+          # Compress all screenshots aggressively (20-40% quality for inline display)
+          for file in screenshots/images/*.png; do
+            if [ -f "$file" ]; then
+              echo "Compressing $file..."
+              pngquant --quality=20-40 --force --ext .png "$file"
+            fi
+          done
+
+          echo "✅ Screenshot optimization complete"
+          echo "📊 Compressed file sizes:"
+          ls -lh screenshots/images/*.png
+
       - name: Upload screenshots as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -46,35 +66,120 @@ jobs:
           path: screenshots/images/*.png
           retention-days: 30
 
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Upload screenshots to Google Cloud Storage
+        id: upload
+        run: |
+          # Extract project ID from service account
+          PROJECT_ID=$(echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | jq -r '.project_id')
+          BUCKET="${PROJECT_ID}-screenshots"
+
+          # Create path for this PR's screenshots
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+          GCS_PATH="pr-screenshots/pr-${PR_NUMBER}/${COMMIT_SHA:0:7}"
+
+          echo "Checking/creating bucket gs://${BUCKET}..."
+
+          # Check if bucket exists, create if not
+          if ! gsutil ls -b "gs://${BUCKET}" 2>/dev/null; then
+            echo "Creating bucket ${BUCKET}..."
+            gsutil mb -p "${PROJECT_ID}" -l us-central1 "gs://${BUCKET}"
+
+            # Make bucket publicly readable
+            gsutil iam ch allUsers:objectViewer "gs://${BUCKET}"
+
+            # Set CORS for browser access
+            cat > cors.json << 'EOF'
+          [
+            {
+              "origin": ["*"],
+              "method": ["GET"],
+              "responseHeader": ["Content-Type"],
+              "maxAgeSeconds": 3600
+            }
+          ]
+          EOF
+            gsutil cors set cors.json "gs://${BUCKET}"
+          fi
+
+          echo "Uploading screenshots to gs://${BUCKET}/${GCS_PATH}/"
+
+          # Upload each screenshot and collect public URLs
+          > image_urls.env
+
+          for file in screenshots/images/*.png; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              echo "Uploading $filename..."
+
+              # Upload to GCS
+              gsutil -m cp "$file" "gs://${BUCKET}/${GCS_PATH}/${filename}"
+
+              # Generate public URL
+              PUBLIC_URL="https://storage.googleapis.com/${BUCKET}/${GCS_PATH}/${filename}"
+              echo "✓ Uploaded: $PUBLIC_URL"
+
+              # Save to env file
+              echo "${filename}=${PUBLIC_URL}" >> image_urls.env
+            fi
+          done
+
+          echo "✅ All screenshots uploaded to GCS"
+
       - name: Create screenshot gallery for PR
         id: gallery
         run: |
           echo "## 📸 Component Screenshots" > comment.md
           echo "" >> comment.md
-          echo "Screenshots generated at breakpoints: 480px, 768px, 1024px, 1280px, 1440px" >> comment.md
+          echo "Screenshots generated at breakpoints: Mobile (480px) and Desktop (1280px)" >> comment.md
           echo "" >> comment.md
 
-          # Group by component
+          # Build gallery using hosted URLs
           for component in intro projects about contact; do
-            if ls screenshots/images/${component}-*.png 1> /dev/null 2>&1; then
+            mobile_key="${component}-mobile.png"
+            desktop_key="${component}-desktop.png"
+
+            mobile_url=$(grep "^${mobile_key}=" image_urls.env 2>/dev/null | cut -d= -f2-)
+            desktop_url=$(grep "^${desktop_key}=" image_urls.env 2>/dev/null | cut -d= -f2-)
+
+            if [ -n "$mobile_url" ] || [ -n "$desktop_url" ]; then
               echo "### ${component^}" >> comment.md
               echo "" >> comment.md
-              echo "<details>" >> comment.md
+              echo "<details open>" >> comment.md
               echo "<summary>View ${component} screenshots</summary>" >> comment.md
               echo "" >> comment.md
+              echo "<table><tr>" >> comment.md
 
-              for file in screenshots/images/${component}-*.png; do
-                if [ -f "$file" ]; then
-                  filename=$(basename "$file")
-                  breakpoint=$(echo "$filename" | sed "s/${component}-\(.*\)\.png/\1/")
-                  echo "#### ${breakpoint}" >> comment.md
-                  # Base64 encode the image and embed it
-                  base64_img=$(base64 -w 0 "$file")
-                  echo "![${component} at ${breakpoint}](data:image/png;base64,${base64_img})" >> comment.md
-                  echo "" >> comment.md
-                fi
-              done
+              if [ -n "$mobile_url" ]; then
+                echo "<td width=\"50%\">" >> comment.md
+                echo "" >> comment.md
+                echo "**Mobile (480px)**" >> comment.md
+                echo "" >> comment.md
+                echo "![${component} mobile]($mobile_url)" >> comment.md
+                echo "" >> comment.md
+                echo "</td>" >> comment.md
+              fi
 
+              if [ -n "$desktop_url" ]; then
+                echo "<td width=\"50%\">" >> comment.md
+                echo "" >> comment.md
+                echo "**Desktop (1280px)**" >> comment.md
+                echo "" >> comment.md
+                echo "![${component} desktop]($desktop_url)" >> comment.md
+                echo "" >> comment.md
+                echo "</td>" >> comment.md
+              fi
+
+              echo "</tr></table>" >> comment.md
+              echo "" >> comment.md
               echo "</details>" >> comment.md
               echo "" >> comment.md
             fi

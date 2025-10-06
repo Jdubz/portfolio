@@ -1,4 +1,4 @@
-.PHONY: help dev build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshot
+.PHONY: help dev dev-clean build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -19,49 +19,88 @@ ifneq (,$(findstring CYGWIN,$(UNAME_S)))
 endif
 
 help:
-	@echo "Development Server Management"
+	@echo "Monorepo Development Commands"
 	@echo "=============================="
 	@echo ""
-	@echo "Available commands:"
+	@echo "Web Development:"
 	@echo "  make dev              - Start Gatsby development server (port 8000)"
+	@echo "  make dev-clean        - Clean cache and start fresh dev server"
 	@echo "  make build            - Build production bundle"
 	@echo "  make serve            - Serve production build (port 9000)"
 	@echo "  make clean            - Clean Gatsby cache and build files"
-	@echo "  make kill             - Kill all Node.js processes"
-	@echo "  make status           - Check what's running on dev ports"
+	@echo "  make test             - Run web tests"
+	@echo "  make screenshot       - Generate component screenshots (full quality)"
+	@echo "  make screenshot-ci    - Generate screenshots (CI mode - fast, lower quality)"
+	@echo "  make screenshot-quick - Generate screenshots (skip build, use existing)"
+	@echo "  make lint-web         - Lint web code (TypeScript, ESLint, Prettier)"
+	@echo "  make lint-web-fix     - Auto-fix web linting issues"
 	@echo ""
-	@echo "Versioning commands:"
+	@echo "Functions Development:"
+	@echo "  make dev-functions    - Start Functions development server (port 8080)"
+	@echo "  make test-functions   - Run functions tests"
+	@echo "  make lint-functions   - Lint functions code"
+	@echo "  make lint-functions-fix - Auto-fix functions linting issues"
+	@echo ""
+	@echo "Linting (All):"
+	@echo "  make lint             - Lint all code (web + functions)"
+	@echo "  make lint-fix         - Auto-fix all linting issues"
+	@echo ""
+	@echo "Process Management:"
+	@echo "  make kill             - Clean Gatsby cache (stops dev server indirectly)"
+	@echo ""
+	@echo "Versioning:"
 	@echo "  make version-patch    - Bump patch version (1.0.0 -> 1.0.1)"
 	@echo "  make version-minor    - Bump minor version (1.0.0 -> 1.1.0)"
 	@echo "  make version-major    - Bump major version (1.0.0 -> 2.0.0)"
 	@echo ""
-	@echo "Firebase commands:"
-	@echo "  make firebase-serve   - Serve Firebase hosting locally (port 5000)"
-	@echo "  make firebase-login   - Login to Firebase"
-	@echo "  make deploy-staging   - Build and deploy to staging"
-	@echo "  make deploy-prod      - Build and deploy to production"
-	@echo ""
-	@echo "Screenshot commands:"
-	@echo "  make screenshot       - Generate screenshots for all components"
-	@echo "  make screenshot COMPONENT=intro - Generate screenshots for specific component"
+	@echo "Firebase:"
+	@echo "  make firebase-serve        - Serve Firebase hosting locally (port 5000)"
+	@echo "  make firebase-emulators    - Start all Firebase emulators (hosting, functions, firestore)"
+	@echo "  make firebase-emulators-ui - Start emulators with UI dashboard (port 4000)"
+	@echo "  make firebase-functions-shell - Start interactive Functions shell for testing"
+	@echo "  make firebase-login        - Login to Firebase"
+	@echo "  make test-contact-form     - Test contact form function (single quick test)"
+	@echo "  make test-contact-form-all - Run comprehensive contact form test suite"
+	@echo "  make deploy-staging        - Build and deploy to staging"
+	@echo "  make deploy-prod           - Build and deploy to production"
 	@echo ""
 
+# Web commands
 dev:
-	@echo "Starting Gatsby development server..."
-	npm run develop
+	@echo "Starting Gatsby development server (port 8000)..."
+	@echo "Watch patterns optimized - ignoring build artifacts, screenshots, logs"
+	cd web && npm run develop
+
+dev-clean:
+	@echo "Cleaning cache and starting fresh development server..."
+	cd web && npm run clean && npm run develop
 
 build:
 	@echo "Building production bundle..."
-	npm run build
+	cd web && npm run build
 
 serve:
 	@echo "Serving production build..."
-	npm run serve
+	cd web && npm run serve
 
 clean:
 	@echo "Cleaning Gatsby cache..."
-	npm run clean
+	cd web && npm run clean
 
+test:
+	@echo "Running web tests..."
+	cd web && npm test
+
+# Functions commands
+dev-functions:
+	@echo "Starting Functions development server..."
+	cd functions && npm run dev
+
+test-functions:
+	@echo "Running functions tests..."
+	cd functions && npm test
+
+# Versioning
 version-patch:
 	@echo "Bumping patch version..."
 	npm run version:patch
@@ -74,70 +113,110 @@ version-major:
 	@echo "Bumping major version..."
 	npm run version:major
 
+# Process management
 kill:
-	@echo "Killing processes on ports 8000, 9000, and 5000..."
-ifeq ($(OS),Windows)
-	@for pid in $$(netstat -ano | grep :8000 | grep LISTENING | awk '{print $$5}' | sort -u); do \
-		taskkill //F //PID $$pid 2>&1 >/dev/null && echo "Port 8000: Killed PID $$pid" || true; \
-	done
-	@for pid in $$(netstat -ano | grep :9000 | grep LISTENING | awk '{print $$5}' | sort -u); do \
-		taskkill //F //PID $$pid 2>&1 >/dev/null && echo "Port 9000: Killed PID $$pid" || true; \
-	done
-	@for pid in $$(netstat -ano | grep :5000 | grep LISTENING | awk '{print $$5}' | sort -u); do \
-		taskkill //F //PID $$pid 2>&1 >/dev/null && echo "Port 5000: Killed PID $$pid" || true; \
-	done
-else
-	@lsof -ti :8000 | xargs kill -9 2>/dev/null && echo "Port 8000: Killed" || echo "Port 8000: Nothing to kill"
-	@lsof -ti :9000 | xargs kill -9 2>/dev/null && echo "Port 9000: Killed" || echo "Port 9000: Nothing to kill"
-	@lsof -ti :5000 | xargs kill -9 2>/dev/null && echo "Port 5000: Killed" || echo "Port 5000: Nothing to kill"
-endif
-	@echo "Done."
+	@echo "Killing all dev servers and emulators..."
+	@echo "Stopping Gatsby dev server (port 8000)..."
+	@lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Gatsby serve (port 9000)..."
+	@lsof -ti:9000 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Functions dev server (port 8080)..."
+	@lsof -ti:8080 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Firebase Hosting emulator (port 5000)..."
+	@lsof -ti:5000 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Firebase Functions emulator (port 5001)..."
+	@lsof -ti:5001 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Firebase Emulator UI (port 4000)..."
+	@lsof -ti:4000 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Firebase Auth emulator (port 9099)..."
+	@lsof -ti:9099 | xargs kill -9 2>/dev/null || true
+	@echo "Cleaning Gatsby cache..."
+	@cd web && npm run clean || true
+	@echo "✓ All dev servers stopped and cache cleaned"
 
-status:
-	@echo "Checking ports 8000, 9000, and 5000..."
-	@echo ""
-ifeq ($(OS),Windows)
-	@netstat -ano | grep :8000 || echo "Port 8000: Nothing running"
-	@echo ""
-	@netstat -ano | grep :9000 || echo "Port 9000: Nothing running"
-	@echo ""
-	@netstat -ano | grep :5000 || echo "Port 5000: Nothing running"
-else
-	@lsof -i :8000 || echo "Port 8000: Nothing running"
-	@echo ""
-	@lsof -i :9000 || echo "Port 9000: Nothing running"
-	@echo ""
-	@lsof -i :5000 || echo "Port 5000: Nothing running"
-endif
-
+# Firebase commands
 firebase-serve:
-	@echo "Starting Firebase hosting locally..."
-	npm run firebase:serve
+	@echo "Starting Firebase hosting emulator (port 5000)..."
+	@echo "This serves the static site only, without functions"
+	firebase serve --only hosting
+
+firebase-emulators:
+	@echo "Starting all Firebase emulators..."
+	@echo "- Hosting:   http://localhost:5000"
+	@echo "- Functions: http://localhost:5001"
+	@echo "- Firestore: http://localhost:8080"
+	@echo "- UI:        http://localhost:4000"
+	@cd functions && npm run build
+	firebase emulators:start
+
+firebase-emulators-ui:
+	@echo "Starting Firebase emulators with UI dashboard..."
+	@cd functions && npm run build
+	firebase emulators:start --ui
+
+firebase-functions-shell:
+	@echo "Starting interactive Firebase Functions shell..."
+	@echo "Usage: handleContactForm({data: {name: 'Test', email: 'test@example.com', message: 'Test message'}})"
+	@cd functions && npm run build
+	firebase functions:shell
 
 firebase-login:
 	@echo "Logging into Firebase..."
-	npm run firebase:login
+	firebase login
+
+test-contact-form:
+	@echo "Testing contact form function locally..."
+	@echo "Building function..."
+	@cd functions && npm run build
+	@echo ""
+	@echo "Testing contact form submission..."
+	@curl -s -X POST http://localhost:5001/static-sites-257923/us-central1/handleContactForm \
+		-H "Content-Type: application/json" \
+		-d '{"name": "Test User", "email": "test@example.com", "message": "This is a test message from the Makefile"}' \
+		| jq . || echo "\n⚠️  Emulators not running. Start with: make firebase-emulators"
+
+test-contact-form-all:
+	@echo "Running comprehensive contact form test suite..."
+	@./test-contact-form.sh emulator
 
 deploy-staging:
-	@echo "Building and deploying to staging..."
+	@echo "Deploying to staging..."
 	npm run deploy:staging
 
 deploy-prod:
-	@echo "Building and deploying to production..."
-	@read -p "Are you sure you want to deploy to production? (y/N) " confirm && \
-	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
-		npm run deploy:production; \
-	else \
-		echo "Deployment cancelled."; \
-	fi
+	@echo "Deploying to production..."
+	npm run deploy:production
 
-# Screenshot Generation
+# Screenshots
 screenshot:
-	@echo "Generating component screenshots..."
-	@if [ -n "$(COMPONENT)" ]; then \
-		echo "Target component: $(COMPONENT)"; \
-		node scripts/screenshot/capture.js $(COMPONENT); \
-	else \
-		echo "Generating screenshots for all components"; \
-		node scripts/screenshot/capture.js; \
-	fi
+	@echo "Generating component screenshots (full quality)..."
+	cd web && npm run screenshot
+
+screenshot-ci:
+	@echo "Generating component screenshots (CI mode - fast & optimized)..."
+	cd web && CI_MODE=true SKIP_BUILD=false npm run screenshot
+
+screenshot-quick:
+	@echo "Generating component screenshots (using existing build)..."
+	cd web && SKIP_BUILD=true npm run screenshot
+
+# Linting
+lint-web:
+	@echo "Linting web code..."
+	cd web && npm run lint
+
+lint-web-fix:
+	@echo "Auto-fixing web linting issues..."
+	cd web && npm run lint:fix
+
+lint-functions:
+	@echo "Linting functions code..."
+	cd functions && npm run lint
+
+lint-functions-fix:
+	@echo "Auto-fixing functions linting issues..."
+	cd functions && npm run lint:fix
+
+lint: lint-web lint-functions
+
+lint-fix: lint-web-fix lint-functions-fix

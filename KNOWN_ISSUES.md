@@ -1,59 +1,94 @@
 # Known Issues
 
-## TypeScript Theme UI Compatibility
+This document tracks known technical issues in the codebase that are being monitored but don't block functionality.
 
-**Status**: Needs Resolution  
-**Priority**: Medium  
-**Files Affected**:
+## TypeScript Suppressions
 
-- `src/@lekoarts/gatsby-theme-cara/components/AvatarFrame.tsx`
-- `src/@lekoarts/gatsby-theme-cara/sections/intro.tsx`
-- `src/pages/404.tsx`
+The following `@ts-expect-error` comments are present in the codebase due to library compatibility issues with React 18 and Theme UI v0.17.2:
 
-### Problem
+### 1. ParallaxLayer sx Prop Type Issues
 
-Theme UI components are throwing TypeScript errors:
+**Files:**
+- `web/src/@lekoarts/gatsby-theme-cara/elements/content.tsx:21`
+- `web/src/@lekoarts/gatsby-theme-cara/elements/divider.tsx:27`
 
-```typescript
-'Box' cannot be used as a JSX component.
-Its return type 'ReactNode' is not a valid JSX element.
-Type 'string' is not assignable to type 'ReactElement<any, any>'.
-```
+**Issue:** `@react-spring/parallax` ParallaxLayer component doesn't properly type the `sx` prop from Theme UI in React 18 environments.
 
-### Root Cause
+**Status:** Waiting for `@react-spring/parallax` to update React 18 type definitions.
 
-Mismatch between:
+**Workaround:** Type suppression allows the code to compile and function correctly at runtime.
 
-- Theme UI JSX pragma: `/** @jsx jsx */`
-- TypeScript JSX configuration: `"jsx": "react"`
-- React 18 type definitions
+### 2. Theme UI Box Component React 18 Compatibility
 
-### Impact
+**File:** `web/src/@lekoarts/gatsby-theme-cara/components/footer.tsx:6`
 
-- TypeScript linting fails in pre-commit hooks
-- IDE shows type errors (but build and runtime work fine)
-- Code still functions correctly
+**Issue:** Theme UI Box component has type incompatibilities with React 18's stricter type checking.
 
-### Temporary Workaround
+**Status:** Waiting for Theme UI v0.18 which includes React 18 type fixes (currently in beta).
 
-Currently using `"jsx": "react"` with `ignoreDeprecations: "5.0"` to suppress moduleResolution warnings.
+**Workaround:** Type suppression; component renders correctly.
 
-### Potential Solutions
+### 3. Gatsby Image Component sx Prop
 
-1. **Update to Theme UI v6+** (breaking changes)
-2. **Migrate to CSS-in-JS alternative** (styled-components, emotion)
-3. **Add TypeScript suppression comments** (quick fix)
-4. **Create custom type definitions** (complex)
+**Files:**
+- `web/src/@lekoarts/gatsby-theme-cara/components/AvatarFrame.tsx:8`
+- `web/src/@lekoarts/gatsby-theme-cara/components/AvatarFrame.tsx:35`
 
-### Action Items
+**Issue:** `gatsby-plugin-image` Image component doesn't recognize Theme UI's `sx` prop type.
 
-- [ ] Research Theme UI v6 compatibility
-- [ ] Test migration to newer Theme UI version
-- [ ] Consider alternative styling solutions
-- [ ] Add proper TypeScript configuration for Theme UI JSX pragma
+**Status:** Known issue with Gatsby plugins and Theme UI integration.
 
-### Related Files
+**Workaround:** Type suppression; styling works correctly via Theme UI's babel plugin.
 
-- `tsconfig.json` - TypeScript configuration
-- `.husky/pre-commit` - Pre-commit hook configuration
-- Component files using Theme UI JSX pragma
+## Dependencies
+
+### Flagged as "Unused" by depcheck
+
+The following dependencies are flagged by `depcheck` as unused but are actually required:
+
+**Gatsby Plugins (Required by gatsby-config.ts):**
+- `gatsby-plugin-image` - Used for optimized image loading
+- `gatsby-plugin-sharp` - Image processing for Gatsby
+- `gatsby-transformer-sharp` - GraphQL image transformations
+- `gatsby-plugin-sitemap` - Automatic sitemap generation
+- `gatsby-plugin-manifest` - PWA manifest
+- `gatsby-plugin-webpack-statoscope` - Bundle analysis (optional, conditional)
+- `sharp` - Native image processing library
+- `@parcel/watcher` - File watching for Gatsby
+
+**Dev Dependencies:**
+- `@eslint/js` - ESLint v9 flat config support
+- `@playwright/test` - E2E testing (planned)
+- `playwright` - Browser automation
+- `ajv` - JSON schema validation (ESLint dependency)
+- `jest-environment-jsdom` - DOM testing environment
+
+**Recommendation:** Keep all dependencies. Depcheck doesn't analyze Gatsby config files or conditional imports.
+
+## Test Warnings
+
+### Jest Async Cleanup
+
+**Location:** Functions workspace tests
+
+**Warning:** `Jest did not exit one second after the test run has completed`
+
+**Cause:** Async operations (likely Firebase SDK timers) not fully cleaned up after tests.
+
+**Impact:** Tests pass successfully; only affects test runner exit time.
+
+**Priority:** Low - doesn't affect functionality or CI/CD.
+
+## Build & Deploy
+
+No known build or deployment issues. All checks passing:
+- ✅ TypeScript compilation
+- ✅ ESLint (0 errors, 0 warnings)
+- ✅ Prettier formatting
+- ✅ Test suites (30 passing tests)
+- ✅ Production builds successful
+
+---
+
+**Last Updated:** 2025-10-05
+**Maintained By:** Josh Wentworth

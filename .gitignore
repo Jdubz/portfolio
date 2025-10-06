@@ -60,9 +60,21 @@ typings/
 .env.*
 !.env.example
 
+# Gatsby cache and build
 .cache
 **/.cache
-public
+web/public
+web/.cache
+public/
+
+# Functions build
+functions/lib
+functions/**/dist/
+functions/**/node_modules/
+functions/**/*.js
+functions/**/*.d.ts
+!functions/jest.config.js
+!functions/eslint.config.mjs
 
 .idea
 .vscode
@@ -96,3 +108,12 @@ lighthouse-*.json
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Generated Partytown assets (should be copied from node_modules during build)
+web/public/~partytown/
+public/~partytown/
+
+# Test and dev files
+web/src/components/*Test.tsx
+web/src/components/FORMS_GUIDE.md
+web/src/test-theme.ts
