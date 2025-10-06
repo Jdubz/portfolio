@@ -306,7 +306,7 @@ ${data.metadata.referrer ? `Referrer: ${data.metadata.referrer}` : ""}
             <p>I've received your message and will get back to you as soon as possible.</p>
             <p>In the meantime, feel free to:</p>
             <ul>
-              <li>Check out my <a href="https://joshwentworth.com">portfolio projects</a></li>
+              <li>Check out my <a href="https://www.joshwentworth.com">portfolio projects</a></li>
               <li>Connect with me on <a href="https://linkedin.com/in/joshwentworth">LinkedIn</a></li>
               <li>Follow my work on <a href="https://github.com/jdubz">GitHub</a></li>
             </ul>
@@ -327,7 +327,7 @@ Hi ${data.name},
 
 Thank you for your message! I've received it and will get back to you as soon as possible.
 
-In the meantime, feel free to check out my portfolio at https://joshwentworth.com or connect with me on LinkedIn.
+In the meantime, feel free to check out my portfolio at https://www.joshwentworth.com or connect with me on LinkedIn.
 
 Best regards,
 Josh Wentworth
