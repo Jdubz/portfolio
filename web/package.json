@@ -2,7 +2,7 @@
   "private": true,
   "name": "josh-wentworth-portfolio",
   "description": "Josh Wentworth - Multidisciplinary engineer portfolio featuring software, hardware, and fabrication projects",
-  "version": "1.6.5",
+  "version": "1.8.1",
   "author": "Josh Wentworth",
   "license": "0BSD",
   "scripts": {
@@ -75,6 +75,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource/poppins": "^5.2.7",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.55.1",
     "@testing-library/jest-dom": "^6.9.0",
