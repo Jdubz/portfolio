@@ -1,5 +1,29 @@
 import type { GatsbyConfig, PluginRef } from "gatsby"
-import "dotenv/config"
+import * as dotenv from "dotenv"
+import * as path from "path"
+
+// Load environment-specific .env file
+// Priority: .env.{GATSBY_ACTIVE_ENV}.local > .env.{GATSBY_ACTIVE_ENV} > .env.{NODE_ENV} > .env
+const activeEnv = process.env.GATSBY_ACTIVE_ENV ?? process.env.NODE_ENV ?? "development"
+
+// Load base .env first (if exists)
+dotenv.config({ path: path.resolve(process.cwd(), ".env") })
+
+// Then load environment-specific file
+const envFile = `.env.${activeEnv}`
+const result = dotenv.config({ path: path.resolve(process.cwd(), envFile) })
+
+if (result.error) {
+  console.warn(`⚠️  Could not load ${envFile}`)
+}
+
+// Finally, load local overrides if they exist (for personal dev settings)
+const localEnvFile = `.env.${activeEnv}.local`
+const localResult = dotenv.config({ path: path.resolve(process.cwd(), localEnvFile) })
+if (!localResult.error) {
+  // eslint-disable-next-line no-console
+  console.log(`✓ Loaded local overrides from ${localEnvFile}`)
+}
 
 const shouldAnalyseBundle = process.env.ANALYSE_BUNDLE
 
