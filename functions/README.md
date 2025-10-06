@@ -115,7 +115,7 @@ npm run lint:fix
 
 ## Deployment
 
-Deployment is handled automatically via GitHub Actions when pushing to `main` or `staging` branches.
+Deployment is handled automatically via GitHub Actions when pushing to `main` or `staging` branches. The workflow builds the TypeScript code, creates a deployment package, and deploys to Google Cloud Functions Gen2.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
