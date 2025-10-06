@@ -57,6 +57,7 @@ const firestoreService = new FirestoreService(logger)
 const corsOptions = {
   origin: [
     "https://joshwentworth.com",
+    "https://www.joshwentworth.com",
     "https://staging.joshwentworth.com",
     "http://localhost:8000",
     "http://localhost:3000",
