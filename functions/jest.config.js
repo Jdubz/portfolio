@@ -12,5 +12,5 @@ module.exports = {
     'src/**/*.{ts,js}',
     '!src/**/*.d.ts'
   ],
-  testPathIgnorePatterns: ['/node_modules/', '/lib/']
+  testPathIgnorePatterns: ['/node_modules/', '/lib/', '/dist/', '/contact-form/']
 }

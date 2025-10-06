@@ -6,8 +6,9 @@ import { handleContactForm } from "../index"
 jest.mock("@google-cloud/logging")
 jest.mock("../services/email.service")
 jest.mock("../services/secret-manager.service")
+jest.mock("../services/firestore.service")
 jest.mock("cors", () => {
-  return jest.fn(() => (req: any, res: any, next: any) => {
+  return jest.fn(() => (_req: any, _res: any, next: any) => {
     next()
   })
 })
