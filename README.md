@@ -177,12 +177,32 @@ make deploy-prod         # Deploy to production
 
 ## 📝 Documentation
 
-- [Deployment Guide](./DEPLOYMENT.md)
-- [Contact Function Setup](./CONTACT_FUNCTION_SETUP.md)
-- [Versioning Strategy](./VERSIONING.md)
-- [Known Issues](./KNOWN_ISSUES.md)
-- [Changelog](./CHANGELOG.md)
-- [Audit Report](./AUDIT-REPORT.md)
+All documentation has been consolidated in the [`docs/`](./docs/) folder:
+
+### Setup & Configuration
+- [Contact Form Setup](./docs/setup/CONTACT_FORM_SETUP.md) - Complete guide for setting up the contact form function
+- [Contact Function Setup](./docs/setup/CONTACT_FUNCTION_SETUP.md) - Cloud Function deployment guide
+- [Firebase Emulators](./docs/setup/FIREBASE_EMULATORS.md) - Local development with Firebase emulators
+
+### Deployment
+- [Deployment Guide](./docs/deployment/DEPLOYMENT.md) - Main deployment documentation
+- [Functions Deployment](./docs/deployment/functions-deployment.md) - Cloud Functions deployment specifics
+- [Versioning Strategy](./docs/deployment/VERSIONING.md) - Semantic versioning and release process
+
+### Development
+- [Monorepo Migration](./docs/development/MONOREPO_MIGRATION.md) - History of monorepo migration
+- [Known Issues](./docs/development/KNOWN_ISSUES.md) - Current known issues and workarounds
+- [TODO](./docs/development/TODO.md) - Planned features and improvements
+
+### Audit & Security
+- [Code Audit Report](./docs/audit/code-audit.md) - Comprehensive code quality audit
+- [Security Audit](./docs/audit/SECURITY_AUDIT.md) - Security findings and recommendations
+
+### Brand Assets
+- [Brand Guidelines](./docs/brand/README.md) - Complete brand identity and assets
+
+### Changelog
+- [Changelog](./docs/CHANGELOG.md) - Version history and release notes
 
 ## 🔒 Environment Variables
 
