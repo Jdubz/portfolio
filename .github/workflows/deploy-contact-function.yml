@@ -80,7 +80,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
+          service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
 
       - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -110,6 +111,8 @@ jobs:
             --entry-point=handleContactForm \
             --trigger-http \
             --allow-unauthenticated \
+            --service-account=contact-form-runtime@static-sites-257923.iam.gserviceaccount.com \
+            --build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
             --memory=256Mi \
             --timeout=60s \
             --max-instances=10 \
@@ -162,7 +165,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
+          service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
 
       - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -192,6 +196,8 @@ jobs:
             --entry-point=handleContactForm \
             --trigger-http \
             --allow-unauthenticated \
+            --service-account=contact-form-runtime@static-sites-257923.iam.gserviceaccount.com \
+            --build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
             --memory=512Mi \
             --timeout=60s \
             --max-instances=50 \
