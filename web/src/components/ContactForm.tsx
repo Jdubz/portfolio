@@ -92,11 +92,38 @@ const ContactForm = (): React.JSX.Element => {
 
       const startTime = Date.now()
 
-      const response = await fetch(functionUrl, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(formData),
-      })
+      // Create an AbortController for timeout
+      const controller = new AbortController()
+      // eslint-disable-next-line no-undef
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
+      let response: Response
+      try {
+        response = await fetch(functionUrl, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(formData),
+          signal: controller.signal,
+        })
+      } catch (fetchError) {
+        // eslint-disable-next-line no-undef
+        clearTimeout(timeoutId)
+        if (fetchError instanceof Error && fetchError.name === "AbortError") {
+          throw new Error(
+            "Request timed out after 30 seconds. Please check your internet connection and try again, or email me at support@joshwentworth.com"
+          )
+        }
+        // Handle network errors
+        if (fetchError instanceof TypeError) {
+          throw new Error(
+            "Network error: Unable to connect. Please check your internet connection and try again, or email me at support@joshwentworth.com"
+          )
+        }
+        throw fetchError
+      } finally {
+        // eslint-disable-next-line no-undef
+        clearTimeout(timeoutId)
+      }
 
       const duration = Date.now() - startTime
 
