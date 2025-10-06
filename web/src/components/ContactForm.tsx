@@ -39,7 +39,9 @@ const ContactForm = (): React.JSX.Element => {
 
   // Lazy load Firebase only when component mounts
   useEffect(() => {
-    if (firebaseInitialized.current) return
+    if (firebaseInitialized.current) {
+      return
+    }
 
     const initFirebase = async () => {
       try {
