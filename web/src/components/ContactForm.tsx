@@ -126,7 +126,7 @@ const ContactForm = (): React.JSX.Element => {
         // User-friendly error messages
         const userMessage =
           errorData.message ??
-          "We couldn't send your message right now. Please try again later or email me directly at contact@joshwentworth.com"
+          "We couldn't send your message right now. Please try again later or email me directly at support@joshwentworth.com"
 
         throw new Error(userMessage)
       }
