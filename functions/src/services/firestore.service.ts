@@ -28,7 +28,10 @@ export class FirestoreService {
   private collectionName = "contact-submissions"
 
   constructor(logger?: SimpleLogger) {
-    this.db = new Firestore()
+    // Initialize Firestore with the named database "portfolio"
+    this.db = new Firestore({
+      databaseId: "portfolio",
+    })
 
     const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
 

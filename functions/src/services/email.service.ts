@@ -30,6 +30,7 @@ export interface AutoReplyData {
 export interface EmailConfig {
   mailgunApiKey: string
   mailgunDomain: string
+  mailgunRegion?: "us" | "eu" // Default: us
   fromEmail: string
   toEmail: string
   replyToEmail: string
@@ -70,12 +71,24 @@ export class EmailService {
       const config = await this.getEmailConfig()
 
       const mailgun = new Mailgun(formData)
-      this.mailgunClient = mailgun.client({
+
+      // Configure client with region support
+      const clientConfig: { username: string; key: string; url?: string } = {
         username: "api",
         key: config.mailgunApiKey,
-      })
+      }
 
-      this.logger.info("Mailgun client initialized successfully")
+      // Set EU endpoint if specified
+      if (config.mailgunRegion === "eu") {
+        clientConfig.url = "https://api.eu.mailgun.net"
+      }
+
+      this.mailgunClient = mailgun.client(clientConfig)
+
+      this.logger.info("Mailgun client initialized successfully", {
+        region: config.mailgunRegion || "us",
+        domain: config.mailgunDomain,
+      })
       return this.mailgunClient
     } catch (error) {
       this.logger.error("Failed to initialize Mailgun client", { error })
@@ -91,6 +104,7 @@ export class EmailService {
       return {
         mailgunApiKey: process.env.MAILGUN_API_KEY || "",
         mailgunDomain: process.env.MAILGUN_DOMAIN || "joshwentworth.com",
+        mailgunRegion: (process.env.MAILGUN_REGION as "us" | "eu") || "us",
         fromEmail: process.env.FROM_EMAIL || "noreply@joshwentworth.com",
         toEmail: process.env.TO_EMAIL || "contact-form@joshwentworth.com",
         replyToEmail: process.env.REPLY_TO_EMAIL || "hello@joshwentworth.com",
@@ -109,6 +123,7 @@ export class EmailService {
       return {
         mailgunApiKey: secrets["mailgun-api-key"],
         mailgunDomain: secrets["mailgun-domain"],
+        mailgunRegion: "us", // US region by default
         fromEmail: secrets["from-email"],
         toEmail: secrets["to-email"],
         replyToEmail: secrets["reply-to-email"],

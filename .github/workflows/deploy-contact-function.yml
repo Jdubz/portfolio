@@ -55,6 +55,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    permissions:
+      contents: read
+      id-token: write
     environment:
       name: staging
       url: https://us-central1-static-sites-257923.cloudfunctions.net/contact-form
@@ -80,7 +83,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
+          service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
 
       - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -92,13 +96,14 @@ jobs:
           cd functions
           # Create a clean deployment directory
           mkdir -p deploy
-          # Copy only necessary files for deployment
-          cp package.json deploy/
-          cp package-lock.json deploy/ 2>/dev/null || cp ../package-lock.json deploy/
-          cp -r dist deploy/
-          cp -r node_modules deploy/ 2>/dev/null || true
-          # Create a minimal package.json without gcp-build to skip compilation
-          jq 'del(.scripts["gcp-build"]) | del(.devDependencies)' package.json > deploy/package.json
+          # Copy compiled JavaScript files
+          cp -r dist/* deploy/
+          # Copy package.json and modify it for deployment
+          jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' package.json > deploy/package.json
+          # Copy package-lock.json if it exists
+          cp package-lock.json deploy/ 2>/dev/null || true
+          echo "Deployment package created successfully"
+          ls -la deploy/
 
       - name: Deploy to Cloud Functions (Staging)
         run: |
@@ -110,6 +115,8 @@ jobs:
             --entry-point=handleContactForm \
             --trigger-http \
             --allow-unauthenticated \
+            --service-account=contact-form-runtime@static-sites-257923.iam.gserviceaccount.com \
+            --build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
             --memory=256Mi \
             --timeout=60s \
             --max-instances=10 \
@@ -137,6 +144,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      id-token: write
     environment:
       name: production
       url: https://us-central1-static-sites-257923.cloudfunctions.net/contact-form
@@ -162,7 +172,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
+          service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
 
       - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -174,13 +185,14 @@ jobs:
           cd functions
           # Create a clean deployment directory
           mkdir -p deploy
-          # Copy only necessary files for deployment
-          cp package.json deploy/
-          cp package-lock.json deploy/ 2>/dev/null || cp ../package-lock.json deploy/
-          cp -r dist deploy/
-          cp -r node_modules deploy/ 2>/dev/null || true
-          # Create a minimal package.json without gcp-build to skip compilation
-          jq 'del(.scripts["gcp-build"]) | del(.devDependencies)' package.json > deploy/package.json
+          # Copy compiled JavaScript files
+          cp -r dist/* deploy/
+          # Copy package.json and modify it for deployment
+          jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' package.json > deploy/package.json
+          # Copy package-lock.json if it exists
+          cp package-lock.json deploy/ 2>/dev/null || true
+          echo "Deployment package created successfully"
+          ls -la deploy/
 
       - name: Deploy to Cloud Functions (Production)
         run: |
@@ -192,6 +204,8 @@ jobs:
             --entry-point=handleContactForm \
             --trigger-http \
             --allow-unauthenticated \
+            --service-account=contact-form-runtime@static-sites-257923.iam.gserviceaccount.com \
+            --build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
             --memory=512Mi \
             --timeout=60s \
             --max-instances=50 \

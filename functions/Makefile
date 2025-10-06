@@ -44,7 +44,7 @@ deploy-staging: build ## Deploy to staging environment
 		--region=us-central1 \
 		--source=. \
 		--entry-point=handleContactForm \
-		--trigger=http \
+		--trigger-http \
 		--allow-unauthenticated \
 		--memory=256Mi \
 		--timeout=60s \
@@ -57,7 +57,7 @@ deploy-production: build ## Deploy to production environment
 		--region=us-central1 \
 		--source=. \
 		--entry-point=handleContactForm \
-		--trigger=http \
+		--trigger-http \
 		--allow-unauthenticated \
 		--memory=512Mi \
 		--timeout=60s \

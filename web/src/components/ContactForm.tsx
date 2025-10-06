@@ -1,6 +1,9 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
 import React, { useState } from "react"
+import { getToken } from "firebase/app-check"
+import { getAppCheckInstance } from "../utils/firebase-app-check"
+import { analyticsEvents } from "../utils/firebase-analytics"
 
 interface FormData {
   name: string
@@ -71,27 +74,86 @@ const ContactForm = (): React.JSX.Element => {
         throw new Error("Contact form URL not configured")
       }
 
+      // Get App Check token
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      }
+
+      try {
+        const appCheckInstance = getAppCheckInstance()
+        if (appCheckInstance) {
+          const appCheckToken = await getToken(appCheckInstance, /* forceRefresh */ false)
+          headers["X-Firebase-AppCheck"] = appCheckToken.token
+        }
+      } catch (appCheckError) {
+        console.warn("[AppCheck] Failed to get token, continuing without it:", appCheckError)
+        // Continue anyway - in development, App Check might not be fully configured
+      }
+
+      const startTime = Date.now()
+
       const response = await fetch(functionUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify(formData),
       })
 
+      const duration = Date.now() - startTime
+
       if (!response.ok) {
-        const errorData = (await response.json()) as { message?: string }
-        throw new Error(errorData.message ?? "Failed to send message")
+        const errorData = (await response.json()) as {
+          message?: string
+          errorCode?: string
+          requestId?: string
+          traceId?: string
+          spanId?: string
+        }
+
+        // Log detailed error info to console for debugging (includes trace IDs for correlation)
+        console.error("[ContactForm] Request failed:", {
+          status: response.status,
+          statusText: response.statusText,
+          errorCode: errorData.errorCode,
+          requestId: errorData.requestId,
+          traceId: errorData.traceId,
+          spanId: errorData.spanId,
+          duration: `${duration}ms`,
+          message: errorData.message,
+          timestamp: new Date().toISOString(),
+          url: functionUrl,
+        })
+
+        // User-friendly error messages
+        const userMessage =
+          errorData.message ??
+          "We couldn't send your message right now. Please try again later or email me directly at support@joshwentworth.com"
+
+        throw new Error(userMessage)
       }
+
+      // eslint-disable-next-line no-console
+      console.log("[ContactForm] Message sent successfully:", {
+        duration: `${duration}ms`,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+      })
 
       setStatus({ submitting: false, submitted: true, error: null })
       setFormData({ name: "", email: "", message: "" })
+
+      // Track successful form submission
+      analyticsEvents.contactFormSubmitted(true)
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Something went wrong. Please try again later."
+
       setStatus({
         submitting: false,
         submitted: false,
-        error: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        error: errorMessage,
       })
+
+      // Track failed form submission
+      analyticsEvents.contactFormSubmitted(false)
     }
   }
 

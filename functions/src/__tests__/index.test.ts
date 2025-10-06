@@ -22,10 +22,12 @@ describe("handleContactForm", () => {
   beforeEach(() => {
     mockStatus = jest.fn().mockReturnThis()
     mockJson = jest.fn().mockReturnThis()
+    const mockSend = jest.fn().mockReturnThis()
 
     mockResponse = {
       status: mockStatus,
       json: mockJson,
+      send: mockSend,
       set: jest.fn().mockReturnThis(),
       setHeader: jest.fn().mockReturnThis(),
       getHeader: jest.fn().mockReturnValue(undefined),
@@ -45,6 +47,15 @@ describe("handleContactForm", () => {
         "user-agent": "test-user-agent",
       },
     }
+  })
+
+  it("should handle OPTIONS preflight request", async () => {
+    mockRequest.method = "OPTIONS"
+
+    await handleContactForm(mockRequest as Request, mockResponse as Response)
+
+    expect(mockStatus).toHaveBeenCalledWith(204)
+    expect(mockResponse.send).toHaveBeenCalledWith("")
   })
 
   it("should reject non-POST requests", async () => {
