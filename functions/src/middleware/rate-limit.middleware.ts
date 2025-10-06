@@ -28,7 +28,7 @@ export const contactFormRateLimiter = rateLimit({
     errorCode: "CF_SEC_003",
     message: "Too many requests. Please try again later.",
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  standardHeaders: "draft-7", // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: () => isTestEnvironment, // Skip rate limiting in tests
   handler: (req, res) => {
@@ -44,22 +44,7 @@ export const contactFormRateLimiter = rateLimit({
       message: "Too many requests from this IP. Please try again in 15 minutes.",
     })
   },
-  // Use a function to get the client IP (handles proxies)
-  keyGenerator: (req) => {
-    // Try to get real IP from various headers (Cloud Functions behind proxy)
-    const forwarded = req.headers["x-forwarded-for"]
-    const realIp = req.headers["x-real-ip"]
-
-    if (typeof forwarded === "string") {
-      return forwarded.split(",")[0].trim()
-    }
-
-    if (typeof realIp === "string") {
-      return realIp
-    }
-
-    return req.ip || "unknown"
-  },
+  // Note: No custom keyGenerator - uses default IP-based limiting that handles IPv6 properly
 })
 
 /**
@@ -90,18 +75,5 @@ export const strictRateLimiter = rateLimit({
       message: "Access temporarily restricted due to suspicious activity.",
     })
   },
-  keyGenerator: (req) => {
-    const forwarded = req.headers["x-forwarded-for"]
-    const realIp = req.headers["x-real-ip"]
-
-    if (typeof forwarded === "string") {
-      return forwarded.split(",")[0].trim()
-    }
-
-    if (typeof realIp === "string") {
-      return realIp
-    }
-
-    return req.ip || "unknown"
-  },
+  // Note: No custom keyGenerator - uses default IP-based limiting that handles IPv6 properly
 })
