@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
+.PHONY: help dev dev-clean build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -59,7 +59,8 @@ help:
 	@echo "  make firebase-emulators-ui - Start emulators with UI dashboard (port 4000)"
 	@echo "  make firebase-functions-shell - Start interactive Functions shell for testing"
 	@echo "  make firebase-login        - Login to Firebase"
-	@echo "  make test-contact-form     - Test contact form function locally"
+	@echo "  make test-contact-form     - Test contact form function (single quick test)"
+	@echo "  make test-contact-form-all - Run comprehensive contact form test suite"
 	@echo "  make deploy-staging        - Build and deploy to staging"
 	@echo "  make deploy-prod           - Build and deploy to production"
 	@echo ""
@@ -169,10 +170,14 @@ test-contact-form:
 	@cd functions && npm run build
 	@echo ""
 	@echo "Testing contact form submission..."
-	@curl -X POST http://localhost:5001/static-sites-257923/us-central1/handleContactForm \
+	@curl -s -X POST http://localhost:5001/static-sites-257923/us-central1/handleContactForm \
 		-H "Content-Type: application/json" \
 		-d '{"name": "Test User", "email": "test@example.com", "message": "This is a test message from the Makefile"}' \
-		|| echo "\n⚠️  Emulators not running. Start with: make firebase-emulators"
+		| jq . || echo "\n⚠️  Emulators not running. Start with: make firebase-emulators"
+
+test-contact-form-all:
+	@echo "Running comprehensive contact form test suite..."
+	@./test-contact-form.sh emulator
 
 deploy-staging:
 	@echo "Deploying to staging..."
