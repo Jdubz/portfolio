@@ -87,13 +87,26 @@ jobs:
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
+      - name: Create deployment package
+        run: |
+          cd functions
+          # Create a clean deployment directory
+          mkdir -p deploy
+          # Copy only necessary files for deployment
+          cp package.json deploy/
+          cp package-lock.json deploy/ 2>/dev/null || cp ../package-lock.json deploy/
+          cp -r dist deploy/
+          cp -r node_modules deploy/ 2>/dev/null || true
+          # Create a minimal package.json without gcp-build to skip compilation
+          jq 'del(.scripts["gcp-build"]) | del(.devDependencies)' package.json > deploy/package.json
+
       - name: Deploy to Cloud Functions (Staging)
         run: |
           gcloud functions deploy ${{ env.FUNCTION_NAME }}-staging \
             --gen2 \
             --runtime=nodejs20 \
             --region=${{ env.FUNCTION_REGION }} \
-            --source=functions \
+            --source=functions/deploy \
             --entry-point=handleContactForm \
             --trigger-http \
             --allow-unauthenticated \
@@ -156,13 +169,26 @@ jobs:
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
+      - name: Create deployment package
+        run: |
+          cd functions
+          # Create a clean deployment directory
+          mkdir -p deploy
+          # Copy only necessary files for deployment
+          cp package.json deploy/
+          cp package-lock.json deploy/ 2>/dev/null || cp ../package-lock.json deploy/
+          cp -r dist deploy/
+          cp -r node_modules deploy/ 2>/dev/null || true
+          # Create a minimal package.json without gcp-build to skip compilation
+          jq 'del(.scripts["gcp-build"]) | del(.devDependencies)' package.json > deploy/package.json
+
       - name: Deploy to Cloud Functions (Production)
         run: |
           gcloud functions deploy ${{ env.FUNCTION_NAME }} \
             --gen2 \
             --runtime=nodejs20 \
             --region=${{ env.FUNCTION_REGION }} \
-            --source=functions \
+            --source=functions/deploy \
             --entry-point=handleContactForm \
             --trigger-http \
             --allow-unauthenticated \
