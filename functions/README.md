@@ -115,6 +115,8 @@ npm run lint:fix
 
 ## Deployment
 
+Deployment is handled automatically via GitHub Actions when pushing to `main` or `staging` branches.
+
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
 ### Quick Deployment
