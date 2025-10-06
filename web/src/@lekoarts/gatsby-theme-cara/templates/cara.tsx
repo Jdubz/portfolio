@@ -17,7 +17,16 @@ export const useParallaxScroll = () => {
 
   const scrollToSection = React.useCallback(
     (offset: number) => {
-      parallaxRef?.current?.scrollTo(offset)
+      console.log("useParallaxScroll - parallaxRef:", parallaxRef)
+      console.log("useParallaxScroll - parallaxRef.current:", parallaxRef?.current)
+      console.log("useParallaxScroll - scrollTo function:", parallaxRef?.current?.scrollTo)
+
+      if (parallaxRef?.current?.scrollTo) {
+        console.log("Calling scrollTo with offset:", offset)
+        parallaxRef.current.scrollTo(offset)
+      } else {
+        console.error("parallaxRef.current.scrollTo is not available!")
+      }
     },
     [parallaxRef]
   )
@@ -54,16 +63,16 @@ const Cara = () => {
       </div>
 
       {/* Main Parallax content */}
-      <Layout>
-        <ParallaxContext.Provider value={parallaxRef}>
+      <ParallaxContext.Provider value={parallaxRef}>
+        <Layout>
           <Parallax ref={parallaxRef} pages={5}>
             <Hero offset={0} factor={1} />
             <Projects offset={1} factor={2} />
             <About offset={3} factor={1} />
             <Contact offset={4} factor={1} />
           </Parallax>
-        </ParallaxContext.Provider>
-      </Layout>
+        </Layout>
+      </ParallaxContext.Provider>
     </>
   )
 }

@@ -20,7 +20,12 @@ const ScrollButton: React.FC<ScrollButtonProps> = ({ offset, sx, children }) => 
         variant: "buttons.primary",
         ...sx,
       }}
-      onClick={() => scrollToSection(offset)}
+      onClick={() => {
+        console.log("ScrollButton clicked - offset:", offset)
+        console.log("scrollToSection function:", scrollToSection)
+        console.log("Type of scrollToSection:", typeof scrollToSection)
+        scrollToSection(offset)
+      }}
     >
       {children}
     </button>
