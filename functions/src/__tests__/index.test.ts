@@ -1,4 +1,5 @@
-import { Request, Response } from "express"
+import type { Request } from "firebase-functions/v2/https"
+import type { Response } from "express"
 import { handleContactForm } from "../index"
 
 // Mock the dependencies
@@ -34,6 +35,7 @@ describe("handleContactForm", () => {
     mockRequest = {
       method: "POST",
       body: {},
+      rawBody: Buffer.from(""),
       ip: "127.0.0.1",
       get: jest.fn().mockReturnValue("test-user-agent"),
       headers: {
