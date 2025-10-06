@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
+.PHONY: help dev dev-clean build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -54,10 +54,14 @@ help:
 	@echo "  make version-major    - Bump major version (1.0.0 -> 2.0.0)"
 	@echo ""
 	@echo "Firebase:"
-	@echo "  make firebase-serve   - Serve Firebase hosting locally (port 5000)"
-	@echo "  make firebase-login   - Login to Firebase"
-	@echo "  make deploy-staging   - Build and deploy to staging"
-	@echo "  make deploy-prod      - Build and deploy to production"
+	@echo "  make firebase-serve        - Serve Firebase hosting locally (port 5000)"
+	@echo "  make firebase-emulators    - Start all Firebase emulators (hosting, functions, firestore)"
+	@echo "  make firebase-emulators-ui - Start emulators with UI dashboard (port 4000)"
+	@echo "  make firebase-functions-shell - Start interactive Functions shell for testing"
+	@echo "  make firebase-login        - Login to Firebase"
+	@echo "  make test-contact-form     - Test contact form function locally"
+	@echo "  make deploy-staging        - Build and deploy to staging"
+	@echo "  make deploy-prod           - Build and deploy to production"
 	@echo ""
 
 # Web commands
@@ -110,27 +114,65 @@ version-major:
 
 # Process management
 kill:
-	@echo "Killing dev servers..."
+	@echo "Killing all dev servers and emulators..."
 	@echo "Stopping Gatsby dev server (port 8000)..."
 	@lsof -ti:8000 | xargs kill -9 2>/dev/null || true
 	@echo "Stopping Gatsby serve (port 9000)..."
 	@lsof -ti:9000 | xargs kill -9 2>/dev/null || true
 	@echo "Stopping Functions dev server (port 8080)..."
 	@lsof -ti:8080 | xargs kill -9 2>/dev/null || true
-	@echo "Stopping Firebase emulators (port 5000)..."
+	@echo "Stopping Firebase Hosting emulator (port 5000)..."
 	@lsof -ti:5000 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Firebase Functions emulator (port 5001)..."
+	@lsof -ti:5001 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Firebase Emulator UI (port 4000)..."
+	@lsof -ti:4000 | xargs kill -9 2>/dev/null || true
+	@echo "Stopping Firebase Auth emulator (port 9099)..."
+	@lsof -ti:9099 | xargs kill -9 2>/dev/null || true
 	@echo "Cleaning Gatsby cache..."
 	@cd web && npm run clean || true
 	@echo "✓ All dev servers stopped and cache cleaned"
 
 # Firebase commands
 firebase-serve:
-	@echo "Starting Firebase emulators..."
-	npm run firebase:serve
+	@echo "Starting Firebase hosting emulator (port 5000)..."
+	@echo "This serves the static site only, without functions"
+	firebase serve --only hosting
+
+firebase-emulators:
+	@echo "Starting all Firebase emulators..."
+	@echo "- Hosting:   http://localhost:5000"
+	@echo "- Functions: http://localhost:5001"
+	@echo "- Firestore: http://localhost:8080"
+	@echo "- UI:        http://localhost:4000"
+	@cd functions && npm run build
+	firebase emulators:start
+
+firebase-emulators-ui:
+	@echo "Starting Firebase emulators with UI dashboard..."
+	@cd functions && npm run build
+	firebase emulators:start --ui
+
+firebase-functions-shell:
+	@echo "Starting interactive Firebase Functions shell..."
+	@echo "Usage: handleContactForm({data: {name: 'Test', email: 'test@example.com', message: 'Test message'}})"
+	@cd functions && npm run build
+	firebase functions:shell
 
 firebase-login:
 	@echo "Logging into Firebase..."
-	npm run firebase:login
+	firebase login
+
+test-contact-form:
+	@echo "Testing contact form function locally..."
+	@echo "Building function..."
+	@cd functions && npm run build
+	@echo ""
+	@echo "Testing contact form submission..."
+	@curl -X POST http://localhost:5001/static-sites-257923/us-central1/handleContactForm \
+		-H "Content-Type: application/json" \
+		-d '{"name": "Test User", "email": "test@example.com", "message": "This is a test message from the Makefile"}' \
+		|| echo "\n⚠️  Emulators not running. Start with: make firebase-emulators"
 
 deploy-staging:
 	@echo "Deploying to staging..."
