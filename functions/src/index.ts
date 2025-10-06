@@ -107,6 +107,12 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
   try {
     // Handle CORS preflight
     corsHandler(req, res, async () => {
+      // Handle OPTIONS preflight request
+      if (req.method === "OPTIONS") {
+        res.status(204).send("")
+        return
+      }
+
       // Only allow POST requests
       if (req.method !== "POST") {
         log.warning(`Invalid method: ${req.method}`, { requestId })
