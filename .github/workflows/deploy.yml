@@ -87,13 +87,23 @@ jobs:
           echo "GATSBY_BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
           echo "GATSBY_BUILD_COMMIT=${GITHUB_SHA}" >> $GITHUB_ENV
 
+      - name: Configure environment
+        working-directory: web
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "GATSBY_CONTACT_FUNCTION_URL=https://us-central1-static-sites-257923.cloudfunctions.net/contact-form" > .env.production
+          else
+            echo "GATSBY_CONTACT_FUNCTION_URL=https://us-central1-static-sites-257923.cloudfunctions.net/contact-form-staging" > .env.production
+          fi
+          echo "Created .env.production with:"
+          cat .env.production
+
       - name: Build
         working-directory: web
         run: npm run build
         env:
           NODE_OPTIONS: ${{ github.ref_name == 'main' && '--max-old-space-size=8192' || '--max-old-space-size=6144' }}
           GATSBY_EXPERIMENTAL_FAST_DEV: ${{ github.ref_name == 'staging' && 'true' || '' }}
-          GATSBY_CONTACT_FUNCTION_URL: ${{ github.ref_name == 'main' && 'https://us-central1-static-sites-257923.cloudfunctions.net/contact-form' || 'https://us-central1-static-sites-257923.cloudfunctions.net/contact-form-staging' }}
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
