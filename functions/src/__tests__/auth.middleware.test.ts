@@ -1,12 +1,10 @@
-import type { Response, NextFunction } from "express"
-import {
-  verifyAuthenticatedEditor,
-  AUTHORIZED_EDITORS,
-  AUTH_ERROR_CODES,
-  type AuthenticatedRequest,
-} from "../middleware/auth.middleware"
+// Test with dummy emails (NOT real emails - security best practice)
+const DUMMY_AUTHORIZED_EMAILS = ["editor1@example.com", "editor2@example.com"]
 
-// Mock firebase-admin
+// Set environment variable BEFORE importing the middleware
+process.env.AUTHORIZED_EDITORS = DUMMY_AUTHORIZED_EMAILS.join(",")
+
+// Mock firebase-admin BEFORE importing
 const mockVerifyIdToken = jest.fn()
 
 jest.mock("firebase-admin", () => ({
@@ -14,6 +12,15 @@ jest.mock("firebase-admin", () => ({
     verifyIdToken: mockVerifyIdToken,
   })),
 }))
+
+// Now import after mocks and env are set
+import type { Response, NextFunction } from "express"
+import {
+  verifyAuthenticatedEditor,
+  getAuthorizedEditorsList,
+  AUTH_ERROR_CODES,
+  type AuthenticatedRequest,
+} from "../middleware/auth.middleware"
 
 describe("Auth Middleware", () => {
   let mockRequest: Partial<AuthenticatedRequest> & { requestId?: string }
@@ -36,6 +43,24 @@ describe("Auth Middleware", () => {
 
     // Reset mock function
     mockVerifyIdToken.mockReset()
+  })
+
+  describe("Environment Configuration", () => {
+    it("should parse authorized editors from environment variable", () => {
+      const editors = getAuthorizedEditorsList()
+      expect(editors).toEqual(DUMMY_AUTHORIZED_EMAILS)
+    })
+
+    it("should handle comma-separated emails with spaces", () => {
+      const originalEnv = process.env.AUTHORIZED_EDITORS
+      process.env.AUTHORIZED_EDITORS = " editor1@test.com , editor2@test.com "
+
+      const editors = getAuthorizedEditorsList()
+      expect(editors).toEqual(["editor1@test.com", "editor2@test.com"])
+
+      // Restore original
+      process.env.AUTHORIZED_EDITORS = originalEnv
+    })
   })
 
   describe("Missing Authorization Header", () => {
@@ -192,7 +217,7 @@ describe("Auth Middleware", () => {
 
       mockVerifyIdToken.mockResolvedValue({
         uid: "user123",
-        email: AUTHORIZED_EDITORS[0],
+        email: DUMMY_AUTHORIZED_EMAILS[0],
         email_verified: false,
       })
 
@@ -250,7 +275,7 @@ describe("Auth Middleware", () => {
 
   describe("Successful Authentication", () => {
     it("should call next() and attach user to request for authorized editor", async () => {
-      const authorizedEmail = AUTHORIZED_EDITORS[0]
+      const authorizedEmail = DUMMY_AUTHORIZED_EMAILS[0]
       mockRequest.headers = {
         authorization: "Bearer valid-token",
       }
@@ -280,7 +305,7 @@ describe("Auth Middleware", () => {
     })
 
     it("should work for second authorized email", async () => {
-      const authorizedEmail = AUTHORIZED_EDITORS[1]
+      const authorizedEmail = DUMMY_AUTHORIZED_EMAILS[1]
       mockRequest.headers = {
         authorization: "Bearer valid-token",
       }
@@ -317,7 +342,7 @@ describe("Auth Middleware", () => {
       // Mock successful token verification
       mockVerifyIdToken.mockResolvedValue({
         uid: "user123",
-        email: AUTHORIZED_EDITORS[0],
+        email: DUMMY_AUTHORIZED_EMAILS[0],
         email_verified: true,
       })
 

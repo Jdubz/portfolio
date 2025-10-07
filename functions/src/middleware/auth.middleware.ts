@@ -37,11 +37,35 @@ export const AUTH_ERROR_CODES = {
   },
 } as const
 
-// Authorized editors list
-export const AUTHORIZED_EDITORS = [
-  "contact@joshwentworth.com",
-  "jwentwor@gmail.com",
-]
+/**
+ * Get authorized editors from environment variable
+ * Format: AUTHORIZED_EDITORS=email1@example.com,email2@example.com
+ *
+ * For local development, add to functions/.env.local:
+ *   AUTHORIZED_EDITORS=your-email@example.com,other-email@example.com
+ *
+ * For production, set as Firebase function secret:
+ *   firebase functions:secrets:set AUTHORIZED_EDITORS
+ */
+function getAuthorizedEditors(): string[] {
+  const editorsEnv = process.env.AUTHORIZED_EDITORS
+
+  if (!editorsEnv) {
+    console.warn("⚠️  AUTHORIZED_EDITORS not set - no editors will be authorized")
+    return []
+  }
+
+  return editorsEnv
+    .split(",")
+    .map((email) => email.trim())
+    .filter((email) => email.length > 0)
+}
+
+// Export for testing
+export const getAuthorizedEditorsList = getAuthorizedEditors
+
+// Cache authorized editors (loaded once at cold start)
+const AUTHORIZED_EDITORS = getAuthorizedEditors()
 
 // Extend Express Request to include user info
 export interface AuthenticatedRequest extends Request {
