@@ -420,3 +420,9 @@ export const handleContactForm = https.onRequest(
   },
   handleContactFormHandler
 )
+
+/**
+ * Experience management endpoint
+ * Deployed via: firebase deploy --only functions:manageExperience
+ */
+export { manageExperience } from "./experience"
