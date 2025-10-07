@@ -1,0 +1,162 @@
+import React, { useState } from "react"
+import { Box, Heading, Text, Button, Flex, Spinner } from "theme-ui"
+import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
+
+/**
+ * Experience Portfolio Page
+ *
+ * Public: Displays all experience entries (read-only)
+ * Editors: Can edit/delete entries inline when authenticated with role: 'editor'
+ *
+ * This is a hidden page shared via direct URL with recruiters/tools
+ */
+const ExperiencePage: React.FC = () => {
+  const { user, isEditor, loading: authLoading } = useAuth()
+  const [signingIn, setSigningIn] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
+
+  const handleSignIn = () => {
+    setSigningIn(true)
+    setAuthError(null)
+    void signInWithGoogle()
+      .then(() => {
+        // Success handled by auth state listener
+      })
+      .catch((error) => {
+        setAuthError(error instanceof Error ? error.message : "Sign-in failed")
+      })
+      .finally(() => {
+        setSigningIn(false)
+      })
+  }
+
+  const handleSignOut = () => {
+    void signOut().catch((error) => {
+      console.error("Sign out failed:", error)
+    })
+  }
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bg: "background",
+        px: [4, 5, 6],
+        py: [5, 6, 7],
+      }}
+    >
+      <Box
+        sx={{
+          maxWidth: "1200px",
+          mx: "auto",
+        }}
+      >
+        {/* Header */}
+        <Flex
+          sx={{
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: 5,
+            flexDirection: ["column", "row"],
+            gap: [3, 0],
+          }}
+        >
+          <Box>
+            <Heading
+              as="h1"
+              sx={{
+                fontSize: [5, 6, 7],
+                mb: 2,
+                color: "text",
+              }}
+            >
+              Experience Portfolio
+            </Heading>
+
+            <Text
+              sx={{
+                fontSize: [2, 3],
+                color: "textMuted",
+              }}
+            >
+              Complete professional experience and work history
+            </Text>
+          </Box>
+
+          {/* Auth Controls */}
+          <Box>
+            {authLoading ? (
+              <Spinner size={24} />
+            ) : user ? (
+              <Flex
+                sx={{
+                  alignItems: "center",
+                  gap: 3,
+                  flexDirection: ["column", "row"],
+                }}
+              >
+                <Text
+                  sx={{
+                    fontSize: 1,
+                    color: "textMuted",
+                  }}
+                >
+                  {user.email}
+                  {isEditor && (
+                    <Text
+                      as="span"
+                      sx={{
+                        ml: 2,
+                        px: 2,
+                        py: 1,
+                        bg: "primary",
+                        color: "white",
+                        borderRadius: "4px",
+                        fontSize: 0,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      EDITOR
+                    </Text>
+                  )}
+                </Text>
+                <Button onClick={handleSignOut} variant="secondary" sx={{ fontSize: 1 }}>
+                  Sign Out
+                </Button>
+              </Flex>
+            ) : (
+              <Box>
+                <Button
+                  onClick={handleSignIn}
+                  disabled={signingIn}
+                  sx={{
+                    fontSize: 1,
+                    cursor: signingIn ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {signingIn ? "Signing in..." : "Editor Sign In"}
+                </Button>
+                {authError && (
+                  <Text
+                    sx={{
+                      mt: 2,
+                      fontSize: 1,
+                      color: "red",
+                    }}
+                  >
+                    {authError}
+                  </Text>
+                )}
+              </Box>
+            )}
+          </Box>
+        </Flex>
+
+        {/* TODO: Add experience entries list */}
+        {/* TODO: Add edit mode for authenticated editors */}
+      </Box>
+    </Box>
+  )
+}
+
+export default ExperiencePage
