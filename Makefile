@@ -154,6 +154,13 @@ firebase-emulators-ui:
 	@cd functions && npm run build
 	firebase emulators:start --ui
 
+firebase-emulators-functions:
+	@echo "Starting Firebase Functions emulator only (no Java required)..."
+	@echo "- Functions: http://localhost:5001"
+	@echo "- UI:        http://localhost:4000"
+	@cd functions && npm run build
+	firebase emulators:start --only functions,hosting
+
 firebase-functions-shell:
 	@echo "Starting interactive Firebase Functions shell..."
 	@echo "Usage: handleContactForm({data: {name: 'Test', email: 'test@example.com', message: 'Test message'}})"
