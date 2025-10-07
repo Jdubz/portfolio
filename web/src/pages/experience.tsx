@@ -1,6 +1,10 @@
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Flex, Spinner } from "theme-ui"
+import { Box, Heading, Text, Button, Flex, Spinner, Alert } from "theme-ui"
 import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
+import { useExperienceAPI } from "../hooks/useExperienceAPI"
+import { ExperienceEntry } from "../components/ExperienceEntry"
+import { CreateExperienceForm } from "../components/CreateExperienceForm"
+import type { UpdateExperienceData, CreateExperienceData } from "../types/experience"
 
 /**
  * Experience Portfolio Page
@@ -12,8 +16,17 @@ import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
  */
 const ExperiencePage: React.FC = () => {
   const { user, isEditor, loading: authLoading } = useAuth()
+  const {
+    entries,
+    loading: entriesLoading,
+    error: entriesError,
+    createEntry,
+    updateEntry,
+    deleteEntry,
+  } = useExperienceAPI()
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [showCreateForm, setShowCreateForm] = useState(false)
 
   const handleSignIn = () => {
     setSigningIn(true)
@@ -34,6 +47,28 @@ const ExperiencePage: React.FC = () => {
     void signOut().catch((error) => {
       console.error("Sign out failed:", error)
     })
+  }
+
+  const handleUpdateEntry = async (id: string, data: UpdateExperienceData) => {
+    const result = await updateEntry(id, data)
+    if (!result) {
+      throw new Error("Update failed")
+    }
+  }
+
+  const handleDeleteEntry = async (id: string) => {
+    const result = await deleteEntry(id)
+    if (!result) {
+      throw new Error("Delete failed")
+    }
+  }
+
+  const handleCreateEntry = async (data: CreateExperienceData) => {
+    const result = await createEntry(data)
+    if (!result) {
+      throw new Error("Create failed")
+    }
+    setShowCreateForm(false)
   }
 
   return (
@@ -152,8 +187,51 @@ const ExperiencePage: React.FC = () => {
           </Box>
         </Flex>
 
-        {/* TODO: Add experience entries list */}
-        {/* TODO: Add edit mode for authenticated editors */}
+        {/* Create New Entry Button (Editors Only) */}
+        {isEditor && !showCreateForm && (
+          <Box sx={{ mt: 5 }}>
+            <Button onClick={() => setShowCreateForm(true)} sx={{ fontSize: 2 }}>
+              + Add New Entry
+            </Button>
+          </Box>
+        )}
+
+        {/* Create Form */}
+        {showCreateForm && (
+          <Box sx={{ mt: 5 }}>
+            <CreateExperienceForm onCreate={handleCreateEntry} onCancel={() => setShowCreateForm(false)} />
+          </Box>
+        )}
+
+        {/* Experience Entries List */}
+        <Box sx={{ mt: 5 }}>
+          {entriesLoading ? (
+            <Flex sx={{ justifyContent: "center", py: 6 }}>
+              <Spinner size={48} />
+            </Flex>
+          ) : entriesError ? (
+            <Alert variant="error" sx={{ mb: 4 }}>
+              {entriesError}
+            </Alert>
+          ) : entries.length === 0 ? (
+            <Text sx={{ textAlign: "center", py: 6, color: "textMuted", fontSize: 2 }}>
+              No experience entries yet.
+              {isEditor && " Click 'Add New Entry' to create one."}
+            </Text>
+          ) : (
+            <Box>
+              {entries.map((entry) => (
+                <ExperienceEntry
+                  key={entry.id}
+                  entry={entry}
+                  isEditor={isEditor}
+                  onUpdate={handleUpdateEntry}
+                  onDelete={handleDeleteEntry}
+                />
+              ))}
+            </Box>
+          )}
+        </Box>
       </Box>
     </Box>
   )
