@@ -223,33 +223,11 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
       let firestoreSaved = false
       let emailSent = false
       let autoReplySent = false
+      let mailgunResponse: { messageId: string; status?: string; accepted: boolean } | undefined
 
-      // Try to save to Firestore (non-blocking - don't fail request if this fails)
+      // STEP 1: Send email notification (critical - must succeed)
       try {
-        const docId = await firestoreService.saveContactSubmission({
-          name: data.name,
-          email: data.email,
-          message: data.message,
-          metadata,
-          requestId,
-          ...(traceId && { traceId }),
-          ...(spanId && { spanId }),
-        })
-        firestoreSaved = true
-        log.info("Contact submission saved to Firestore", { requestId, docId, traceId, spanId })
-      } catch (firestoreError) {
-        // Don't fail the request - just log warning
-        log.warning("Failed to save contact submission to Firestore (non-critical)", {
-          error: firestoreError,
-          requestId,
-          traceId,
-          spanId,
-        })
-      }
-
-      // Try to send email notification (critical - must succeed)
-      try {
-        await emailService.sendContactFormNotification({
+        mailgunResponse = await emailService.sendContactFormNotification({
           name: data.name,
           email: data.email,
           message: data.message,
@@ -257,7 +235,7 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
           requestId,
         })
         emailSent = true
-        log.info("Email notification sent successfully", { requestId })
+        log.info("Email notification sent successfully", { requestId, mailgunMessageId: mailgunResponse.messageId })
       } catch (emailError) {
         log.error("Failed to send email notification", {
           error: emailError,
@@ -283,6 +261,36 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
           ...(spanId && { spanId }),
         })
         return
+      }
+
+      // STEP 2: Save to Firestore with Mailgun response (non-blocking - don't fail request if this fails)
+      try {
+        const docId = await firestoreService.saveContactSubmission({
+          name: data.name,
+          email: data.email,
+          message: data.message,
+          metadata,
+          requestId,
+          ...(traceId && { traceId }),
+          ...(spanId && { spanId }),
+          ...(mailgunResponse && { mailgun: mailgunResponse }),
+        })
+        firestoreSaved = true
+        log.info("Contact submission saved to Firestore with Mailgun response", {
+          requestId,
+          docId,
+          traceId,
+          spanId,
+          mailgunMessageId: mailgunResponse?.messageId,
+        })
+      } catch (firestoreError) {
+        // Don't fail the request - just log warning
+        log.warning("Failed to save contact submission to Firestore (non-critical)", {
+          error: firestoreError,
+          requestId,
+          traceId,
+          spanId,
+        })
       }
 
       // Try to send auto-reply (non-blocking - nice to have)

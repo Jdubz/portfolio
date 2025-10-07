@@ -19,6 +19,12 @@ export interface ContactSubmission {
   requestId: string
   traceId?: string
   spanId?: string
+  mailgun?: {
+    messageId: string
+    status?: string
+    accepted?: boolean
+    deliveryStatus?: string
+  }
   status: "new" | "read" | "replied" | "spam"
   createdAt: Date
   updatedAt: Date

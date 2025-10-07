@@ -136,8 +136,13 @@ export class EmailService {
 
   /**
    * Send contact form notification email
+   * Returns Mailgun response for storage in Firestore
    */
-  async sendContactFormNotification(data: ContactFormNotificationData): Promise<void> {
+  async sendContactFormNotification(data: ContactFormNotificationData): Promise<{
+    messageId: string
+    status?: string
+    accepted: boolean
+  }> {
     try {
       const client = await this.initializeMailgun()
       const config = await this.getEmailConfig()
@@ -163,6 +168,12 @@ export class EmailService {
         name: data.name,
         note: "Email accepted by Mailgun - check Mailgun logs for final delivery status",
       })
+
+      return {
+        messageId: result.id || "unknown",
+        status: result.status ? String(result.status) : undefined,
+        accepted: true,
+      }
     } catch (error) {
       this.logger.error("Failed to send notification email", {
         error,
