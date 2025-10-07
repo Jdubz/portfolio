@@ -232,14 +232,18 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
           message: data.message,
           metadata,
           requestId,
+          ...(traceId && { traceId }),
+          ...(spanId && { spanId }),
         })
         firestoreSaved = true
-        log.info("Contact submission saved to Firestore", { requestId, docId })
+        log.info("Contact submission saved to Firestore", { requestId, docId, traceId, spanId })
       } catch (firestoreError) {
         // Don't fail the request - just log warning
         log.warning("Failed to save contact submission to Firestore (non-critical)", {
           error: firestoreError,
           requestId,
+          traceId,
+          spanId,
         })
       }
 

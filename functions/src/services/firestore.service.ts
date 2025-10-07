@@ -17,6 +17,8 @@ export interface ContactSubmission {
     referrer?: string
   }
   requestId: string
+  traceId?: string
+  spanId?: string
   status: "new" | "read" | "replied" | "spam"
   createdAt: Date
   updatedAt: Date
