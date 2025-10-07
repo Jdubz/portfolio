@@ -178,11 +178,15 @@
   "emulators": {
     "auth": {
       "port": 9099,
-      "host": "0.0.0.0"
+      "host": "0.0.0.0",
+      "import": "./emulator-data",
+      "export": "./emulator-data"
     },
     "firestore": {
       "port": 8080,
-      "host": "0.0.0.0"
+      "host": "0.0.0.0",
+      "import": "./emulator-data",
+      "export": "./emulator-data"
     },
     "hosting": {
       "port": 5000,
@@ -196,6 +200,7 @@
       "enabled": true,
       "port": 4000,
       "host": "0.0.0.0"
-    }
+    },
+    "singleProjectMode": true
   }
 }
