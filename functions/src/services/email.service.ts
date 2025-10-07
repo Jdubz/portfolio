@@ -185,8 +185,13 @@ export class EmailService {
 
   /**
    * Send auto-reply email to the user
+   * Returns Mailgun response for storage in Firestore
    */
-  async sendAutoReply(data: AutoReplyData): Promise<void> {
+  async sendAutoReply(data: AutoReplyData): Promise<{
+    messageId: string
+    status?: string
+    accepted: boolean
+  }> {
     try {
       const client = await this.initializeMailgun()
       const config = await this.getEmailConfig()
@@ -208,13 +213,19 @@ export class EmailService {
         messageId: result.id,
         to: data.email,
       })
+
+      return {
+        messageId: result.id || "unknown",
+        status: result.status ? String(result.status) : undefined,
+        accepted: true,
+      }
     } catch (error) {
       this.logger.warning("Failed to send auto-reply email", {
         error,
         requestId: data.requestId,
         email: data.email,
       })
-      // Don't throw for auto-reply failures - they're not critical
+      throw error
     }
   }
 

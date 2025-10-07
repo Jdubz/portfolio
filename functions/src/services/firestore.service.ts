@@ -6,6 +6,14 @@ type SimpleLogger = {
   error: (message: string, data?: unknown) => void
 }
 
+export interface MailgunResponse {
+  messageId: string
+  status?: string
+  accepted: boolean
+  error?: string
+  errorCode?: string
+}
+
 export interface ContactSubmission {
   name: string
   email: string
@@ -19,11 +27,20 @@ export interface ContactSubmission {
   requestId: string
   traceId?: string
   spanId?: string
-  mailgun?: {
-    messageId: string
-    status?: string
-    accepted?: boolean
-    deliveryStatus?: string
+  transaction: {
+    contactEmail: {
+      success: boolean
+      response?: MailgunResponse
+      error?: string
+      errorCode?: string
+    }
+    autoReply: {
+      success: boolean
+      response?: MailgunResponse
+      error?: string
+      errorCode?: string
+    }
+    errors: string[]
   }
   status: "new" | "read" | "replied" | "spam"
   createdAt: Date
@@ -71,9 +88,32 @@ export class FirestoreService {
       if (data.metadata.userAgent) metadata.userAgent = data.metadata.userAgent
       if (data.metadata.referrer) metadata.referrer = data.metadata.referrer
 
+      // Clean transaction data - remove undefined values
+      const cleanTransaction = {
+        contactEmail: {
+          success: data.transaction.contactEmail.success,
+          ...(data.transaction.contactEmail.response && { response: data.transaction.contactEmail.response }),
+          ...(data.transaction.contactEmail.error && { error: data.transaction.contactEmail.error }),
+          ...(data.transaction.contactEmail.errorCode && { errorCode: data.transaction.contactEmail.errorCode }),
+        },
+        autoReply: {
+          success: data.transaction.autoReply.success,
+          ...(data.transaction.autoReply.response && { response: data.transaction.autoReply.response }),
+          ...(data.transaction.autoReply.error && { error: data.transaction.autoReply.error }),
+          ...(data.transaction.autoReply.errorCode && { errorCode: data.transaction.autoReply.errorCode }),
+        },
+        errors: data.transaction.errors,
+      }
+
       const submission: ContactSubmission = {
-        ...data,
+        name: data.name,
+        email: data.email,
+        message: data.message,
         metadata: metadata as ContactSubmission["metadata"],
+        requestId: data.requestId,
+        ...(data.traceId && { traceId: data.traceId }),
+        ...(data.spanId && { spanId: data.spanId }),
+        transaction: cleanTransaction,
         status: "new",
         createdAt: now,
         updatedAt: now,
@@ -85,6 +125,7 @@ export class FirestoreService {
         docId: docRef.id,
         requestId: data.requestId,
         email: data.email,
+        transactionErrors: data.transaction.errors.length,
       })
 
       return docRef.id
