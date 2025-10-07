@@ -154,11 +154,14 @@ export class EmailService {
 
       const result = await client.messages.create(config.mailgunDomain, messageData)
 
-      this.logger.info("Contact form notification sent", {
+      this.logger.info("Contact form notification accepted by Mailgun", {
         requestId: data.requestId,
-        messageId: result.id,
+        mailgunMessageId: result.id,
+        mailgunStatus: result.status,
         from: data.email,
+        to: config.toEmail,
         name: data.name,
+        note: "Email accepted by Mailgun - check Mailgun logs for final delivery status",
       })
     } catch (error) {
       this.logger.error("Failed to send notification email", {
