@@ -120,4 +120,4 @@ public/~partytown/
 # Test and dev files
 web/src/components/*Test.tsx
 web/src/components/FORMS_GUIDE.md
-web/src/test-theme.ts
+web/src/test-theme.tsget-emulator-token.js
