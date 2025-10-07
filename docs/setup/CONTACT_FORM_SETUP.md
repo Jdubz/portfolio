@@ -74,7 +74,7 @@ The following secrets are already created in GCP:
 | `mailgun-api-key` | `[your-mailgun-api-key]` | Mailgun API authentication |
 | `mailgun-domain` | `joshwentworth.com` | Email sending domain |
 | `from-email` | `noreply@joshwentworth.com` | Sender email address |
-| `to-email` | `contact-form@joshwentworth.com` | Notification recipient |
+| `to-email` | `cicd@joshwentworth.com` | Notification recipient (automated CI/CD emails) |
 | `reply-to-email` | `hello@joshwentworth.com` | Reply-to address |
 
 ### Local Environment
@@ -87,7 +87,7 @@ FUNCTIONS_EMULATOR=true
 MAILGUN_API_KEY=[your-mailgun-api-key]
 MAILGUN_DOMAIN=joshwentworth.com
 FROM_EMAIL=noreply@joshwentworth.com
-TO_EMAIL=contact-form@joshwentworth.com
+TO_EMAIL=cicd@joshwentworth.com
 REPLY_TO_EMAIL=hello@joshwentworth.com
 GCP_PROJECT=static-sites-257923
 ```

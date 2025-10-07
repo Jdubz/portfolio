@@ -21,7 +21,7 @@ This creates the following secrets in GCP Secret Manager:
 - `mailgun-api-key`: Your Mailgun API key
 - `mailgun-domain`: Your Mailgun sending domain (joshwentworth.com)
 - `from-email`: Sender email address (noreply@joshwentworth.com)
-- `to-email`: Recipient email address (contact-form@joshwentworth.com)
+- `to-email`: Recipient email address (cicd@joshwentworth.com) - for automated CI/CD notifications
 - `reply-to-email`: Reply-to email address (hello@joshwentworth.com)
 
 ## 2. Grant Cloud Functions Access to Secrets
