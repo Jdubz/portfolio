@@ -10,7 +10,8 @@ import { getIdToken } from "./useAuth"
 const getApiUrl = () => {
   // Use emulator in development, production URL otherwise
   if (process.env.NODE_ENV === "development") {
-    return "http://127.0.0.1:5001/static-sites-257923/us-central1/manageExperience"
+    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? "localhost"
+    return `http://${emulatorHost}:5001/static-sites-257923/us-central1/manageExperience`
   }
 
   // Production/staging URL from env

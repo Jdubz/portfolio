@@ -47,8 +47,9 @@ export const useAuth = (): AuthState => {
         // Connect to emulators in development
         if (process.env.GATSBY_USE_FIREBASE_EMULATORS === "true") {
           const { connectAuthEmulator } = await import("firebase/auth")
+          const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? "localhost"
           try {
-            connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true })
+            connectAuthEmulator(auth, `http://${emulatorHost}:9099`, { disableWarnings: true })
           } catch {
             // Emulator already connected, ignore
           }
