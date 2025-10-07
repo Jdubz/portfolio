@@ -37,13 +37,20 @@ This document tracks future enhancements, optimizations, and technical debt that
 
 
 ### Analytics Enhancements
-- [ ] Add cookie consent banner for GDPR compliance
-- [ ] Implement user consent management for analytics tracking
-- [ ] Create custom Analytics events for:
-  - Project card views (viewport intersection observer)
-  - Resume downloads
-  - Social media link clicks
-  - Section navigation
+- [x] **Add cookie consent banner for GDPR compliance** (COMPLETED)
+  - Created CookieConsent component with accept/decline options
+  - Stores user preference in localStorage
+  - Integrated with main layout component
+- [x] **Implement user consent management for analytics** (COMPLETED)
+  - Analytics only initialize if user has consented
+  - Consent check in firebase-analytics.ts
+  - Helper functions for checking consent state
+- [x] **Create custom Analytics events** (COMPLETED)
+  - ✅ Project card views (Intersection Observer, 50% threshold)
+  - ✅ Project link clicks (external link tracking)
+  - ✅ Social media link clicks (GitHub source code)
+  - Resume downloads - TODO (no resume download feature yet)
+  - Section navigation - TODO (nice to have)
 
 ### Performance Optimization
 - [x] **Lazy load Firebase** (COMPLETED - ~200KB savings on non-contact pages)
@@ -51,10 +58,12 @@ This document tracks future enhancements, optimizations, and technical debt that
   - Homepage loads ~200KB less JavaScript
   - Build time improved from 18s to 10.7s
   - Firebase split into separate 40KB chunk
-- [ ] **Add bundle size tracking to PR pipeline** (visibility into changes)
-  - Use size-limit-action or bundlesize
-  - Track bundle sizes over time
-  - Effort: 2 hours
+- [x] **Add bundle size tracking to PR pipeline** (COMPLETED)
+  - Installed @size-limit/preset-app and @size-limit/file
+  - Created .size-limit.json with limits for all major bundles
+  - Added GitHub Action (size-limit.yml) to run on PRs
+  - Added npm scripts: size, size:why
+  - Tracks: main app bundle, framework, homepage, contact page, Firebase chunk
 - [ ] **Further bundle optimizations**
   - Route-based code splitting for remaining pages
   - Optimize images (convert to WebP, add responsive sizes)
@@ -72,11 +81,12 @@ This document tracks future enhancements, optimizations, and technical debt that
 ## 🔧 Medium Priority
 
 ### Testing
-- [ ] **Add E2E tests for contact form** (HIGH PRIORITY - Playwright installed but no tests)
-  - Test form submission flow
-  - Test validation errors
-  - Test network failures
-  - Effort: 4-6 hours
+- [x] **Add E2E tests for contact form** (COMPLETED)
+  - Created playwright.config.ts
+  - Added e2e/contact-form.spec.ts with 9 comprehensive tests
+  - Tests: form display, validation, loading states, success/error handling, timeout, accessibility
+  - Added npm scripts: test:e2e, test:e2e:ui, test:e2e:debug, test:e2e:report
+  - Configured for 5 browsers (Chrome, Firefox, Safari, Mobile Chrome, Mobile Safari)
 - [ ] **Increase test coverage to 70%+** (Currently ~50% web, ~65% functions)
   - ContactForm edge cases (network errors, timeout)
   - Error boundaries

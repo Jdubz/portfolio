@@ -12,18 +12,65 @@ type ProjectCardProps = {
 }
 
 const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
+  const cardRef = React.useRef<HTMLDivElement>(null)
+  const [hasBeenViewed, setHasBeenViewed] = React.useState(false)
+
+  // Track project views with Intersection Observer
+  React.useEffect(() => {
+    if (!cardRef.current || hasBeenViewed) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasBeenViewed) {
+            setHasBeenViewed(true)
+            // Track project view
+            import("../../../utils/firebase-analytics")
+              .then(({ analyticsEvents }) => {
+                analyticsEvents.projectViewed(title)
+              })
+              .catch(() => {
+                // Analytics not critical
+              })
+          }
+        })
+      },
+      { threshold: 0.5 } // Track when 50% of card is visible
+    )
+
+    observer.observe(cardRef.current)
+
+    return () => observer.disconnect()
+  }, [title, hasBeenViewed])
+
+  const handleClick = () => {
+    // Track project link click
+    import("../../../utils/firebase-analytics")
+      .then(({ analyticsEvents }) => {
+        analyticsEvents.projectLinkClicked(title, link ? "external" : "none")
+      })
+      .catch(() => {
+        // Analytics not critical
+      })
+  }
+
   const CardWrapper = link ? `a` : `div`
   const cardProps = link
     ? {
         href: link,
         target: "_blank",
         rel: "noreferrer noopener",
+        onClick: handleClick,
       }
     : {}
 
   return (
     <CardWrapper
       {...cardProps}
+      // @ts-expect-error - ref type incompatibility between a and div
+      ref={cardRef}
       aria-label={`Project: ${title}`}
       className="card"
       sx={{

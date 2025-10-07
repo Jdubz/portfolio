@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Homepage JS (main bundle)",
+    "path": "public/app-*.js",
+    "limit": "200 KB",
+    "gzip": true
+  },
+  {
+    "name": "Framework bundle",
+    "path": "public/framework-*.js",
+    "limit": "150 KB",
+    "gzip": true
+  },
+  {
+    "name": "Homepage component",
+    "path": "public/component---src-lekoarts-gatsby-theme-cara-templates-cara-tsx-*.js",
+    "limit": "30 KB",
+    "gzip": true
+  },
+  {
+    "name": "Contact page component",
+    "path": "public/component---src-pages-contact-tsx-*.js",
+    "limit": "20 KB",
+    "gzip": true
+  },
+  {
+    "name": "Firebase lazy chunk",
+    "path": "public/c8f7fe3b0e41be846d5687592cf2018ff6e22687-*.js",
+    "limit": "45 KB",
+    "gzip": true
+  }
+]
