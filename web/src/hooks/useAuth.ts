@@ -49,7 +49,7 @@ export const useAuth = (): AuthState => {
           const { connectAuthEmulator } = await import("firebase/auth")
           try {
             connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true })
-          } catch (error) {
+          } catch {
             // Emulator already connected, ignore
           }
         }
