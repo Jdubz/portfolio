@@ -424,11 +424,14 @@ async function handleDeleteEntry(
 
 /**
  * Export as Firebase HTTP Function (v2)
+ *
+ * Authorization: Uses Firebase Auth custom claims (role: 'editor')
+ * Set custom claims in Firebase Console or via Admin SDK:
+ *   admin.auth().setCustomUserClaims(uid, { role: 'editor' })
  */
 export const manageExperience = https.onRequest(
   {
     region: "us-central1",
-    secrets: ["AUTHORIZED_EDITORS"],
     memory: "256MiB",
     maxInstances: 10,
     timeoutSeconds: 60,

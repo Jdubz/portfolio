@@ -1,8 +1,5 @@
 import { Response } from "express"
 
-// Set environment variables BEFORE importing
-process.env.AUTHORIZED_EDITORS = "editor1@example.com,editor2@example.com"
-
 // Mock firebase-admin BEFORE importing modules
 jest.mock("firebase-admin", () => ({
   initializeApp: jest.fn(),

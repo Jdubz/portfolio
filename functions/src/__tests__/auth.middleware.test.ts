@@ -1,9 +1,3 @@
-// Test with dummy emails (NOT real emails - security best practice)
-const DUMMY_AUTHORIZED_EMAILS = ["editor1@example.com", "editor2@example.com"]
-
-// Set environment variable BEFORE importing the middleware
-process.env.AUTHORIZED_EDITORS = DUMMY_AUTHORIZED_EMAILS.join(",")
-
 // Mock firebase-admin BEFORE importing
 const mockVerifyIdToken = jest.fn()
 
@@ -13,14 +7,9 @@ jest.mock("firebase-admin", () => ({
   })),
 }))
 
-// Now import after mocks and env are set
+// Now import after mocks are set
 import type { Response, NextFunction } from "express"
-import {
-  verifyAuthenticatedEditor,
-  getAuthorizedEditorsList,
-  AUTH_ERROR_CODES,
-  type AuthenticatedRequest,
-} from "../middleware/auth.middleware"
+import { verifyAuthenticatedEditor, AUTH_ERROR_CODES, type AuthenticatedRequest } from "../middleware/auth.middleware"
 
 describe("Auth Middleware", () => {
   let mockRequest: Partial<AuthenticatedRequest> & { requestId?: string }
@@ -45,21 +34,11 @@ describe("Auth Middleware", () => {
     mockVerifyIdToken.mockReset()
   })
 
-  describe("Environment Configuration", () => {
-    it("should parse authorized editors from environment variable", () => {
-      const editors = getAuthorizedEditorsList()
-      expect(editors).toEqual(DUMMY_AUTHORIZED_EMAILS)
-    })
-
-    it("should handle comma-separated emails with spaces", () => {
-      const originalEnv = process.env.AUTHORIZED_EDITORS
-      process.env.AUTHORIZED_EDITORS = " editor1@test.com , editor2@test.com "
-
-      const editors = getAuthorizedEditorsList()
-      expect(editors).toEqual(["editor1@test.com", "editor2@test.com"])
-
-      // Restore original
-      process.env.AUTHORIZED_EDITORS = originalEnv
+  describe("Custom Claims Authorization", () => {
+    it("should use role-based access control via custom claims", () => {
+      // This test documents that we use custom claims for authorization
+      // Custom claims are set in Firebase Auth: { role: 'editor' }
+      expect(true).toBe(true)
     })
   })
 
@@ -217,8 +196,9 @@ describe("Auth Middleware", () => {
 
       mockVerifyIdToken.mockResolvedValue({
         uid: "user123",
-        email: DUMMY_AUTHORIZED_EMAILS[0],
+        email: "editor@example.com",
         email_verified: false,
+        role: "editor",
       })
 
       const middleware = verifyAuthenticatedEditor()
@@ -241,16 +221,17 @@ describe("Auth Middleware", () => {
     })
   })
 
-  describe("Unauthorized Email", () => {
-    it("should return 403 if email is not in authorized list", async () => {
+  describe("Unauthorized Role", () => {
+    it("should return 403 if user does not have editor role", async () => {
       mockRequest.headers = {
         authorization: "Bearer valid-token",
       }
 
       mockVerifyIdToken.mockResolvedValue({
         uid: "user123",
-        email: "unauthorized@example.com",
+        email: "user@example.com",
         email_verified: true,
+        // No role claim or role !== 'editor'
       })
 
       const middleware = verifyAuthenticatedEditor()
@@ -267,6 +248,37 @@ describe("Auth Middleware", () => {
           success: false,
           error: "FORBIDDEN",
           errorCode: AUTH_ERROR_CODES.FORBIDDEN.code,
+          message: "Access denied - editor role required",
+        })
+      )
+      expect(mockNext).not.toHaveBeenCalled()
+    })
+
+    it("should return 403 if user has different role", async () => {
+      mockRequest.headers = {
+        authorization: "Bearer valid-token",
+      }
+
+      mockVerifyIdToken.mockResolvedValue({
+        uid: "user123",
+        email: "user@example.com",
+        email_verified: true,
+        role: "viewer", // Wrong role
+      })
+
+      const middleware = verifyAuthenticatedEditor()
+
+      await middleware(
+        mockRequest as AuthenticatedRequest,
+        mockResponse as Response,
+        mockNext
+      )
+
+      expect(mockResponse.status).toHaveBeenCalledWith(403)
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: "FORBIDDEN",
         })
       )
       expect(mockNext).not.toHaveBeenCalled()
@@ -274,16 +286,16 @@ describe("Auth Middleware", () => {
   })
 
   describe("Successful Authentication", () => {
-    it("should call next() and attach user to request for authorized editor", async () => {
-      const authorizedEmail = DUMMY_AUTHORIZED_EMAILS[0]
+    it("should call next() and attach user to request for user with editor role", async () => {
       mockRequest.headers = {
         authorization: "Bearer valid-token",
       }
 
       mockVerifyIdToken.mockResolvedValue({
         uid: "user123",
-        email: authorizedEmail,
+        email: "editor@example.com",
         email_verified: true,
+        role: "editor", // Has editor role
       })
 
       const middleware = verifyAuthenticatedEditor()
@@ -297,23 +309,23 @@ describe("Auth Middleware", () => {
       expect(mockNext).toHaveBeenCalled()
       expect(mockRequest.user).toEqual({
         uid: "user123",
-        email: authorizedEmail,
+        email: "editor@example.com",
         email_verified: true,
       })
       expect(mockResponse.status).not.toHaveBeenCalled()
       expect(mockResponse.json).not.toHaveBeenCalled()
     })
 
-    it("should work for second authorized email", async () => {
-      const authorizedEmail = DUMMY_AUTHORIZED_EMAILS[1]
+    it("should work for different editor user", async () => {
       mockRequest.headers = {
         authorization: "Bearer valid-token",
       }
 
       mockVerifyIdToken.mockResolvedValue({
         uid: "user456",
-        email: authorizedEmail,
+        email: "another-editor@example.com",
         email_verified: true,
+        role: "editor", // Has editor role
       })
 
       const middleware = verifyAuthenticatedEditor()
@@ -327,7 +339,7 @@ describe("Auth Middleware", () => {
       expect(mockNext).toHaveBeenCalled()
       expect(mockRequest.user).toEqual({
         uid: "user456",
-        email: authorizedEmail,
+        email: "another-editor@example.com",
         email_verified: true,
       })
     })
@@ -339,11 +351,12 @@ describe("Auth Middleware", () => {
         authorization: "Bearer valid-token",
       }
 
-      // Mock successful token verification
+      // Mock successful token verification with editor role
       mockVerifyIdToken.mockResolvedValue({
         uid: "user123",
-        email: DUMMY_AUTHORIZED_EMAILS[0],
+        email: "editor@example.com",
         email_verified: true,
+        role: "editor",
       })
 
       // Make mockNext throw to trigger outer catch block

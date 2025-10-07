@@ -28,7 +28,7 @@ export const AUTH_ERROR_CODES = {
   FORBIDDEN: {
     code: "EXP_AUTH_004",
     status: 403,
-    message: "Access denied - unauthorized email",
+    message: "Access denied - editor role required",
   },
   EMAIL_NOT_VERIFIED: {
     code: "EXP_AUTH_005",
@@ -38,34 +38,19 @@ export const AUTH_ERROR_CODES = {
 } as const
 
 /**
- * Get authorized editors from environment variable
- * Format: AUTHORIZED_EDITORS=email1@example.com,email2@example.com
+ * Check if user has editor role via custom claims
  *
- * For local development, add to functions/.env.local:
- *   AUTHORIZED_EDITORS=your-email@example.com,other-email@example.com
+ * Custom claims are set in Firebase Auth using:
+ * - Firebase Console: Authentication > Users > Edit user > Custom claims
+ * - Admin SDK: admin.auth().setCustomUserClaims(uid, { role: 'editor' })
+ * - Auth emulator: Can set via UI or REST API
  *
- * For production, set as Firebase function secret:
- *   firebase functions:secrets:set AUTHORIZED_EDITORS
+ * Example custom claim:
+ *   { role: 'editor' }
  */
-function getAuthorizedEditors(): string[] {
-  const editorsEnv = process.env.AUTHORIZED_EDITORS
-
-  if (!editorsEnv) {
-    console.warn("⚠️  AUTHORIZED_EDITORS not set - no editors will be authorized")
-    return []
-  }
-
-  return editorsEnv
-    .split(",")
-    .map((email) => email.trim())
-    .filter((email) => email.length > 0)
+function hasEditorRole(decodedToken: auth.DecodedIdToken): boolean {
+  return decodedToken.role === "editor"
 }
-
-// Export for testing
-export const getAuthorizedEditorsList = getAuthorizedEditors
-
-// Cache authorized editors (loaded once at cold start)
-const AUTHORIZED_EDITORS = getAuthorizedEditors()
 
 // Extend Express Request to include user info
 export interface AuthenticatedRequest extends Request {
@@ -199,12 +184,13 @@ export function verifyAuthenticatedEditor(logger?: SimpleLogger) {
         return
       }
 
-      // Check if email is in authorized editors list
-      if (!AUTHORIZED_EDITORS.includes(email)) {
-        log.warning("Unauthorized email attempted access", {
+      // Check if user has editor role via custom claims
+      if (!hasEditorRole(decodedToken)) {
+        log.warning("User without editor role attempted access", {
           requestId,
           email,
           uid,
+          role: decodedToken.role || "none",
         })
 
         const err = AUTH_ERROR_CODES.FORBIDDEN
