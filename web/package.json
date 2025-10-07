@@ -76,7 +76,6 @@
     "gatsby-transformer-sharp": "^5.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sharp": "^0.34.4",
     "theme-ui": "^0.17.2"
   },
   "devDependencies": {
@@ -111,6 +110,7 @@
     "patch-package": "^8.0.1",
     "playwright": "^1.55.1",
     "prettier": "^3.6.2",
+    "sharp": "^0.34.4",
     "ts-jest": "^29.4.4",
     "typescript": "^5.8.3",
     "wait-on": "^9.0.1",

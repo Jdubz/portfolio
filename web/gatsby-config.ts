@@ -71,9 +71,19 @@ const config: GatsbyConfig = {
         display: `standalone`,
         icons: [
           {
+            src: `/android-chrome-192x192.webp`,
+            sizes: `192x192`,
+            type: `image/webp`,
+          },
+          {
             src: `/android-chrome-192x192.png`,
             sizes: `192x192`,
             type: `image/png`,
+          },
+          {
+            src: `/android-chrome-512x512.webp`,
+            sizes: `512x512`,
+            type: `image/webp`,
           },
           {
             src: `/android-chrome-512x512.png`,
