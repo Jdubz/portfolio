@@ -97,19 +97,26 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
           : {},
       }}
     >
-      <img
-        src={bgImage}
-        alt=""
-        aria-hidden="true"
-        sx={{
-          position: `absolute`,
-          inset: 0,
-          width: `100%`,
-          height: `100%`,
-          objectFit: `cover`,
-          zIndex: 0,
-        }}
-      />
+      <picture>
+        <source
+          type="image/webp"
+          srcSet={`${bgImage.replace(/\.(png|jpg|jpeg)$/, ".webp")} 1x, ${bgImage.replace(/\.(png|jpg|jpeg)$/, "@2x.webp")} 2x`}
+        />
+        <img
+          src={bgImage}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          sx={{
+            position: `absolute`,
+            inset: 0,
+            width: `100%`,
+            height: `100%`,
+            objectFit: `cover`,
+            zIndex: 0,
+          }}
+        />
+      </picture>
       <div sx={{ variant: "cards.projectOverlay" }} />
       <div sx={{ variant: "cards.projectText" }}>
         <h3 sx={{ variant: "text.cardTitle" }}>{title}</h3>

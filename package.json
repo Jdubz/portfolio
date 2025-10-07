@@ -24,6 +24,7 @@
     "lint:functions": "npm run lint --workspace=functions",
     "clean": "npm run clean --workspace=web && rm -rf .cache",
     "serve": "npm run serve --workspace=web",
+    "optimize:images": "node scripts/optimize-images.js",
     "firebase:serve": "firebase emulators:start",
     "firebase:login": "firebase login",
     "deploy:staging": "firebase deploy --only hosting:staging",

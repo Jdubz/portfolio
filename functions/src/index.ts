@@ -219,38 +219,46 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
         metadata,
       })
 
-      // Track which operations succeeded
-      let firestoreSaved = false
-      let emailSent = false
-      let autoReplySent = false
-      let mailgunResponse: { messageId: string; status?: string; accepted: boolean } | undefined
+      // Track transaction details for Firestore
+      const errors: string[] = []
+      let contactEmailResponse: { messageId: string; status?: string; accepted: boolean } | undefined
+      let autoReplyResponse: { messageId: string; status?: string; accepted: boolean } | undefined
+      let contactEmailError: string | undefined
+      let autoReplyError: string | undefined
+      let contactEmailErrorCode: string | undefined
+      let autoReplyErrorCode: string | undefined
 
-      // STEP 1: Send email notification (critical - must succeed)
+      // STEP 1: Send contact notification email (critical - must succeed)
       try {
-        mailgunResponse = await emailService.sendContactFormNotification({
+        contactEmailResponse = await emailService.sendContactFormNotification({
           name: data.name,
           email: data.email,
           message: data.message,
           metadata,
           requestId,
         })
-        emailSent = true
-        log.info("Email notification sent successfully", { requestId, mailgunMessageId: mailgunResponse.messageId })
+        log.info("Contact notification sent successfully", {
+          requestId,
+          mailgunMessageId: contactEmailResponse.messageId,
+        })
       } catch (emailError) {
-        log.error("Failed to send email notification", {
+        const errorMessage = emailError instanceof Error ? emailError.message : String(emailError)
+        const isConfigError = errorMessage.includes("configuration") || errorMessage.includes("Unauthorized")
+        const err = isConfigError ? ERROR_CODES.EMAIL_SERVICE_ERROR : ERROR_CODES.EMAIL_DELIVERY_FAILED
+
+        contactEmailError = errorMessage
+        contactEmailErrorCode = err.code
+        errors.push(`Contact email failed: ${errorMessage}`)
+
+        log.error("Failed to send contact notification", {
           error: emailError,
           requestId,
           traceId,
           spanId,
-          data: { name: data.name, email: data.email },
+          errorCode: err.code,
         })
 
-        // Determine if it's a configuration error or delivery error
-        const errorMessage = emailError instanceof Error ? emailError.message : String(emailError)
-        const isConfigError = errorMessage.includes("configuration") || errorMessage.includes("Unauthorized")
-
-        const err = isConfigError ? ERROR_CODES.EMAIL_SERVICE_ERROR : ERROR_CODES.EMAIL_DELIVERY_FAILED
-
+        // Critical failure - return error immediately
         res.status(err.status).json({
           success: false,
           error: isConfigError ? "EMAIL_SERVICE_ERROR" : "EMAIL_DELIVERY_FAILED",
@@ -263,9 +271,34 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
         return
       }
 
-      // STEP 2: Save to Firestore with Mailgun response (non-blocking - don't fail request if this fails)
+      // STEP 2: Send auto-reply email (non-critical, continue on failure)
       try {
-        const docId = await firestoreService.saveContactSubmission({
+        autoReplyResponse = await emailService.sendAutoReply({
+          name: data.name,
+          email: data.email,
+          requestId,
+        })
+        log.info("Auto-reply sent successfully", {
+          requestId,
+          mailgunMessageId: autoReplyResponse.messageId,
+        })
+      } catch (autoReplyErr) {
+        const errorMessage = autoReplyErr instanceof Error ? autoReplyErr.message : String(autoReplyErr)
+        autoReplyError = errorMessage
+        autoReplyErrorCode = ERROR_CODES.EMAIL_DELIVERY_FAILED.code
+        errors.push(`Auto-reply failed: ${errorMessage}`)
+
+        log.warning("Failed to send auto-reply (non-critical)", {
+          error: autoReplyErr,
+          requestId,
+        })
+      }
+
+      // STEP 3: Record transaction in Firestore (non-critical, continue on failure)
+      let firestoreSaved = false
+      let firestoreDocId: string | undefined
+      try {
+        firestoreDocId = await firestoreService.saveContactSubmission({
           name: data.name,
           email: data.email,
           message: data.message,
@@ -273,19 +306,33 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
           requestId,
           ...(traceId && { traceId }),
           ...(spanId && { spanId }),
-          ...(mailgunResponse && { mailgun: mailgunResponse }),
+          transaction: {
+            contactEmail: {
+              success: !!contactEmailResponse,
+              response: contactEmailResponse,
+              error: contactEmailError,
+              errorCode: contactEmailErrorCode,
+            },
+            autoReply: {
+              success: !!autoReplyResponse,
+              response: autoReplyResponse,
+              error: autoReplyError,
+              errorCode: autoReplyErrorCode,
+            },
+            errors,
+          },
         })
         firestoreSaved = true
-        log.info("Contact submission saved to Firestore with Mailgun response", {
+        log.info("Transaction saved to Firestore", {
           requestId,
-          docId,
-          traceId,
-          spanId,
-          mailgunMessageId: mailgunResponse?.messageId,
+          docId: firestoreDocId,
+          errors: errors.length,
         })
       } catch (firestoreError) {
-        // Don't fail the request - just log warning
-        log.warning("Failed to save contact submission to Firestore (non-critical)", {
+        const errorMessage = firestoreError instanceof Error ? firestoreError.message : String(firestoreError)
+        errors.push(`Firestore save failed: ${errorMessage}`)
+
+        log.warning("Failed to save transaction to Firestore (non-critical)", {
           error: firestoreError,
           requestId,
           traceId,
@@ -293,30 +340,15 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
         })
       }
 
-      // Try to send auto-reply (non-blocking - nice to have)
-      try {
-        await emailService.sendAutoReply({
-          name: data.name,
-          email: data.email,
-          requestId,
-        })
-        autoReplySent = true
-        log.info("Auto-reply sent successfully", { requestId })
-      } catch (autoReplyError) {
-        // Don't fail the request - just log warning
-        log.warning("Failed to send auto-reply (non-critical)", {
-          error: autoReplyError,
-          requestId,
-        })
-      }
-
       log.info("Contact form processed successfully", {
         requestId,
         firestoreSaved,
-        emailSent,
-        autoReplySent,
+        contactEmailSent: !!contactEmailResponse,
+        autoReplySent: !!autoReplyResponse,
+        totalErrors: errors.length,
       })
 
+      // STEP 4: Send response to client
       // Add rate limiting headers
       res.set({
         "X-RateLimit-Limit": "10",
@@ -328,6 +360,14 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
         success: true,
         message: "Thank you for your message! I'll get back to you soon.",
         requestId,
+        ...(errors.length > 0 && {
+          warnings: errors,
+          details: {
+            contactEmailSent: !!contactEmailResponse,
+            autoReplySent: !!autoReplyResponse,
+            transactionRecorded: firestoreSaved,
+          },
+        }),
       })
     })
   } catch (error) {
