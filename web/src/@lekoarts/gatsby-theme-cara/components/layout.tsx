@@ -4,6 +4,7 @@ import { get } from "theme-ui"
 import { MDXProvider } from "@mdx-js/react"
 import { Global } from "@emotion/react"
 import MdxComponents from "@lekoarts/gatsby-theme-cara/src/components/mdx-components"
+import { CookieConsent } from "../../../components/CookieConsent"
 
 type LayoutProps = { children: React.ReactNode; className?: string }
 
@@ -150,6 +151,7 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
       <main className={className} role="main" aria-label="Main content">
         {children}
       </main>
+      <CookieConsent />
     </MDXProvider>
   </React.Fragment>
 )

@@ -2,6 +2,16 @@
 import { Box, jsx } from "theme-ui"
 
 const Footer = () => {
+  const trackSocialClick = (platform: string) => {
+    import("../../../utils/firebase-analytics")
+      .then(({ analyticsEvents }) => {
+        analyticsEvents.socialLinkClicked(platform)
+      })
+      .catch(() => {
+        // Analytics not critical
+      })
+  }
+
   return (
     // @ts-expect-error - React 18 type compatibility
     <Box
@@ -25,6 +35,7 @@ const Footer = () => {
           href="https://github.com/Jdubz/portfolio"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackSocialClick("github")}
           sx={{ variant: "links.white" }}
         >
           Source Code

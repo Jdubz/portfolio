@@ -1,9 +1,6 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
-import React, { useState } from "react"
-import { getToken } from "firebase/app-check"
-import { getAppCheckInstance } from "../utils/firebase-app-check"
-import { analyticsEvents } from "../utils/firebase-analytics"
+import React, { useState, useEffect, useRef } from "react"
 
 interface FormData {
   name: string
@@ -36,6 +33,31 @@ const ContactForm = (): React.JSX.Element => {
     submitted: false,
     error: null,
   })
+
+  // Track Firebase initialization state
+  const firebaseInitialized = useRef(false)
+
+  // Lazy load Firebase only when component mounts
+  useEffect(() => {
+    if (firebaseInitialized.current) {
+      return
+    }
+
+    const initFirebase = async () => {
+      try {
+        const { initializeFirebaseAppCheck } = await import("../utils/firebase-app-check")
+        const { initializeFirebaseAnalytics } = await import("../utils/firebase-analytics")
+
+        initializeFirebaseAppCheck()
+        await initializeFirebaseAnalytics()
+        firebaseInitialized.current = true
+      } catch (error) {
+        console.error("[ContactForm] Failed to initialize Firebase:", error)
+      }
+    }
+
+    void initFirebase()
+  }, [])
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -74,12 +96,15 @@ const ContactForm = (): React.JSX.Element => {
         throw new Error("Contact form URL not configured")
       }
 
-      // Get App Check token
+      // Get App Check token (lazy load module)
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       }
 
       try {
+        const { getAppCheckInstance } = await import("../utils/firebase-app-check")
+        const { getToken } = await import("firebase/app-check")
+
         const appCheckInstance = getAppCheckInstance()
         if (appCheckInstance) {
           const appCheckToken = await getToken(appCheckInstance, /* forceRefresh */ false)
@@ -168,8 +193,13 @@ const ContactForm = (): React.JSX.Element => {
       setStatus({ submitting: false, submitted: true, error: null })
       setFormData({ name: "", email: "", message: "" })
 
-      // Track successful form submission
-      analyticsEvents.contactFormSubmitted(true)
+      // Track successful form submission (lazy load module)
+      try {
+        const { analyticsEvents } = await import("../utils/firebase-analytics")
+        analyticsEvents.contactFormSubmitted(true)
+      } catch {
+        // Analytics not critical, silently fail
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Something went wrong. Please try again later."
 
@@ -179,8 +209,13 @@ const ContactForm = (): React.JSX.Element => {
         error: errorMessage,
       })
 
-      // Track failed form submission
-      analyticsEvents.contactFormSubmitted(false)
+      // Track failed form submission (lazy load module)
+      try {
+        const { analyticsEvents } = await import("../utils/firebase-analytics")
+        analyticsEvents.contactFormSubmitted(false)
+      } catch {
+        // Analytics not critical, silently fail
+      }
     }
   }
 

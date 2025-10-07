@@ -30,6 +30,14 @@ export const initializeFirebaseAnalytics = async (): Promise<void> => {
     return
   }
 
+  // Check for user consent
+  const { hasAnalyticsConsent } = await import("../components/CookieConsent")
+  if (!hasAnalyticsConsent()) {
+    // eslint-disable-next-line no-console
+    console.log("[Analytics] User has not consented to analytics tracking")
+    return
+  }
+
   // Check if already initialized
   if (analyticsInstance) {
     return
