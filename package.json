@@ -2,7 +2,7 @@
   "private": true,
   "name": "josh-wentworth-portfolio-monorepo",
   "description": "Josh Wentworth - Multidisciplinary engineer portfolio (monorepo)",
-  "version": "1.9.0",
+  "version": "1.10.1",
   "author": "Josh Wentworth",
   "license": "0BSD",
   "workspaces": [
