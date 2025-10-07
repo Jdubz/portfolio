@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
+.PHONY: help dev dev-clean build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api seed-emulators screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -59,8 +59,10 @@ help:
 	@echo "  make firebase-emulators-ui - Start emulators with UI dashboard (port 4000)"
 	@echo "  make firebase-functions-shell - Start interactive Functions shell for testing"
 	@echo "  make firebase-login        - Login to Firebase"
+	@echo "  make seed-emulators        - Seed emulators with test users and data"
 	@echo "  make test-contact-form     - Test contact form function (single quick test)"
 	@echo "  make test-contact-form-all - Run comprehensive contact form test suite"
+	@echo "  make test-experience-api   - Test experience API with auth (auto-seeds data)"
 	@echo "  make deploy-staging        - Build and deploy to staging"
 	@echo "  make deploy-prod           - Build and deploy to production"
 	@echo ""
@@ -185,6 +187,16 @@ test-contact-form:
 test-contact-form-all:
 	@echo "Running comprehensive contact form test suite..."
 	@./test-contact-form.sh emulator
+
+seed-emulators:
+	@echo "Seeding Firebase emulators with test data..."
+	@echo "This will create test users and sample experience entries"
+	@node scripts/seed-emulator.js
+
+test-experience-api:
+	@echo "Testing Experience API with authenticated endpoints..."
+	@echo "This will auto-seed data and generate a test token"
+	@./test-experience-auth.sh --auto
 
 deploy-staging:
 	@echo "Deploying to staging..."

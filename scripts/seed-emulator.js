@@ -24,16 +24,16 @@ async function seedAuth() {
   const testUsers = [
     {
       uid: 'test-editor-1',
-      email: 'contact@joshwentworth.com',
+      email: 'editor1@example.com',
       emailVerified: true,
-      displayName: 'Josh Wentworth',
+      displayName: 'Test Editor One',
       customClaims: { role: 'editor' },
     },
     {
       uid: 'test-editor-2',
-      email: 'jwentwor@gmail.com',
+      email: 'editor2@example.com',
       emailVerified: true,
-      displayName: 'Josh W',
+      displayName: 'Test Editor Two',
       customClaims: { role: 'editor' },
     },
     {
@@ -87,8 +87,8 @@ async function seedFirestore() {
       endDate: '2024-12',
       body: 'Built and maintained scalable web applications using React, Node.js, and Firebase.',
       notes: 'Remote position, promoted twice',
-      createdBy: 'contact@joshwentworth.com',
-      updatedBy: 'contact@joshwentworth.com',
+      createdBy: 'editor1@example.com',
+      updatedBy: 'editor1@example.com',
       createdAt: admin.firestore.Timestamp.now(),
       updatedAt: admin.firestore.Timestamp.now(),
     },
@@ -99,8 +99,8 @@ async function seedFirestore() {
       endDate: '2022-12',
       body: 'Specialized in React and TypeScript development.',
       notes: '',
-      createdBy: 'contact@joshwentworth.com',
-      updatedBy: 'contact@joshwentworth.com',
+      createdBy: 'editor1@example.com',
+      updatedBy: 'editor1@example.com',
       createdAt: admin.firestore.Timestamp.now(),
       updatedAt: admin.firestore.Timestamp.now(),
     },
@@ -145,7 +145,7 @@ async function generateTestToken() {
   if (data.idToken) {
     console.log('✅ Test token generated!\n');
     console.log('==========================================');
-    console.log('ID Token for contact@joshwentworth.com:');
+    console.log('ID Token for editor1@example.com:');
     console.log('==========================================');
     console.log(data.idToken);
     console.log('\n==========================================\n');
@@ -154,6 +154,9 @@ async function generateTestToken() {
     console.log('\nOr save it:');
     console.log(`  export AUTH_TOKEN='${data.idToken}'`);
     console.log('');
+
+    // Return token for use in test script
+    return data.idToken;
   } else {
     console.error('Error generating token:', data);
   }
@@ -167,7 +170,7 @@ async function main() {
   try {
     await seedAuth();
     await seedFirestore();
-    await generateTestToken();
+    const token = await generateTestToken();
 
     console.log('==========================================');
     console.log('✅ All seeding complete!');
@@ -178,6 +181,11 @@ async function main() {
     console.log('  2. View data at http://127.0.0.1:4000');
     console.log('  3. When done, stop emulators (data will be saved to ./emulator-data)');
     console.log('  4. Next time, data will be auto-imported on startup\n');
+
+    // Output token for shell script capture
+    if (token) {
+      console.log('__TOKEN__=' + token);
+    }
 
     process.exit(0);
   } catch (error) {

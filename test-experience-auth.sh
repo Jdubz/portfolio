@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # Test script for Experience API with Firebase Auth custom claims
-# Usage: ./test-experience-auth.sh <id-token>
+# Usage:
+#   ./test-experience-auth.sh <id-token>
+#   ./test-experience-auth.sh --auto (auto-generate token from seeded data)
 
 set -e
 
@@ -15,25 +17,37 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Check if token is provided
-if [ -z "$1" ]; then
+# Check if --auto flag is passed
+if [ "$1" = "--auto" ]; then
+    echo -e "${BLUE}Generating token from seeded data...${NC}"
+    SEED_OUTPUT=$(node scripts/seed-emulator.js 2>&1)
+    echo "$SEED_OUTPUT" | grep -v "__TOKEN__="
+    TOKEN=$(echo "$SEED_OUTPUT" | grep "__TOKEN__=" | cut -d'=' -f2)
+
+    if [ -z "$TOKEN" ]; then
+        echo -e "${RED}Error: Failed to generate token${NC}"
+        exit 1
+    fi
+
+    echo ""
+    echo -e "${GREEN}Token generated successfully!${NC}"
+    echo ""
+elif [ -z "$1" ]; then
     echo -e "${RED}Error: ID token required${NC}"
     echo ""
     echo "Usage: $0 <id-token>"
+    echo "   Or: $0 --auto (auto-seed and generate token)"
     echo ""
-    echo "To get your ID token:"
-    echo "  1. Go to http://127.0.0.1:4000/auth"
-    echo "  2. Find user: contact@joshwentworth.com"
-    echo "  3. Click on the user"
-    echo "  4. Look for 'ID Token' or 'Raw token' section"
-    echo "  5. Copy the token"
+    echo "To manually get your ID token:"
+    echo "  1. Run: node scripts/seed-emulator.js"
+    echo "  2. Copy the token from the output"
     echo ""
     echo "Then run:"
     echo "  $0 'your-token-here'"
     exit 1
+else
+    TOKEN="$1"
 fi
-
-TOKEN="$1"
 
 echo "======================================"
 echo "Testing Experience API with Auth"
