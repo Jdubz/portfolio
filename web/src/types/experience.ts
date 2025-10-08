@@ -6,6 +6,7 @@
 export interface ExperienceEntry {
   id: string
   title: string
+  role?: string // Job title/role (optional)
   body?: string
   startDate: string // YYYY-MM format
   endDate?: string | null // YYYY-MM format or null (= Present)
@@ -18,6 +19,7 @@ export interface ExperienceEntry {
 
 export interface CreateExperienceData {
   title: string
+  role?: string
   body?: string
   startDate: string
   endDate?: string | null
@@ -26,6 +28,7 @@ export interface CreateExperienceData {
 
 export interface UpdateExperienceData {
   title?: string
+  role?: string
   body?: string
   startDate?: string
   endDate?: string | null

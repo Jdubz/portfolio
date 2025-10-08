@@ -19,6 +19,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
   const [isDeleting, setIsDeleting] = useState(false)
   const [editData, setEditData] = useState<UpdateExperienceData>({
     title: entry.title,
+    role: entry.role,
     body: entry.body,
     startDate: entry.startDate,
     endDate: entry.endDate,
@@ -49,6 +50,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
   const handleCancel = () => {
     setEditData({
       title: entry.title,
+      role: entry.role,
       body: entry.body,
       startDate: entry.startDate,
       endDate: entry.endDate,
@@ -92,6 +94,19 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
             <Input
               value={editData.title}
               onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+              sx={{ fontSize: 2 }}
+            />
+          </Box>
+
+          {/* Role */}
+          <Box>
+            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
+              Role (optional)
+            </Text>
+            <Input
+              value={editData.role ?? ""}
+              onChange={(e) => setEditData({ ...editData, role: e.target.value })}
+              placeholder="Senior Developer, Lead Engineer, etc."
               sx={{ fontSize: 2 }}
             />
           </Box>
@@ -151,15 +166,15 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
             <Button
               onClick={() => void handleDelete()}
               disabled={isDeleting || isSaving}
-              variant="secondary"
-              sx={{ fontSize: 1, bg: "red", color: "white", "&:hover": { bg: "darkred" } }}
+              variant="buttons.sizes.sm"
+              sx={{ bg: "red", color: "white", "&:hover": { bg: "darkred" } }}
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </Button>
-            <Button onClick={handleCancel} variant="secondary" disabled={isSaving} sx={{ fontSize: 1 }}>
+            <Button onClick={handleCancel} variant="buttons.sizes.sm" disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={() => void handleSave()} disabled={isSaving} sx={{ fontSize: 1 }}>
+            <Button onClick={() => void handleSave()} disabled={isSaving} variant="buttons.sizes.sm">
               {isSaving ? "Saving..." : "Save"}
             </Button>
           </Flex>
@@ -197,12 +212,26 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
         as="h2"
         sx={{
           fontSize: [3, 4],
-          mb: 3,
+          mb: entry.role ? 1 : 3,
           color: "text",
         }}
       >
         {entry.title}
       </Heading>
+
+      {/* Role */}
+      {entry.role && (
+        <Text
+          sx={{
+            fontSize: 2,
+            color: "textMuted",
+            fontStyle: "italic",
+            mb: 3,
+          }}
+        >
+          {entry.role}
+        </Text>
+      )}
 
       {/* Body */}
       {entry.body && (
@@ -237,7 +266,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
       {/* Editor Actions */}
       {isEditor && (
         <Box sx={{ mt: 4 }}>
-          <Button onClick={() => setIsEditing(true)} variant="secondary" sx={{ fontSize: 1 }}>
+          <Button onClick={() => setIsEditing(true)} variant="buttons.sizes.sm">
             Edit
           </Button>
         </Box>

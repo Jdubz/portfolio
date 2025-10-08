@@ -14,6 +14,7 @@ interface CreateExperienceFormProps {
 export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCreate, onCancel }) => {
   const [formData, setFormData] = useState<CreateExperienceData>({
     title: "",
+    role: "",
     body: "",
     startDate: "",
     endDate: null,
@@ -50,6 +51,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
       // Reset form on success
       setFormData({
         title: "",
+        role: "",
         body: "",
         startDate: "",
         endDate: null,
@@ -96,6 +98,19 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             placeholder="Senior Full-Stack Developer"
             required
+            sx={{ fontSize: 2 }}
+          />
+        </Box>
+
+        {/* Role */}
+        <Box>
+          <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
+            Role (optional)
+          </Text>
+          <Input
+            value={formData.role ?? ""}
+            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            placeholder="Senior Developer, Lead Engineer, etc."
             sx={{ fontSize: 2 }}
           />
         </Box>
@@ -155,10 +170,10 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
 
         {/* Actions */}
         <Flex sx={{ gap: 2, justifyContent: "flex-end" }}>
-          <Button type="button" onClick={onCancel} variant="secondary" disabled={isCreating}>
+          <Button type="button" onClick={onCancel} variant="buttons.sizes.sm" disabled={isCreating}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isCreating}>
+          <Button type="submit" disabled={isCreating} variant="buttons.sizes.sm">
             {isCreating ? "Creating..." : "Create Entry"}
           </Button>
         </Flex>
