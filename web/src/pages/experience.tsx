@@ -137,23 +137,6 @@ const ExperiencePage: React.FC = () => {
                   }}
                 >
                   {user.email}
-                  {isEditor && (
-                    <Text
-                      as="span"
-                      sx={{
-                        ml: 2,
-                        px: 2,
-                        py: 1,
-                        bg: "primary",
-                        color: "white",
-                        borderRadius: "4px",
-                        fontSize: 0,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      EDITOR
-                    </Text>
-                  )}
                 </Text>
                 <Button onClick={handleSignOut} variant="buttons.sizes.sm">
                   Sign Out

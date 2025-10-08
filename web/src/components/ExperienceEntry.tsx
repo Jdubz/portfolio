@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { Box, Heading, Text, Button, Flex, Input, Textarea } from "theme-ui"
+import ReactMarkdown from "react-markdown"
 import type { ExperienceEntry as ExperienceEntryType, UpdateExperienceData } from "../types/experience"
 
 interface ExperienceEntryProps {
@@ -235,16 +236,42 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
 
       {/* Body */}
       {entry.body && (
-        <Text
+        <Box
           sx={{
             fontSize: 2,
             lineHeight: 1.6,
             mb: 3,
-            whiteSpace: "pre-wrap",
+            "& h1, & h2, & h3, & h4, & h5, & h6": {
+              mt: 3,
+              mb: 2,
+              fontWeight: "bold",
+            },
+            "& h2": {
+              fontSize: 3,
+            },
+            "& h3": {
+              fontSize: 2,
+            },
+            "& ul, & ol": {
+              pl: 4,
+              mb: 2,
+            },
+            "& li": {
+              mb: 1,
+            },
+            "& p": {
+              mb: 2,
+            },
+            "& code": {
+              bg: "muted",
+              px: 1,
+              borderRadius: "2px",
+              fontFamily: "monospace",
+            },
           }}
         >
-          {entry.body}
-        </Text>
+          <ReactMarkdown>{entry.body}</ReactMarkdown>
+        </Box>
       )}
 
       {/* Notes (only for editors) */}
