@@ -123,46 +123,47 @@ const ExperiencePage: React.FC = () => {
             {authLoading ? (
               <Spinner size={24} />
             ) : (
-              <Flex
-                sx={{
-                  alignItems: "center",
-                  gap: 3,
-                  flexDirection: ["column", "row"],
-                }}
-              >
-                {user && (
-                  <Text
-                    sx={{
-                      fontSize: 1,
-                      color: "textMuted",
-                    }}
-                  >
-                    {user.email}
-                  </Text>
-                )}
-                <Button
-                  onClick={user ? handleSignOut : handleSignIn}
-                  variant="secondary.sm"
-                  disabled={signingIn}
+              <Box>
+                <Flex
                   sx={{
-                    cursor: signingIn ? "wait" : "pointer",
+                    alignItems: "center",
+                    gap: 3,
+                    flexDirection: ["column", "row"],
                   }}
                 >
-                  {signingIn ? "Signing in..." : isEditor ? "Editor Mode" : "Viewer Mode"}
-                </Button>
+                  {user && (
+                    <Text
+                      sx={{
+                        fontSize: 1,
+                        color: "textMuted",
+                      }}
+                    >
+                      {user.email}
+                    </Text>
+                  )}
+                  <Button
+                    onClick={user ? handleSignOut : handleSignIn}
+                    variant="secondary.sm"
+                    disabled={signingIn}
+                    sx={{
+                      cursor: signingIn ? "wait" : "pointer",
+                    }}
+                  >
+                    {isEditor ? "Editor" : "Viewer"}
+                  </Button>
+                </Flex>
                 {authError && (
                   <Text
                     sx={{
                       mt: 2,
                       fontSize: 1,
                       color: "red",
-                      maxWidth: "200px",
                     }}
                   >
                     {authError}
                   </Text>
                 )}
-              </Flex>
+              </Box>
             )}
           </Box>
         </Flex>
