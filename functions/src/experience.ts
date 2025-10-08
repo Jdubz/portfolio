@@ -57,6 +57,8 @@ const corsHandler = cors(corsOptions)
 // Validation schemas
 const createSchema = Joi.object({
   title: Joi.string().trim().min(1).max(200).required(),
+  role: Joi.string().trim().max(200).optional().allow(""),
+  location: Joi.string().trim().max(200).optional().allow(""),
   body: Joi.string().trim().max(10000).optional().allow(""),
   startDate: Joi.string()
     .pattern(/^\d{4}-(0[1-9]|1[0-2])$/)
@@ -71,6 +73,8 @@ const createSchema = Joi.object({
 
 const updateSchema = Joi.object({
   title: Joi.string().trim().min(1).max(200).optional(),
+  role: Joi.string().trim().max(200).optional().allow(""),
+  location: Joi.string().trim().max(200).optional().allow(""),
   body: Joi.string().trim().max(10000).optional().allow(""),
   startDate: Joi.string()
     .pattern(/^\d{4}-(0[1-9]|1[0-2])$/)
@@ -87,7 +91,7 @@ const updateSchema = Joi.object({
  * Generate a unique request ID for tracking
  */
 function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  return `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
 }
 
 /**

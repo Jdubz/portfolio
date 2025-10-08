@@ -14,6 +14,8 @@ interface CreateExperienceFormProps {
 export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCreate, onCancel }) => {
   const [formData, setFormData] = useState<CreateExperienceData>({
     title: "",
+    role: "",
+    location: "",
     body: "",
     startDate: "",
     endDate: null,
@@ -50,6 +52,8 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
       // Reset form on success
       setFormData({
         title: "",
+        role: "",
+        location: "",
         body: "",
         startDate: "",
         endDate: null,
@@ -94,8 +98,34 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
           <Input
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="Senior Full-Stack Developer"
+            placeholder="Some Company"
             required
+            sx={{ fontSize: 2 }}
+          />
+        </Box>
+
+        {/* Role */}
+        <Box>
+          <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
+            Role (optional)
+          </Text>
+          <Input
+            value={formData.role ?? ""}
+            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            placeholder="Senior Developer, Lead Engineer, etc."
+            sx={{ fontSize: 2 }}
+          />
+        </Box>
+
+        {/* Location */}
+        <Box>
+          <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
+            Location (optional)
+          </Text>
+          <Input
+            value={formData.location ?? ""}
+            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            placeholder="San Francisco, CA · Remote"
             sx={{ fontSize: 2 }}
           />
         </Box>
@@ -155,10 +185,10 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
 
         {/* Actions */}
         <Flex sx={{ gap: 2, justifyContent: "flex-end" }}>
-          <Button type="button" onClick={onCancel} variant="secondary" disabled={isCreating}>
+          <Button type="button" onClick={onCancel} variant="secondary.sm" disabled={isCreating}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isCreating}>
+          <Button type="submit" disabled={isCreating} variant="primary.sm">
             {isCreating ? "Creating..." : "Create Entry"}
           </Button>
         </Flex>

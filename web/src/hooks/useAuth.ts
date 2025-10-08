@@ -8,17 +8,19 @@ interface AuthState {
   error: string | null
 }
 
+const INITIAL_AUTH_STATE: AuthState = {
+  user: null,
+  isEditor: false,
+  loading: true,
+  error: null,
+}
+
 /**
  * Hook for Firebase Auth state management
  * Checks if user is authenticated and has 'editor' role
  */
 export const useAuth = (): AuthState => {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isEditor: false,
-    loading: true,
-    error: null,
-  })
+  const [authState, setAuthState] = useState<AuthState>(INITIAL_AUTH_STATE)
 
   useEffect(() => {
     let unsubscribe: (() => void) | null = null

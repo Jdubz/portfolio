@@ -137,25 +137,8 @@ const ExperiencePage: React.FC = () => {
                   }}
                 >
                   {user.email}
-                  {isEditor && (
-                    <Text
-                      as="span"
-                      sx={{
-                        ml: 2,
-                        px: 2,
-                        py: 1,
-                        bg: "primary",
-                        color: "white",
-                        borderRadius: "4px",
-                        fontSize: 0,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      EDITOR
-                    </Text>
-                  )}
                 </Text>
-                <Button onClick={handleSignOut} variant="secondary" sx={{ fontSize: 1 }}>
+                <Button onClick={handleSignOut} variant="secondary.sm">
                   Sign Out
                 </Button>
               </Flex>
@@ -191,22 +174,6 @@ const ExperiencePage: React.FC = () => {
           </Box>
         </Flex>
 
-        {/* Create New Entry Button (Editors Only) */}
-        {isEditor && !showCreateForm && (
-          <Box sx={{ mb: 4 }}>
-            <Button onClick={() => setShowCreateForm(true)} sx={{ fontSize: 2 }}>
-              + New Section
-            </Button>
-          </Box>
-        )}
-
-        {/* Create Form */}
-        {showCreateForm && (
-          <Box sx={{ mt: 5 }}>
-            <CreateExperienceForm onCreate={handleCreateEntry} onCancel={() => setShowCreateForm(false)} />
-          </Box>
-        )}
-
         {/* Experience Entries List */}
         <Box sx={{ mt: 5 }}>
           {entriesLoading ? (
@@ -220,7 +187,7 @@ const ExperiencePage: React.FC = () => {
           ) : entries.length === 0 ? (
             <Text sx={{ textAlign: "center", py: 6, color: "textMuted", fontSize: 2 }}>
               No experience entries yet.
-              {isEditor && " Click 'Add New Entry' to create one."}
+              {isEditor && " Click '+ New Section' below to create one."}
             </Text>
           ) : (
             <Box>
@@ -236,6 +203,22 @@ const ExperiencePage: React.FC = () => {
             </Box>
           )}
         </Box>
+
+        {/* Create New Entry Button (Editors Only) - Bottom of list */}
+        {isEditor && !showCreateForm && (
+          <Box sx={{ mt: 4 }}>
+            <Button onClick={() => setShowCreateForm(true)} variant="primary.sm">
+              + New Section
+            </Button>
+          </Box>
+        )}
+
+        {/* Create Form - Bottom of list */}
+        {showCreateForm && (
+          <Box sx={{ mt: 4 }}>
+            <CreateExperienceForm onCreate={handleCreateEntry} onCancel={() => setShowCreateForm(false)} />
+          </Box>
+        )}
       </Box>
     </Box>
   )

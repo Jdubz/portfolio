@@ -1,5 +1,9 @@
 import { Firestore, Timestamp } from "@google-cloud/firestore"
 
+// Constants
+const COLLECTION_NAME = "experience-entries"
+const DATABASE_ID = "portfolio"
+
 type SimpleLogger = {
   info: (message: string, data?: unknown) => void
   warning: (message: string, data?: unknown) => void
@@ -38,12 +42,12 @@ export interface UpdateExperienceData {
 export class ExperienceService {
   private db: Firestore
   private logger: SimpleLogger
-  private collectionName = "experience-entries"
+  private collectionName = COLLECTION_NAME
 
   constructor(logger?: SimpleLogger) {
     // Initialize Firestore with the named database "portfolio"
     this.db = new Firestore({
-      databaseId: "portfolio",
+      databaseId: DATABASE_ID,
     })
 
     const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
