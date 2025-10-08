@@ -56,7 +56,8 @@ export const initializeFirebaseAnalytics = async (): Promise<void> => {
     // Get the Firebase app (should already be initialized by App Check)
     const apps = getApps()
     if (apps.length === 0) {
-      console.error("[Analytics] Firebase app not initialized")
+      // eslint-disable-next-line no-console
+      console.log("[Analytics] Firebase app not initialized yet, skipping analytics setup")
       return
     }
 
