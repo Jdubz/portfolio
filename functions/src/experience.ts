@@ -58,6 +58,7 @@ const corsHandler = cors(corsOptions)
 const createSchema = Joi.object({
   title: Joi.string().trim().min(1).max(200).required(),
   role: Joi.string().trim().max(200).optional().allow(""),
+  location: Joi.string().trim().max(200).optional().allow(""),
   body: Joi.string().trim().max(10000).optional().allow(""),
   startDate: Joi.string()
     .pattern(/^\d{4}-(0[1-9]|1[0-2])$/)
@@ -73,6 +74,7 @@ const createSchema = Joi.object({
 const updateSchema = Joi.object({
   title: Joi.string().trim().min(1).max(200).optional(),
   role: Joi.string().trim().max(200).optional().allow(""),
+  location: Joi.string().trim().max(200).optional().allow(""),
   body: Joi.string().trim().max(10000).optional().allow(""),
   startDate: Joi.string()
     .pattern(/^\d{4}-(0[1-9]|1[0-2])$/)

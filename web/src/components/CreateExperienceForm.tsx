@@ -15,6 +15,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
   const [formData, setFormData] = useState<CreateExperienceData>({
     title: "",
     role: "",
+    location: "",
     body: "",
     startDate: "",
     endDate: null,
@@ -52,6 +53,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
       setFormData({
         title: "",
         role: "",
+        location: "",
         body: "",
         startDate: "",
         endDate: null,
@@ -111,6 +113,19 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
             value={formData.role ?? ""}
             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             placeholder="Senior Developer, Lead Engineer, etc."
+            sx={{ fontSize: 2 }}
+          />
+        </Box>
+
+        {/* Location */}
+        <Box>
+          <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
+            Location (optional)
+          </Text>
+          <Input
+            value={formData.location ?? ""}
+            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            placeholder="San Francisco, CA · Remote"
             sx={{ fontSize: 2 }}
           />
         </Box>
