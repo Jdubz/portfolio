@@ -64,6 +64,18 @@ export const useAuth = (): AuthState => {
               void user.getIdTokenResult().then((idTokenResult) => {
                 const isEditor = idTokenResult.claims.role === "editor"
 
+                // Log auth state in development/staging
+                if (process.env.NODE_ENV === "development" || process.env.GATSBY_ENVIRONMENT === "staging") {
+                  // eslint-disable-next-line no-console
+                  console.log("🔐 User authenticated:", {
+                    email: user.email,
+                    uid: user.uid,
+                    isEditor,
+                    role: idTokenResult.claims.role,
+                    customClaims: idTokenResult.claims,
+                  })
+                }
+
                 setAuthState({
                   user,
                   isEditor,
@@ -72,6 +84,12 @@ export const useAuth = (): AuthState => {
                 })
               })
             } else {
+              // Log sign out in development/staging
+              if (process.env.NODE_ENV === "development" || process.env.GATSBY_ENVIRONMENT === "staging") {
+                // eslint-disable-next-line no-console
+                console.log("🔓 User signed out")
+              }
+
               setAuthState({
                 user: null,
                 isEditor: false,

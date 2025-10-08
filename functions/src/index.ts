@@ -92,7 +92,7 @@ interface ContactFormMetadata {
 }
 
 /**
- * Cloud Function to handle contact form submissions
+  * Cloud Function to handle contact form submissions
  *
  * Features:
  * - Input validation and sanitization
@@ -426,3 +426,4 @@ export const handleContactForm = https.onRequest(
  * Deployed via: firebase deploy --only functions:manageExperience
  */
 export { manageExperience } from "./experience"
+

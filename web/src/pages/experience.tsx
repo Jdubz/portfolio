@@ -189,9 +189,9 @@ const ExperiencePage: React.FC = () => {
 
         {/* Create New Entry Button (Editors Only) */}
         {isEditor && !showCreateForm && (
-          <Box sx={{ mt: 5 }}>
+          <Box sx={{ mb: 4 }}>
             <Button onClick={() => setShowCreateForm(true)} sx={{ fontSize: 2 }}>
-              + Add New Entry
+              + New Section
             </Button>
           </Box>
         )}
