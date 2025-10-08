@@ -48,21 +48,11 @@ const ContactForm = (): React.JSX.Element => {
         const { initializeFirebaseAppCheck } = await import("../utils/firebase-app-check")
         const { initializeFirebaseAnalytics } = await import("../utils/firebase-analytics")
 
-        // Initialize Firebase App and App Check first
         initializeFirebaseAppCheck()
-
-        // Small delay to ensure Firebase app is fully initialized before analytics
-        await new Promise((resolve) => {
-          // eslint-disable-next-line no-undef
-          setTimeout(resolve, 100)
-        })
-
-        // Then initialize analytics
         await initializeFirebaseAnalytics()
         firebaseInitialized.current = true
       } catch (error) {
         console.error("[ContactForm] Failed to initialize Firebase:", error)
-        // Don't throw - the form should still work without Firebase
       }
     }
 

@@ -38,15 +38,24 @@ export const initializeFirebaseAppCheck = (): void => {
     return
   }
 
+  // Skip App Check entirely in development to avoid unhandled promise rejections
+  const isProduction = process.env.NODE_ENV === "production"
+  if (!isProduction) {
+    // eslint-disable-next-line no-console
+    console.log("[AppCheck] Skipped in development (prevents HMR errors)")
+    // Still initialize Firebase app for other services
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+    return
+  }
+
   try {
     // Initialize Firebase app if not already initialized
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 
-    // Initialize App Check with reCAPTCHA v3
-    // In development, you can set isTokenAutoRefreshEnabled to false
+    // Initialize App Check with reCAPTCHA v3 (production only)
     appCheckInstance = initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(RECAPTCHA_V3_SITE_KEY),
-      isTokenAutoRefreshEnabled: true, // Auto-refresh tokens
+      isTokenAutoRefreshEnabled: true,
     })
 
     // eslint-disable-next-line no-console

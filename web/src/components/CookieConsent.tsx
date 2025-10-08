@@ -37,9 +37,6 @@ export const CookieConsent = (): React.JSX.Element | null => {
     setIsVisible(false)
     // eslint-disable-next-line no-undef
     setTimeout(() => setShowBanner(false), 300)
-
-    // Reload to initialize analytics
-    window.location.reload()
   }
 
   if (!showBanner) {

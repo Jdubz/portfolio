@@ -139,7 +139,7 @@ const ExperiencePage: React.FC = () => {
             >
               Complete professional experience and work history
             </Text>
-
+            <br />
             <a
               href="/resume.pdf"
               download="Josh_Wentworth_Resume.pdf"
@@ -171,16 +171,6 @@ const ExperiencePage: React.FC = () => {
                     flexDirection: ["column", "row"],
                   }}
                 >
-                  {user && (
-                    <Text
-                      sx={{
-                        fontSize: 1,
-                        color: "textMuted",
-                      }}
-                    >
-                      {user.email}
-                    </Text>
-                  )}
                   <Button
                     onClick={user ? handleSignOut : handleSignIn}
                     variant="secondary.sm"

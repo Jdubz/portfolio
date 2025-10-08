@@ -30,9 +30,19 @@ export const initializeFirebaseAnalytics = async (): Promise<void> => {
     return
   }
 
-  // Check for user consent
-  const { hasAnalyticsConsent } = await import("../components/CookieConsent")
-  if (!hasAnalyticsConsent()) {
+  // Check for user consent directly from localStorage (avoid circular import issues)
+  const savedConsent = localStorage.getItem("cookie-consent")
+  let hasConsent = false
+  if (savedConsent) {
+    try {
+      const consent = JSON.parse(savedConsent) as { analytics?: boolean }
+      hasConsent = consent.analytics ?? false
+    } catch {
+      hasConsent = false
+    }
+  }
+
+  if (!hasConsent) {
     // eslint-disable-next-line no-console
     console.log("[Analytics] User has not consented to analytics tracking")
     return
@@ -56,8 +66,7 @@ export const initializeFirebaseAnalytics = async (): Promise<void> => {
     // Get the Firebase app (should already be initialized by App Check)
     const apps = getApps()
     if (apps.length === 0) {
-      // eslint-disable-next-line no-console
-      console.log("[Analytics] Firebase app not initialized yet, skipping analytics setup")
+      console.error("[Analytics] Firebase app not initialized")
       return
     }
 
