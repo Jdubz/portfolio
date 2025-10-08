@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status version-patch version-minor version-major deploy-staging deploy-prod firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api seed-emulators screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api seed-emulators screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -48,10 +48,8 @@ help:
 	@echo "Process Management:"
 	@echo "  make kill             - Clean Gatsby cache (stops dev server indirectly)"
 	@echo ""
-	@echo "Versioning:"
-	@echo "  make version-patch    - Bump patch version (1.0.0 -> 1.0.1)"
-	@echo "  make version-minor    - Bump minor version (1.0.0 -> 1.1.0)"
-	@echo "  make version-major    - Bump major version (1.0.0 -> 2.0.0)"
+	@echo "Versioning (Changesets):"
+	@echo "  make changeset        - Create a new changeset for versioning"
 	@echo ""
 	@echo "Firebase:"
 	@echo "  make firebase-serve        - Serve Firebase hosting locally (port 5000)"
@@ -102,18 +100,15 @@ test-functions:
 	@echo "Running functions tests..."
 	cd functions && npm test
 
-# Versioning
-version-patch:
-	@echo "Bumping patch version..."
-	npm run version:patch
-
-version-minor:
-	@echo "Bumping minor version..."
-	npm run version:minor
-
-version-major:
-	@echo "Bumping major version..."
-	npm run version:major
+# Versioning with Changesets
+changeset:
+	@echo "Creating a new changeset..."
+	@echo "This will prompt you to:"
+	@echo "1. Select which packages changed"
+	@echo "2. Choose version bump type (patch/minor/major)"
+	@echo "3. Write a summary of changes"
+	@echo ""
+	npm run changeset
 
 # Process management
 kill:

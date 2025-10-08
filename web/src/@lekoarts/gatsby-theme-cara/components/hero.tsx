@@ -14,19 +14,7 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
     data-icon-preset="hero"
     aria-label="Introduction"
   >
-    <Divider
-      speed={0}
-      offset={offset}
-      factor={factor}
-      sx={{
-        position: "relative",
-        "::after": {
-          variant: "backgrounds.watermark",
-          backgroundPosition: ["center 85%", "center 88%", "center 90%"],
-          backgroundSize: ["min(360px,70vw)", "min(520px,60vw)", "min(640px,48vw)"],
-        },
-      }}
-    />
+    <Divider speed={0} offset={offset} factor={factor} />
     <Divider speed={0.2} offset={offset} factor={factor} className="iconCanvas">
       <UpDown>
         <Svg icon="rocket" hiddenMobile width={56} stroke color="icon_blue" left="10%" top="20%" />
@@ -58,6 +46,27 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
     <Content sx={{ variant: `texts.bigger` }} speed={0.4} offset={offset} factor={factor} className="content">
       <Inner>
         <Intro />
+        {/* Logo at bottom of hero section, overlapping 50% with next section */}
+        <div
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            mt: [6, 7, 8],
+            position: "relative",
+            zIndex: 100,
+          }}
+        >
+          <img
+            src="/logo-gradient.png"
+            alt="JW Logo"
+            sx={{
+              width: ["240px", "320px", "400px"],
+              height: ["240px", "320px", "400px"],
+              filter: "drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3))",
+            }}
+          />
+        </div>
       </Inner>
     </Content>
   </section>

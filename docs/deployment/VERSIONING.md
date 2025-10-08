@@ -1,226 +1,380 @@
-# Semantic Versioning Guide
+# Versioning with Changesets
 
-This project uses [Semantic Versioning](https://semver.org/) with automated version bumps based on [Conventional Commits](https://www.conventionalcommits.org/).
+This project uses [Changesets](https://github.com/changesets/changesets) for managing versions and changelogs across the monorepo.
+
+## Overview
+
+Changesets provides:
+- **Explicit version control** - No accidental version bumps
+- **Automated CHANGELOG generation** - From human-readable descriptions
+- **Linked package versioning** - Web + Functions always stay in sync
+- **"Version Packages" PR** - Review changes before releasing
 
 ## Version Format
 
-Versions follow the format: `MAJOR.MINOR.PATCH`
+Versions follow [Semantic Versioning (semver)](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 - **MAJOR** (1.0.0 → 2.0.0): Breaking changes
 - **MINOR** (1.0.0 → 1.1.0): New features (backward compatible)
-- **PATCH** (1.0.0 → 1.0.1): Bug fixes
+- **PATCH** (1.0.0 → 1.0.1): Bug fixes, improvements
 
-## Automatic Versioning
+## How to Version Your Changes
 
-When you push commits to `main` or `staging` branches, the version is automatically bumped based on your commit message format.
+### Step 1: Make Your Changes
 
-### Commit Message Format
-
-Use these prefixes in your commit messages:
-
-#### Patch Version (Bug Fixes)
-
-```
-fix: resolve navigation issue
-fix(ui): correct button alignment
-patch: update dependencies
-```
-
-#### Minor Version (New Features)
-
-```
-feat: add dark mode toggle
-feat(api): implement user authentication
-feature: create contact form
-```
-
-#### Major Version (Breaking Changes)
-
-```
-feat!: redesign entire UI
-feat(api)!: change response format
-BREAKING CHANGE: remove legacy API endpoints
-```
-
-### Examples
+Work on your feature/fix as normal:
 
 ```bash
-# This will bump patch version (1.0.0 → 1.0.1)
-git commit -m "fix: resolve mobile menu overflow"
-
-# This will bump minor version (1.0.0 → 1.1.0)
-git commit -m "feat: add project filtering"
-
-# This will bump major version (1.0.0 → 2.0.0)
-git commit -m "feat!: redesign navigation structure"
+git checkout -b my-feature
+# ... make changes ...
+git add .
+git commit -m "feat: add awesome feature"
 ```
 
-## Manual Versioning
+### Step 2: Create a Changeset
 
-If you need to bump the version manually:
-
-### Using NPM
+Before creating your PR, add a changeset:
 
 ```bash
-npm run version:patch  # 1.0.0 → 1.0.1
-npm run version:minor  # 1.0.0 → 1.1.0
-npm run version:major  # 1.0.0 → 2.0.0
+npm run changeset
+# or
+make changeset
 ```
 
-### Using Make
+This will prompt you with:
+
+```
+🦋  Which packages would you like to include?
+◯ changed packages
+  ◉ josh-wentworth-portfolio
+  ◉ contact-form-function
+
+🦋  Which packages should have a major bump?
+  ⊠ all packages
+
+🦋  Which packages should have a minor bump?
+  ☑ josh-wentworth-portfolio
+  ☑ contact-form-function
+
+🦋  Please enter a summary for this change (this will be in the changelogs).
+Summary ›
+```
+
+**Example responses:**
+
+```
+Summary › Added dark mode toggle with persistent user preference
+
+Details (optional):
+- Created DarkModeToggle component
+- Added useLocalStorage hook for persistence
+- Updated theme provider with dark mode support
+```
+
+### Step 3: Commit the Changeset
+
+A markdown file is created in `.changeset/`:
 
 ```bash
-make version-patch  # 1.0.0 → 1.0.1
-make version-minor  # 1.0.0 → 1.1.0
-make version-major  # 1.0.0 → 2.0.0
+git add .changeset/
+git commit -m "chore: add changeset"
+git push
 ```
 
-Manual versioning will:
+### Step 4: Create PR
 
-1. Update `package.json`
-2. Create a git commit with message: `chore: bump version to X.Y.Z`
-3. Create a git tag
+Your PR now includes the changeset file. The Changesets bot will comment showing what will be released.
 
-## Commit Message Prefixes
+### Step 5: Merge to Main
 
-All valid prefixes (case-insensitive):
+When your PR merges to `main`:
 
-- `fix:` `bugfix:` `patch:` → Patch bump
-- `feat:` `feature:` → Minor bump
-- `feat!:` `feature!:` → Major bump (with `!`)
-- `BREAKING CHANGE:` in commit body → Major bump
+1. **GitHub Actions runs** - Detects the changeset
+2. **Creates/Updates "Version Packages" PR** - Contains:
+   - Updated package.json versions
+   - Generated CHANGELOG entries
+   - All pending changesets combined
+3. **Maintainer reviews and merges** - Versions bump, ready to deploy!
 
-### Other Prefixes (no version bump)
+## Choosing Version Bump Type
 
-These don't trigger version changes but are good practice:
+### Patch (0.0.X)
 
-- `chore:` - Maintenance tasks
-- `docs:` - Documentation changes
-- `style:` - Code style/formatting
-- `refactor:` - Code restructuring
-- `test:` - Test additions/changes
-- `perf:` - Performance improvements
-- `ci:` - CI/CD changes
-
-## Skipping Auto-Version
-
-To prevent automatic versioning on a specific commit:
+Bug fixes, documentation, internal refactors - no new features:
 
 ```bash
-git commit -m "chore: update README [skip ci]"
+npm run changeset
+# Select: patch
+# Summary: "Fixed mobile menu not closing on navigation"
 ```
 
-The `[skip ci]` flag prevents the workflow from running.
+**Examples:**
+- Bug fixes
+- Documentation updates
+- Dependency updates
+- Code refactors
+- Performance improvements
 
-## Version Workflow
+### Minor (0.X.0)
 
-The automatic versioning workflow:
+New features that are backward compatible:
 
-1. **Triggers** on push to `main` or `staging`
-2. **Analyzes** the last commit message
-3. **Determines** version bump type
-4. **Checks** if version tag already exists (prevents duplicates)
-5. **Updates** package.json and package-lock.json
-6. **Creates** git commit and tag
-7. **Pushes** changes back to the branch
-8. **Generates** release notes (main branch only)
-
-### Commit Message Validation
-
-A **non-blocking** husky hook validates your commit messages:
-
-- ✅ Shows a warning if format is incorrect
-- ✅ Still allows the commit to proceed
-- ✅ Helps maintain consistent commit history
-
-You'll see a warning like this for non-standard commits:
-
+```bash
+npm run changeset
+# Select: minor
+# Summary: "Added experience page with CRUD operations"
 ```
-⚠️  WARNING: Commit message doesn't follow Conventional Commits format
-⚠️  Continuing anyway (non-blocking)...
+
+**Examples:**
+- New components
+- New API endpoints
+- New features
+- Additional functionality
+
+### Major (X.0.0)
+
+Breaking changes that could affect existing users:
+
+```bash
+npm run changeset
+# Select: major
+# Summary: "Redesigned API - removed /v1 endpoints"
 ```
+
+**Examples:**
+- Removed features/APIs
+- Changed behavior
+- Renamed components
+- Updated dependencies with breaking changes
+
+## Linked Versioning
+
+This monorepo uses **linked versioning** - packages always version together:
+
+- If you bump `josh-wentworth-portfolio` to 1.14.0
+- `contact-form-function` will also bump to 1.14.0
+- Prevents version drift
 
 ## Current Version
 
-### In the Browser Console
+### In Browser Console
 
-The version is automatically logged to the browser console when the site loads. You'll see a styled banner with the app name and version.
-
-You can also access it programmatically:
+Open DevTools and run:
 
 ```javascript
-// In browser DevTools console
-console.log(window.__APP_VERSION__) // e.g., "1.5.0"
-console.log(window.__APP_NAME__) // e.g., "josh-wentworth-portfolio"
+console.log(window.__APP_VERSION__)  // "1.13.3"
+console.log(window.__APP_NAME__)     // "josh-wentworth-portfolio"
 ```
 
-### In the Terminal
+Or check the styled banner that logs on page load.
 
-Check the current version:
+### In Terminal
 
 ```bash
-# View in terminal
+# Check all package versions
 npm version
 
-# Or check package.json
-cat package.json | grep version
+# Check root version
+node -p "require('./package.json').version"
+
+# Check web version
+node -p "require('./web/package.json').version"
+
+# Check functions version
+node -p "require('./functions/package.json').version"
+```
+
+## Common Scenarios
+
+### Scenario 1: Frontend-Only Change
+
+```bash
+npm run changeset
+# Which packages? → josh-wentworth-portfolio (space to select)
+# Bump type? → patch
+# Summary? → "Fixed cookie banner mobile layout"
+```
+
+**Result:** Both packages bump together (linked versioning)
+
+### Scenario 2: Backend-Only Change
+
+```bash
+npm run changeset
+# Which packages? → contact-form-function
+# Bump type? → minor
+# Summary? → "Added rate limiting to contact endpoint"
+```
+
+**Result:** Both packages bump together (linked versioning)
+
+### Scenario 3: Full-Stack Feature
+
+```bash
+npm run changeset
+# Which packages? → both (select with space)
+# Bump type? → minor
+# Summary? → "Added experience API with Firebase authentication"
+```
+
+**Result:** Both packages bump together
+
+### Scenario 4: Multiple Changes in One PR
+
+Create multiple changesets:
+
+```bash
+npm run changeset  # For feature A
+npm run changeset  # For bug fix B
+npm run changeset  # For refactor C
+```
+
+All changesets will be combined in the "Version Packages" PR.
+
+## Manual Commands
+
+```bash
+# Create a changeset (interactive)
+npm run changeset
+
+# Apply all changesets and bump versions (automated by GitHub Actions)
+npm run version
+
+# Publish packages (not used - we deploy to Firebase instead)
+npm run release
+```
+
+## Pre-releases (Advanced)
+
+For beta/alpha/staging releases:
+
+```bash
+# Enter pre-release mode
+npx changeset pre enter beta
+
+# Create changesets as normal
+npm run changeset
+
+# Version and publish
+npm run version
+
+# Exit pre-release mode
+npx changeset pre exit
+```
+
+This creates versions like:
+- `1.14.0-beta.1`
+- `1.14.0-beta.2`
+- `1.14.0-rc.1`
+
+## Workflow Diagram
+
+```
+Developer:
+  1. Make changes
+  2. Run `npm run changeset`
+  3. Commit changeset file
+  4. Create PR
+
+GitHub Actions (on merge to main):
+  5. Detect changesets
+  6. Create "Version Packages" PR
+  7. Generate CHANGELOG
+  8. Update package.json versions
+
+Maintainer:
+  9. Review "Version Packages" PR
+  10. Merge PR
+  11. Deploy to Firebase
+
+Result:
+  - Versions bumped
+  - Tags created
+  - CHANGELOG updated
+  - Ready to deploy!
 ```
 
 ## Best Practices
 
-1. **One feature per commit** - Makes version bumps accurate
-2. **Use descriptive messages** - Helps generate release notes
-3. **Follow the format** - Ensures automation works
-4. **Test before pushing** - Avoid unnecessary version bumps
-5. **Use scopes** - `feat(ui):` is clearer than `feat:`
-
-## Examples in Practice
-
-### Bug Fix Release (1.2.3 → 1.2.4)
-
-```bash
-git commit -m "fix: resolve footer link styling"
-git push origin main
-# Auto-bumps to 1.2.4
-```
-
-### Feature Release (1.2.4 → 1.3.0)
-
-```bash
-git commit -m "feat: add contact form with validation"
-git push origin main
-# Auto-bumps to 1.3.0
-```
-
-### Breaking Change Release (1.3.0 → 2.0.0)
-
-```bash
-git commit -m "feat!: redesign entire homepage layout
-
-BREAKING CHANGE: Old layout components removed"
-git push origin main
-# Auto-bumps to 2.0.0
-```
+1. **One changeset per logical change** - Don't combine unrelated changes
+2. **Write clear summaries** - They become CHANGELOG entries
+3. **Include details** - Help future maintainers understand why
+4. **Always create changesets** - PRs without changesets won't version
+5. **Use conventional commit messages** - Still good practice for git history
 
 ## Troubleshooting
 
-**Version didn't bump?**
+### "No changeset found in PR"
 
-- Check commit message format
-- Ensure you pushed to `main` or `staging`
-- Look at GitHub Actions logs
+**Problem:** You forgot to create a changeset.
 
-**Wrong version bump?**
-
-- Review commit message prefix
-- Use `!` for breaking changes
-- Add `BREAKING CHANGE:` in commit body
-
-**Need to revert a version?**
-
+**Solution:**
 ```bash
-git tag -d v1.2.3
-git push origin :refs/tags/v1.2.3
-npm version 1.2.2 -m "chore: revert version to %s"
-git push origin main --tags
+npm run changeset
+git add .changeset/
+git commit -m "chore: add changeset"
+git push
 ```
+
+### "I picked the wrong version bump"
+
+**Problem:** Selected major instead of minor.
+
+**Solution:**
+```bash
+# Find and delete the changeset file
+ls .changeset/
+rm .changeset/your-file-name.md
+
+# Create a new one
+npm run changeset
+```
+
+### "Version Packages PR has conflicts"
+
+**Problem:** package.json versions diverged.
+
+**Solution:**
+```bash
+# On main branch
+git pull origin main
+
+# Merge main into "Version Packages" branch
+git checkout changeset-release/main
+git merge main
+# Resolve conflicts in package.json
+git push
+```
+
+### "How do I see what will be released?"
+
+Check the "Version Packages" PR - it shows:
+- All pending changesets
+- New versions for each package
+- Generated CHANGELOG entries
+
+## Migration from Old System
+
+**Before (Deprecated):**
+- Conventional commits → automatic version bump
+- Version bumped on every push to main/staging
+- Manual CHANGELOG updates
+
+**After (Current):**
+- Explicit changesets → controlled versioning
+- Version bumps via "Version Packages" PR
+- Automated CHANGELOG generation
+
+**Benefits:**
+- ✅ No accidental version bumps
+- ✅ Human-readable change descriptions
+- ✅ Review changes before release
+- ✅ Linked package versioning
+- ✅ Automated CHANGELOGs
+
+## Additional Resources
+
+- [Changesets Documentation](https://github.com/changesets/changesets)
+- [Changesets Workflow Guide](../development/changesets-workflow.md)
+- [Semantic Versioning](https://semver.org/)
+- [Conventional Commits](https://www.conventionalcommits.org/) (still recommended for commit messages)
