@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import type { User } from "firebase/auth"
+import { logger } from "../utils/logger"
 
 interface AuthState {
   user: User | null
@@ -66,17 +67,13 @@ export const useAuth = (): AuthState => {
               void user.getIdTokenResult().then((idTokenResult) => {
                 const isEditor = idTokenResult.claims.role === "editor"
 
-                // Log auth state in development/staging
-                if (process.env.NODE_ENV === "development" || process.env.GATSBY_ENVIRONMENT === "staging") {
-                  // eslint-disable-next-line no-console
-                  console.log("🔐 User authenticated:", {
-                    email: user.email,
-                    uid: user.uid,
-                    isEditor,
-                    role: idTokenResult.claims.role,
-                    customClaims: idTokenResult.claims,
-                  })
-                }
+                // Log auth state
+                logger.info("User authenticated", {
+                  email: user.email,
+                  uid: user.uid,
+                  isEditor,
+                  role: idTokenResult.claims.role,
+                })
 
                 setAuthState({
                   user,
@@ -86,11 +83,8 @@ export const useAuth = (): AuthState => {
                 })
               })
             } else {
-              // Log sign out in development/staging
-              if (process.env.NODE_ENV === "development" || process.env.GATSBY_ENVIRONMENT === "staging") {
-                // eslint-disable-next-line no-console
-                console.log("🔓 User signed out")
-              }
+              // Log sign out
+              logger.info("User signed out")
 
               setAuthState({
                 user: null,
@@ -101,7 +95,7 @@ export const useAuth = (): AuthState => {
             }
           },
           (error) => {
-            console.error("Auth state change error:", error)
+            logger.error("Auth state change error", { error: error.message })
             setAuthState({
               user: null,
               isEditor: false,
@@ -111,7 +105,9 @@ export const useAuth = (): AuthState => {
           }
         )
       } catch (error) {
-        console.error("Firebase Auth initialization error:", error)
+        logger.error("Firebase Auth initialization error", {
+          error: error instanceof Error ? error.message : "Auth initialization failed",
+        })
         setAuthState({
           user: null,
           isEditor: false,
@@ -144,7 +140,9 @@ export const signInWithGoogle = async (): Promise<User | null> => {
     const result = await signInWithPopup(auth, provider)
     return result.user
   } catch (error) {
-    console.error("Google sign-in error:", error)
+    logger.error("Google sign-in error", {
+      error: error instanceof Error ? error.message : "Sign-in failed",
+    })
     throw error
   }
 }
@@ -158,7 +156,9 @@ export const signOut = async (): Promise<void> => {
     const auth = getAuth()
     await firebaseSignOut(auth)
   } catch (error) {
-    console.error("Sign out error:", error)
+    logger.error("Sign out error", {
+      error: error instanceof Error ? error.message : "Sign-out failed",
+    })
     throw error
   }
 }
@@ -176,7 +176,9 @@ export const getIdToken = async (): Promise<string | null> => {
     }
     return await user.getIdToken()
   } catch (error) {
-    console.error("Get ID token error:", error)
+    logger.error("Get ID token error", {
+      error: error instanceof Error ? error.message : "Failed to get token",
+    })
     return null
   }
 }

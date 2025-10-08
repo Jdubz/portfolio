@@ -1,8 +1,8 @@
 import { Firestore, Timestamp } from "@google-cloud/firestore"
+import { DATABASE_ID, EXPERIENCE_COLLECTION } from "../config/database"
 
-// Constants
-const COLLECTION_NAME = "experience-entries"
-const DATABASE_ID = "portfolio"
+// Use collection name from config
+const COLLECTION_NAME = EXPERIENCE_COLLECTION
 
 type SimpleLogger = {
   info: (message: string, data?: unknown) => void

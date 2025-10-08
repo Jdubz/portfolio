@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { Box, Heading, Text, Button, Flex, Input, Textarea } from "theme-ui"
 import ReactMarkdown from "react-markdown"
 import type { ExperienceEntry as ExperienceEntryType, UpdateExperienceData } from "../types/experience"
+import { ConfirmDialog } from "./ConfirmDialog"
 
 interface ExperienceEntryProps {
   entry: ExperienceEntryType
@@ -18,6 +19,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [editData, setEditData] = useState<UpdateExperienceData>({
     title: entry.title,
     role: entry.role,
@@ -62,11 +64,12 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
     setIsEditing(false)
   }
 
-  const handleDelete = async () => {
-    if (!window.confirm(`Delete "${entry.title}"?`)) {
-      return
-    }
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true)
+  }
 
+  const handleDeleteConfirm = async () => {
+    setShowDeleteDialog(false)
     setIsDeleting(true)
     try {
       await onDelete(entry.id)
@@ -74,6 +77,10 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
       console.error("Delete failed:", error)
       setIsDeleting(false)
     }
+  }
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false)
   }
 
   if (isEditing) {
@@ -180,7 +187,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
           {/* Actions */}
           <Flex sx={{ gap: 2, justifyContent: "flex-end" }}>
             <Button
-              onClick={() => void handleDelete()}
+              onClick={handleDeleteClick}
               disabled={isDeleting || isSaving}
               variant="secondary.sm"
               sx={{
@@ -200,6 +207,17 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
             </Button>
           </Flex>
         </Flex>
+
+        <ConfirmDialog
+          isOpen={showDeleteDialog}
+          title="Delete Experience Entry"
+          message={`Are you sure you want to delete "${entry.title}"? This action cannot be undone.`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          onConfirm={() => void handleDeleteConfirm()}
+          onCancel={handleDeleteCancel}
+          isDestructive={true}
+        />
       </Box>
     )
   }
