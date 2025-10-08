@@ -28,7 +28,7 @@ export const CookieConsent = (): React.JSX.Element | null => {
     }
   }, [])
 
-  const handleAccept = () => {
+  const handleDismiss = () => {
     const consent: ConsentState = {
       analytics: true,
       timestamp: Date.now(),
@@ -40,17 +40,6 @@ export const CookieConsent = (): React.JSX.Element | null => {
 
     // Reload to initialize analytics
     window.location.reload()
-  }
-
-  const handleDecline = () => {
-    const consent: ConsentState = {
-      analytics: false,
-      timestamp: Date.now(),
-    }
-    localStorage.setItem(CONSENT_KEY, JSON.stringify(consent))
-    setIsVisible(false)
-    // eslint-disable-next-line no-undef
-    setTimeout(() => setShowBanner(false), 300)
   }
 
   if (!showBanner) {
@@ -74,8 +63,8 @@ export const CookieConsent = (): React.JSX.Element | null => {
         opacity: isVisible ? 1 : 0,
         transition: "transform 0.3s ease-out, opacity 0.3s ease-out",
       }}
-      role="dialog"
-      aria-label="Cookie consent"
+      role="banner"
+      aria-label="Cookie notice"
       aria-describedby="cookie-consent-description"
     >
       <div
@@ -89,16 +78,6 @@ export const CookieConsent = (): React.JSX.Element | null => {
         }}
       >
         <div>
-          <h3
-            sx={{
-              fontSize: [2, 3],
-              fontWeight: "bold",
-              mb: 2,
-              color: "heading",
-            }}
-          >
-            Cookie & Privacy Notice
-          </h3>
           <p
             id="cookie-consent-description"
             sx={{
@@ -108,9 +87,8 @@ export const CookieConsent = (): React.JSX.Element | null => {
               m: 0,
             }}
           >
-            We use cookies and Firebase Analytics to understand how you interact with our site and improve your
-            experience. Your data is never sold or shared with third parties. You can change your preferences at any
-            time in our{" "}
+            By using this site, you agree to our use of cookies and Firebase Analytics to improve your experience. Read
+            our{" "}
             <a
               href="/privacy"
               sx={{
@@ -122,52 +100,23 @@ export const CookieConsent = (): React.JSX.Element | null => {
               }}
             >
               Privacy Policy
-            </a>
-            .
+            </a>{" "}
+            for more information.
           </p>
         </div>
-        <div
-          sx={{
-            display: "flex",
-            gap: 3,
-            flexDirection: ["column", "row"],
-          }}
-        >
+        <div>
           <button
-            onClick={handleDecline}
-            sx={{
-              variant: "buttons.ghost",
-              px: 4,
-              py: 2,
-              fontSize: 2,
-              fontWeight: "medium",
-              color: "textMuted",
-              bg: "transparent",
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: "md",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              "&:hover": {
-                bg: "rgba(255, 255, 255, 0.05)",
-                borderColor: "text",
-                color: "text",
-              },
-            }}
-          >
-            Decline
-          </button>
-          <button
-            onClick={handleAccept}
+            onClick={handleDismiss}
             sx={{
               variant: "buttons.primary",
               px: 4,
               py: 2,
               fontSize: 2,
               fontWeight: "bold",
+              whiteSpace: "nowrap",
             }}
           >
-            Accept All
+            Got it
           </button>
         </div>
       </div>
