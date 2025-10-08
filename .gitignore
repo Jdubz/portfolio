@@ -121,7 +121,6 @@ public/~partytown/
 web/src/components/*Test.tsx
 web/src/components/FORMS_GUIDE.md
 web/src/test-theme.ts
-get-emulator-token.js
 emulator-data/
 
 # Playwright test artifacts
