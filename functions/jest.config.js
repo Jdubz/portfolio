@@ -12,5 +12,7 @@ module.exports = {
     'src/**/*.{ts,js}',
     '!src/**/*.d.ts'
   ],
-  testPathIgnorePatterns: ['/node_modules/', '/lib/', '/dist/', '/contact-form/']
+  testPathIgnorePatterns: ['/node_modules/', '/lib/', '/dist/', '/contact-form/'],
+  // Suppress console output during tests to reduce noise
+  silent: true
 }
