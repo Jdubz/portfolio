@@ -118,11 +118,11 @@ const ExperiencePage: React.FC = () => {
             </Text>
           </Box>
 
-          {/* Auth Controls */}
+          {/* Mode Indicator */}
           <Box>
             {authLoading ? (
               <Spinner size={24} />
-            ) : user ? (
+            ) : (
               <Flex
                 sx={{
                   alignItems: "center",
@@ -130,29 +130,25 @@ const ExperiencePage: React.FC = () => {
                   flexDirection: ["column", "row"],
                 }}
               >
-                <Text
-                  sx={{
-                    fontSize: 1,
-                    color: "textMuted",
-                  }}
-                >
-                  {user.email}
-                </Text>
-                <Button onClick={handleSignOut} variant="secondary.sm">
-                  Sign Out
-                </Button>
-              </Flex>
-            ) : (
-              <Box>
+                {user && (
+                  <Text
+                    sx={{
+                      fontSize: 1,
+                      color: "textMuted",
+                    }}
+                  >
+                    {user.email}
+                  </Text>
+                )}
                 <Button
-                  onClick={handleSignIn}
+                  onClick={user ? handleSignOut : handleSignIn}
                   variant="secondary.sm"
                   disabled={signingIn}
                   sx={{
                     cursor: signingIn ? "wait" : "pointer",
                   }}
                 >
-                  {signingIn ? "Signing in..." : "Sign In"}
+                  {signingIn ? "Signing in..." : isEditor ? "Editor Mode" : "Viewer Mode"}
                 </Button>
                 {authError && (
                   <Text
@@ -166,7 +162,7 @@ const ExperiencePage: React.FC = () => {
                     {authError}
                   </Text>
                 )}
-              </Box>
+              </Flex>
             )}
           </Box>
         </Flex>
