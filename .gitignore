@@ -121,3 +121,4 @@ public/~partytown/
 web/src/components/*Test.tsx
 web/src/components/FORMS_GUIDE.md
 web/src/test-theme.tsget-emulator-token.js
+emulator-data/
