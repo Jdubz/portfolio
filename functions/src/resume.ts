@@ -60,7 +60,7 @@ const corsHandler = cors(corsOptions)
  * Generate a unique request ID for tracking
  */
 function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  return `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
 }
 
 /**

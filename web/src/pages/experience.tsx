@@ -109,8 +109,10 @@ const ExperiencePage: React.FC = () => {
 
       const functionUrl =
         process.env.GATSBY_ENVIRONMENT === "production"
-          ? "https://us-central1-static-sites-257923.cloudfunctions.net/uploadResume"
-          : "https://us-central1-static-sites-257923.cloudfunctions.net/uploadResume"
+          ? (process.env.GATSBY_UPLOAD_RESUME_URL_PROD ??
+            "https://us-central1-static-sites-257923.cloudfunctions.net/uploadResume")
+          : (process.env.GATSBY_UPLOAD_RESUME_URL_DEV ??
+            "https://us-central1-static-sites-257923.cloudfunctions.net/uploadResume")
 
       const formData = new FormData()
       formData.append("file", file)
