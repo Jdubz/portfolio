@@ -87,9 +87,8 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
     return (
       <Box
         sx={{
-          bg: "muted",
+          variant: "cards.primary",
           p: 4,
-          borderRadius: "8px",
           border: "2px solid",
           borderColor: "primary",
           mb: 4,
@@ -225,9 +224,8 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
   return (
     <Box
       sx={{
-        bg: "muted",
+        variant: "cards.primary",
         p: 4,
-        borderRadius: "8px",
         mb: 4,
         position: "relative",
       }}
@@ -348,20 +346,6 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
             Edit
           </Button>
         </Box>
-      )}
-
-      {/* Metadata (only for editors) */}
-      {isEditor && (
-        <Text
-          sx={{
-            fontSize: 0,
-            color: "textMuted",
-            mt: 3,
-            fontStyle: "italic",
-          }}
-        >
-          Last updated by {entry.updatedBy} • {new Date(entry.updatedAt).toLocaleString()}
-        </Text>
       )}
     </Box>
   )
