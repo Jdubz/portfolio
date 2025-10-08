@@ -3,7 +3,7 @@
 This document tracks future enhancements, optimizations, and technical debt that should be addressed.
 
 **Last Audit:** October 6, 2025 - Overall Health: A- (90/100)
-**See:** [AUDIT_REPORT.md](../../AUDIT_REPORT.md) for comprehensive analysis
+**See:** [comprehensive-audit-2025-10-06.md](../audit/comprehensive-audit-2025-10-06.md) for comprehensive analysis
 
 ---
 
@@ -25,6 +25,30 @@ This document tracks future enhancements, optimizations, and technical debt that
 ## 🎯 High Priority
 
 ### 🔴 Critical (Week 1)
+
+#### UX/UI Improvements
+- [ ] **Fix Experience Page Login/Error UX** (TOP PRIORITY)
+  - Current issues:
+    - Error messages need better visibility and styling
+    - Sign-in button UX needs polish (loading states, disabled states)
+    - No clear feedback when auth fails
+    - Error persistence and retry flow unclear
+  - Improvements needed:
+    - Add proper error Alert component with retry action
+    - Improve button states (idle, loading, error, success)
+    - Add toast notifications for auth state changes
+    - Better mobile responsiveness for auth controls
+    - Add "What went wrong?" help text for common errors
+  - Effort: 3-4 hours
+  - Impact: High - blocks experience page usage
+
+- [x] **Fix Google OAuth 404 Redirect Issue** (COMPLETED)
+  - Root cause: authDomain was set to firebaseapp.com default instead of custom domains
+  - Fixed by updating GATSBY_FIREBASE_AUTH_DOMAIN in .env.staging and .env.production
+  - Staging: staging.joshwentworth.com
+  - Production: joshwentworth.com
+  - Added all redirect URIs to OAuth client in Google Cloud Console
+  - Note: www.joshwentworth.com redirects via Cloudflare to apex domain
 
 #### Security & Dependencies
 - [x] **Update security dependencies** (COMPLETED - 10 vulnerabilities remain in dev deps)

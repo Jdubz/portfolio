@@ -121,3 +121,15 @@ public/~partytown/
 web/src/components/*Test.tsx
 web/src/components/FORMS_GUIDE.md
 web/src/test-theme.ts
+emulator-data/
+
+# Playwright test artifacts
+web/playwright-report/
+web/test-results/
+playwright-report/
+test-results/
+
+# Editor swap files
+*.swp
+*.swo
+*~

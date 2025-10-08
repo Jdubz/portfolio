@@ -256,10 +256,6 @@ const theme: CustomTheme = {
     },
   },
   buttons: {
-    sizes: {
-      sm: { px: 3, py: 2, fontSize: 2, height: 36 },
-      md: { px: 4, py: 3, fontSize: 3, height: 40 },
-    },
     primary: {
       bg: "primary",
       color: "white",
@@ -284,6 +280,33 @@ const theme: CustomTheme = {
         outline: "3px solid",
         outlineColor: "primary",
         outlineOffset: "2px",
+      },
+      sm: {
+        bg: "primary",
+        color: "white",
+        fontSize: 2,
+        fontWeight: "bold",
+        px: 3,
+        py: 2,
+        height: 36,
+        borderRadius: "9999px",
+        border: "none",
+        cursor: "pointer",
+        transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
+        "&:hover": {
+          bg: "primaryHover",
+          transform: "translateY(-2px)",
+          boxShadow: "0 4px 12px rgba(14, 165, 233, 0.4)",
+        },
+        "&:active": {
+          transform: "translateY(0)",
+          transition: "all 160ms cubic-bezier(.22,.61,.36,1)",
+        },
+        "&:focus-visible": {
+          outline: "3px solid",
+          outlineColor: "primary",
+          outlineOffset: "2px",
+        },
       },
     },
     secondary: {
@@ -312,6 +335,33 @@ const theme: CustomTheme = {
         outline: "3px solid",
         outlineColor: "primary",
         outlineOffset: "2px",
+      },
+      sm: {
+        bg: "transparent",
+        color: "text",
+        fontSize: 2,
+        fontWeight: "bold",
+        px: 3,
+        py: 2,
+        height: 36,
+        borderRadius: "9999px",
+        border: "none",
+        cursor: "pointer",
+        transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
+        "&:hover": {
+          bg: "divider",
+          transform: "translateY(-2px)",
+          boxShadow: "0 4px 12px rgba(30, 41, 59, 0.2)",
+        },
+        "&:active": {
+          transform: "translateY(0)",
+          transition: "all 160ms cubic-bezier(.22,.61,.36,1)",
+        },
+        "&:focus-visible": {
+          outline: "3px solid",
+          outlineColor: "primary",
+          outlineOffset: "2px",
+        },
       },
     },
     ghost: {

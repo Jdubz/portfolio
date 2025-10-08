@@ -42,16 +42,6 @@ const config: GatsbyConfig = {
   },
   trailingSlash: `always`,
   plugins: [
-    `gatsby-plugin-image`,
-    `gatsby-plugin-sharp`,
-    `gatsby-transformer-sharp`,
-    {
-      resolve: `gatsby-plugin-sitemap`,
-      options: {
-        output: `/`,
-        excludes: [],
-      },
-    },
     {
       resolve: `@lekoarts/gatsby-theme-cara`,
       // Gatsby theme providing the core functionality

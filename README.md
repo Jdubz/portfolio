@@ -102,14 +102,17 @@ npm run build
 ### Testing
 
 ```bash
-# Test web
-npm run test:web
+# Unit tests
+npm test                    # Run all unit tests (web + functions)
+npm run test:web           # Run web unit tests (Jest)
+npm run test:functions     # Run functions unit tests (Jest)
 
-# Test functions
-npm run test:functions
-
-# Test all
-npm test
+# E2E tests (Playwright)
+cd web
+npm run test:e2e           # Run E2E tests headless
+npm run test:e2e:ui        # Run E2E tests with UI mode
+npm run test:e2e:debug     # Debug E2E tests
+npm run test:e2e:report    # View test report
 ```
 
 ## 🎨 Brand Implementation

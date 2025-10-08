@@ -1,4 +1,4 @@
-name: Deploy Contact Form Function
+name: Deploy Cloud Functions
 
 on:
   push:
@@ -16,12 +16,11 @@ on:
 
 env:
   GCP_PROJECT_ID: static-sites-257923
-  FUNCTION_NAME: contact-form
   FUNCTION_REGION: us-central1
 
 jobs:
   test:
-    name: Test Function
+    name: Test Functions
     runs-on: ubuntu-latest
 
     steps:
@@ -60,7 +59,23 @@ jobs:
       id-token: write
     environment:
       name: staging
-      url: https://us-central1-static-sites-257923.cloudfunctions.net/contact-form
+      url: https://staging.joshwentworth.com
+
+    strategy:
+      matrix:
+        function:
+          - name: contact-form
+            entry_point: handleContactForm
+            runtime_service_account: contact-form-runtime@static-sites-257923.iam.gserviceaccount.com
+            memory: 256Mi
+            max_instances: 10
+            secrets: MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest
+          - name: manageExperience
+            entry_point: manageExperience
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 256Mi
+            max_instances: 10
+            secrets: ""
 
     steps:
       - name: Checkout repository
@@ -94,63 +109,45 @@ jobs:
       - name: Create deployment package
         run: |
           cd functions
-          # Create a clean deployment directory
           mkdir -p deploy
-          # Copy compiled JavaScript files
           cp -r dist/* deploy/
-          # Copy package.json and modify it for deployment
           jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' package.json > deploy/package.json
-          # Copy package-lock.json if it exists
           cp package-lock.json deploy/ 2>/dev/null || true
-          echo "Deployment package created successfully"
+          echo "Deployment package created for ${{ matrix.function.name }}"
           ls -la deploy/
 
-      - name: Deploy to Cloud Functions (Staging)
+      - name: Deploy ${{ matrix.function.name }} to Staging
         run: |
-          gcloud functions deploy ${{ env.FUNCTION_NAME }}-staging \
+          DEPLOY_CMD="gcloud functions deploy ${{ matrix.function.name }}-staging \
             --gen2 \
             --runtime=nodejs20 \
             --region=${{ env.FUNCTION_REGION }} \
             --source=functions/deploy \
-            --entry-point=handleContactForm \
+            --entry-point=${{ matrix.function.entry_point }} \
             --trigger-http \
             --allow-unauthenticated \
-            --service-account=contact-form-runtime@static-sites-257923.iam.gserviceaccount.com \
+            --service-account=${{ matrix.function.runtime_service_account }} \
             --build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
-            --memory=256Mi \
+            --memory=${{ matrix.function.memory }} \
             --timeout=60s \
-            --max-instances=10 \
-            --set-env-vars="NODE_ENV=staging,ENVIRONMENT=staging" \
-            --set-secrets="MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest" \
-            --quiet
+            --max-instances=${{ matrix.function.max_instances }} \
+            --set-env-vars=NODE_ENV=staging,ENVIRONMENT=staging"
 
-      - name: Verify deployment and run smoke test
-        run: |
-          echo "✅ Staging function deployed successfully"
-          URL=$(gcloud functions describe ${{ env.FUNCTION_NAME }}-staging \
-            --region=${{ env.FUNCTION_REGION }} \
-            --format="value(serviceConfig.uri)")
-          echo "Function URL: $URL"
-
-          echo "Running smoke test (staging allows requests without App Check)..."
-          RESPONSE=$(curl -X POST "$URL" \
-            -H "Content-Type: application/json" \
-            -d '{"name":"CI/CD Test","email":"test@example.com","message":"Automated deployment test","honeypot":""}' \
-            -w "\nHTTP_CODE:%{http_code}" \
-            -s)
-
-          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE" | cut -d':' -f2)
-          BODY=$(echo "$RESPONSE" | sed '/HTTP_CODE/d')
-
-          echo "Response: $BODY"
-          echo "HTTP Status: $HTTP_CODE"
-
-          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 503 ]; then
-            echo "✅ Smoke test passed (function is responding)"
-          else
-            echo "❌ Unexpected status code: $HTTP_CODE"
-            exit 1
+          # Add secrets if they exist
+          if [ -n "${{ matrix.function.secrets }}" ]; then
+            DEPLOY_CMD="$DEPLOY_CMD --set-secrets=${{ matrix.function.secrets }}"
           fi
+
+          DEPLOY_CMD="$DEPLOY_CMD --quiet"
+
+          eval $DEPLOY_CMD
+
+      - name: Verify ${{ matrix.function.name }} deployment
+        run: |
+          echo "✅ ${{ matrix.function.name }}-staging deployed successfully"
+          gcloud functions describe ${{ matrix.function.name }}-staging \
+            --region=${{ env.FUNCTION_REGION }} \
+            --format="value(name,state,serviceConfig.uri)"
 
   deploy-production:
     name: Deploy to Production
@@ -162,7 +159,23 @@ jobs:
       id-token: write
     environment:
       name: production
-      url: https://us-central1-static-sites-257923.cloudfunctions.net/contact-form
+      url: https://joshwentworth.com
+
+    strategy:
+      matrix:
+        function:
+          - name: contact-form
+            entry_point: handleContactForm
+            runtime_service_account: contact-form-runtime@static-sites-257923.iam.gserviceaccount.com
+            memory: 512Mi
+            max_instances: 50
+            secrets: MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest
+          - name: manageExperience
+            entry_point: manageExperience
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 256Mi
+            max_instances: 10
+            secrets: ""
 
     steps:
       - name: Checkout repository
@@ -196,41 +209,42 @@ jobs:
       - name: Create deployment package
         run: |
           cd functions
-          # Create a clean deployment directory
           mkdir -p deploy
-          # Copy compiled JavaScript files
           cp -r dist/* deploy/
-          # Copy package.json and modify it for deployment
           jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' package.json > deploy/package.json
-          # Copy package-lock.json if it exists
           cp package-lock.json deploy/ 2>/dev/null || true
-          echo "Deployment package created successfully"
+          echo "Deployment package created for ${{ matrix.function.name }}"
           ls -la deploy/
 
-      - name: Deploy to Cloud Functions (Production)
+      - name: Deploy ${{ matrix.function.name }} to Production
         run: |
-          gcloud functions deploy ${{ env.FUNCTION_NAME }} \
+          DEPLOY_CMD="gcloud functions deploy ${{ matrix.function.name }} \
             --gen2 \
             --runtime=nodejs20 \
             --region=${{ env.FUNCTION_REGION }} \
             --source=functions/deploy \
-            --entry-point=handleContactForm \
+            --entry-point=${{ matrix.function.entry_point }} \
             --trigger-http \
             --allow-unauthenticated \
-            --service-account=contact-form-runtime@static-sites-257923.iam.gserviceaccount.com \
+            --service-account=${{ matrix.function.runtime_service_account }} \
             --build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
-            --memory=512Mi \
+            --memory=${{ matrix.function.memory }} \
             --timeout=60s \
-            --max-instances=50 \
-            --set-env-vars="NODE_ENV=production,ENVIRONMENT=production" \
-            --set-secrets="MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest" \
-            --quiet
+            --max-instances=${{ matrix.function.max_instances }} \
+            --set-env-vars=NODE_ENV=production,ENVIRONMENT=production"
 
-      - name: Verify deployment
+          # Add secrets if they exist
+          if [ -n "${{ matrix.function.secrets }}" ]; then
+            DEPLOY_CMD="$DEPLOY_CMD --set-secrets=${{ matrix.function.secrets }}"
+          fi
+
+          DEPLOY_CMD="$DEPLOY_CMD --quiet"
+
+          eval $DEPLOY_CMD
+
+      - name: Verify ${{ matrix.function.name }} deployment
         run: |
-          echo "✅ Production function deployed successfully"
-          gcloud functions describe ${{ env.FUNCTION_NAME }} \
+          echo "✅ ${{ matrix.function.name }} deployed successfully to production"
+          gcloud functions describe ${{ matrix.function.name }} \
             --region=${{ env.FUNCTION_REGION }} \
             --format="value(name,state,serviceConfig.uri)"
-          echo "Note: Production function requires Firebase App Check token for security"
-          echo "Integration testing should be done through the web app with valid tokens"

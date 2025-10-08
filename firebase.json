@@ -96,6 +96,9 @@
           "destination": "/index.html"
         }
       ],
+      "ignore": [
+        "__/auth/**"
+      ],
       "predeploy": ["cd web && npm run build"]
     },
     {
@@ -168,6 +171,9 @@
           "destination": "/index.html"
         }
       ],
+      "ignore": [
+        "__/auth/**"
+      ],
       "predeploy": ["cd web && npm run build"]
     }
   ],
@@ -176,6 +182,18 @@
     "runtime": "nodejs20"
   },
   "emulators": {
+    "auth": {
+      "port": 9099,
+      "host": "0.0.0.0",
+      "import": "./emulator-data",
+      "export": "./emulator-data"
+    },
+    "firestore": {
+      "port": 8080,
+      "host": "0.0.0.0",
+      "import": "./emulator-data",
+      "export": "./emulator-data"
+    },
     "hosting": {
       "port": 5000,
       "host": "0.0.0.0"
@@ -188,6 +206,7 @@
       "enabled": true,
       "port": 4000,
       "host": "0.0.0.0"
-    }
+    },
+    "singleProjectMode": true
   }
 }
