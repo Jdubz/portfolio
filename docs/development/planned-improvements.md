@@ -3,7 +3,7 @@
 This document tracks future enhancements, optimizations, and technical debt that should be addressed.
 
 **Last Audit:** October 6, 2025 - Overall Health: A- (90/100)
-**See:** [AUDIT_REPORT.md](../../AUDIT_REPORT.md) for comprehensive analysis
+**See:** [comprehensive-audit-2025-10-06.md](../audit/comprehensive-audit-2025-10-06.md) for comprehensive analysis
 
 ---
 
@@ -42,11 +42,13 @@ This document tracks future enhancements, optimizations, and technical debt that
   - Effort: 3-4 hours
   - Impact: High - blocks experience page usage
 
-- [ ] **Fix Google OAuth 404 Redirect Issue**
-  - Add staging.joshwentworth.com to OAuth Authorized Redirect URIs in Google Cloud Console
-  - See: OAUTH_404_DEBUG.md for full troubleshooting guide
-  - Effort: 30 minutes (configuration only)
-  - Impact: Critical - blocks all authentication
+- [x] **Fix Google OAuth 404 Redirect Issue** (COMPLETED)
+  - Root cause: authDomain was set to firebaseapp.com default instead of custom domains
+  - Fixed by updating GATSBY_FIREBASE_AUTH_DOMAIN in .env.staging and .env.production
+  - Staging: staging.joshwentworth.com
+  - Production: joshwentworth.com
+  - Added all redirect URIs to OAuth client in Google Cloud Console
+  - Note: www.joshwentworth.com redirects via Cloudflare to apex domain
 
 #### Security & Dependencies
 - [x] **Update security dependencies** (COMPLETED - 10 vulnerabilities remain in dev deps)
