@@ -96,6 +96,9 @@
           "destination": "/index.html"
         }
       ],
+      "ignore": [
+        "__/auth/**"
+      ],
       "predeploy": ["cd web && npm run build"]
     },
     {
@@ -167,6 +170,9 @@
           "source": "**",
           "destination": "/index.html"
         }
+      ],
+      "ignore": [
+        "__/auth/**"
       ],
       "predeploy": ["cd web && npm run build"]
     }
