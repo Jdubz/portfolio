@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": [
+    "@changesets/changelog-github",
+    {
+      "repo": "Jdubz/portfolio"
+    }
+  ],
+  "commit": false,
+  "fixed": [],
+  "linked": [
+    ["josh-wentworth-portfolio", "contact-form-function"]
+  ],
+  "access": "restricted",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}

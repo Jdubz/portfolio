@@ -31,11 +31,13 @@
     "deploy:production": "firebase deploy --only hosting:production",
     "deploy:functions:staging": "firebase deploy --only functions:contact-form-staging",
     "deploy:functions:production": "firebase deploy --only functions:contact-form",
-    "version:patch": "npm version patch && git push && git push --tags",
-    "version:minor": "npm version minor && git push && git push --tags",
-    "version:major": "npm version major && git push && git push --tags"
+    "changeset": "changeset",
+    "version": "changeset version && npm install --package-lock-only",
+    "release": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^2.29.7",
     "firebase-tools": "^13.26.1"
   },
   "engines": {
