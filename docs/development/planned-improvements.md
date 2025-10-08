@@ -26,6 +26,28 @@ This document tracks future enhancements, optimizations, and technical debt that
 
 ### 🔴 Critical (Week 1)
 
+#### UX/UI Improvements
+- [ ] **Fix Experience Page Login/Error UX** (TOP PRIORITY)
+  - Current issues:
+    - Error messages need better visibility and styling
+    - Sign-in button UX needs polish (loading states, disabled states)
+    - No clear feedback when auth fails
+    - Error persistence and retry flow unclear
+  - Improvements needed:
+    - Add proper error Alert component with retry action
+    - Improve button states (idle, loading, error, success)
+    - Add toast notifications for auth state changes
+    - Better mobile responsiveness for auth controls
+    - Add "What went wrong?" help text for common errors
+  - Effort: 3-4 hours
+  - Impact: High - blocks experience page usage
+
+- [ ] **Fix Google OAuth 404 Redirect Issue**
+  - Add staging.joshwentworth.com to OAuth Authorized Redirect URIs in Google Cloud Console
+  - See: OAUTH_404_DEBUG.md for full troubleshooting guide
+  - Effort: 30 minutes (configuration only)
+  - Impact: Critical - blocks all authentication
+
 #### Security & Dependencies
 - [x] **Update security dependencies** (COMPLETED - 10 vulnerabilities remain in dev deps)
   - Ran `npm audit fix && npm update --workspaces`
