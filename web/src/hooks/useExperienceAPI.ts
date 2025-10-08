@@ -7,17 +7,26 @@ import type {
 } from "../types/experience"
 import { getIdToken } from "./useAuth"
 
+// API Configuration
+const API_CONFIG = {
+  projectId: "static-sites-257923",
+  region: "us-central1",
+  functionName: "manageExperience",
+  emulatorPort: 5001,
+  defaultEmulatorHost: "localhost",
+}
+
 const getApiUrl = () => {
   // Use emulator in development, production URL otherwise
   if (process.env.NODE_ENV === "development") {
-    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? "localhost"
-    return `http://${emulatorHost}:5001/static-sites-257923/us-central1/manageExperience`
+    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
+    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/${API_CONFIG.functionName}`
   }
 
   // Production/staging URL from env
   return (
     process.env.GATSBY_EXPERIENCE_API_URL ??
-    "https://us-central1-static-sites-257923.cloudfunctions.net/manageExperience"
+    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.functionName}`
   )
 }
 

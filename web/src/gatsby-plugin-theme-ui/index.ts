@@ -345,15 +345,13 @@ const theme: CustomTheme = {
         py: 2,
         height: 36,
         borderRadius: "9999px",
-        border: "2px solid",
-        borderColor: "divider",
+        border: "none",
         cursor: "pointer",
         transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
         "&:hover": {
-          borderColor: "primary",
-          color: "primary",
+          bg: "divider",
           transform: "translateY(-2px)",
-          boxShadow: "0 4px 12px rgba(14, 165, 233, 0.2)",
+          boxShadow: "0 4px 12px rgba(30, 41, 59, 0.2)",
         },
         "&:active": {
           transform: "translateY(0)",

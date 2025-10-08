@@ -96,7 +96,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
           <Input
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="Senior Full-Stack Developer"
+            placeholder="Some Company"
             required
             sx={{ fontSize: 2 }}
           />
