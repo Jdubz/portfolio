@@ -144,26 +144,23 @@ const ExperiencePage: React.FC = () => {
               </Flex>
             ) : (
               <Box>
-                <Text
+                <Button
                   onClick={handleSignIn}
+                  variant="secondary.sm"
+                  disabled={signingIn}
                   sx={{
-                    fontSize: 1,
-                    color: "textMuted",
                     cursor: signingIn ? "wait" : "pointer",
-                    userSelect: "none",
-                    "&:hover": {
-                      opacity: 0.7,
-                    },
                   }}
                 >
-                  {signingIn ? "..." : "Viewer"}
-                </Text>
+                  {signingIn ? "Signing in..." : "Sign In"}
+                </Button>
                 {authError && (
                   <Text
                     sx={{
                       mt: 2,
                       fontSize: 1,
                       color: "red",
+                      maxWidth: "200px",
                     }}
                   >
                     {authError}
