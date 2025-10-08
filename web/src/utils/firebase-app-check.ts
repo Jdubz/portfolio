@@ -44,7 +44,9 @@ export const initializeFirebaseAppCheck = (): void => {
     // eslint-disable-next-line no-console
     console.log("[AppCheck] Skipped in development (prevents HMR errors)")
     // Still initialize Firebase app for other services
-    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+    if (getApps().length === 0) {
+      initializeApp(firebaseConfig)
+    }
     return
   }
 
