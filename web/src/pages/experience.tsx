@@ -1,5 +1,7 @@
 import React, { useState } from "react"
 import { Box, Heading, Text, Button, Flex, Spinner, Alert } from "theme-ui"
+import { Link, type HeadFC } from "gatsby"
+import Seo from "@lekoarts/gatsby-theme-cara/src/components/seo"
 import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
 import { useExperienceAPI } from "../hooks/useExperienceAPI"
 import { ExperienceEntry } from "../components/ExperienceEntry"
@@ -86,6 +88,26 @@ const ExperiencePage: React.FC = () => {
           mx: "auto",
         }}
       >
+        {/* Home Button */}
+        <Box
+          sx={{
+            mb: 5,
+          }}
+        >
+          <Link
+            to="/"
+            style={{
+              color: "inherit",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              fontSize: "16px",
+            }}
+          >
+            ← Back to Home
+          </Link>
+        </Box>
+
         {/* Header */}
         <Flex
           sx={{
@@ -112,10 +134,28 @@ const ExperiencePage: React.FC = () => {
               sx={{
                 fontSize: [2, 3],
                 color: "textMuted",
+                mb: 3,
               }}
             >
               Complete professional experience and work history
             </Text>
+
+            <a
+              href="/resume.pdf"
+              download="Josh_Wentworth_Resume.pdf"
+              style={{
+                display: "inline-block",
+                fontSize: "16px",
+                fontWeight: "bold",
+                color: "#667eea",
+                textDecoration: "none",
+                transition: "color 0.3s ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#0ea5e9")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#667eea")}
+            >
+              Download Resume
+            </a>
           </Box>
 
           {/* Mode Indicator */}
@@ -219,3 +259,10 @@ const ExperiencePage: React.FC = () => {
 }
 
 export default ExperiencePage
+
+export const Head: HeadFC = () => (
+  <Seo
+    title="Experience Portfolio - Josh Wentworth"
+    description="Complete professional experience and work history. Full-stack engineer specializing in React, TypeScript, Node.js, Python, and cloud architecture."
+  />
+)

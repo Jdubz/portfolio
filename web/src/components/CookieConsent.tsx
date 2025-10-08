@@ -83,7 +83,7 @@ export const CookieConsent = (): React.JSX.Element | null => {
             sx={{
               fontSize: [1, 2],
               lineHeight: "relaxed",
-              color: "text",
+              color: "#e2e8f0",
               m: 0,
             }}
           >
@@ -92,10 +92,10 @@ export const CookieConsent = (): React.JSX.Element | null => {
             <a
               href="/privacy"
               sx={{
-                color: "primary",
+                color: "#60a5fa",
                 textDecoration: "underline",
                 "&:hover": {
-                  color: "secondary",
+                  color: "#93c5fd",
                 },
               }}
             >
