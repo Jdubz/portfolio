@@ -138,7 +138,7 @@ const ExperiencePage: React.FC = () => {
                 >
                   {user.email}
                 </Text>
-                <Button onClick={handleSignOut} variant="buttons.sizes.sm">
+                <Button onClick={handleSignOut} variant="secondary.sm">
                   Sign Out
                 </Button>
               </Flex>
@@ -177,7 +177,7 @@ const ExperiencePage: React.FC = () => {
         {/* Create New Entry Button (Editors Only) */}
         {isEditor && !showCreateForm && (
           <Box sx={{ mb: 4 }}>
-            <Button onClick={() => setShowCreateForm(true)} variant="buttons.sizes.sm">
+            <Button onClick={() => setShowCreateForm(true)} variant="primary.sm">
               + New Section
             </Button>
           </Box>

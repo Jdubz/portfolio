@@ -170,10 +170,10 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
 
         {/* Actions */}
         <Flex sx={{ gap: 2, justifyContent: "flex-end" }}>
-          <Button type="button" onClick={onCancel} variant="buttons.sizes.sm" disabled={isCreating}>
+          <Button type="button" onClick={onCancel} variant="secondary.sm" disabled={isCreating}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isCreating} variant="buttons.sizes.sm">
+          <Button type="submit" disabled={isCreating} variant="primary.sm">
             {isCreating ? "Creating..." : "Create Entry"}
           </Button>
         </Flex>

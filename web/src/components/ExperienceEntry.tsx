@@ -167,15 +167,20 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
             <Button
               onClick={() => void handleDelete()}
               disabled={isDeleting || isSaving}
-              variant="buttons.sizes.sm"
-              sx={{ bg: "red", color: "white", "&:hover": { bg: "darkred" } }}
+              variant="secondary.sm"
+              sx={{
+                bg: "red",
+                color: "white",
+                borderColor: "red",
+                "&:hover": { bg: "darkred", borderColor: "darkred" },
+              }}
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </Button>
-            <Button onClick={handleCancel} variant="buttons.sizes.sm" disabled={isSaving}>
+            <Button onClick={handleCancel} variant="secondary.sm" disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={() => void handleSave()} disabled={isSaving} variant="buttons.sizes.sm">
+            <Button onClick={() => void handleSave()} disabled={isSaving} variant="primary.sm">
               {isSaving ? "Saving..." : "Save"}
             </Button>
           </Flex>
@@ -293,7 +298,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
       {/* Editor Actions */}
       {isEditor && (
         <Box sx={{ mt: 4 }}>
-          <Button onClick={() => setIsEditing(true)} variant="buttons.sizes.sm">
+          <Button onClick={() => setIsEditing(true)} variant="secondary.sm">
             Edit
           </Button>
         </Box>
