@@ -427,3 +427,9 @@ export const handleContactForm = https.onRequest(
  */
 export { manageExperience } from "./experience"
 
+/**
+ * Resume upload endpoint
+ * Deployed via: firebase deploy --only functions:uploadResume
+ */
+export { uploadResume } from "./resume"
+

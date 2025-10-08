@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { Box, Heading, Text, Button, Flex, Spinner, Alert } from "theme-ui"
 import { Link, type HeadFC } from "gatsby"
 import Seo from "@lekoarts/gatsby-theme-cara/src/components/seo"
@@ -29,6 +29,9 @@ const ExperiencePage: React.FC = () => {
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [uploadingResume, setUploadingResume] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleSignIn = () => {
     setSigningIn(true)
@@ -71,6 +74,74 @@ const ExperiencePage: React.FC = () => {
       throw new Error("Create failed")
     }
     setShowCreateForm(false)
+  }
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    // Validate PDF
+    if (file.type !== "application/pdf") {
+      setUploadError("Only PDF files are allowed")
+      return
+    }
+
+    // Validate size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("File size must be less than 10MB")
+      return
+    }
+
+    setUploadingResume(true)
+    setUploadError(null)
+
+    try {
+      const token = await user?.getIdToken()
+      if (!token) {
+        throw new Error("Not authenticated")
+      }
+
+      const functionUrl =
+        process.env.GATSBY_ENVIRONMENT === "production"
+          ? "https://us-central1-static-sites-257923.cloudfunctions.net/uploadResume"
+          : "https://us-central1-static-sites-257923.cloudfunctions.net/uploadResume"
+
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch(functionUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
+
+      const data = (await response.json()) as { success?: boolean; message?: string }
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message ?? "Upload failed")
+      }
+
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+
+      // Reload the page to update the download link
+      window.location.reload()
+    } catch (error) {
+      console.error("Resume upload failed:", error)
+      setUploadError(error instanceof Error ? error.message : "Upload failed")
+    } finally {
+      setUploadingResume(false)
+    }
   }
 
   return (
@@ -140,22 +211,78 @@ const ExperiencePage: React.FC = () => {
               Complete professional experience and work history
             </Text>
             <br />
-            <a
-              href="/resume.pdf"
-              download="Josh_Wentworth_Resume.pdf"
-              style={{
-                display: "inline-block",
-                fontSize: "16px",
-                fontWeight: "bold",
-                color: "#667eea",
-                textDecoration: "none",
-                transition: "color 0.3s ease",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#0ea5e9")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#667eea")}
-            >
-              Download Resume
-            </a>
+            <Flex sx={{ alignItems: "center", gap: 3 }}>
+              {isEditor && (
+                <>
+                  <Button
+                    onClick={handleUploadClick}
+                    disabled={uploadingResume}
+                    variant="secondary.sm"
+                    sx={{
+                      cursor: uploadingResume ? "wait" : "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 2,
+                    }}
+                    title="Upload Resume"
+                  >
+                    {uploadingResume ? (
+                      <Spinner size={16} />
+                    ) : (
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                    )}
+                    {uploadingResume ? "Uploading..." : "Upload"}
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => void handleFileChange(e)}
+                    style={{ display: "none" }}
+                  />
+                </>
+              )}
+              <a
+                href="https://storage.googleapis.com/joshwentworth-resume/resume.pdf"
+                download="Josh_Wentworth_Resume.pdf"
+                style={{
+                  display: "inline-block",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  color: "#667eea",
+                  textDecoration: "none",
+                  transition: "color 0.3s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#0ea5e9")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#667eea")}
+              >
+                Download Resume
+              </a>
+            </Flex>
+            {uploadError && (
+              <Text
+                sx={{
+                  mt: 2,
+                  fontSize: 1,
+                  color: "red",
+                }}
+              >
+                {uploadError}
+              </Text>
+            )}
           </Box>
 
           {/* Mode Indicator */}
