@@ -120,5 +120,17 @@ public/~partytown/
 # Test and dev files
 web/src/components/*Test.tsx
 web/src/components/FORMS_GUIDE.md
-web/src/test-theme.tsget-emulator-token.js
+web/src/test-theme.ts
+get-emulator-token.js
 emulator-data/
+
+# Playwright test artifacts
+web/playwright-report/
+web/test-results/
+playwright-report/
+test-results/
+
+# Editor swap files
+*.swp
+*.swo
+*~
