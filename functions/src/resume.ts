@@ -1,6 +1,5 @@
 import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
-import cors from "cors"
 import { Storage } from "@google-cloud/storage"
 import busboy from "busboy"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
@@ -54,8 +53,6 @@ const corsOptions = {
   credentials: true,
 }
 
-const corsHandler = cors(corsOptions)
-
 /**
  * Generate a unique request ID for tracking
  */
@@ -73,20 +70,24 @@ const handleResumeRequest = async (req: Request, res: Response): Promise<void> =
   const requestId = generateRequestId()
 
   // Set CORS headers manually to avoid middleware consuming body
-  const origin = req.headers.origin
-  if (origin && corsOptions.origin.includes(origin)) {
+  const origin = req.headers.origin || ""
+  const isAllowedOrigin = corsOptions.origin.includes(origin)
+
+  if (isAllowedOrigin) {
     res.setHeader("Access-Control-Allow-Origin", origin)
     res.setHeader("Access-Control-Allow-Credentials", "true")
-    res.setHeader("Access-Control-Allow-Methods", corsOptions.methods.join(", "))
-    res.setHeader("Access-Control-Allow-Headers", corsOptions.allowedHeaders.join(", "))
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", corsOptions.methods.join(", "))
+  res.setHeader("Access-Control-Allow-Headers", corsOptions.allowedHeaders.join(", "))
+
+  // Handle OPTIONS preflight (must be before any auth checks)
+  if (req.method === "OPTIONS") {
+    res.status(204).send("")
+    return
   }
 
   try {
-    // Handle OPTIONS preflight
-    if (req.method === "OPTIONS") {
-      res.status(204).send("")
-      return
-    }
 
     // Only allow POST requests
     if (req.method !== "POST") {
@@ -156,13 +157,34 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
       return
     }
 
-    const bb = busboy({ headers: req.headers, limits: { fileSize: MAX_FILE_SIZE } })
+    const bb = busboy({
+      headers: req.headers,
+      limits: {
+        fileSize: MAX_FILE_SIZE,
+        files: 1 // Only allow one file
+      }
+    })
     let fileUploaded = false
     let uploadError: Error | null = null
+    let responseHandled = false
 
-    bb.on("error", (err) => {
+    bb.on("error", (err: unknown) => {
       logger.error("Busboy error", { error: err, requestId })
       uploadError = err instanceof Error ? err : new Error(String(err))
+
+      // Handle the error immediately if response not already sent
+      if (!responseHandled && !res.headersSent) {
+        responseHandled = true
+        const error = ERROR_CODES.VALIDATION_FAILED
+        const errorMessage = err instanceof Error ? err.message : String(err)
+        res.status(error.status).json({
+          success: false,
+          error: "VALIDATION_FAILED",
+          errorCode: error.code,
+          message: errorMessage || error.message,
+          requestId,
+        })
+      }
     })
 
     bb.on("file", (fieldname, file, info) => {
@@ -221,6 +243,12 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
     })
 
     bb.on("finish", () => {
+      // Skip if response already handled (e.g., from error handler)
+      if (responseHandled) {
+        return
+      }
+      responseHandled = true
+
       if (uploadError) {
         const errorType = uploadError.message
         const err =
@@ -264,6 +292,26 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
       })
     })
 
+    // Important: Handle request piping carefully to prevent stream issues
+    // The request might be paused or in an odd state after middleware processing
+
+    // Set up error handler for request stream
+    req.on("error", (err) => {
+      logger.error("Request stream error", { error: err, requestId })
+      if (!responseHandled && !res.headersSent) {
+        responseHandled = true
+        const error = ERROR_CODES.VALIDATION_FAILED
+        res.status(error.status).json({
+          success: false,
+          error: "VALIDATION_FAILED",
+          errorCode: error.code,
+          message: "Error reading request data",
+          requestId,
+        })
+      }
+    })
+
+    // Pipe request to busboy
     req.pipe(bb)
   } catch (error) {
     logger.error("Failed to upload resume", {
