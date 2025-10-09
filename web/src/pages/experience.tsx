@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react"
 import { Box, Heading, Text, Button, Flex, Spinner, Alert } from "theme-ui"
 import { Link, type HeadFC } from "gatsby"
-import Seo from "@lekoarts/gatsby-theme-cara/src/components/seo"
+import Seo from "../components/homepage/Seo"
 import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
 import { useExperienceData } from "../hooks/useExperienceData"
 import { ExperienceEntry } from "../components/ExperienceEntry"
