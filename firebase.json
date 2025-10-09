@@ -92,7 +92,7 @@
       ],
       "rewrites": [
         {
-          "source": "**",
+          "source": "!**/*.@(jpg|jpeg|png|gif|webp|avif|svg|ico|woff|woff2|ttf|eot|js|css|json|xml|txt|pdf|map|webmanifest)",
           "destination": "/index.html"
         }
       ],
@@ -167,7 +167,7 @@
       ],
       "rewrites": [
         {
-          "source": "**",
+          "source": "!**/*.@(jpg|jpeg|png|gif|webp|avif|svg|ico|woff|woff2|ttf|eot|js|css|json|xml|txt|pdf|map|webmanifest)",
           "destination": "/index.html"
         }
       ],
