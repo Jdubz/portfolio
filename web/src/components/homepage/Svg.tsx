@@ -17,6 +17,23 @@ type IconType =
   | "resistor"
   | "wifi"
   | "database"
+  | "cloud"
+  | "bolt"
+  | "cube-3d"
+  | "flask"
+  | "git-branch"
+  | "server-stack"
+  | "shield"
+  | "bug"
+  | "cluster"
+  | "git-merge"
+  | "key"
+  | "lock"
+  | "sine-wave"
+  | "capacitor"
+  | "diode"
+  | "pull-request"
+  | "compass"
 
 type SVGProps = {
   stroke?: boolean
@@ -41,6 +58,23 @@ const viewBox = {
   resistor: `0 0 64 64`,
   wifi: `0 0 64 64`,
   database: `0 0 64 64`,
+  cloud: `0 0 64 64`,
+  bolt: `0 0 64 64`,
+  "cube-3d": `0 0 64 64`,
+  flask: `0 0 64 64`,
+  "git-branch": `0 0 64 64`,
+  "server-stack": `0 0 64 64`,
+  shield: `0 0 64 64`,
+  bug: `0 0 64 64`,
+  cluster: `0 0 64 64`,
+  "git-merge": `0 0 64 64`,
+  key: `0 0 64 64`,
+  lock: `0 0 64 64`,
+  "sine-wave": `0 0 64 64`,
+  capacitor: `0 0 64 64`,
+  diode: `0 0 64 64`,
+  "pull-request": `0 0 64 64`,
+  compass: `0 0 64 64`,
 }
 
 const Svg = ({ stroke = false, color = ``, width, icon, left, top, hiddenMobile = false }: SVGProps) => (

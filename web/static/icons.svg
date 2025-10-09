@@ -140,5 +140,152 @@
         <path d="M12 32c0 3 9 6 20 6s20-3 20-6"/>
       </g>
     </symbol>
+
+    <!-- Additional brand icons from jw-icon-pack -->
+    <symbol id="cloud" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 40a8 8 0 0 1 2-16 12 12 0 0 1 23 3 7 7 0 0 1 3 13H18z"/>
+      </g>
+    </symbol>
+
+    <symbol id="bolt" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M28 6h8l6 12h-8l8 28h-8l-6-16h8z"/>
+      </g>
+    </symbol>
+
+    <symbol id="cube-3d" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M32 8l20 12v24L32 56 12 44V20z"/>
+        <path d="M32 8v24l20 12"/>
+        <path d="M32 32L12 44"/>
+      </g>
+    </symbol>
+
+    <symbol id="flask" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M28 12h8"/>
+        <path d="M32 12v10l12 20a6 6 0 0 1-6 8H26a6 6 0 0 1-6-8l12-20V12"/>
+      </g>
+    </symbol>
+
+    <symbol id="git-branch" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="18" r="4"/>
+        <circle cx="18" cy="46" r="4"/>
+        <path d="M18 22v20a8 8 0 0 0 8 8h8"/>
+        <path d="M22 18h20"/>
+      </g>
+    </symbol>
+
+    <symbol id="server-stack" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="12" width="48" height="12" rx="2"/>
+        <rect x="8" y="26" width="48" height="12" rx="2"/>
+        <rect x="8" y="40" width="48" height="12" rx="2"/>
+        <circle cx="14" cy="18" r="1.5"/>
+        <circle cx="20" cy="18" r="1.5"/>
+        <circle cx="14" cy="32" r="1.5"/>
+        <circle cx="20" cy="32" r="1.5"/>
+        <circle cx="14" cy="46" r="1.5"/>
+        <circle cx="20" cy="46" r="1.5"/>
+      </g>
+    </symbol>
+
+    <symbol id="shield" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M32 8l-20 8v12c0 12 20 28 20 28s20-16 20-28V16z"/>
+      </g>
+    </symbol>
+
+    <symbol id="bug" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 12l-8 8M44 12l8 8"/>
+        <ellipse cx="32" cy="32" rx="12" ry="16"/>
+        <path d="M20 24h-8M44 24h8M20 40h-8M44 40h8"/>
+        <path d="M24 48l-6 8M40 48l6 8"/>
+        <circle cx="28" cy="28" r="1.5"/>
+        <circle cx="36" cy="28" r="1.5"/>
+      </g>
+    </symbol>
+
+    <symbol id="cluster" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="16" r="6"/>
+        <circle cx="16" cy="40" r="6"/>
+        <circle cx="48" cy="40" r="6"/>
+        <path d="M28 20l-8 16M36 20l8 16"/>
+        <path d="M22 40h20"/>
+      </g>
+    </symbol>
+
+    <symbol id="git-merge" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="18" r="4"/>
+        <circle cx="18" cy="46" r="4"/>
+        <circle cx="46" cy="32" r="4"/>
+        <path d="M18 22v20"/>
+        <path d="M42 32a16 16 0 0 0-24-14"/>
+      </g>
+    </symbol>
+
+    <symbol id="key" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="44" cy="20" r="8"/>
+        <path d="M38 26L16 48h-8v-8l22-22"/>
+        <path d="M8 48l8-8"/>
+      </g>
+    </symbol>
+
+    <symbol id="lock" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="16" y="28" width="32" height="24" rx="2"/>
+        <path d="M24 28V20a8 8 0 0 1 16 0v8"/>
+        <circle cx="32" cy="40" r="2"/>
+      </g>
+    </symbol>
+
+    <symbol id="sine-wave" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 32c4 0 4-12 8-12s4 12 8 12 4-12 8-12 4 12 8 12 4-12 8-12 4 12 8 12"/>
+      </g>
+    </symbol>
+
+    <symbol id="capacitor" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 32h16M40 32h16"/>
+        <path d="M24 16v32M40 16v32"/>
+        <path d="M30 24a4 4 0 0 1 4 4"/>
+        <path d="M34 36a4 4 0 0 1-4 4"/>
+      </g>
+    </symbol>
+
+    <symbol id="diode" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 32h16"/>
+        <path d="M40 32h16"/>
+        <path d="M24 16l16 16-16 16z"/>
+        <path d="M40 16v32"/>
+      </g>
+    </symbol>
+
+    <symbol id="pull-request" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="18" r="4"/>
+        <circle cx="18" cy="46" r="4"/>
+        <circle cx="46" cy="46" r="4"/>
+        <path d="M18 22v20"/>
+        <path d="M46 42V26a8 8 0 0 0-8-8h-8"/>
+        <path d="M34 14l-4 4 4 4"/>
+      </g>
+    </symbol>
+
+    <symbol id="compass" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="24"/>
+        <path d="M40 24l-16 8 8 8 8-16z"/>
+        <circle cx="32" cy="32" r="2"/>
+      </g>
+    </symbol>
   </defs>
 </svg>
