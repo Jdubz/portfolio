@@ -395,6 +395,22 @@ const ExperiencePage: React.FC = () => {
                 </Box>
               )}
 
+              {/* Create New Entry Button (Editors Only) - After experience, before Selected Projects */}
+              {isEditor && !showCreateForm && (
+                <Box sx={{ mt: 4, mb: 4 }}>
+                  <Button onClick={() => setShowCreateForm(true)} variant="primary.sm">
+                    + New Section
+                  </Button>
+                </Box>
+              )}
+
+              {/* Create Form - After experience, before Selected Projects */}
+              {showCreateForm && (
+                <Box sx={{ mt: 4, mb: 4 }}>
+                  <CreateExperienceForm onCreate={handleCreateEntry} onCancel={() => setShowCreateForm(false)} />
+                </Box>
+              )}
+
               {/* Remaining Blurbs (after experience) */}
               {blurbOrder.slice(1).map((blurbName) => (
                 <BlurbEntry
@@ -409,22 +425,6 @@ const ExperiencePage: React.FC = () => {
             </>
           )}
         </Box>
-
-        {/* Create New Entry Button (Editors Only) - Bottom of list */}
-        {isEditor && !showCreateForm && (
-          <Box sx={{ mt: 4 }}>
-            <Button onClick={() => setShowCreateForm(true)} variant="primary.sm">
-              + New Section
-            </Button>
-          </Box>
-        )}
-
-        {/* Create Form - Bottom of list */}
-        {showCreateForm && (
-          <Box sx={{ mt: 4 }}>
-            <CreateExperienceForm onCreate={handleCreateEntry} onCancel={() => setShowCreateForm(false)} />
-          </Box>
-        )}
       </Box>
     </Box>
   )
