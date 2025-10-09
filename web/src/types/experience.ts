@@ -47,3 +47,40 @@ export interface ExperienceApiResponse {
   error?: string
   errorCode?: string
 }
+
+/**
+ * Blurb Entry Types
+ * Markdown content blocks for the experience page
+ */
+
+export interface BlurbEntry {
+  id: string // Same as name for easy lookup
+  name: string // Unique identifier: intro, selected-projects, skills, education-certificates, biography, closing-notes
+  title: string // Display heading
+  content: string // Markdown content
+  createdAt: string // ISO timestamp
+  updatedAt: string // ISO timestamp
+  createdBy: string // Email of creator
+  updatedBy: string // Email of last editor
+}
+
+export interface CreateBlurbData {
+  name: string
+  title: string
+  content: string
+}
+
+export interface UpdateBlurbData {
+  title?: string
+  content?: string
+}
+
+export interface BlurbApiResponse {
+  success: boolean
+  blurb?: BlurbEntry
+  blurbs?: BlurbEntry[]
+  count?: number
+  message?: string
+  error?: string
+  errorCode?: string
+}

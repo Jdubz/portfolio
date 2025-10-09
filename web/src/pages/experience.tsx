@@ -3,10 +3,11 @@ import { Box, Heading, Text, Button, Flex, Spinner, Alert } from "theme-ui"
 import { Link, type HeadFC } from "gatsby"
 import Seo from "@lekoarts/gatsby-theme-cara/src/components/seo"
 import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
-import { useExperienceAPI } from "../hooks/useExperienceAPI"
+import { useExperienceData } from "../hooks/useExperienceData"
 import { ExperienceEntry } from "../components/ExperienceEntry"
+import { BlurbEntry } from "../components/BlurbEntry"
 import { CreateExperienceForm } from "../components/CreateExperienceForm"
-import type { UpdateExperienceData, CreateExperienceData } from "../types/experience"
+import type { UpdateExperienceData, CreateExperienceData, UpdateBlurbData } from "../types/experience"
 
 /**
  * Experience Portfolio Page
@@ -20,18 +21,24 @@ const ExperiencePage: React.FC = () => {
   const { user, isEditor, loading: authLoading } = useAuth()
   const {
     entries,
-    loading: entriesLoading,
-    error: entriesError,
+    blurbs,
+    loading,
+    error,
     createEntry,
     updateEntry,
     deleteEntry,
-  } = useExperienceAPI()
+    createBlurb,
+    updateBlurb,
+  } = useExperienceData()
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [uploadingResume, setUploadingResume] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Define blurb order
+  const blurbOrder = ["intro", "selected-projects", "skills", "education-certificates", "biography", "closing-notes"]
 
   const handleSignIn = () => {
     setSigningIn(true)
@@ -74,6 +81,20 @@ const ExperiencePage: React.FC = () => {
       throw new Error("Create failed")
     }
     setShowCreateForm(false)
+  }
+
+  const handleUpdateBlurb = async (name: string, data: UpdateBlurbData) => {
+    const result = await updateBlurb(name, data)
+    if (!result) {
+      throw new Error("Update failed")
+    }
+  }
+
+  const handleCreateBlurb = async (name: string, title: string, content: string) => {
+    const result = await createBlurb({ name, title, content })
+    if (!result) {
+      throw new Error("Create failed")
+    }
   }
 
   const handleUploadClick = () => {
@@ -336,33 +357,65 @@ const ExperiencePage: React.FC = () => {
           </Box>
         </Flex>
 
-        {/* Experience Entries List */}
+        {/* Page Content */}
         <Box sx={{ mt: 5 }}>
-          {entriesLoading ? (
+          {/* Show loading spinner */}
+          {loading ? (
             <Flex sx={{ justifyContent: "center", py: 6 }}>
               <Spinner size={48} />
             </Flex>
-          ) : entriesError ? (
-            <Alert variant="error" sx={{ mb: 4 }}>
-              {entriesError}
-            </Alert>
-          ) : entries.length === 0 ? (
-            <Text sx={{ textAlign: "center", py: 6, color: "textMuted", fontSize: 2 }}>
-              No experience entries yet.
-              {isEditor && " Click '+ New Section' below to create one."}
-            </Text>
           ) : (
-            <Box>
-              {entries.map((entry) => (
-                <ExperienceEntry
-                  key={entry.id}
-                  entry={entry}
+            <>
+              {/* Show errors if any */}
+              {error && (
+                <Alert variant="error" sx={{ mb: 4 }}>
+                  {error}
+                </Alert>
+              )}
+
+              {/* Intro Blurb */}
+              <BlurbEntry
+                name="intro"
+                blurb={blurbs["intro"] ?? null}
+                isEditor={isEditor}
+                onUpdate={handleUpdateBlurb}
+                onCreate={handleCreateBlurb}
+              />
+
+              {/* Experience Entries */}
+              {entries.length === 0 ? (
+                <Box sx={{ variant: "cards.primary", p: 4, mb: 4, opacity: 0.6, borderStyle: "dashed" }}>
+                  <Text sx={{ textAlign: "center", color: "textMuted", fontSize: 2 }}>
+                    No experience entries yet.
+                    {isEditor && " Click '+ New Section' below to create one."}
+                  </Text>
+                </Box>
+              ) : (
+                <Box>
+                  {entries.map((entry) => (
+                    <ExperienceEntry
+                      key={entry.id}
+                      entry={entry}
+                      isEditor={isEditor}
+                      onUpdate={handleUpdateEntry}
+                      onDelete={handleDeleteEntry}
+                    />
+                  ))}
+                </Box>
+              )}
+
+              {/* Remaining Blurbs (after experience) */}
+              {blurbOrder.slice(1).map((blurbName) => (
+                <BlurbEntry
+                  key={blurbName}
+                  name={blurbName}
+                  blurb={blurbs[blurbName] ?? null}
                   isEditor={isEditor}
-                  onUpdate={handleUpdateEntry}
-                  onDelete={handleDeleteEntry}
+                  onUpdate={handleUpdateBlurb}
+                  onCreate={handleCreateBlurb}
                 />
               ))}
-            </Box>
+            </>
           )}
         </Box>
 
