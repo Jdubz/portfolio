@@ -21,7 +21,7 @@ type IconType =
 type SVGProps = {
   stroke?: boolean
   color?: string | number | any
-  width: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12 | 16 | 20 | 24 | 32 | 40 | 48 | 56 | 64 | string
+  width: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12 | 16 | 20 | 24 | 32 | 40 | 48 | 56 | 64 | 72 | 80 | 88 | 96 | string
   icon: IconType
   left: string
   top: string

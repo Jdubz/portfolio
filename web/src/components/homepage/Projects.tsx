@@ -37,26 +37,31 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
       </Inner>
     </Content>
     <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
+      {/* Bubbles rising from bottom - larger, more visible */}
       <UpDown>
-        <Svg icon="box" width={24} color="icon_brightest" left="85%" top="75%" />
-        <Svg icon="upDown" width={32} color="icon_teal" left="70%" top="20%" />
-        <Svg icon="triangle" width={32} stroke color="icon_indigo" left="25%" top="5%" />
-        <Svg icon="circle" hiddenMobile width={48} color="icon_brightest" left="17%" top="60%" />
+        <Svg icon="box" width={80} color="icon_brightest" left="85%" top="85%" />
+        <Svg icon="upDown" width={88} color="icon_teal" left="70%" top="10%" />
+        <Svg icon="triangle" width={96} stroke color="icon_indigo" left="25%" top="6%" />
       </UpDown>
       <UpDownWide>
-        <Svg icon="arrowUp" hiddenMobile width={32} color="icon_teal" left="20%" top="90%" />
-        <Svg icon="triangle" width={24} stroke color="icon_brightest" left="90%" top="30%" />
-        <Svg icon="circle" width={32} color="icon_blue" left="70%" top="90%" />
-        <Svg icon="triangle" hiddenMobile width={32} stroke color="icon_indigo" left="18%" top="75%" />
-        <Svg icon="circle" width={24} color="icon_brightest" left="75%" top="10%" />
-        <Svg icon="upDown" hiddenMobile width={32} color="icon_teal" left="45%" top="10%" />
+        {/* Top cluster - floating to surface */}
+        <Svg icon="circle" width={72} color="icon_brightest" left="75%" top="8%" />
+        <Svg icon="upDown" hiddenMobile width={80} color="icon_teal" left="45%" top="5%" />
+        <Svg icon="circle" hiddenMobile width={64} color="icon_brightest" left="4%" top="12%" />
+        <Svg icon="box" width={72} color="icon_blue" left="10%" top="6%" />
+
+        {/* Bottom cluster - rising bubbles */}
+        <Svg icon="arrowUp" hiddenMobile width={88} color="icon_teal" left="20%" top="92%" />
+        <Svg icon="circle" width={96} color="icon_blue" left="70%" top="88%" />
+        <Svg icon="triangle" hiddenMobile width={80} stroke color="icon_indigo" left="18%" top="84%" />
+        <Svg icon="hexa" width={88} stroke color="icon_indigo" left="75%" top="90%" />
+        <Svg icon="hexa" width={80} stroke color="icon_blue" left="80%" top="82%" />
+        <Svg icon="box" width={72} color="icon_teal" left="29%" top="86%" />
       </UpDownWide>
-      <Svg icon="circle" hiddenMobile width={24} color="icon_brightest" left="4%" top="20%" />
-      <Svg icon="circle" width={24} color="icon_indigo" left="80%" top="60%" />
-      <Svg icon="box" width={24} color="icon_blue" left="10%" top="10%" />
-      <Svg icon="box" width={24} color="icon_teal" left="29%" top="26%" />
-      <Svg icon="hexa" width={32} stroke color="icon_indigo" left="75%" top="30%" />
-      <Svg icon="hexa" width={32} stroke color="icon_blue" left="80%" top="70%" />
+      {/* Mid-section - sparser, smaller bubbles for depth */}
+      <Svg icon="triangle" width={48} stroke color="icon_brightest" left="90%" top="45%" />
+      <Svg icon="circle" width={56} color="icon_indigo" left="80%" top="55%" />
+      <Svg icon="circle" hiddenMobile width={64} color="icon_brightest" left="17%" top="50%" />
     </Divider>
   </section>
 )
