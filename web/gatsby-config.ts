@@ -42,11 +42,23 @@ const config: GatsbyConfig = {
   },
   trailingSlash: `always`,
   plugins: [
+    // MDX support for content sections
     {
-      resolve: `@lekoarts/gatsby-theme-cara`,
-      // Gatsby theme providing the core functionality
-      options: {},
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `sections`,
+        path: `${__dirname}/src/content/sections`,
+      },
     },
+    {
+      resolve: `gatsby-plugin-mdx`,
+      options: {
+        extensions: [`.mdx`, `.md`],
+        gatsbyRemarkPlugins: [],
+      },
+    },
+    // Theme-UI for styling
+    `gatsby-plugin-theme-ui`,
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
