@@ -1,0 +1,31 @@
+{
+  "name": "Josh Wentworth",
+  "short_name": "JW",
+  "icons": [
+    {
+      "src": "/favicons/primary-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicons/primary-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicons/maskable-primary-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicons/maskable-primary-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#0EA5E9",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}

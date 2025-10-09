@@ -90,6 +90,18 @@ const Seo = ({
       {/* Canonical URL */}
       <link rel="canonical" href={seo.url} />
 
+      {/* Favicons */}
+      <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
+      <link rel="icon" type="image/svg+xml" href="/favicons/favicon-primary.svg" />
+      <link rel="icon" href="/favicons/favicon-mono.svg" media="(prefers-color-scheme: light)" />
+      <link rel="icon" href="/favicons/favicon-dark.svg" media="(prefers-color-scheme: dark)" />
+      <link rel="icon" type="image/png" sizes="32x32" href="/favicons/primary-32.png" />
+      <link rel="icon" type="image/png" sizes="192x192" href="/favicons/primary-192.png" />
+      <link rel="icon" type="image/png" sizes="512x512" href="/favicons/primary-512.png" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon-primary-180.png" />
+      <link rel="mask-icon" href="/favicons/favicon-mono.svg" color="#0EA5E9" />
+      <link rel="manifest" href="/favicons/site.webmanifest" />
+
       {/* Preconnect to external domains for performance */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
