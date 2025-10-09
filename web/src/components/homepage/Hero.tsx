@@ -40,7 +40,7 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
       </UpDownWide>
       {/* Mid-section - sparser, smaller bubbles for depth */}
       <Svg icon="sine-wave" width={48} stroke color="icon_pink" left="25%" top="45%" />
-      <Svg icon="hexa" width={48} color="icon_teal" left="10%" top="50%" />
+      <Svg icon="arrowUp" width={48} color="icon_teal" left="10%" top="50%" />
     </Divider>
     <Content sx={{ variant: `texts.bigger` }} speed={0.4} offset={offset} factor={factor} className="content">
       <Inner>

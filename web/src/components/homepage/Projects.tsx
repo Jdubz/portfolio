@@ -39,13 +39,13 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
     <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
       {/* Bubbles rising from bottom - larger, more visible */}
       <UpDown>
-        <Svg icon="circle" width={96} stroke color="icon_indigo" left="25%" top="6%" />
+        <Svg icon="hexa" width={96} stroke color="icon_indigo" left="25%" top="6%" />
         <Svg icon="code-brackets" width={80} color="icon_teal" left="70%" top="10%" />
-        <Svg icon="git-branch" width={88} color="icon_green" left="85%" top="85%" />
+        <Svg icon="pcb-trace" width={88} color="icon_green" left="85%" top="85%" />
       </UpDown>
       <UpDownWide>
         {/* Top cluster - floating to surface */}
-        <Svg icon="wrench" width={72} color="icon_brightest" left="75%" top="8%" />
+        <Svg icon="test-tube" width={72} color="icon_brightest" left="75%" top="8%" />
         <Svg icon="bluetooth" hiddenMobile width={80} color="icon_blue" left="45%" top="5%" />
         <Svg icon="led" hiddenMobile width={64} color="icon_red" left="4%" top="12%" />
         <Svg icon="inductor" width={72} color="icon_yellow" left="10%" top="6%" />
@@ -59,7 +59,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
         <Svg icon="screwdriver" width={72} color="icon_brightest" left="29%" top="86%" />
       </UpDownWide>
       {/* Mid-section - sparser, smaller bubbles for depth */}
-      <Svg icon="compass" width={48} stroke color="icon_green" left="90%" top="45%" />
+      <Svg icon="stopwatch" width={48} stroke color="icon_green" left="90%" top="45%" />
       <Svg icon="magnifier" width={56} color="icon_indigo" left="80%" top="55%" />
     </Divider>
   </section>

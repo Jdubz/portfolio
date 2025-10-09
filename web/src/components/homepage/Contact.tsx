@@ -72,13 +72,13 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
       </UpDown>
       <UpDownWide>
         {/* Top cluster - floating to surface */}
-        <Svg icon="test-tube" width={72} color="icon_teal" left="85%" top="6%" />
-        <Svg icon="stopwatch" hiddenMobile width={80} color="icon_orange" left="45%" top="5%" />
+        <Svg icon="hexa" width={72} color="icon_teal" left="85%" top="6%" />
+        <Svg icon="arrowUp" hiddenMobile width={80} color="icon_orange" left="45%" top="5%" />
         <Svg icon="battery" width={64} color="icon_green" left="4%" top="12%" />
         <Svg icon="commit" hiddenMobile width={72} color="icon_blue" left="70%" top="10%" />
 
         {/* Bottom cluster - rising bubbles */}
-        <Svg icon="pcb-trace" width={80} color="icon_pink" left="20%" top="86%" />
+        <Svg icon="cross" width={80} color="icon_pink" left="20%" top="86%" />
         <Svg icon="robotic-arm" width={88} color="icon_yellow" left="50%" top="90%" />
         <Svg icon="function-fx" width={72} color="icon_indigo" left="5%" top="90%" />
       </UpDownWide>
