@@ -62,37 +62,61 @@ export const useAuth = (): AuthState => {
         unsubscribe = onAuthStateChanged(
           auth,
           (user) => {
-            if (user) {
-              // Get ID token to check custom claims
-              void user.getIdTokenResult().then((idTokenResult) => {
-                const isEditor = idTokenResult.claims.role === "editor"
+            void (async () => {
+              if (user) {
+                try {
+                  // Get ID token to check custom claims
+                  const idTokenResult = await user.getIdTokenResult()
+                  const isEditor = idTokenResult.claims.role === "editor"
 
-                // Log auth state
-                logger.info("User authenticated", {
-                  email: user.email,
-                  uid: user.uid,
-                  isEditor,
-                  role: idTokenResult.claims.role,
-                })
+                  // Log auth state
+                  logger.info("User authenticated", {
+                    email: user.email,
+                    uid: user.uid,
+                    isEditor,
+                    role: idTokenResult.claims.role,
+                  })
+
+                  setAuthState({
+                    user,
+                    isEditor,
+                    loading: false,
+                    error: null,
+                  })
+                } catch (tokenError) {
+                  // Handle token errors (e.g., emulator restart with stale tokens)
+                  logger.warn("Failed to get ID token, signing out", {
+                    error: tokenError instanceof Error ? tokenError.message : "Token error",
+                    email: user.email,
+                  })
+
+                  // Sign out to clear stale session
+                  try {
+                    const { signOut: firebaseSignOut } = await import("firebase/auth")
+                    await firebaseSignOut(auth)
+                  } catch {
+                    // Ignore sign out errors
+                  }
+
+                  setAuthState({
+                    user: null,
+                    isEditor: false,
+                    loading: false,
+                    error: null,
+                  })
+                }
+              } else {
+                // Log sign out
+                logger.info("User signed out")
 
                 setAuthState({
-                  user,
-                  isEditor,
+                  user: null,
+                  isEditor: false,
                   loading: false,
                   error: null,
                 })
-              })
-            } else {
-              // Log sign out
-              logger.info("User signed out")
-
-              setAuthState({
-                user: null,
-                isEditor: false,
-                loading: false,
-                error: null,
-              })
-            }
+              }
+            })()
           },
           (error) => {
             logger.error("Auth state change error", { error: error.message })
