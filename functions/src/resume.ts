@@ -72,49 +72,46 @@ function generateRequestId(): string {
 const handleResumeRequest = async (req: Request, res: Response): Promise<void> => {
   const requestId = generateRequestId()
 
+  // Set CORS headers manually to avoid middleware consuming body
+  const origin = req.headers.origin
+  if (origin && corsOptions.origin.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin)
+    res.setHeader("Access-Control-Allow-Credentials", "true")
+    res.setHeader("Access-Control-Allow-Methods", corsOptions.methods.join(", "))
+    res.setHeader("Access-Control-Allow-Headers", corsOptions.allowedHeaders.join(", "))
+  }
+
   try {
-    // Handle CORS - wrap in Promise to await async callback
-    await new Promise<void>((resolve, reject) => {
-      corsHandler(req, res, async () => {
-        try {
-          // Handle OPTIONS preflight
-          if (req.method === "OPTIONS") {
-            res.status(204).send("")
-            resolve()
-            return
-          }
+    // Handle OPTIONS preflight
+    if (req.method === "OPTIONS") {
+      res.status(204).send("")
+      return
+    }
 
-          // Only allow POST requests
-          if (req.method !== "POST") {
-            logger.warning("Method not allowed", { method: req.method, requestId })
-            const err = ERROR_CODES.METHOD_NOT_ALLOWED
-            res.status(err.status).json({
-              success: false,
-              error: "METHOD_NOT_ALLOWED",
-              errorCode: err.code,
-              message: err.message,
-              requestId,
-            })
-            resolve()
-            return
-          }
+    // Only allow POST requests
+    if (req.method !== "POST") {
+      logger.warning("Method not allowed", { method: req.method, requestId })
+      const err = ERROR_CODES.METHOD_NOT_ALLOWED
+      res.status(err.status).json({
+        success: false,
+        error: "METHOD_NOT_ALLOWED",
+        errorCode: err.code,
+        message: err.message,
+        requestId,
+      })
+      return
+    }
 
-          // Apply auth middleware
-          await new Promise<void>((resolveAuth, rejectAuth) => {
-            verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
-              if (err) rejectAuth(err)
-              else resolveAuth()
-            })
-          })
-
-          // Handle file upload
-          await handleResumeUpload(req as AuthenticatedRequest, res, requestId)
-          resolve()
-        } catch (err) {
-          reject(err)
-        }
+    // Apply auth middleware
+    await new Promise<void>((resolveAuth, rejectAuth) => {
+      verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
+        if (err) rejectAuth(err)
+        else resolveAuth()
       })
     })
+
+    // Handle file upload
+    await handleResumeUpload(req as AuthenticatedRequest, res, requestId)
   } catch (error) {
     logger.error("Unexpected error in resume handler", {
       error,
@@ -162,6 +159,11 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
     const bb = busboy({ headers: req.headers, limits: { fileSize: MAX_FILE_SIZE } })
     let fileUploaded = false
     let uploadError: Error | null = null
+
+    bb.on("error", (err) => {
+      logger.error("Busboy error", { error: err, requestId })
+      uploadError = err instanceof Error ? err : new Error(String(err))
+    })
 
     bb.on("file", (fieldname, file, info) => {
       const { filename, mimeType } = info
