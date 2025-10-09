@@ -184,15 +184,11 @@
   "emulators": {
     "auth": {
       "port": 9099,
-      "host": "0.0.0.0",
-      "import": "./emulator-data",
-      "export": "./emulator-data"
+      "host": "0.0.0.0"
     },
     "firestore": {
       "port": 8080,
-      "host": "0.0.0.0",
-      "import": "./emulator-data",
-      "export": "./emulator-data"
+      "host": "0.0.0.0"
     },
     "hosting": {
       "port": 5000,

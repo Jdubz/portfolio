@@ -145,14 +145,20 @@ firebase-emulators:
 	@echo "- Hosting:   http://localhost:5000"
 	@echo "- Functions: http://localhost:5001"
 	@echo "- Firestore: http://localhost:8080"
+	@echo "- Auth:      http://localhost:9099"
 	@echo "- UI:        http://localhost:4000"
+	@echo ""
+	@echo "💾 Data persistence enabled (emulator-data/)"
+	@echo "   Use Ctrl+C to stop and auto-export data"
+	@echo ""
 	@cd functions && npm run build
-	firebase emulators:start
+	firebase emulators:start --import=./emulator-data --export-on-exit
 
 firebase-emulators-ui:
 	@echo "Starting Firebase emulators with UI dashboard..."
+	@echo "💾 Data persistence enabled (emulator-data/)"
 	@cd functions && npm run build
-	firebase emulators:start --ui
+	firebase emulators:start --ui --import=./emulator-data --export-on-exit
 
 firebase-emulators-functions:
 	@echo "Starting Firebase Functions emulator only (no Java required)..."
