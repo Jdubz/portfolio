@@ -1,0 +1,40 @@
+import NavButton from "../../components/homepage/NavButton"
+import { GlowImage } from "../../components/GlowImage"
+
+export { GlowImage, NavButton }
+
+export default () => (
+  <>
+    <div sx={{ variant: 'layout.container', py: [6, 7] }}>
+      <h2 sx={{ variant: 'text.sectionTitle', position: 'relative' }}>
+        {/* Backdrop blur layer behind title */}
+        <div sx={{ variant: 'masks.soft' }} />
+        Get in touch
+      </h2>
+
+      <div sx={{ variant: 'layout.twoColSection' }}>
+        <div>
+          <div sx={{ position: 'relative' }}>
+            {/* Backdrop blur layer behind paragraph */}
+            <div sx={{ variant: 'masks.soft' }} />
+            <p sx={{ variant: 'text.bodyParagraph', mb: 5 }}>
+              Let's collaborate on your next engineering challenge. Whether you need software development, electronics design, or fabrication expertise, I'm ready to help bring your ideas to life.
+            </p>
+          </div>
+          <NavButton to="/contact">
+            Contact Me
+          </NavButton>
+        </div>
+
+        <div sx={{ display: ['none', null, 'block'], justifySelf: ['center', null, null, 'end'], alignSelf: 'start', mt: [5, null, null, 0] }}>
+          <GlowImage
+            src="/avatar2.jpg"
+            alt="Josh Wentworth"
+            width={[180, 192]}
+          />
+        </div>
+      </div>
+    </div>
+
+  </>
+)

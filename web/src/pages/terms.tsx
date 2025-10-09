@@ -2,8 +2,8 @@
 /* eslint-disable react/no-unescaped-entities */
 import { jsx } from "theme-ui"
 import { Link } from "gatsby"
-import Layout from "../@lekoarts/gatsby-theme-cara/components/layout"
-import Seo from "@lekoarts/gatsby-theme-cara/src/components/seo"
+import Layout from "../components/homepage/Layout"
+import Seo from "../components/homepage/Seo"
 
 const TermsPage = () => {
   return (
