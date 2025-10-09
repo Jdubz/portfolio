@@ -102,11 +102,12 @@ export const useBlurbAPI = (): UseBlurbAPI => {
       }
 
       if (responseData.blurb) {
+        const blurb = responseData.blurb
         setBlurbs((prev) => ({
           ...prev,
-          [responseData.blurb!.name]: responseData.blurb!,
+          [blurb.name]: blurb,
         }))
-        return responseData.blurb
+        return blurb
       }
 
       return null
@@ -141,11 +142,12 @@ export const useBlurbAPI = (): UseBlurbAPI => {
       }
 
       if (responseData.blurb) {
+        const blurb = responseData.blurb
         setBlurbs((prev) => ({
           ...prev,
-          [name]: responseData.blurb!,
+          [name]: blurb,
         }))
-        return responseData.blurb
+        return blurb
       }
 
       return null

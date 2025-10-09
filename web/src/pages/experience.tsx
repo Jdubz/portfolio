@@ -19,17 +19,8 @@ import type { UpdateExperienceData, CreateExperienceData, UpdateBlurbData } from
  */
 const ExperiencePage: React.FC = () => {
   const { user, isEditor, loading: authLoading } = useAuth()
-  const {
-    entries,
-    blurbs,
-    loading,
-    error,
-    createEntry,
-    updateEntry,
-    deleteEntry,
-    createBlurb,
-    updateBlurb,
-  } = useExperienceData()
+  const { entries, blurbs, loading, error, createEntry, updateEntry, deleteEntry, createBlurb, updateBlurb } =
+    useExperienceData()
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
