@@ -19,7 +19,7 @@ const upDown = keyframes`
     transform: translateY(0);
   }
   to {
-    transform: translateY(calc(30px * var(--icon-motion-amp, 1)));
+    transform: translateY(calc(20px * var(--icon-motion-amp, 1)));
   }
 `
 
@@ -28,26 +28,15 @@ const upDownWide = keyframes`
     transform: translateY(0);
   }
   to {
-    transform: translateY(calc(200px * var(--icon-motion-amp, 1)));
+    transform: translateY(calc(40px * var(--icon-motion-amp, 1)));
   }
-`
-
-// Step 6: Motion budget - respect --icon-motion variable
-const upDownAnimation = css`
-  animation: ${upDown} 4s ease-in-out infinite alternate;
-  animation-play-state: var(--icon-motion, 1) == 0 ? paused : running;
-`
-
-const upDownWideAnimation = css`
-  animation: ${upDownWide} 18s ease-in-out infinite alternate;
-  animation-play-state: var(--icon-motion, 1) == 0 ? paused : running;
 `
 
 export function UpDown({ children }: { children: React.ReactNode }) {
   return (
     <div
       css={css`
-        animation: ${upDownAnimation};
+        animation: ${upDown} 4s ease-in-out infinite alternate;
         position: absolute;
         top: 0;
         left: 0;
@@ -64,7 +53,7 @@ export function UpDownWide({ children }: { children: React.ReactNode }) {
   return (
     <div
       css={css`
-        animation: ${upDownWideAnimation};
+        animation: ${upDownWide} 18s ease-in-out infinite alternate;
         position: absolute;
         top: 0;
         left: 0;

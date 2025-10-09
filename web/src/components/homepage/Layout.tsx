@@ -14,7 +14,7 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
       styles={(t) => ({
         ":root": {
           // Step 2: Icon behavior tokens
-          "--icon-opacity": "0.38",
+          "--icon-opacity": "0.65",
           "--icon-blur": "0px",
           "--icon-size-min": "32px",
           "--icon-size-max": "144px",
@@ -70,7 +70,7 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         // Mobile responsive icon settings
         "@media (max-width: 768px)": {
           ":root": {
-            "--icon-opacity": "0.32",
+            "--icon-opacity": "0.55",
             "--icon-size-max": "96px",
           },
           // Step 5: Density control - show only first 10 icons on mobile
