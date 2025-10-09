@@ -1,5 +1,5 @@
 import * as React from "react"
-import useSiteMetadata from "@lekoarts/gatsby-theme-cara/src/hooks/use-site-metadata"
+import useSiteMetadata from "../../../hooks/useSiteMetadata"
 
 const Seo = ({
   title,

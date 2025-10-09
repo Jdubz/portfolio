@@ -6,7 +6,7 @@ import Hero from "../components/hero"
 import Projects from "../components/projects"
 import About from "../components/about"
 import Contact from "../components/contact"
-import Seo from "@lekoarts/gatsby-theme-cara/src/components/seo"
+import Seo from "../components/seo"
 
 // Extend Window interface to include scrollToSection
 declare global {
