@@ -6,3 +6,51 @@ find the full documentation for it [in our repository](https://github.com/change
 
 We have a quick list of common questions to get you started engaging with this project in
 [our documentation](https://github.com/changesets/changesets/blob/main/docs/common-questions.md)
+
+## Creating a Changeset
+
+When you make changes to the codebase, create a changeset to document them:
+
+```bash
+npm run changeset
+```
+
+This will:
+
+1. Prompt you to select which packages changed
+2. Ask for the version bump type (patch, minor, major)
+3. Request a summary of your changes
+4. Create a new markdown file in this directory
+
+**Commit the changeset file with your PR!**
+
+## When to Create a Changeset
+
+✅ **Create a changeset for:**
+
+- New features
+- Bug fixes
+- Performance improvements
+- Breaking changes
+- User-facing changes
+
+❌ **Skip changeset for:**
+
+- Documentation updates
+- Test changes
+- CI/CD config
+- Internal refactoring
+
+## Need Help?
+
+See our [Changeset Workflow Guide](../docs/development/changesets-workflow.md) for detailed instructions.
+
+## Enforcement
+
+This project uses **gentle reminders** rather than strict blocking:
+
+- Local commits will show a reminder if you forget
+- GitHub PRs will get a friendly comment
+- You can still commit/merge without a changeset if needed
+
+See [Changeset Enforcement](../docs/development/changeset-enforcement.md) for details.

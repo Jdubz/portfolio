@@ -5,6 +5,7 @@ This project uses [Changesets](https://github.com/changesets/changesets) for man
 ## Overview
 
 Changesets provides a structured way to:
+
 - Track changes across PRs
 - Automatically generate CHANGELOGs
 - Version packages together (linked versioning)
@@ -21,6 +22,7 @@ npm run changeset
 ```
 
 This will prompt you with:
+
 1. **Which packages changed?** (web, functions, or both)
 2. **What type of change?** (major, minor, patch)
 3. **Summary of changes** (what did you change?)
@@ -66,12 +68,14 @@ When your PR merges to `main`, GitHub Actions will:
 Follow [Semantic Versioning (semver)](https://semver.org/):
 
 ### Patch (0.0.X)
+
 - Bug fixes
 - Documentation updates
 - Internal refactors
 - Performance improvements
 
 **Examples:**
+
 ```bash
 # Bug fix
 npm run changeset
@@ -80,11 +84,13 @@ npm run changeset
 ```
 
 ### Minor (0.X.0)
+
 - New features (backward compatible)
 - New API endpoints
 - New components
 
 **Examples:**
+
 ```bash
 # New feature
 npm run changeset
@@ -93,11 +99,13 @@ npm run changeset
 ```
 
 ### Major (X.0.0)
+
 - Breaking changes
 - Removed APIs
 - Changed behavior that could break existing usage
 
 **Examples:**
+
 ```bash
 # Breaking change
 npm run changeset
@@ -110,6 +118,7 @@ npm run changeset
 This monorepo uses **linked versioning** - web and functions packages are versioned together.
 
 This means:
+
 - If you bump `josh-wentworth-portfolio` to 1.14.0
 - `contact-form-function` will also bump to 1.14.0
 - Keeps everything in sync
@@ -164,16 +173,19 @@ All will be included in the same version bump.
 ## Manual Commands
 
 ### Create a changeset
+
 ```bash
 npm run changeset
 ```
 
 ### Apply version bumps locally (testing)
+
 ```bash
 npm run version
 ```
 
 ### Publish (not used - we deploy to Firebase instead)
+
 ```bash
 npm run release
 ```
@@ -195,14 +207,51 @@ npx changeset pre exit
 
 This creates versions like `1.14.0-beta.1`, `1.14.0-beta.2`, etc.
 
+## Enforcement & Reminders
+
+This project uses a **gentle nudge** approach to encourage changeset usage:
+
+### Local Development (Husky Hook)
+
+When you commit, a pre-commit hook will:
+
+- ✅ Check if you modified important files
+- 💬 Show a friendly reminder if no changeset exists
+- ✅ Allow the commit to proceed regardless
+
+**This is not a blocker!** You can commit without a changeset if needed.
+
+### Pull Requests (GitHub Action)
+
+When you open a PR, a workflow will:
+
+- 🔍 Check for changeset files
+- 💬 Comment with a reminder if missing
+- ✅ Update comment when changeset is added
+- 🏷️ Skip check if PR has `skip-changeset` label
+
+**This is not a blocker!** You can merge PRs without changesets.
+
+See [Changeset Enforcement](./changeset-enforcement.md) for detailed documentation.
+
 ## GitHub Actions
 
 ### changeset-version.yml
 
 Runs on push to `main`:
+
 - Checks for pending changesets
 - Creates/updates "Version Packages" PR
 - Includes all CHANGELOGs
+
+### changeset-check.yml
+
+Runs on pull requests:
+
+- Analyzes changed files
+- Checks for changeset files
+- Posts helpful comments
+- Not a required check (doesn't block merge)
 
 ## Troubleshooting
 
@@ -211,6 +260,7 @@ Runs on push to `main`:
 **Problem:** You forgot to create a changeset.
 
 **Solution:**
+
 ```bash
 npm run changeset
 git add .changeset/
@@ -223,6 +273,7 @@ git push
 **Problem:** Someone else merged a version bump while you were working.
 
 **Solution:**
+
 ```bash
 git pull --rebase origin main
 # Resolve conflicts in package.json if needed
@@ -234,6 +285,7 @@ git push
 **Problem:** Wrong version bump or bad summary.
 
 **Solution:**
+
 ```bash
 # Find your changeset file
 ls .changeset/
@@ -248,14 +300,17 @@ npm run changeset
 ## Migration from Old System
 
 **Old workflow (deprecated):**
+
 - Conventional commits → automated version bump
 - GitHub Actions bumped version on push
 
 **New workflow:**
+
 - Explicit changesets → controlled versioning
 - "Version Packages" PR for review before release
 
 **Benefits:**
+
 - ✅ Human-readable change descriptions
 - ✅ Automatic CHANGELOG generation
 - ✅ Linked package versioning
