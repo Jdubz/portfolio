@@ -14,7 +14,7 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
       styles={(t) => ({
         ":root": {
           // Step 2: Icon behavior tokens
-          "--icon-opacity": "0.65",
+          "--icon-opacity": "0.43",
           "--icon-blur": "0px",
           "--icon-size-min": "32px",
           "--icon-size-max": "144px",
@@ -70,7 +70,7 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         // Mobile responsive icon settings
         "@media (max-width: 768px)": {
           ":root": {
-            "--icon-opacity": "0.55",
+            "--icon-opacity": "0.39",
             "--icon-size-max": "96px",
           },
           // Step 5: Density control - show only first 10 icons on mobile
@@ -124,24 +124,24 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
         },
         // Step 8: Section-specific presets for fine-tuning
         '.section[data-icon-preset="hero"]': {
-          "--icon-opacity": "0.65",
+          "--icon-opacity": "0.45",
           "--icon-size-max": "84px",
           "--icon-safe-x": "72px",
         },
         '.section[data-icon-preset="projects"]': {
-          "--icon-opacity": "0.68",
+          "--icon-opacity": "0.47",
           "--icon-size-max": "112px",
           "--icon-safe-x": "96px",
           "--icon-safe-y": "64px",
         },
         '.section[data-icon-preset="about"]': {
-          "--icon-opacity": "0.62",
+          "--icon-opacity": "0.42",
           "--icon-size-max": "92px",
           "--icon-safe-x": "64px",
           "--icon-safe-y": "48px",
         },
         '.section[data-icon-preset="contact"]': {
-          "--icon-opacity": "0.60",
+          "--icon-opacity": "0.40",
           "--icon-size-max": "68px",
           "--icon-safe-x": "64px",
         },
