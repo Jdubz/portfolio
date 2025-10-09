@@ -8,6 +8,7 @@
   "scripts": {
     "postinstall": "patch-package",
     "update:partytown": "cp -r ../node_modules/@builder.io/partytown/lib/* static/~partytown/",
+    "prebuild": "node ../scripts/cache-version.js",
     "build": "npm run update:partytown && gatsby build",
     "develop": "gatsby develop --host 0.0.0.0",
     "develop:cypress": "cross-env CYPRESS_SUPPORT=y yarn develop",

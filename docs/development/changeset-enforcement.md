@@ -1,6 +1,6 @@
 # Changeset Enforcement
 
-This project uses a **gentle nudge** approach to encourage changeset usage without blocking development.
+This project **requires changesets** for all pull requests that modify important code. The system automatically generates changesets during commits to build good habits.
 
 ## Overview
 
@@ -11,310 +11,331 @@ Changesets help us:
 - 📚 Generate CHANGELOG entries
 - 🚀 Create release notes
 
+## Enforcement Policy
+
+✅ **Required:** PRs modifying `web/src`, `functions/src`, `gatsby-*`, or `package.json` **must** include a changeset
+
+❌ **Blocked:** PRs without changesets cannot be merged (unless labeled `skip-changeset`)
+
+🤖 **Automated:** Changesets are automatically generated when you commit
+
 ## How It Works
 
-### Local Development (Husky Hooks)
+### Automatic Changeset Generation (Pre-Commit Hook)
 
-When you commit changes, the pre-commit hook will:
+When you stage important files and commit, the pre-commit hook will:
 
-1. Run linting (soft warning, doesn't block)
-2. Check if you've modified important files
-3. If yes, remind you to create a changeset
-4. **Allow the commit regardless** ✅
+1. ✅ Run linting checks
+2. 🔍 Detect which files were changed
+3. 📝 **Automatically prompt for changeset if needed**
+4. 💾 Generate and stage the changeset file
 
-**Example output:**
+**Example flow:**
 
+```bash
+git add web/src/components/NewFeature.tsx
+git commit -m "feat: add new feature"
+
+# Output:
+📝 Auto-Changeset
+
+Detected 1 important file(s) changed:
+  • web/src/components/NewFeature.tsx
+
+Affected packages: josh-wentworth-portfolio
+
+Detected change type: minor
+
+Change type? (patch/minor/major) [minor]: <press enter>
+Summary of changes [add new feature]: <press enter>
+
+✓ Created changeset: .changeset/quick-fox-jumps.md
+✓ Staged changeset file
 ```
-📝 Changeset Reminder
 
-You've modified 3 file(s) that may need a changeset:
+The changeset is automatically:
 
-  • web/src/components/ContactForm.tsx
-  • web/src/pages/contact.tsx
-  • functions/src/index.ts
+- ✅ Created in `.changeset/`
+- ✅ Staged with `git add`
+- ✅ Included in your commit
 
-To create a changeset, run:
-  npm run changeset
-
-This helps track changes for release notes and versioning.
-(This is just a reminder - you can proceed without one)
-```
-
-### Pull Requests (GitHub Actions)
+### Pull Request Enforcement (GitHub Action)
 
 When you open a PR to `main` or `staging`:
 
-1. GitHub Action checks for changeset files
-2. Analyzes which files were changed
-3. **Posts a helpful comment** (doesn't block merge) 💬
+1. 🔍 GitHub Action checks for changeset files
+2. 📊 Analyzes which files were changed
+3. ❌ **Fails the check if changeset is missing**
+4. 💬 Posts a comment explaining what's needed
 
-**If changeset is missing:**
+## When Changesets Are Required
 
-```markdown
-## 📝 Changeset Reminder
+### Always Required For:
 
-Hey there! 👋 This PR modifies **3 important file(s)** but doesn't include a changeset yet.
+- ✅ Changes to `web/src/**` (frontend source code)
+- ✅ Changes to `functions/src/**` (backend source code)
+- ✅ Changes to `web/gatsby-*` (Gatsby configuration)
+- ✅ Changes to `**/package.json` (dependency updates)
 
-### To add a changeset:
+### Never Required For:
 
-npm run changeset
+- ❌ Documentation (`docs/**`, `*.md`)
+- ❌ Tests (`*.test.*`, `*.spec.*`)
+- ❌ CI/CD (`.github/**`)
+- ❌ Configuration (`.eslintrc`, `.prettierrc`)
+- ❌ Images (`.jpg`, `.png`, `.svg`)
+- ❌ Lock files (`package-lock.json`)
 
-### Don't need a changeset?
+## Changeset Types (Semantic Versioning)
 
-Add the `skip-changeset` label to skip this check.
-```
+The auto-changeset script detects the type from your commit message:
 
-**If changeset exists:**
+### Patch (0.0.X) - Bug Fixes
 
-```markdown
-## ✅ Changeset Detected
+Commit prefixes: `fix:`, `perf:`
 
-Great! This PR includes **1 changeset(s)**.
+**Examples:**
 
-Your changes will be included in the next release. 🚀
-```
+- `fix: resolve broken image links`
+- `perf: optimize bundle size`
 
-## When to Create a Changeset
+### Minor (0.X.0) - New Features
 
-### Always Create a Changeset For:
+Commit prefix: `feat:`
 
-- ✅ New features
-- ✅ Bug fixes
-- ✅ Performance improvements
-- ✅ Breaking changes
-- ✅ Dependency updates that affect users
-- ✅ API changes
+**Examples:**
 
-### Skip Changeset For:
+- `feat: add resume generator`
+- `feat: implement dark mode toggle`
 
-- ❌ Documentation updates (README, docs/)
-- ❌ Test changes
-- ❌ CI/CD configuration
-- ❌ Internal refactoring (no user-facing changes)
-- ❌ Development tooling updates
+### Major (X.0.0) - Breaking Changes
 
-## Creating a Changeset
+Commit prefix: `feat!:`, `fix!:`, or message contains `BREAKING`
+
+**Examples:**
+
+- `feat!: remove deprecated API`
+- `fix!: change authentication flow`
+
+## Bypassing the Requirement
+
+### When to Skip Changesets
+
+If your PR **only** contains:
+
+- Documentation updates
+- Test additions/fixes
+- CI/CD configuration
+- Internal refactoring with no user-facing changes
+
+### How to Skip
+
+Add the `skip-changeset` label to your PR:
+
+1. Open your PR on GitHub
+2. Click "Labels" in the right sidebar
+3. Select `skip-changeset`
+4. The workflow will pass without requiring a changeset
+
+## Manually Creating Changesets
+
+If you need to create a changeset manually (or want more control):
 
 ```bash
 npm run changeset
 ```
 
-Follow the prompts:
+This opens the interactive changeset CLI:
 
-1. **Which packages?** Select `josh-wentworth-portfolio` and/or `contact-form-function`
-2. **Bump type?** Choose `patch`, `minor`, or `major`
-3. **Summary?** Write a brief description
+1. Select packages (space to select, enter to confirm)
+2. Choose version bump type
+3. Write a detailed summary
 
-A file is created in `.changeset/fuzzy-pandas-chew.md`:
-
-```markdown
----
-"josh-wentworth-portfolio": minor
-"contact-form-function": minor
----
-
-Added experience page with CRUD operations
-```
-
-**Commit this file with your PR!**
-
-## Skipping the Changeset Check
-
-If your PR truly doesn't need a changeset, add the `skip-changeset` label:
-
-1. Go to your PR on GitHub
-2. Click "Labels" in the right sidebar
-3. Select `skip-changeset`
-4. The workflow will skip the check
-
-## Files That Trigger Changeset Reminder
-
-The following patterns trigger a changeset reminder:
-
-- `web/src/**` - Frontend source code
-- `functions/src/**` - Backend source code
-- `web/gatsby-*` - Gatsby configuration
-- `**/package.json` - Dependency changes
-
-## Files That Don't Trigger Reminder
-
-These patterns are ignored:
-
-- `docs/**` - Documentation
-- `*.md` - Markdown files
-- `.github/**` - GitHub workflows
-- `*.test.*` - Test files
-- `*.spec.*` - Spec files
-- Images (`.jpg`, `.png`, `.svg`, etc.)
-- `package-lock.json` - Lock files
-- Config files (`.eslintrc`, `.prettierrc`, etc.)
-
-## Philosophy: Gentle Nudges, Not Blockers
-
-We believe in:
-
-1. **Education over enforcement** - Explain why changesets help
-2. **Flexibility over rigidity** - Allow commits/merges without changesets
-3. **Visibility over obstruction** - Show reminders, don't block progress
-4. **Trust over control** - Trust developers to make the right choice
-
-### Why Not Block?
-
-- 🚫 Blocking creates friction and slows development
-- 🧠 Developers know their changes best
-- 🔧 Sometimes quick fixes need to go out immediately
-- 📝 Documentation changes shouldn't require version bumps
-- 🏃 Emergencies happen - don't block hotfixes
-
-### Why Remind?
-
-- 📋 Builds good habits over time
-- 🎓 Teaches new contributors about changesets
-- 📚 Ensures better release notes
-- 🏷️ Helps maintain semantic versioning
-- 🔍 Makes changes visible in PRs
-
-## Customizing the Rules
-
-### Adding Files to Ignore
-
-Edit `scripts/check-changeset.js`:
-
-```javascript
-const IGNORED_PATTERNS = [/^\.changeset\//, /^docs\//, /your-pattern-here/]
-```
-
-### Adding Files to Watch
-
-Edit `scripts/check-changeset.js`:
-
-```javascript
-const IMPORTANT_PATTERNS = [/^web\/src\//, /^functions\/src\//, /your-pattern-here/]
-```
-
-### Adjusting GitHub Workflow
-
-Edit `.github/workflows/changeset-check.yml`:
-
-- Change the file detection regex
-- Modify the comment message
-- Adjust which branches trigger the check
+A file is created in `.changeset/` that you commit with your changes.
 
 ## Troubleshooting
 
-### Hook not running?
+### Script doesn't prompt for changeset
 
-Reinstall Husky hooks:
+**Check:**
 
-```bash
-npm run prepare
-```
+- Are you staging important files?
+- Does a changeset already exist in `.changeset/`?
+- Are your changes only to ignored files (docs, tests)?
 
-### Script permission denied?
-
-Make it executable:
+**Debug:**
 
 ```bash
-chmod +x scripts/check-changeset.js
+# Manually run the script
+node scripts/auto-changeset.js
+
+# Check what files are staged
+git diff --cached --name-only
 ```
 
-### Want to disable locally?
+### Want to skip auto-generation for one commit
 
-Set environment variable:
+**Option 1:** Use `--no-verify` flag
 
 ```bash
-export SKIP_CHANGESET_CHECK=1
+git commit --no-verify -m "your message"
 ```
 
-Then add to `scripts/check-changeset.js`:
+**Option 2:** Set environment variable
 
-```javascript
-if (process.env.SKIP_CHANGESET_CHECK === "1") {
-  return
-}
+```bash
+SKIP_CHANGESET=1 git commit -m "your message"
 ```
 
-### GitHub Action not commenting?
+### PR check failing but I have a changeset
 
-Check that the workflow has `pull-requests: write` permission in the YAML file.
+**Check:**
+
+- Is the changeset file committed and pushed?
+- Is it in the `.changeset/` directory?
+- Is it named with `.md` extension (not `README.md`)?
+
+**Verify:**
+
+```bash
+ls .changeset/*.md | grep -v README
+```
+
+### Want to modify the changeset after creation
+
+**Find your changeset:**
+
+```bash
+ls -lt .changeset/*.md | head -1
+```
+
+**Edit it:**
+
+```bash
+nano .changeset/your-changeset.md
+```
+
+**Amend your commit:**
+
+```bash
+git add .changeset/
+git commit --amend --no-edit
+```
 
 ## Examples
 
 ### Example 1: Feature Addition
 
 ```bash
-# Make changes
+# Stage your changes
 git add web/src/components/ResumeGenerator.tsx
 
-# Commit triggers reminder
-git commit -m "feat: add resume generator component"
+# Commit with conventional commit format
+git commit -m "feat: add AI resume generator"
 
-# Output:
-📝 Changeset Reminder
-You've modified 1 file(s) that may need a changeset:
-  • web/src/components/ResumeGenerator.tsx
-To create a changeset, run:
-  npm run changeset
+# Pre-commit hook runs and prompts:
+📝 Auto-Changeset
+Detected 1 important file(s) changed
+Detected change type: minor
 
-# Create changeset
-npm run changeset
-# Select: josh-wentworth-portfolio
-# Type: minor
-# Summary: "Added AI resume generator component"
+Change type? (patch/minor/major) [minor]: <enter>
+Summary of changes [add AI resume generator]: <enter>
 
-# Commit the changeset
-git add .changeset/
-git commit -m "chore: add changeset"
+✓ Created changeset: .changeset/brave-lion-roars.md
+
+# Commit completes with changeset included
 ```
 
-### Example 2: Documentation Update
+### Example 2: Bug Fix
 
 ```bash
-# Make changes
-git add docs/README.md
+git add web/src/components/ContactForm.tsx
+git commit -m "fix: resolve email validation bug"
 
-# Commit - no reminder (docs are ignored)
+# Pre-commit hook detects 'fix:' prefix → suggests 'patch'
+Detected change type: patch
+Change type? (patch/minor/major) [patch]: <enter>
+```
+
+### Example 3: Documentation Update (No Changeset)
+
+```bash
+git add docs/README.md
 git commit -m "docs: update installation instructions"
 
-# No changeset needed! ✅
+# Pre-commit hook detects docs file → no prompt
+# Commit proceeds without changeset
 ```
 
-### Example 3: Multiple Changes
+## Philosophy
 
-```bash
-# Make multiple changes
-git add web/src/components/A.tsx web/src/components/B.tsx functions/src/index.ts
+### Why Automatic Generation?
 
-# Create multiple changesets if they're separate features
-npm run changeset  # Feature A
-npm run changeset  # Feature B
-npm run changeset  # Backend change
+- 🎯 **Builds habits:** You create changesets every time
+- ⚡ **Saves time:** No need to remember manual commands
+- 📝 **Consistent format:** Uses commit message for defaults
+- 🚫 **Prevents forgetting:** Impossible to skip accidentally
 
-# Or single changeset if they're related
-npm run changeset  # All changes together
-```
+### Why PR Requirement?
 
-## Integration with Other Tools
+- 🔒 **Quality control:** Ensures proper versioning
+- 📚 **Better changelogs:** Every release has documentation
+- 🏷️ **Semantic versioning:** Maintains version integrity
+- 👥 **Team alignment:** Everyone sees what changed
 
-### Works With:
+### Why Allow Skip Label?
 
-- ✅ Conventional Commits (commit-msg hook)
-- ✅ Linting (pre-commit hook)
-- ✅ Testing (pre-push hook)
-- ✅ Size Limit (GitHub Action)
-- ✅ Playwright tests (GitHub Action)
-
-### Hook Execution Order:
-
-1. **pre-commit:** Lint → Changeset reminder
-2. **commit-msg:** Conventional commits validation
-3. **pre-push:** Tests
-
-All hooks allow commits/pushes to proceed even if they show warnings.
+- 🔧 **Flexibility:** Emergency fixes can proceed
+- 📝 **Documentation:** Docs-only PRs don't need versions
+- 🧪 **Testing:** Test-only changes don't affect releases
+- ⚙️ **Configuration:** CI/CD changes don't need versions
 
 ## Resources
 
 - [Changesets Documentation](https://github.com/changesets/changesets)
-- [Internal Changesets Workflow](./changesets-workflow.md)
-- [Husky Documentation](https://typicode.github.io/husky/)
-- [GitHub Actions - Scripting with Actions](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions)
+- [Internal Changeset Workflow](./changesets-workflow.md)
+- [Semantic Versioning](https://semver.org/)
+- [Conventional Commits](https://www.conventionalcommits.org/)
+
+## Cache Busting
+
+The changeset system includes **intelligent cache busting** for updates that require hard refreshes.
+
+### When Prompted
+
+During changeset creation, you'll see:
+
+```
+⚠️  Does this change require users to hard refresh?
+   (Service worker changes, critical CSS/JS updates, etc.)
+
+Force cache invalidation? (y/N) [N]:
+```
+
+Answer **Yes (y)** for:
+
+- ✅ Service worker updates
+- ✅ Critical CSS/JS changes
+- ✅ Breaking localStorage changes
+- ✅ Asset CDN migrations
+
+Answer **No (N)** for:
+
+- ❌ Regular content updates
+- ❌ Minor style tweaks
+- ❌ Backend API changes
+
+### Example
+
+```bash
+git commit -m "feat: update service worker"
+
+Change type? minor
+Summary: update service worker caching
+Force cache invalidation? y
+
+✓ Created changeset with CACHE_BUST flag
+🔥 Users will get automatic cache invalidation
+```
+
+See [Cache Busting Guide](./cache-busting.md) for full documentation.

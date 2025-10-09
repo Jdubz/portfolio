@@ -207,30 +207,42 @@ npx changeset pre exit
 
 This creates versions like `1.14.0-beta.1`, `1.14.0-beta.2`, etc.
 
-## Enforcement & Reminders
+## Enforcement & Automation
 
-This project uses a **gentle nudge** approach to encourage changeset usage:
+This project **requires changesets** for all PRs with important code changes and **automatically generates** them during commits:
 
-### Local Development (Husky Hook)
+### Automatic Generation (Pre-Commit Hook)
 
-When you commit, a pre-commit hook will:
+When you commit changes to important files, a pre-commit hook will:
 
-- ✅ Check if you modified important files
-- 💬 Show a friendly reminder if no changeset exists
-- ✅ Allow the commit to proceed regardless
+- 🔍 Detect which files were modified
+- 📝 Auto-prompt for changeset details (type and summary)
+- 💾 Generate and stage the changeset file
+- ✅ Include it in your commit automatically
 
-**This is not a blocker!** You can commit without a changeset if needed.
+**Example:**
 
-### Pull Requests (GitHub Action)
+```bash
+git add web/src/components/NewFeature.tsx
+git commit -m "feat: add new feature"
 
-When you open a PR, a workflow will:
+# Hook prompts:
+Change type? (patch/minor/major) [minor]: <enter>
+Summary of changes [add new feature]: <enter>
+
+# Changeset automatically created and staged
+```
+
+### Required Check (GitHub Action)
+
+When you open a PR to `main` or `staging`, a workflow will:
 
 - 🔍 Check for changeset files
-- 💬 Comment with a reminder if missing
-- ✅ Update comment when changeset is added
+- ❌ **Fail if missing** (blocks merge)
+- 💬 Comment with instructions
 - 🏷️ Skip check if PR has `skip-changeset` label
 
-**This is not a blocker!** You can merge PRs without changesets.
+**This is a required check!** PRs cannot merge without a changeset (unless labeled).
 
 See [Changeset Enforcement](./changeset-enforcement.md) for detailed documentation.
 
@@ -251,7 +263,8 @@ Runs on pull requests:
 - Analyzes changed files
 - Checks for changeset files
 - Posts helpful comments
-- Not a required check (doesn't block merge)
+- **Required check (blocks merge if missing)**
+- Can be bypassed with `skip-changeset` label
 
 ## Troubleshooting
 

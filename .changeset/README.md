@@ -47,10 +47,10 @@ See our [Changeset Workflow Guide](../docs/development/changesets-workflow.md) f
 
 ## Enforcement
 
-This project uses **gentle reminders** rather than strict blocking:
+This project **requires changesets** for all PRs with important code changes:
 
-- Local commits will show a reminder if you forget
-- GitHub PRs will get a friendly comment
-- You can still commit/merge without a changeset if needed
+- **Local commits:** Auto-generates changesets when you commit
+- **GitHub PRs:** Required check that blocks merge without changeset
+- **Skip option:** Use `skip-changeset` label for docs/tests/config PRs
 
 See [Changeset Enforcement](../docs/development/changeset-enforcement.md) for details.
