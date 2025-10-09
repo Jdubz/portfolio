@@ -1,9 +1,11 @@
 import { https } from "firebase-functions/v2"
-import type { Request, Response } from "express"
-import cors from "cors"
+import type { Request as ExpressRequest, Response } from "express"
 import { Storage } from "@google-cloud/storage"
 import busboy from "busboy"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
+
+// Extend Express Request to include rawBody from Firebase Functions
+type Request = ExpressRequest & { rawBody?: Buffer }
 
 // Error codes for resume API
 const ERROR_CODES = {
@@ -54,8 +56,6 @@ const corsOptions = {
   credentials: true,
 }
 
-const corsHandler = cors(corsOptions)
-
 /**
  * Generate a unique request ID for tracking
  */
@@ -72,49 +72,50 @@ function generateRequestId(): string {
 const handleResumeRequest = async (req: Request, res: Response): Promise<void> => {
   const requestId = generateRequestId()
 
+  // Set CORS headers manually to avoid middleware consuming body
+  const origin = req.headers.origin || ""
+  const isAllowedOrigin = corsOptions.origin.includes(origin)
+
+  if (isAllowedOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", origin)
+    res.setHeader("Access-Control-Allow-Credentials", "true")
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", corsOptions.methods.join(", "))
+  res.setHeader("Access-Control-Allow-Headers", corsOptions.allowedHeaders.join(", "))
+
+  // Handle OPTIONS preflight (must be before any auth checks)
+  if (req.method === "OPTIONS") {
+    res.status(204).send("")
+    return
+  }
+
   try {
-    // Handle CORS - wrap in Promise to await async callback
-    await new Promise<void>((resolve, reject) => {
-      corsHandler(req, res, async () => {
-        try {
-          // Handle OPTIONS preflight
-          if (req.method === "OPTIONS") {
-            res.status(204).send("")
-            resolve()
-            return
-          }
 
-          // Only allow POST requests
-          if (req.method !== "POST") {
-            logger.warning("Method not allowed", { method: req.method, requestId })
-            const err = ERROR_CODES.METHOD_NOT_ALLOWED
-            res.status(err.status).json({
-              success: false,
-              error: "METHOD_NOT_ALLOWED",
-              errorCode: err.code,
-              message: err.message,
-              requestId,
-            })
-            resolve()
-            return
-          }
+    // Only allow POST requests
+    if (req.method !== "POST") {
+      logger.warning("Method not allowed", { method: req.method, requestId })
+      const err = ERROR_CODES.METHOD_NOT_ALLOWED
+      res.status(err.status).json({
+        success: false,
+        error: "METHOD_NOT_ALLOWED",
+        errorCode: err.code,
+        message: err.message,
+        requestId,
+      })
+      return
+    }
 
-          // Apply auth middleware
-          await new Promise<void>((resolveAuth, rejectAuth) => {
-            verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
-              if (err) rejectAuth(err)
-              else resolveAuth()
-            })
-          })
-
-          // Handle file upload
-          await handleResumeUpload(req as AuthenticatedRequest, res, requestId)
-          resolve()
-        } catch (err) {
-          reject(err)
-        }
+    // Apply auth middleware
+    await new Promise<void>((resolveAuth, rejectAuth) => {
+      verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
+        if (err) rejectAuth(err)
+        else resolveAuth()
       })
     })
+
+    // Handle file upload
+    await handleResumeUpload(req as AuthenticatedRequest, res, requestId)
   } catch (error) {
     logger.error("Unexpected error in resume handler", {
       error,
@@ -137,7 +138,11 @@ const handleResumeRequest = async (req: Request, res: Response): Promise<void> =
 /**
  * POST /resume/upload - Upload resume (auth required)
  */
-async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+async function handleResumeUpload(
+  req: AuthenticatedRequest & { rawBody?: Buffer },
+  res: Response,
+  requestId: string
+): Promise<void> {
   const userEmail = req.user!.email
 
   logger.info("Processing resume upload", {
@@ -159,23 +164,47 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
       return
     }
 
-    const bb = busboy({ headers: req.headers, limits: { fileSize: MAX_FILE_SIZE } })
+    const bb = busboy({
+      headers: req.headers,
+      limits: {
+        fileSize: MAX_FILE_SIZE,
+        files: 1 // Only allow one file
+      }
+    })
     let fileUploaded = false
     let uploadError: Error | null = null
+    let responseHandled = false
+    let uploadInProgress = false
+
+    bb.on("error", (err: unknown) => {
+      logger.error("Busboy error", { error: err, requestId })
+      uploadError = err instanceof Error ? err : new Error(String(err))
+
+      // Handle the error immediately if response not already sent
+      if (!responseHandled && !res.headersSent) {
+        responseHandled = true
+        const error = ERROR_CODES.VALIDATION_FAILED
+        const errorMessage = err instanceof Error ? err.message : String(err)
+        res.status(error.status).json({
+          success: false,
+          error: "VALIDATION_FAILED",
+          errorCode: error.code,
+          message: errorMessage || error.message,
+          requestId,
+        })
+      }
+    })
 
     bb.on("file", (fieldname, file, info) => {
       const { filename, mimeType } = info
 
-      logger.info("File upload started", {
-        requestId,
-        fieldname,
-        filename,
-        mimeType,
-      })
+      // Mark that we're processing a file
+      uploadInProgress = true
 
       // Validate file type
       if (mimeType !== "application/pdf") {
         uploadError = new Error("INVALID_FILE_TYPE")
+        uploadInProgress = false
         file.resume() // Drain the stream
         return
       }
@@ -198,20 +227,36 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
       blobStream.on("error", (err) => {
         logger.error("Upload stream error", { error: err, requestId })
         uploadError = err
+        uploadInProgress = false
       })
 
       blobStream.on("finish", () => {
-        logger.info("File uploaded successfully", {
-          requestId,
-          bucket: BUCKET_NAME,
-          filename: RESUME_FILENAME,
-          userEmail,
-        })
         fileUploaded = true
+        uploadInProgress = false
+
+        // Send response immediately after upload completes
+        if (!responseHandled && !res.headersSent) {
+          responseHandled = true
+          const publicUrl = `https://storage.googleapis.com/${BUCKET_NAME}/${RESUME_FILENAME}`
+
+          logger.info("Resume uploaded successfully", {
+            requestId,
+            filename,
+            userEmail,
+          })
+
+          res.status(200).json({
+            success: true,
+            message: "Resume uploaded successfully",
+            url: publicUrl,
+            requestId,
+          })
+        }
       })
 
       file.on("limit", () => {
         uploadError = new Error("FILE_TOO_LARGE")
+        uploadInProgress = false
         file.resume() // Drain the stream
       })
 
@@ -219,6 +264,19 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
     })
 
     bb.on("finish", () => {
+      // Skip if response already handled (success case is handled in blobStream.on("finish"))
+      if (responseHandled) {
+        return
+      }
+
+      // If upload is still in progress, wait for blobStream to finish
+      if (uploadInProgress) {
+        return
+      }
+
+      // Only handle error cases here
+      responseHandled = true
+
       if (uploadError) {
         const errorType = uploadError.message
         const err =
@@ -251,18 +309,31 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
         })
         return
       }
-
-      const publicUrl = `https://storage.googleapis.com/${BUCKET_NAME}/${RESUME_FILENAME}`
-
-      res.status(200).json({
-        success: true,
-        message: "Resume uploaded successfully",
-        url: publicUrl,
-        requestId,
-      })
     })
 
-    req.pipe(bb)
+    // Firebase Functions v2 buffers the request body into req.rawBody
+    // We need to feed this buffer to busboy instead of piping the request stream
+    const rawBody = req.rawBody
+    if (rawBody) {
+      bb.end(rawBody)
+    } else {
+      // Fallback: stream directly from request (shouldn't happen with Firebase Functions v2)
+      req.on("error", (err) => {
+        logger.error("Request stream error", { error: err, requestId })
+        if (!responseHandled && !res.headersSent) {
+          responseHandled = true
+          const error = ERROR_CODES.VALIDATION_FAILED
+          res.status(error.status).json({
+            success: false,
+            error: "VALIDATION_FAILED",
+            errorCode: error.code,
+            message: "Error reading request data",
+            requestId,
+          })
+        }
+      })
+      req.pipe(bb)
+    }
   } catch (error) {
     logger.error("Failed to upload resume", {
       error,

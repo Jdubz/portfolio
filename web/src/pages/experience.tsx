@@ -80,24 +80,11 @@ const ExperiencePage: React.FC = () => {
     fileInputRef.current?.click()
   }
 
-  const handleDownloadResume = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleDownloadResume = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Use direct link - GCS doesn't support CORS for fetch
+    // Browser will handle the download automatically via the <a> tag's download attribute
     e.preventDefault()
-    try {
-      const response = await fetch("https://storage.googleapis.com/joshwentworth-resume/resume.pdf")
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement("a")
-      link.href = url
-      link.download = "Josh_Wentworth_Resume.pdf"
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error("Failed to download resume:", error)
-      // Fallback to direct link
-      window.open("https://storage.googleapis.com/joshwentworth-resume/resume.pdf", "_blank")
-    }
+    window.open("https://storage.googleapis.com/joshwentworth-resume/resume.pdf", "_blank")
   }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
