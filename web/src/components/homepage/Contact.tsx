@@ -67,24 +67,24 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
     <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
       {/* Bubbles rising from bottom - larger, more visible */}
       <UpDown>
-        <Svg icon="database" hiddenMobile width={80} color="icon_darkest" left="70%" top="10%" />
-        <Svg icon="triangle" width={88} stroke color="icon_darkest" left="25%" top="8%" />
-        <Svg icon="shield" width={96} stroke color="icon_darkest" left="80%" top="88%" />
+        <Svg icon="wrench" width={88} stroke color="icon_brightest" left="25%" top="8%" />
+        <Svg icon="plug" width={96} stroke color="icon_purple" left="80%" top="88%" />
       </UpDown>
       <UpDownWide>
         {/* Top cluster - floating to surface */}
-        <Svg icon="circle" width={72} color="icon_brightest" left="85%" top="6%" />
-        <Svg icon="capacitor" hiddenMobile width={80} color="icon_darkest" left="45%" top="5%" />
-        <Svg icon="rocket" width={64} color="icon_brightest" left="4%" top="12%" />
+        <Svg icon="test-tube" width={72} color="icon_teal" left="85%" top="6%" />
+        <Svg icon="stopwatch" hiddenMobile width={80} color="icon_orange" left="45%" top="5%" />
+        <Svg icon="battery" width={64} color="icon_green" left="4%" top="12%" />
+        <Svg icon="commit" hiddenMobile width={72} color="icon_blue" left="70%" top="10%" />
 
         {/* Bottom cluster - rising bubbles */}
-        <Svg icon="git-branch" width={80} color="icon_darkest" left="20%" top="86%" />
-        <Svg icon="cloud" width={88} color="icon_darkest" left="50%" top="90%" />
-        <Svg icon="key" width={72} color="icon_darkest" left="5%" top="90%" />
+        <Svg icon="pcb-trace" width={80} color="icon_pink" left="20%" top="86%" />
+        <Svg icon="robotic-arm" width={88} color="icon_yellow" left="50%" top="90%" />
+        <Svg icon="function-fx" width={72} color="icon_indigo" left="5%" top="90%" />
       </UpDownWide>
       {/* Mid-section - sparser, smaller bubbles for depth */}
-      <Svg icon="code-brackets" width={48} stroke color="icon_brightest" left="95%" top="50%" />
-      <Svg icon="diode" width={56} color="icon_darkest" left="70%" top="55%" />
+      <Svg icon="json" width={48} stroke color="icon_brightest" left="95%" top="50%" />
+      <Svg icon="op-amp" width={56} color="icon_purple" left="70%" top="55%" />
     </Divider>
   </section>
 )

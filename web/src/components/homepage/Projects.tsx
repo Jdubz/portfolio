@@ -39,29 +39,28 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
     <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
       {/* Bubbles rising from bottom - larger, more visible */}
       <UpDown>
-        <Svg icon="database" width={80} color="icon_brightest" left="85%" top="85%" />
-        <Svg icon="cloud" width={88} color="icon_teal" left="70%" top="10%" />
-        <Svg icon="triangle" width={96} stroke color="icon_indigo" left="25%" top="6%" />
+        <Svg icon="circle" width={96} stroke color="icon_indigo" left="25%" top="6%" />
+        <Svg icon="code-brackets" width={80} color="icon_teal" left="70%" top="10%" />
+        <Svg icon="git-branch" width={88} color="icon_green" left="85%" top="85%" />
       </UpDown>
       <UpDownWide>
         {/* Top cluster - floating to surface */}
-        <Svg icon="circle" width={72} color="icon_brightest" left="75%" top="8%" />
-        <Svg icon="code-brackets" hiddenMobile width={80} color="icon_teal" left="45%" top="5%" />
-        <Svg icon="flask" hiddenMobile width={64} color="icon_brightest" left="4%" top="12%" />
-        <Svg icon="cube-3d" width={72} color="icon_blue" left="10%" top="6%" />
+        <Svg icon="wrench" width={72} color="icon_brightest" left="75%" top="8%" />
+        <Svg icon="bluetooth" hiddenMobile width={80} color="icon_blue" left="45%" top="5%" />
+        <Svg icon="led" hiddenMobile width={64} color="icon_red" left="4%" top="12%" />
+        <Svg icon="inductor" width={72} color="icon_yellow" left="10%" top="6%" />
 
         {/* Bottom cluster - rising bubbles */}
-        <Svg icon="arrowUp" hiddenMobile width={88} color="icon_teal" left="20%" top="92%" />
-        <Svg icon="resistor" width={96} color="icon_blue" left="70%" top="88%" />
-        <Svg icon="lock" hiddenMobile width={80} stroke color="icon_indigo" left="18%" top="84%" />
-        <Svg icon="hexa" width={88} stroke color="icon_indigo" left="75%" top="90%" />
-        <Svg icon="bolt" width={80} stroke color="icon_blue" left="80%" top="82%" />
-        <Svg icon="server-stack" width={72} color="icon_teal" left="29%" top="86%" />
+        <Svg icon="caliper" hiddenMobile width={88} color="icon_teal" left="20%" top="92%" />
+        <Svg icon="graph" width={96} color="icon_purple" left="70%" top="88%" />
+        <Svg icon="nut" hiddenMobile width={80} stroke color="icon_pink" left="18%" top="84%" />
+        <Svg icon="ruler" width={88} stroke color="icon_orange" left="75%" top="90%" />
+        <Svg icon="motor" width={80} stroke color="icon_blue" left="80%" top="82%" />
+        <Svg icon="screwdriver" width={72} color="icon_brightest" left="29%" top="86%" />
       </UpDownWide>
       {/* Mid-section - sparser, smaller bubbles for depth */}
-      <Svg icon="compass" width={48} stroke color="icon_brightest" left="90%" top="45%" />
-      <Svg icon="circle" width={56} color="icon_indigo" left="80%" top="55%" />
-      <Svg icon="wifi" hiddenMobile width={64} color="icon_brightest" left="17%" top="50%" />
+      <Svg icon="compass" width={48} stroke color="icon_green" left="90%" top="45%" />
+      <Svg icon="magnifier" width={56} color="icon_indigo" left="80%" top="55%" />
     </Divider>
   </section>
 )

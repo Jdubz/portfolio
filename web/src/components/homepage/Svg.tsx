@@ -34,6 +34,27 @@ type IconType =
   | "diode"
   | "pull-request"
   | "compass"
+  | "wrench"
+  | "bluetooth"
+  | "led"
+  | "inductor"
+  | "caliper"
+  | "graph"
+  | "nut"
+  | "ruler"
+  | "motor"
+  | "screwdriver"
+  | "magnifier"
+  | "plug"
+  | "test-tube"
+  | "stopwatch"
+  | "battery"
+  | "commit"
+  | "pcb-trace"
+  | "robotic-arm"
+  | "function-fx"
+  | "json"
+  | "op-amp"
 
 type SVGProps = {
   stroke?: boolean
@@ -75,6 +96,27 @@ const viewBox = {
   diode: `0 0 64 64`,
   "pull-request": `0 0 64 64`,
   compass: `0 0 64 64`,
+  wrench: `0 0 64 64`,
+  bluetooth: `0 0 64 64`,
+  led: `0 0 64 64`,
+  inductor: `0 0 64 64`,
+  caliper: `0 0 64 64`,
+  graph: `0 0 64 64`,
+  nut: `0 0 64 64`,
+  ruler: `0 0 64 64`,
+  motor: `0 0 64 64`,
+  screwdriver: `0 0 64 64`,
+  magnifier: `0 0 64 64`,
+  plug: `0 0 64 64`,
+  "test-tube": `0 0 64 64`,
+  stopwatch: `0 0 64 64`,
+  battery: `0 0 64 64`,
+  commit: `0 0 64 64`,
+  "pcb-trace": `0 0 64 64`,
+  "robotic-arm": `0 0 64 64`,
+  "function-fx": `0 0 64 64`,
+  json: `0 0 64 64`,
+  "op-amp": `0 0 64 64`,
 }
 
 const Svg = ({ stroke = false, color = ``, width, icon, left, top, hiddenMobile = false }: SVGProps) => (
