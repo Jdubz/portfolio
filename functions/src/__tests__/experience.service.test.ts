@@ -216,10 +216,12 @@ describe("ExperienceService", () => {
 
       expect(mockAdd).toHaveBeenCalledWith({
         title: createData.title,
-        body: "",
+        role: undefined,
+        location: undefined,
+        body: undefined,
         startDate: createData.startDate,
         endDate: null,
-        notes: "",
+        notes: undefined,
         createdAt: mockTimestamp,
         updatedAt: mockTimestamp,
         createdBy: userEmail,
@@ -227,7 +229,7 @@ describe("ExperienceService", () => {
       })
 
       expect(result.title).toBe(createData.title)
-      expect(result.body).toBe("")
+      expect(result.body).toBeUndefined()
       expect(result.endDate).toBeNull()
     })
 
