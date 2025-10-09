@@ -40,7 +40,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
       {/* Bubbles rising from bottom - larger, more visible */}
       <UpDown>
         <Svg icon="hexa" width={96} stroke color="icon_indigo" left="25%" top="6%" />
-        <Svg icon="code-brackets" width={80} color="icon_teal" left="70%" top="10%" />
+        <Svg icon="code-brackets" width={80} stroke color="icon_teal" left="70%" top="10%" />
         <Svg icon="pcb-trace" width={88} color="icon_green" left="85%" top="85%" />
       </UpDown>
       <UpDownWide>
