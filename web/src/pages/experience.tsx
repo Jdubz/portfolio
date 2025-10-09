@@ -80,6 +80,26 @@ const ExperiencePage: React.FC = () => {
     fileInputRef.current?.click()
   }
 
+  const handleDownloadResume = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    try {
+      const response = await fetch("https://storage.googleapis.com/joshwentworth-resume/resume.pdf")
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = "Josh_Wentworth_Resume.pdf"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Failed to download resume:", error)
+      // Fallback to direct link
+      window.open("https://storage.googleapis.com/joshwentworth-resume/resume.pdf", "_blank")
+    }
+  }
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) {
@@ -260,6 +280,7 @@ const ExperiencePage: React.FC = () => {
               <a
                 href="https://storage.googleapis.com/joshwentworth-resume/resume.pdf"
                 download="Josh_Wentworth_Resume.pdf"
+                onClick={(e) => void handleDownloadResume(e)}
                 style={{
                   display: "inline-block",
                   fontSize: "16px",
@@ -267,6 +288,7 @@ const ExperiencePage: React.FC = () => {
                   color: "#667eea",
                   textDecoration: "none",
                   transition: "color 0.3s ease",
+                  cursor: "pointer",
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "#0ea5e9")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "#667eea")}

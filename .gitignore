@@ -121,7 +121,10 @@ public/~partytown/
 web/src/components/*Test.tsx
 web/src/components/FORMS_GUIDE.md
 web/src/test-theme.ts
-emulator-data/
+
+# Firebase emulator data (keep structure, ignore exported data)
+emulator-data/*
+!emulator-data/.gitkeep
 
 # Playwright test artifacts
 web/playwright-report/
