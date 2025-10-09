@@ -25,36 +25,21 @@
     <!-- Terminal icon - replaces arrowUp -->
     <symbol id="arrowUp" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="8" y="12" width="48" height="40" rx="4"/>
-        <path d="M18 26l6 4-6 4"/>
-        <path d="M32 34h8"/>
-        <circle cx="14" cy="18" r="1.5"/>
-        <circle cx="20" cy="18" r="1.5"/>
-        <circle cx="26" cy="18" r="1.5"/>
+<rect x="8" y="12" width="48" height="40" rx="5"/><path d="M16 24 L24 32 L16 40"/><path d="M28 40 H48"/>
       </g>
     </symbol>
 
     <!-- Oscilloscope icon - replaces upDown -->
     <symbol id="upDown" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="8" y="12" width="48" height="40" rx="4"/>
-        <path d="M16 32c4 0 4-8 8-8s4 8 8 8 4-8 8-8 4 8 8 8"/>
-        <path d="M12 16h4"/>
-        <path d="M12 20h4"/>
-        <path d="M12 24h4"/>
-        <path d="M48 16h4"/>
-        <path d="M48 20h4"/>
-        <path d="M48 24h4"/>
+<rect x="8" y="12" width="48" height="32" rx="4"/><path d="M12 40h12v6H12z"/><path d="M16 28c3 0 3-8 6-8s3 16 6 16 3-8 6-8 3 4 6 4"/>
       </g>
     </symbol>
 
     <!-- Container icon - replaces box -->
     <symbol id="box" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 20l20-8 20 8v32l-20 8-20-8V20z"/>
-        <path d="M12 20l20 8 20-8"/>
-        <path d="M32 28v24"/>
-        <path d="M22 16l10-4 10 4"/>
+<rect x="10" y="18" width="44" height="28" rx="4"/><path d="M16 18v28 M22 18v28 M28 18v28 M34 18v28 M40 18v28 M46 18v28"/>
       </g>
     </symbol>
 
@@ -71,28 +56,14 @@
     <!-- API icon - replaces cross -->
     <symbol id="cross" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="16" cy="16" r="6"/>
-        <circle cx="48" cy="16" r="6"/>
-        <circle cx="32" cy="32" r="6"/>
-        <circle cx="16" cy="48" r="6"/>
-        <circle cx="48" cy="48" r="6"/>
-        <path d="M22 16h20"/>
-        <path d="M26 26l6 6"/>
-        <path d="M38 26l-6 6"/>
-        <path d="M22 48h20"/>
-        <path d="M16 22v20"/>
-        <path d="M48 22v20"/>
+<rect x="10" y="16" width="44" height="24" rx="4"/><path d="M18 28h6"/><path d="M30 22v12"/><path d="M36 22v12"/><path d="M42 22v12"/>
       </g>
     </symbol>
 
     <!-- Additional brand icons for variety -->
     <symbol id="rocket" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M32 8c8 0 16 8 16 16 0 8-4 12-8 16l-8 8-8-8c-4-4-8-8-8-16 0-8 8-16 16-16z"/>
-        <circle cx="32" cy="20" r="4"/>
-        <path d="M20 40l-8 8v8l8-8"/>
-        <path d="M44 40l8 8v8l-8-8"/>
-        <path d="M28 48l8 8"/>
+<path d="M24 40l-6 10 10-6h8l10 6-6-10"/><path d="M24 40c0-14 8-24 8-24s8 10 8 24"/><circle cx="32" cy="28" r="4"/>
       </g>
     </symbol>
 
@@ -105,35 +76,19 @@
 
     <symbol id="resistor" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M8 32h8"/>
-        <path d="M48 32h8"/>
-        <rect x="16" y="24" width="32" height="16" rx="2"/>
-        <path d="M20 20v8"/>
-        <path d="M24 20v8"/>
-        <path d="M28 20v8"/>
-        <path d="M32 20v8"/>
-        <path d="M36 20v8"/>
-        <path d="M40 20v8"/>
-        <path d="M44 20v8"/>
+<path d="M6 32h10"/><path d="M16 32l4-6 6 12 6-12 6 12 6-12 4 6"/><path d="M58 32h-10"/>
       </g>
     </symbol>
 
     <symbol id="wifi" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M8 32c13-13 35-13 48 0"/>
-        <path d="M16 40c9-9 23-9 32 0"/>
-        <path d="M24 48c5-5 11-5 16 0"/>
-        <circle cx="32" cy="52" r="2"/>
+<path d="M12 26c12-10 28-10 40 0"/><path d="M18 32c8-6 20-6 28 0"/><path d="M24 38c4-3 12-3 16 0"/><circle cx="32" cy="44" r="2"/>
       </g>
     </symbol>
 
     <symbol id="database" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <ellipse cx="32" cy="16" rx="20" ry="6"/>
-        <ellipse cx="32" cy="32" rx="20" ry="6"/>
-        <ellipse cx="32" cy="48" rx="20" ry="6"/>
-        <path d="M12 16v32c0 3 9 6 20 6s20-3 20-6V16"/>
-        <path d="M12 32c0 3 9 6 20 6s20-3 20-6"/>
+<ellipse cx="32" cy="14" rx="18" ry="6"/><path d="M14 14v24c0 3 8 6 18 6s18-3 18-6V14"/><path d="M14 26c0 3 8 6 18 6s18-3 18-6"/><path d="M14 38c0 3 8 6 18 6s18-3 18-6"/>
       </g>
     </symbol>
 
@@ -167,120 +122,79 @@
 
     <symbol id="git-branch" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="18" cy="18" r="4"/>
-        <circle cx="18" cy="46" r="4"/>
-        <path d="M18 22v20a8 8 0 0 0 8 8h8"/>
-        <path d="M22 18h20"/>
+<circle cx="18" cy="18" r="4"/><circle cx="18" cy="46" r="4"/><path d="M18 22v20a8 8 0 0 0 8 8h8"/><path d="M22 18h20"/>
       </g>
     </symbol>
 
     <symbol id="server-stack" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="8" y="12" width="48" height="12" rx="2"/>
-        <rect x="8" y="26" width="48" height="12" rx="2"/>
-        <rect x="8" y="40" width="48" height="12" rx="2"/>
-        <circle cx="14" cy="18" r="1.5"/>
-        <circle cx="20" cy="18" r="1.5"/>
-        <circle cx="14" cy="32" r="1.5"/>
-        <circle cx="20" cy="32" r="1.5"/>
-        <circle cx="14" cy="46" r="1.5"/>
-        <circle cx="20" cy="46" r="1.5"/>
+<rect x="10" y="12" width="44" height="10" rx="4"/><rect x="10" y="27" width="44" height="10" rx="4"/><rect x="10" y="42" width="44" height="10" rx="4"/><circle cx="18" cy="17" r="1.5"/><circle cx="18" cy="32" r="1.5"/><circle cx="18" cy="47" r="1.5"/>
       </g>
     </symbol>
 
     <symbol id="shield" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M32 8l-20 8v12c0 12 20 28 20 28s20-16 20-28V16z"/>
+<path d="M32 8l18 6v14c0 12-10 20-18 24-8-4-18-12-18-24V14z"/>
       </g>
     </symbol>
 
     <symbol id="bug" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 12l-8 8M44 12l8 8"/>
-        <ellipse cx="32" cy="32" rx="12" ry="16"/>
-        <path d="M20 24h-8M44 24h8M20 40h-8M44 40h8"/>
-        <path d="M24 48l-6 8M40 48l6 8"/>
-        <circle cx="28" cy="28" r="1.5"/>
-        <circle cx="36" cy="28" r="1.5"/>
+<circle cx="32" cy="28" r="8"/><path d="M24 36v10 M40 36v10"/><path d="M18 28h-8 M46 28h8"/><path d="M22 20l-6-6 M42 20l6-6"/>
       </g>
     </symbol>
 
     <symbol id="cluster" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="32" cy="16" r="6"/>
-        <circle cx="16" cy="40" r="6"/>
-        <circle cx="48" cy="40" r="6"/>
-        <path d="M28 20l-8 16M36 20l8 16"/>
-        <path d="M22 40h20"/>
+<circle cx="20" cy="20" r="6"/><circle cx="44" cy="20" r="6"/><circle cx="20" cy="44" r="6"/><circle cx="44" cy="44" r="6"/><path d="M26 20h12 M20 26v12 M44 26v12 M26 44h12"/>
       </g>
     </symbol>
 
     <symbol id="git-merge" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="18" cy="18" r="4"/>
-        <circle cx="18" cy="46" r="4"/>
-        <circle cx="46" cy="32" r="4"/>
-        <path d="M18 22v20"/>
-        <path d="M42 32a16 16 0 0 0-24-14"/>
+<circle cx="18" cy="18" r="4"/><circle cx="18" cy="46" r="4"/><circle cx="46" cy="32" r="4"/><path d="M22 18h16v14"/><path d="M18 22v20"/>
       </g>
     </symbol>
 
     <symbol id="key" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="44" cy="20" r="8"/>
-        <path d="M38 26L16 48h-8v-8l22-22"/>
-        <path d="M8 48l8-8"/>
+<circle cx="24" cy="32" r="8"/><path d="M30 32h22l-4 4 4 4"/>
       </g>
     </symbol>
 
     <symbol id="lock" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="16" y="28" width="32" height="24" rx="2"/>
-        <path d="M24 28V20a8 8 0 0 1 16 0v8"/>
-        <circle cx="32" cy="40" r="2"/>
+<rect x="16" y="28" width="32" height="22" rx="4"/><path d="M24 28v-6a8 8 0 0 1 16 0v6"/><circle cx="32" cy="38" r="2"/>
       </g>
     </symbol>
 
     <symbol id="sine-wave" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M8 32c4 0 4-12 8-12s4 12 8 12 4-12 8-12 4 12 8 12 4-12 8-12 4 12 8 12"/>
+<path d="M6 32c6 0 6-16 12-16s6 32 12 32 6-16 12-16 6 16 12 16"/>
       </g>
     </symbol>
 
     <symbol id="capacitor" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M8 32h16M40 32h16"/>
-        <path d="M24 16v32M40 16v32"/>
-        <path d="M30 24a4 4 0 0 1 4 4"/>
-        <path d="M34 36a4 4 0 0 1-4 4"/>
+<path d="M10 32h18"/><path d="M28 20v24"/><path d="M36 20v24"/><path d="M36 32h18"/>
       </g>
     </symbol>
 
     <symbol id="diode" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M8 32h16"/>
-        <path d="M40 32h16"/>
-        <path d="M24 16l16 16-16 16z"/>
-        <path d="M40 16v32"/>
+<path d="M10 32h12"/><path d="M22 24v16l16-8-16-8z"/><path d="M38 24v16"/><path d="M38 32h16"/>
       </g>
     </symbol>
 
     <symbol id="pull-request" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="18" cy="18" r="4"/>
-        <circle cx="18" cy="46" r="4"/>
-        <circle cx="46" cy="46" r="4"/>
-        <path d="M18 22v20"/>
-        <path d="M46 42V26a8 8 0 0 0-8-8h-8"/>
-        <path d="M34 14l-4 4 4 4"/>
+<circle cx="18" cy="18" r="4"/><circle cx="46" cy="46" r="4"/><path d="M22 18h12a8 8 0 0 1 8 8v12"/><path d="M18 22v28"/>
       </g>
     </symbol>
 
     <symbol id="compass" viewBox="0 0 64 64">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="32" cy="32" r="24"/>
-        <path d="M40 24l-16 8 8 8 8-16z"/>
-        <circle cx="32" cy="32" r="2"/>
+<path d="M32 12v12"/><path d="M20 52l12-28 12 28"/><circle cx="32" cy="24" r="4"/>
       </g>
     </symbol>
 
