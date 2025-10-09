@@ -1,8 +1,11 @@
 import { https } from "firebase-functions/v2"
-import type { Request, Response } from "express"
+import type { Request as ExpressRequest, Response } from "express"
 import { Storage } from "@google-cloud/storage"
 import busboy from "busboy"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
+
+// Extend Express Request to include rawBody from Firebase Functions
+type Request = ExpressRequest & { rawBody?: Buffer }
 
 // Error codes for resume API
 const ERROR_CODES = {
@@ -135,7 +138,11 @@ const handleResumeRequest = async (req: Request, res: Response): Promise<void> =
 /**
  * POST /resume/upload - Upload resume (auth required)
  */
-async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+async function handleResumeUpload(
+  req: AuthenticatedRequest & { rawBody?: Buffer },
+  res: Response,
+  requestId: string
+): Promise<void> {
   const userEmail = req.user!.email
 
   logger.info("Processing resume upload", {
@@ -167,6 +174,7 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
     let fileUploaded = false
     let uploadError: Error | null = null
     let responseHandled = false
+    let uploadInProgress = false
 
     bb.on("error", (err: unknown) => {
       logger.error("Busboy error", { error: err, requestId })
@@ -197,9 +205,13 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
         mimeType,
       })
 
+      // Mark that we're processing a file
+      uploadInProgress = true
+
       // Validate file type
       if (mimeType !== "application/pdf") {
         uploadError = new Error("INVALID_FILE_TYPE")
+        uploadInProgress = false
         file.resume() // Drain the stream
         return
       }
@@ -222,6 +234,7 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
       blobStream.on("error", (err) => {
         logger.error("Upload stream error", { error: err, requestId })
         uploadError = err
+        uploadInProgress = false
       })
 
       blobStream.on("finish", () => {
@@ -232,10 +245,24 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
           userEmail,
         })
         fileUploaded = true
+        uploadInProgress = false
+
+        // Send response immediately after upload completes
+        if (!responseHandled && !res.headersSent) {
+          responseHandled = true
+          const publicUrl = `https://storage.googleapis.com/${BUCKET_NAME}/${RESUME_FILENAME}`
+          res.status(200).json({
+            success: true,
+            message: "Resume uploaded successfully",
+            url: publicUrl,
+            requestId,
+          })
+        }
       })
 
       file.on("limit", () => {
         uploadError = new Error("FILE_TOO_LARGE")
+        uploadInProgress = false
         file.resume() // Drain the stream
       })
 
@@ -243,10 +270,18 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
     })
 
     bb.on("finish", () => {
-      // Skip if response already handled (e.g., from error handler)
+      // Skip if response already handled (success case is handled in blobStream.on("finish"))
       if (responseHandled) {
         return
       }
+
+      // If upload is still in progress, wait for blobStream to finish
+      if (uploadInProgress) {
+        logger.info("Busboy finished, waiting for GCS upload to complete", { requestId })
+        return
+      }
+
+      // Only handle error cases here
       responseHandled = true
 
       if (uploadError) {
@@ -281,38 +316,48 @@ async function handleResumeUpload(req: AuthenticatedRequest, res: Response, requ
         })
         return
       }
-
-      const publicUrl = `https://storage.googleapis.com/${BUCKET_NAME}/${RESUME_FILENAME}`
-
-      res.status(200).json({
-        success: true,
-        message: "Resume uploaded successfully",
-        url: publicUrl,
-        requestId,
-      })
     })
 
     // Important: Handle request piping carefully to prevent stream issues
-    // The request might be paused or in an odd state after middleware processing
+    // Firebase Functions may provide a rawBody buffer
 
-    // Set up error handler for request stream
-    req.on("error", (err) => {
-      logger.error("Request stream error", { error: err, requestId })
-      if (!responseHandled && !res.headersSent) {
-        responseHandled = true
-        const error = ERROR_CODES.VALIDATION_FAILED
-        res.status(error.status).json({
-          success: false,
-          error: "VALIDATION_FAILED",
-          errorCode: error.code,
-          message: "Error reading request data",
-          requestId,
-        })
-      }
+    // Log request details for debugging
+    logger.info("Setting up multipart processing", {
+      requestId,
+      contentType: req.headers["content-type"],
+      contentLength: req.headers["content-length"],
+      hasRawBody: !!req.rawBody,
+      bodyKeys: Object.keys(req.body || {}),
     })
 
-    // Pipe request to busboy
-    req.pipe(bb)
+    // Check if Firebase Functions has buffered the body
+    const rawBody = req.rawBody
+    if (rawBody) {
+      // Use rawBody buffer instead of streaming
+      logger.info("Using rawBody buffer", { requestId, size: rawBody.length })
+      bb.end(rawBody)
+    } else {
+      // Stream directly from request
+      logger.info("Streaming from request", { requestId })
+
+      // Set up error handler for request stream
+      req.on("error", (err) => {
+        logger.error("Request stream error", { error: err, requestId })
+        if (!responseHandled && !res.headersSent) {
+          responseHandled = true
+          const error = ERROR_CODES.VALIDATION_FAILED
+          res.status(error.status).json({
+            success: false,
+            error: "VALIDATION_FAILED",
+            errorCode: error.code,
+            message: "Error reading request data",
+            requestId,
+          })
+        }
+      })
+
+      req.pipe(bb)
+    }
   } catch (error) {
     logger.error("Failed to upload resume", {
       error,
