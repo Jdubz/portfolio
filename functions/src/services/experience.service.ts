@@ -13,6 +13,8 @@ type SimpleLogger = {
 export interface ExperienceEntry {
   id: string
   title: string
+  role?: string // Job title/role (optional)
+  location?: string // Location (optional)
   body?: string
   startDate: string // YYYY-MM format
   endDate?: string | null // YYYY-MM format or null (= Present)
@@ -25,6 +27,8 @@ export interface ExperienceEntry {
 
 export interface CreateExperienceData {
   title: string
+  role?: string
+  location?: string
   body?: string
   startDate: string
   endDate?: string | null
@@ -33,6 +37,8 @@ export interface CreateExperienceData {
 
 export interface UpdateExperienceData {
   title?: string
+  role?: string
+  location?: string
   body?: string
   startDate?: string
   endDate?: string | null
@@ -126,10 +132,12 @@ export class ExperienceService {
 
       const entry = {
         title: data.title,
-        body: data.body || "",
+        role: data.role && data.role.trim() !== "" ? data.role : undefined,
+        location: data.location && data.location.trim() !== "" ? data.location : undefined,
+        body: data.body && data.body.trim() !== "" ? data.body : undefined,
         startDate: data.startDate,
         endDate: data.endDate || null,
-        notes: data.notes || "",
+        notes: data.notes && data.notes.trim() !== "" ? data.notes : undefined,
         createdAt: now,
         updatedAt: now,
         createdBy: userEmail,
@@ -177,12 +185,15 @@ export class ExperienceService {
         updatedBy: userEmail,
       }
 
-      // Only update provided fields
+      // Only update provided fields (convert empty strings to undefined to avoid storing empty values)
       if (data.title !== undefined) updates.title = data.title
-      if (data.body !== undefined) updates.body = data.body
+      if (data.role !== undefined) updates.role = data.role && data.role.trim() !== "" ? data.role : undefined
+      if (data.location !== undefined)
+        updates.location = data.location && data.location.trim() !== "" ? data.location : undefined
+      if (data.body !== undefined) updates.body = data.body && data.body.trim() !== "" ? data.body : undefined
       if (data.startDate !== undefined) updates.startDate = data.startDate
       if (data.endDate !== undefined) updates.endDate = data.endDate
-      if (data.notes !== undefined) updates.notes = data.notes
+      if (data.notes !== undefined) updates.notes = data.notes && data.notes.trim() !== "" ? data.notes : undefined
 
       await docRef.update(updates)
 
