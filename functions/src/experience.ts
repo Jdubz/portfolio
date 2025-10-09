@@ -3,6 +3,7 @@ import type { Request, Response } from "express"
 import cors from "cors"
 import Joi from "joi"
 import { ExperienceService } from "./services/experience.service"
+import { BlurbService } from "./services/blurb.service"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
 
 // Error codes for experience API
@@ -35,8 +36,9 @@ const logger = {
   },
 }
 
-// Initialize service
+// Initialize services
 const experienceService = new ExperienceService(logger)
+const blurbService = new BlurbService(logger)
 
 // CORS configuration
 const corsOptions = {
@@ -87,6 +89,23 @@ const updateSchema = Joi.object({
   notes: Joi.string().trim().max(2000).optional().allow(""),
 })
 
+// Blurb validation schemas
+const createBlurbSchema = Joi.object({
+  name: Joi.string()
+    .trim()
+    .min(1)
+    .max(100)
+    .pattern(/^[a-z0-9-]+$/)
+    .required(),
+  title: Joi.string().trim().min(1).max(200).required(),
+  content: Joi.string().trim().max(50000).required(),
+})
+
+const updateBlurbSchema = Joi.object({
+  title: Joi.string().trim().min(1).max(200).optional(),
+  content: Joi.string().trim().max(50000).optional(),
+})
+
 /**
  * Generate a unique request ID for tracking
  */
@@ -95,13 +114,23 @@ function generateRequestId(): string {
 }
 
 /**
- * Cloud Function to manage experience entries
+ * Cloud Function to manage experience entries and blurbs
  *
- * Routes:
+ * Optimized Routes:
+ * - GET    /experience/all          - List all entries + blurbs in single request (public, optimized)
+ *
+ * Experience Routes:
  * - GET    /experience/entries      - List all entries (public)
  * - POST   /experience/entries      - Create entry (auth required)
  * - PUT    /experience/entries/:id  - Update entry (auth required)
  * - DELETE /experience/entries/:id  - Delete entry (auth required)
+ *
+ * Blurb Routes:
+ * - GET    /experience/blurbs       - List all blurbs (public)
+ * - GET    /experience/blurbs/:name - Get single blurb (public)
+ * - POST   /experience/blurbs       - Create blurb (auth required)
+ * - PUT    /experience/blurbs/:name - Update blurb (auth required)
+ * - DELETE /experience/blurbs/:name - Delete blurb (auth required)
  */
 const handleExperienceRequest = async (req: Request, res: Response): Promise<void> => {
   const requestId = generateRequestId()
@@ -121,9 +150,31 @@ const handleExperienceRequest = async (req: Request, res: Response): Promise<voi
 
           const path = req.path || req.url
 
+          // Route: GET /experience/all - List all entries and blurbs (public, optimized)
+          if (req.method === "GET" && path === "/experience/all") {
+            await handleListAll(req, res, requestId)
+            resolve()
+            return
+          }
+
           // Route: GET /experience/entries - List all (public)
           if (req.method === "GET" && path === "/experience/entries") {
             await handleListEntries(req, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: GET /experience/blurbs - List all blurbs (public)
+          if (req.method === "GET" && path === "/experience/blurbs") {
+            await handleListBlurbs(req, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: GET /experience/blurbs/:name - Get single blurb (public)
+          if (req.method === "GET" && path.startsWith("/experience/blurbs/")) {
+            const name = path.replace("/experience/blurbs/", "")
+            await handleGetBlurb(req, res, requestId, name)
             resolve()
             return
           }
@@ -160,6 +211,29 @@ const handleExperienceRequest = async (req: Request, res: Response): Promise<voi
             return
           }
 
+          // Route: POST /experience/blurbs - Create blurb
+          if (req.method === "POST" && path === "/experience/blurbs") {
+            await handleCreateBlurb(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: PUT /experience/blurbs/:name - Update blurb
+          if (req.method === "PUT" && path.startsWith("/experience/blurbs/")) {
+            const name = path.replace("/experience/blurbs/", "")
+            await handleUpdateBlurb(req as AuthenticatedRequest, res, requestId, name)
+            resolve()
+            return
+          }
+
+          // Route: DELETE /experience/blurbs/:name - Delete blurb
+          if (req.method === "DELETE" && path.startsWith("/experience/blurbs/")) {
+            const name = path.replace("/experience/blurbs/", "")
+            await handleDeleteBlurb(req as AuthenticatedRequest, res, requestId, name)
+            resolve()
+            return
+          }
+
           // Unknown route
           const err = ERROR_CODES.METHOD_NOT_ALLOWED
           logger.warning("Method not allowed", { method: req.method, path, requestId })
@@ -188,6 +262,39 @@ const handleExperienceRequest = async (req: Request, res: Response): Promise<voi
     res.status(err.status).json({
       success: false,
       error: "INTERNAL_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /experience/all - List all entries and blurbs (public, optimized)
+ * Returns both entries and blurbs in a single request for faster page load
+ */
+async function handleListAll(req: Request, res: Response, requestId: string): Promise<void> {
+  try {
+    logger.info("Listing all experience data", { requestId })
+
+    // Fetch both entries and blurbs in parallel
+    const [entries, blurbs] = await Promise.all([experienceService.listEntries(), blurbService.listBlurbs()])
+
+    res.status(200).json({
+      success: true,
+      entries,
+      blurbs,
+      entriesCount: entries.length,
+      blurbsCount: blurbs.length,
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to list all experience data", { error, requestId })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
       errorCode: err.code,
       message: err.message,
       requestId,
@@ -412,6 +519,278 @@ async function handleDeleteEntry(
       error,
       requestId,
       id,
+      userEmail: req.user?.email,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /experience/blurbs - List all blurbs (public)
+ */
+async function handleListBlurbs(req: Request, res: Response, requestId: string): Promise<void> {
+  try {
+    logger.info("Listing blurbs", { requestId })
+
+    const blurbs = await blurbService.listBlurbs()
+
+    res.status(200).json({
+      success: true,
+      blurbs,
+      count: blurbs.length,
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to list blurbs", { error, requestId })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /experience/blurbs/:name - Get single blurb (public)
+ */
+async function handleGetBlurb(req: Request, res: Response, requestId: string, name: string): Promise<void> {
+  try {
+    logger.info("Getting blurb", { requestId, name })
+
+    const blurb = await blurbService.getBlurb(name)
+
+    if (!blurb) {
+      const err = ERROR_CODES.NOT_FOUND
+      res.status(err.status).json({
+        success: false,
+        error: "NOT_FOUND",
+        errorCode: err.code,
+        message: "Blurb not found",
+        requestId,
+      })
+      return
+    }
+
+    res.status(200).json({
+      success: true,
+      blurb,
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to get blurb", { error, requestId, name })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * POST /experience/blurbs - Create blurb (auth required)
+ */
+async function handleCreateBlurb(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Validate request body
+    const { error, value } = createBlurbSchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for create blurb", {
+        error: error.details,
+        requestId,
+        body: req.body,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    const userEmail = req.user!.email
+
+    logger.info("Creating blurb", {
+      requestId,
+      name: value.name,
+      title: value.title,
+      userEmail,
+    })
+
+    const blurb = await blurbService.createBlurb(value, userEmail)
+
+    res.status(201).json({
+      success: true,
+      blurb,
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to create blurb", {
+      error,
+      requestId,
+      userEmail: req.user?.email,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * PUT /experience/blurbs/:name - Update blurb (auth required)
+ */
+async function handleUpdateBlurb(
+  req: AuthenticatedRequest,
+  res: Response,
+  requestId: string,
+  name: string
+): Promise<void> {
+  try {
+    // Validate request body
+    const { error, value } = updateBlurbSchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for update blurb", {
+        error: error.details,
+        requestId,
+        name,
+        body: req.body,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    const userEmail = req.user!.email
+
+    logger.info("Updating blurb", {
+      requestId,
+      name,
+      userEmail,
+      fieldsToUpdate: Object.keys(value),
+    })
+
+    const blurb = await blurbService.updateBlurb(name, value, userEmail)
+
+    res.status(200).json({
+      success: true,
+      blurb,
+      requestId,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+
+    if (errorMessage.includes("not found")) {
+      logger.warning("Blurb not found for update", { name, requestId })
+
+      const err = ERROR_CODES.NOT_FOUND
+      res.status(err.status).json({
+        success: false,
+        error: "NOT_FOUND",
+        errorCode: err.code,
+        message: "Blurb not found",
+        requestId,
+      })
+      return
+    }
+
+    logger.error("Failed to update blurb", {
+      error,
+      requestId,
+      name,
+      userEmail: req.user?.email,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * DELETE /experience/blurbs/:name - Delete blurb (auth required)
+ */
+async function handleDeleteBlurb(
+  req: AuthenticatedRequest,
+  res: Response,
+  requestId: string,
+  name: string
+): Promise<void> {
+  try {
+    logger.info("Deleting blurb", {
+      requestId,
+      name,
+      userEmail: req.user?.email,
+    })
+
+    await blurbService.deleteBlurb(name)
+
+    res.status(200).json({
+      success: true,
+      message: "Blurb deleted successfully",
+      requestId,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+
+    if (errorMessage.includes("not found")) {
+      logger.warning("Blurb not found for delete", { name, requestId })
+
+      const err = ERROR_CODES.NOT_FOUND
+      res.status(err.status).json({
+        success: false,
+        error: "NOT_FOUND",
+        errorCode: err.code,
+        message: "Blurb not found",
+        requestId,
+      })
+      return
+    }
+
+    logger.error("Failed to delete blurb", {
+      error,
+      requestId,
+      name,
       userEmail: req.user?.email,
     })
 

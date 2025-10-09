@@ -13,3 +13,8 @@ export const DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || "portfolio"
  * Experience entries collection name
  */
 export const EXPERIENCE_COLLECTION = "experience-entries"
+
+/**
+ * Blurb entries collection name
+ */
+export const BLURBS_COLLECTION = "experience-blurbs"
