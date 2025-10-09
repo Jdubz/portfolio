@@ -198,13 +198,6 @@ async function handleResumeUpload(
     bb.on("file", (fieldname, file, info) => {
       const { filename, mimeType } = info
 
-      logger.info("File upload started", {
-        requestId,
-        fieldname,
-        filename,
-        mimeType,
-      })
-
       // Mark that we're processing a file
       uploadInProgress = true
 
@@ -238,12 +231,6 @@ async function handleResumeUpload(
       })
 
       blobStream.on("finish", () => {
-        logger.info("File uploaded successfully", {
-          requestId,
-          bucket: BUCKET_NAME,
-          filename: RESUME_FILENAME,
-          userEmail,
-        })
         fileUploaded = true
         uploadInProgress = false
 
@@ -251,6 +238,13 @@ async function handleResumeUpload(
         if (!responseHandled && !res.headersSent) {
           responseHandled = true
           const publicUrl = `https://storage.googleapis.com/${BUCKET_NAME}/${RESUME_FILENAME}`
+
+          logger.info("Resume uploaded successfully", {
+            requestId,
+            filename,
+            userEmail,
+          })
+
           res.status(200).json({
             success: true,
             message: "Resume uploaded successfully",
@@ -277,7 +271,6 @@ async function handleResumeUpload(
 
       // If upload is still in progress, wait for blobStream to finish
       if (uploadInProgress) {
-        logger.info("Busboy finished, waiting for GCS upload to complete", { requestId })
         return
       }
 
@@ -318,29 +311,13 @@ async function handleResumeUpload(
       }
     })
 
-    // Important: Handle request piping carefully to prevent stream issues
-    // Firebase Functions may provide a rawBody buffer
-
-    // Log request details for debugging
-    logger.info("Setting up multipart processing", {
-      requestId,
-      contentType: req.headers["content-type"],
-      contentLength: req.headers["content-length"],
-      hasRawBody: !!req.rawBody,
-      bodyKeys: Object.keys(req.body || {}),
-    })
-
-    // Check if Firebase Functions has buffered the body
+    // Firebase Functions v2 buffers the request body into req.rawBody
+    // We need to feed this buffer to busboy instead of piping the request stream
     const rawBody = req.rawBody
     if (rawBody) {
-      // Use rawBody buffer instead of streaming
-      logger.info("Using rawBody buffer", { requestId, size: rawBody.length })
       bb.end(rawBody)
     } else {
-      // Stream directly from request
-      logger.info("Streaming from request", { requestId })
-
-      // Set up error handler for request stream
+      // Fallback: stream directly from request (shouldn't happen with Firebase Functions v2)
       req.on("error", (err) => {
         logger.error("Request stream error", { error: err, requestId })
         if (!responseHandled && !res.headersSent) {
@@ -355,7 +332,6 @@ async function handleResumeUpload(
           })
         }
       })
-
       req.pipe(bb)
     }
   } catch (error) {
