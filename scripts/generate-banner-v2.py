@@ -116,20 +116,25 @@ def generate_banner():
     # Load and place logo
     try:
         logo = Image.open('docs/brand/Logo.png').convert('RGBA')
-        # Resize logo to reasonable size (keep aspect ratio)
-        logo_height = 180
+        # Resize logo to much larger size (keep aspect ratio)
+        logo_height = 340
         aspect = logo.width / logo.height
         logo_width = int(logo_height * aspect)
         logo = logo.resize((logo_width, logo_height), Image.Resampling.LANCZOS)
 
-        # Position logo on left side
-        logo_x = 60
+        # Position logo on left side - centered vertically
+        logo_x = 40
         logo_y = (height - logo_height) // 2
 
-        # Add subtle glow behind logo
+        # Add bright glow behind logo for visibility on dark background
         glow = logo.copy()
-        glow = glow.filter(ImageFilter.GaussianBlur(radius=15))
+        glow = glow.filter(ImageFilter.GaussianBlur(radius=30))
+        # Paste glow multiple times for stronger effect
         img.paste(glow, (logo_x, logo_y), glow)
+        img.paste(glow, (logo_x, logo_y), glow)
+        img.paste(glow, (logo_x, logo_y), glow)
+
+        # Paste actual logo on top
         img.paste(logo, (logo_x, logo_y), logo)
     except Exception as e:
         print(f"Warning: Could not load logo: {e}")
@@ -141,7 +146,7 @@ def generate_banner():
             pass
 
     # Text content on right side
-    text_x = 380
+    text_x = 480
 
     # Try to load proper fonts (Poppins for heading, Inter for body)
     try:
