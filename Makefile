@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api seed-emulators screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api seed-emulators screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -61,8 +61,11 @@ help:
 	@echo "  make test-contact-form     - Test contact form function (single quick test)"
 	@echo "  make test-contact-form-all - Run comprehensive contact form test suite"
 	@echo "  make test-experience-api   - Test experience API with auth (auto-seeds data)"
+	@echo ""
+	@echo "Deployment:"
 	@echo "  make deploy-staging        - Build and deploy to staging"
 	@echo "  make deploy-prod           - Build and deploy to production"
+	@echo "  make deploy-function FUNC=<name> - Deploy single Cloud Function with correct build SA"
 	@echo ""
 
 # Web commands
@@ -200,6 +203,33 @@ deploy-staging:
 deploy-prod:
 	@echo "Deploying to production..."
 	npm run deploy:production
+
+deploy-function:
+	@if [ -z "$(FUNC)" ]; then \
+		echo "Error: Function name required"; \
+		echo "Usage: make deploy-function FUNC=<function-name>"; \
+		echo ""; \
+		echo "Available functions:"; \
+		echo "  - uploadResume"; \
+		echo "  - manageExperience"; \
+		echo "  - handleContactForm"; \
+		exit 1; \
+	fi
+	@echo "Deploying Cloud Function: $(FUNC)"
+	@echo "Using build service account: cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com"
+	@echo ""
+	@gcloud functions deploy $(FUNC) \
+		--gen2 \
+		--runtime=nodejs20 \
+		--region=us-central1 \
+		--source=functions \
+		--entry-point=$(FUNC) \
+		--trigger-http \
+		--build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
+		--project=static-sites-257923
+	@echo ""
+	@echo "✅ Function deployed successfully!"
+	@echo "URL: https://us-central1-static-sites-257923.cloudfunctions.net/$(FUNC)"
 
 # Screenshots
 screenshot:

@@ -19,16 +19,18 @@ Always use `gcloud functions deploy` with the `--build-service-account` flag for
 
 ## Deployment Methods
 
-### Method 1: Using the deployment script (Recommended)
+### Method 1: Using the Makefile (Recommended)
 
 ```bash
-./scripts/deploy-function.sh <function-name>
+make deploy-function FUNC=<function-name>
 ```
 
 Example:
 ```bash
-./scripts/deploy-function.sh uploadResume
+make deploy-function FUNC=uploadResume
 ```
+
+This automatically uses the correct build service account and handles all deployment flags.
 
 ### Method 2: Using gcloud CLI directly
 
@@ -87,11 +89,12 @@ Functions use different service accounts at runtime depending on their purpose:
 gcloud functions delete <FUNCTION_NAME> --gen2 --region=us-central1 --quiet
 
 # Redeploy with correct build service account
-./scripts/deploy-function.sh <FUNCTION_NAME>
+make deploy-function FUNC=<FUNCTION_NAME>
 ```
 
 ## References
 
-- [GitHub Actions Workflow](.github/workflows/deploy-cloud-functions.yml)
-- [Deployment Script](../scripts/deploy-function.sh)
+- [Makefile](../../Makefile) - Main deployment commands
+- [GitHub Actions Workflow](../../.github/workflows/deploy-cloud-functions.yml)
+- [Deployment Script](../../scripts/deploy-function.sh) - Legacy script (now calls Makefile)
 - [Service Account Setup](./workload-identity-setup.md)
