@@ -1,1 +1,15 @@
-npm test || echo "⚠️  Test warnings detected but allowing push to proceed"
+#!/usr/bin/env sh
+
+echo "🧪 Running all tests before push..."
+echo ""
+
+# Run all tests (both web and functions)
+npm test || {
+  echo ""
+  echo "❌ Tests failed! Push aborted."
+  echo "Fix the failing tests before pushing."
+  exit 1
+}
+
+echo ""
+echo "✅ All tests passed! Proceeding with push..."
