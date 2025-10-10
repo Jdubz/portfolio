@@ -14,6 +14,7 @@ export interface ApiResponse<T = unknown> {
   message?: string
   error?: string
   errorCode?: string
+  requestId?: string
   data?: T
 }
 
@@ -130,11 +131,35 @@ export class ApiClient {
 
     if (!response.ok || !data.success) {
       const errorMessage = data.message ?? data.error ?? "Request failed"
-      logger.error("API request failed", new Error(errorMessage), {
+
+      // Enhanced console logging for debugging
+      const errorDetails = {
+        url: response.url,
         status: response.status,
         statusText: response.statusText,
         errorCode: data.errorCode,
-      })
+        errorMessage,
+        requestId: data.requestId,
+        fullResponse: data,
+      }
+
+      // Log to console with clear formatting
+      // eslint-disable-next-line no-console
+      console.group(`🚨 API Error: ${response.status} ${response.statusText}`)
+      console.error("URL:", response.url)
+      console.error("Status:", response.status, response.statusText)
+      console.error("Error Code:", data.errorCode ?? "N/A")
+      console.error("Message:", errorMessage)
+      if (data.requestId) {
+        console.error("Request ID:", data.requestId)
+      }
+      console.error("Full Response:", data)
+      // eslint-disable-next-line no-console
+      console.groupEnd()
+
+      // Also use logger for production logging
+      logger.error("API request failed", new Error(errorMessage), errorDetails)
+
       throw new Error(errorMessage)
     }
 
