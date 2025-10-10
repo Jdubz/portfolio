@@ -140,3 +140,10 @@ test-results/
 *.swp
 *.swo
 *~
+
+# Terraform
+terraform.tfstate*
+.terraform/
+*.tfvars
+.terraformrc
+terraform.rc
