@@ -18,29 +18,24 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
     <Divider speed={0.2} offset={offset} factor={factor} className="iconCanvas">
       {/* Bubbles rising from bottom - larger, more visible */}
       <UpDown>
-        <Svg icon="rocket" hiddenMobile width={80} stroke color="icon_blue" left="10%" top="15%" />
-        <Svg icon="database" width={72} stroke color="icon_teal" left="60%" top="75%" />
-        <Svg icon="cube-3d" width={64} color="icon_indigo" left="60%" top="10%" />
-        <Svg icon="bolt" width={96} color="icon_purple" left="15%" top="80%" />
-        <Svg icon="shield" width={80} stroke color="icon_blue" left="85%" top="85%" />
+        <Svg icon="rocket" hiddenMobile width={80} stroke color="icon_blue" left="8%" top="12%" />
+        <Svg icon="database" width={72} stroke color="icon_teal" left="65%" top="78%" />
+        <Svg icon="bolt" width={96} color="icon_purple" left="18%" top="82%" />
+        <Svg icon="shield" width={80} stroke color="icon_blue" left="88%" top="88%" />
       </UpDown>
       <UpDownWide>
         {/* Top cluster - floating to surface */}
-        <Svg icon="cloud" width={88} color="icon_teal" left="75%" top="6%" />
-        <Svg icon="flask" hiddenMobile width={64} color="icon_purple" left="45%" top="10%" />
-        <Svg icon="git-branch" width={80} color="icon_green" left="5%" top="8%" />
-        <Svg icon="server-stack" width={72} color="icon_brightest" left="90%" top="12%" />
+        <Svg icon="cloud" width={88} color="icon_teal" left="78%" top="5%" />
+        <Svg icon="git-branch" width={80} color="icon_green" left="3%" top="6%" />
+        <Svg icon="server-stack" width={64} color="icon_brightest" left="92%" top="10%" />
 
         {/* Bottom cluster - rising bubbles */}
-        <Svg icon="compass" hiddenMobile width={80} color="icon_pink" left="40%" top="85%" />
-        <Svg icon="cluster" hiddenMobile width={88} color="icon_purple" left="5%" top="90%" />
-        <Svg icon="key" width={72} color="icon_yellow" left="95%" top="90%" />
-        <Svg icon="lock" width={96} stroke color="icon_indigo" left="70%" top="92%" />
-        <Svg icon="bug" width={88} color="icon_red" left="30%" top="88%" />
+        <Svg icon="compass" hiddenMobile width={72} color="icon_pink" left="42%" top="86%" />
+        <Svg icon="key" width={64} color="icon_yellow" left="93%" top="92%" />
+        <Svg icon="bug" width={80} color="icon_red" left="28%" top="90%" />
       </UpDownWide>
       {/* Mid-section - sparser, smaller bubbles for depth */}
-      <Svg icon="sine-wave" width={48} stroke color="icon_pink" left="25%" top="45%" />
-      <Svg icon="arrowUp" width={48} color="icon_teal" left="10%" top="50%" />
+      <Svg icon="arrowUp" width={32} color="icon_teal" left="12%" top="48%" />
     </Divider>
     <Content sx={{ variant: `texts.bigger` }} speed={0.4} offset={offset} factor={factor} className="content">
       <Inner>

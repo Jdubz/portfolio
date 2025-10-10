@@ -19,24 +19,21 @@ const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
     <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
       {/* Bubbles rising from bottom - larger, more visible */}
       <UpDown>
-        <Svg icon="pull-request" hiddenMobile width={80} color="icon_purple" left="70%" top="10%" />
-        <Svg icon="circle" width={88} stroke color="icon_brightest" left="25%" top="8%" />
-        <Svg icon="capacitor" hiddenMobile width={96} color="icon_orange" left="80%" top="88%" />
+        <Svg icon="pull-request" hiddenMobile width={72} color="icon_purple" left="72%" top="8%" />
+        <Svg icon="circle" width={80} stroke color="icon_brightest" left="22%" top="10%" />
+        <Svg icon="capacitor" hiddenMobile width={88} color="icon_orange" left="82%" top="90%" />
       </UpDown>
       <UpDownWide>
         {/* Top cluster - floating to surface */}
-        <Svg icon="git-merge" width={64} color="icon_green" left="10%" top="12%" />
-        <Svg icon="resistor" hiddenMobile width={72} color="icon_yellow" left="45%" top="5%" />
-        <Svg icon="upDown" width={72} color="icon_brightest" left="85%" top="6%" />
+        <Svg icon="git-merge" width={56} color="icon_green" left="8%" top="12%" />
+        <Svg icon="upDown" width={64} color="icon_brightest" left="88%" top="5%" />
 
         {/* Bottom cluster - rising bubbles */}
-        <Svg icon="triangle" hiddenMobile width={88} color="icon_purple" left="5%" top="90%" />
-        <Svg icon="diode" width={96} stroke color="icon_pink" left="80%" top="82%" />
-        <Svg icon="box" width={80} color="icon_blue" left="20%" top="86%" />
+        <Svg icon="diode" width={88} stroke color="icon_pink" left="78%" top="85%" />
+        <Svg icon="box" width={72} color="icon_blue" left="18%" top="88%" />
       </UpDownWide>
       {/* Mid-section - sparser, smaller bubbles for depth */}
-      <Svg icon="wifi" width={48} stroke color="icon_teal" left="95%" top="50%" />
-      <Svg icon="cross" width={56} color="icon_indigo" left="70%" top="55%" />
+      <Svg icon="wifi" width={36} stroke color="icon_teal" left="92%" top="48%" />
     </Divider>
     <Content speed={0.4} offset={offset} factor={factor} className="content">
       <Inner>

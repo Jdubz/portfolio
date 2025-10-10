@@ -39,28 +39,23 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
     <Divider speed={0.1} offset={offset} factor={factor} className="iconCanvas">
       {/* Bubbles rising from bottom - larger, more visible */}
       <UpDown>
-        <Svg icon="hexa" width={96} stroke color="icon_indigo" left="25%" top="6%" />
-        <Svg icon="code-brackets" width={80} stroke color="icon_teal" left="70%" top="10%" />
-        <Svg icon="pcb-trace" width={88} color="icon_green" left="85%" top="85%" />
+        <Svg icon="hexa" width={88} stroke color="icon_indigo" left="22%" top="8%" />
+        <Svg icon="code-brackets" width={72} stroke color="icon_teal" left="72%" top="12%" />
+        <Svg icon="pcb-trace" width={80} color="icon_green" left="88%" top="88%" />
       </UpDown>
       <UpDownWide>
         {/* Top cluster - floating to surface */}
-        <Svg icon="test-tube" width={72} color="icon_brightest" left="75%" top="8%" />
-        <Svg icon="bluetooth" hiddenMobile width={80} color="icon_blue" left="45%" top="5%" />
-        <Svg icon="led" hiddenMobile width={64} color="icon_red" left="4%" top="12%" />
-        <Svg icon="inductor" width={72} color="icon_yellow" left="10%" top="6%" />
+        <Svg icon="test-tube" width={64} color="icon_brightest" left="78%" top="6%" />
+        <Svg icon="bluetooth" hiddenMobile width={72} color="icon_blue" left="48%" top="4%" />
+        <Svg icon="inductor" width={64} color="icon_yellow" left="8%" top="5%" />
 
         {/* Bottom cluster - rising bubbles */}
-        <Svg icon="caliper" hiddenMobile width={88} color="icon_teal" left="20%" top="92%" />
-        <Svg icon="graph" width={96} color="icon_purple" left="70%" top="88%" />
-        <Svg icon="nut" hiddenMobile width={80} stroke color="icon_pink" left="18%" top="84%" />
-        <Svg icon="ruler" width={88} stroke color="icon_orange" left="75%" top="90%" />
-        <Svg icon="motor" width={80} stroke color="icon_blue" left="80%" top="82%" />
-        <Svg icon="screwdriver" width={72} color="icon_brightest" left="29%" top="86%" />
+        <Svg icon="graph" width={88} color="icon_purple" left="68%" top="90%" />
+        <Svg icon="ruler" width={80} stroke color="icon_orange" left="78%" top="92%" />
+        <Svg icon="screwdriver" width={64} color="icon_brightest" left="25%" top="88%" />
       </UpDownWide>
       {/* Mid-section - sparser, smaller bubbles for depth */}
-      <Svg icon="stopwatch" width={48} stroke color="icon_green" left="90%" top="45%" />
-      <Svg icon="magnifier" width={56} color="icon_indigo" left="80%" top="55%" />
+      <Svg icon="magnifier" width={40} color="icon_indigo" left="85%" top="52%" />
     </Divider>
   </section>
 )
