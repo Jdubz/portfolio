@@ -77,7 +77,7 @@ export const GENERATOR_COLLECTION = "generator"
  * Validate that DATABASE_ID is set correctly
  * This runs at module load time to catch configuration errors early
  */
-if (!DATABASE_ID || DATABASE_ID === "") {
+if (!DATABASE_ID) {
   throw new Error("DATABASE_ID must be set. Check environment configuration.")
 }
 

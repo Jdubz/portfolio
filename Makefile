@@ -278,22 +278,38 @@ lint-fix: lint-web-fix lint-functions-fix
 sync-prod-to-staging:
 	@echo "Syncing production data to staging database..."
 	@echo "Step 1: Exporting production database..."
-	@gcloud firestore export gs://static-sites-257923-firestore-backup/sync-$(shell date +%Y%m%d-%H%M%S) \
+	@EXPORT_PATH=gs://static-sites-257923-firestore-backup/sync-$(shell date +%Y%m%d-%H%M%S); \
+	EXPORT_OP=$$(gcloud firestore export $$EXPORT_PATH \
 		--database=portfolio \
 		--project=static-sites-257923 \
-		--async
-	@echo ""
-	@echo "Waiting for export to complete (this may take a few minutes)..."
-	@sleep 15
-	@echo ""
-	@echo "Step 2: Importing to staging database..."
-	@LATEST_EXPORT=$$(gsutil ls -d gs://static-sites-257923-firestore-backup/sync-* | tail -1 | sed 's:/*$$::'); \
-	echo "Using export: $$LATEST_EXPORT"; \
-	gcloud firestore import $$LATEST_EXPORT \
+		--async --format="value(name)"); \
+	echo "Export operation: $$EXPORT_OP"; \
+	echo ""; \
+	echo "Waiting for export to complete (this may take a few minutes)..."; \
+	while true; do \
+		STATUS=$$(gcloud firestore operations describe $$EXPORT_OP --project=static-sites-257923 --format="value(done)"); \
+		if [ "$$STATUS" = "True" ]; then \
+			echo "✅ Export completed!"; \
+			break; \
+		else \
+			echo "Export still running..."; \
+			sleep 10; \
+		fi; \
+	done; \
+	EXPORT_DIR=$$(gcloud firestore operations describe $$EXPORT_OP --project=static-sites-257923 --format="value(metadata.outputUriPrefix)"); \
+	if [ -z "$$EXPORT_DIR" ]; then \
+		echo "❌ ERROR: Could not determine export directory."; \
+		exit 1; \
+	fi; \
+	gsutil ls "$$EXPORT_DIR" > /dev/null 2>&1 || { echo "❌ ERROR: Export directory does not exist."; exit 1; }; \
+	echo ""; \
+	echo "Step 2: Importing to staging database..."; \
+	echo "Using export: $$EXPORT_DIR"; \
+	IMPORT_OP=$$(gcloud firestore import $$EXPORT_DIR \
 		--database=portfolio-staging \
 		--project=static-sites-257923 \
-		--async
-	@echo ""
-	@echo "✅ Data sync initiated!"
-	@echo "   The import will continue in the background."
-	@echo "   Check status: gcloud firestore operations list --database=portfolio-staging"
+		--async --format="value(name)"); \
+	echo ""; \
+	echo "✅ Data import initiated!"; \
+	echo "   Import operation: $$IMPORT_OP"; \
+	echo "   Check status: gcloud firestore operations describe $$IMPORT_OP --project=static-sites-257923"
