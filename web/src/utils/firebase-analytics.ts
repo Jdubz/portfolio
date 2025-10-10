@@ -1,5 +1,6 @@
 import { getAnalytics, logEvent, setAnalyticsCollectionEnabled, isSupported } from "firebase/analytics"
 import { getApps } from "firebase/app"
+import { logger } from "./logger"
 
 /**
  * Firebase Analytics initialization and utilities
@@ -25,8 +26,10 @@ export const initializeFirebaseAnalytics = async (): Promise<void> => {
   // Check if analytics is enabled via environment variable
   const analyticsEnabled = process.env.GATSBY_ENABLE_ANALYTICS === "true"
   if (!analyticsEnabled) {
-    // eslint-disable-next-line no-console
-    console.log("[Analytics] Disabled via GATSBY_ENABLE_ANALYTICS environment variable")
+    logger.info("Analytics disabled via environment variable", {
+      util: "firebase-analytics",
+      action: "initializeFirebaseAnalytics",
+    })
     return
   }
 
@@ -43,8 +46,10 @@ export const initializeFirebaseAnalytics = async (): Promise<void> => {
   }
 
   if (!hasConsent) {
-    // eslint-disable-next-line no-console
-    console.log("[Analytics] User has not consented to analytics tracking")
+    logger.info("User has not consented to analytics tracking", {
+      util: "firebase-analytics",
+      action: "initializeFirebaseAnalytics",
+    })
     return
   }
 
@@ -58,15 +63,20 @@ export const initializeFirebaseAnalytics = async (): Promise<void> => {
     analyticsSupported = await isSupported()
 
     if (!analyticsSupported) {
-      // eslint-disable-next-line no-console
-      console.log("[Analytics] Not supported in this environment (may be blocked by ad blocker)")
+      logger.info("Analytics not supported in this environment", {
+        util: "firebase-analytics",
+        action: "initializeFirebaseAnalytics",
+      })
       return
     }
 
     // Get the Firebase app (should already be initialized by App Check)
     const apps = getApps()
     if (apps.length === 0) {
-      console.error("[Analytics] Firebase app not initialized")
+      logger.error("Firebase app not initialized", new Error("No Firebase apps"), {
+        util: "firebase-analytics",
+        action: "initializeFirebaseAnalytics",
+      })
       return
     }
 
@@ -79,15 +89,20 @@ export const initializeFirebaseAnalytics = async (): Promise<void> => {
     setAnalyticsCollectionEnabled(analyticsInstance, true)
 
     // Log initialization
-    // eslint-disable-next-line no-console
-    console.log("[Analytics] Initialized successfully")
+    logger.info("Analytics initialized successfully", {
+      util: "firebase-analytics",
+      action: "initializeFirebaseAnalytics",
+    })
 
     // Log a test event
     logEvent(analyticsInstance, "app_initialized", {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error("[Analytics] Failed to initialize:", error)
+    logger.error("Failed to initialize analytics", error as Error, {
+      util: "firebase-analytics",
+      action: "initializeFirebaseAnalytics",
+    })
     // Don't throw - app should still work without Analytics
   }
 }
@@ -118,7 +133,11 @@ export const logAnalyticsEvent = (eventName: string, eventParams?: Record<string
   try {
     logEvent(analyticsInstance, eventName, eventParams)
   } catch (error) {
-    console.error(`[Analytics] Failed to log event "${eventName}":`, error)
+    logger.error(`Failed to log analytics event "${eventName}"`, error as Error, {
+      util: "firebase-analytics",
+      action: "logAnalyticsEvent",
+      eventName,
+    })
   }
 }
 

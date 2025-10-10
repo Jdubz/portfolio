@@ -7,41 +7,8 @@ import type {
   CreateBlurbData,
   UpdateBlurbData,
 } from "../types/experience"
-import { getIdToken } from "./useAuth"
-
-// API Configuration
-const API_CONFIG = {
-  projectId: "static-sites-257923",
-  region: "us-central1",
-  functionName: "manageExperience",
-  emulatorPort: 5001,
-  defaultEmulatorHost: "localhost",
-}
-
-const getApiUrl = () => {
-  // Use emulator in development, production URL otherwise
-  if (process.env.NODE_ENV === "development") {
-    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
-    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/${API_CONFIG.functionName}`
-  }
-
-  // Production/staging URL from env
-  return (
-    process.env.GATSBY_EXPERIENCE_API_URL ??
-    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.functionName}`
-  )
-}
-
-interface CombinedApiResponse {
-  success: boolean
-  entries?: ExperienceEntry[]
-  blurbs?: BlurbEntry[]
-  entriesCount?: number
-  blurbsCount?: number
-  message?: string
-  error?: string
-  errorCode?: string
-}
+import { experienceClient, blurbClient } from "../api"
+import { logger } from "../utils/logger"
 
 interface UseExperienceData {
   entries: ExperienceEntry[]
@@ -72,27 +39,24 @@ export const useExperienceData = (): UseExperienceData => {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`${getApiUrl()}/experience/all`)
-      const data = (await response.json()) as CombinedApiResponse
+      // Fetch entries and blurbs in parallel
+      const [entriesData, blurbsData] = await Promise.all([experienceClient.getEntries(), blurbClient.getBlurbs()])
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.message ?? "Failed to fetch experience data")
-      }
-
-      setEntries(data.entries ?? [])
+      setEntries(entriesData)
 
       // Convert blurbs array to keyed object
       const blurbsMap: Record<string, BlurbEntry> = {}
-      if (data.blurbs) {
-        for (const blurb of data.blurbs) {
-          blurbsMap[blurb.name] = blurb
-        }
+      for (const blurb of blurbsData) {
+        blurbsMap[blurb.name] = blurb
       }
       setBlurbs(blurbsMap)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load experience data"
       setError(errorMessage)
-      console.error("Fetch experience data error:", err)
+      logger.error("Failed to fetch experience data", err as Error, {
+        hook: "useExperienceData",
+        action: "fetchData",
+      })
     } finally {
       setLoading(false)
     }
@@ -106,102 +70,50 @@ export const useExperienceData = (): UseExperienceData => {
   // Experience Entry operations
   const createEntry = useCallback(async (data: CreateExperienceData): Promise<ExperienceEntry | null> => {
     try {
-      const token = await getIdToken()
-      if (!token) {
-        throw new Error("Authentication required")
-      }
-
-      const response = await fetch(`${getApiUrl()}/experience/entries`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      })
-
-      const responseData = (await response.json()) as { success: boolean; entry?: ExperienceEntry; message?: string }
-
-      if (!response.ok || !responseData.success) {
-        throw new Error(responseData.message ?? "Failed to create entry")
-      }
-
-      if (responseData.entry) {
-        setEntries((prev) => [...prev, responseData.entry as ExperienceEntry])
-        return responseData.entry
-      }
-
-      return null
+      const entry = await experienceClient.createEntry(data)
+      setEntries((prev) => [...prev, entry])
+      return entry
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create entry"
       setError(errorMessage)
-      console.error("Create entry error:", err)
+      logger.error("Failed to create experience entry", err as Error, {
+        hook: "useExperienceData",
+        action: "createEntry",
+      })
       return null
     }
   }, [])
 
   const updateEntry = useCallback(async (id: string, data: UpdateExperienceData): Promise<ExperienceEntry | null> => {
     try {
-      const token = await getIdToken()
-      if (!token) {
-        throw new Error("Authentication required")
-      }
-
-      const response = await fetch(`${getApiUrl()}/experience/entries/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      })
-
-      const responseData = (await response.json()) as { success: boolean; entry?: ExperienceEntry; message?: string }
-
-      if (!response.ok || !responseData.success) {
-        throw new Error(responseData.message ?? "Failed to update entry")
-      }
-
-      if (responseData.entry) {
-        setEntries((prev) => prev.map((entry) => (entry.id === id ? (responseData.entry as ExperienceEntry) : entry)))
-        return responseData.entry
-      }
-
-      return null
+      const entry = await experienceClient.updateEntry(id, data)
+      setEntries((prev) => prev.map((e) => (e.id === id ? entry : e)))
+      return entry
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to update entry"
       setError(errorMessage)
-      console.error("Update entry error:", err)
+      logger.error("Failed to update experience entry", err as Error, {
+        hook: "useExperienceData",
+        action: "updateEntry",
+        entryId: id,
+      })
       return null
     }
   }, [])
 
   const deleteEntry = useCallback(async (id: string): Promise<boolean> => {
     try {
-      const token = await getIdToken()
-      if (!token) {
-        throw new Error("Authentication required")
-      }
-
-      const response = await fetch(`${getApiUrl()}/experience/entries/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      const responseData = (await response.json()) as { success: boolean; message?: string }
-
-      if (!response.ok || !responseData.success) {
-        throw new Error(responseData.message ?? "Failed to delete entry")
-      }
-
+      await experienceClient.deleteEntry(id)
       setEntries((prev) => prev.filter((entry) => entry.id !== id))
       return true
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete entry"
       setError(errorMessage)
-      console.error("Delete entry error:", err)
+      logger.error("Failed to delete experience entry", err as Error, {
+        hook: "useExperienceData",
+        action: "deleteEntry",
+        entryId: id,
+      })
       return false
     }
   }, [])
@@ -209,104 +121,47 @@ export const useExperienceData = (): UseExperienceData => {
   // Blurb operations
   const createBlurb = useCallback(async (data: CreateBlurbData): Promise<BlurbEntry | null> => {
     try {
-      const token = await getIdToken()
-      if (!token) {
-        throw new Error("Authentication required")
-      }
-
-      const response = await fetch(`${getApiUrl()}/experience/blurbs`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      })
-
-      const responseData = (await response.json()) as { success: boolean; blurb?: BlurbEntry; message?: string }
-
-      if (!response.ok || !responseData.success) {
-        throw new Error(responseData.message ?? "Failed to create blurb")
-      }
-
-      if (responseData.blurb) {
-        const blurb = responseData.blurb
-        setBlurbs((prev) => ({
-          ...prev,
-          [blurb.name]: blurb,
-        }))
-        return blurb
-      }
-
-      return null
+      const blurb = await blurbClient.createBlurb(data)
+      setBlurbs((prev) => ({
+        ...prev,
+        [blurb.name]: blurb,
+      }))
+      return blurb
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create blurb"
       setError(errorMessage)
-      console.error("Create blurb error:", err)
+      logger.error("Failed to create blurb", err as Error, {
+        hook: "useExperienceData",
+        action: "createBlurb",
+        blurbName: data.name,
+      })
       return null
     }
   }, [])
 
   const updateBlurb = useCallback(async (name: string, data: UpdateBlurbData): Promise<BlurbEntry | null> => {
     try {
-      const token = await getIdToken()
-      if (!token) {
-        throw new Error("Authentication required")
-      }
-
-      const response = await fetch(`${getApiUrl()}/experience/blurbs/${name}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      })
-
-      const responseData = (await response.json()) as { success: boolean; blurb?: BlurbEntry; message?: string }
-
-      if (!response.ok || !responseData.success) {
-        throw new Error(responseData.message ?? "Failed to update blurb")
-      }
-
-      if (responseData.blurb) {
-        const blurb = responseData.blurb
-        setBlurbs((prev) => ({
-          ...prev,
-          [name]: blurb,
-        }))
-        return blurb
-      }
-
-      return null
+      const blurb = await blurbClient.updateBlurb(name, data)
+      setBlurbs((prev) => ({
+        ...prev,
+        [name]: blurb,
+      }))
+      return blurb
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to update blurb"
       setError(errorMessage)
-      console.error("Update blurb error:", err)
+      logger.error("Failed to update blurb", err as Error, {
+        hook: "useExperienceData",
+        action: "updateBlurb",
+        blurbName: name,
+      })
       return null
     }
   }, [])
 
   const deleteBlurb = useCallback(async (name: string): Promise<boolean> => {
     try {
-      const token = await getIdToken()
-      if (!token) {
-        throw new Error("Authentication required")
-      }
-
-      const response = await fetch(`${getApiUrl()}/experience/blurbs/${name}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      const responseData = (await response.json()) as { success: boolean; message?: string }
-
-      if (!response.ok || !responseData.success) {
-        throw new Error(responseData.message ?? "Failed to delete blurb")
-      }
-
+      await blurbClient.deleteBlurb(name)
       setBlurbs((prev) => {
         const newBlurbs = { ...prev }
         delete newBlurbs[name]
@@ -316,7 +171,11 @@ export const useExperienceData = (): UseExperienceData => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete blurb"
       setError(errorMessage)
-      console.error("Delete blurb error:", err)
+      logger.error("Failed to delete blurb", err as Error, {
+        hook: "useExperienceData",
+        action: "deleteBlurb",
+        blurbName: name,
+      })
       return false
     }
   }, [])

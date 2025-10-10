@@ -1,8 +1,11 @@
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Flex, Input, Textarea } from "theme-ui"
-import ReactMarkdown from "react-markdown"
+import { Box, Heading, Text, Button, Flex } from "theme-ui"
 import type { ExperienceEntry as ExperienceEntryType, UpdateExperienceData } from "../types/experience"
 import { ConfirmDialog } from "./ConfirmDialog"
+import { MarkdownContent } from "./MarkdownContent"
+import { FormField } from "./FormField"
+import { FormActions } from "./FormActions"
+import { logger } from "../utils/logger"
 
 interface ExperienceEntryProps {
   entry: ExperienceEntryType
@@ -45,7 +48,11 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
       await onUpdate(entry.id, editData)
       setIsEditing(false)
     } catch (error) {
-      console.error("Save failed:", error)
+      logger.error("Failed to save experience", error as Error, {
+        component: "ExperienceEntry",
+        action: "handleSave",
+        entryId: entry.id,
+      })
     } finally {
       setIsSaving(false)
     }
@@ -74,7 +81,11 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
     try {
       await onDelete(entry.id)
     } catch (error) {
-      console.error("Delete failed:", error)
+      logger.error("Failed to delete experience", error as Error, {
+        component: "ExperienceEntry",
+        action: "handleDelete",
+        entryId: entry.id,
+      })
       setIsDeleting(false)
     }
   }
@@ -95,116 +106,78 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
         }}
       >
         <Flex sx={{ flexDirection: "column", gap: 3 }}>
-          {/* Title */}
-          <Box>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Title
-            </Text>
-            <Input
-              value={editData.title}
-              onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-              sx={{ fontSize: 2 }}
-            />
-          </Box>
+          <FormField
+            label="Title"
+            name="title"
+            value={editData.title ?? ""}
+            onChange={(value) => setEditData({ ...editData, title: value })}
+            required
+          />
 
-          {/* Role */}
-          <Box>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Role (optional)
-            </Text>
-            <Input
-              value={editData.role ?? ""}
-              onChange={(e) => setEditData({ ...editData, role: e.target.value })}
-              placeholder="Senior Developer, Lead Engineer, etc."
-              sx={{ fontSize: 2 }}
-            />
-          </Box>
+          <FormField
+            label="Role"
+            name="role"
+            value={editData.role ?? ""}
+            onChange={(value) => setEditData({ ...editData, role: value })}
+            placeholder="Senior Developer, Lead Engineer, etc."
+          />
 
-          {/* Location */}
-          <Box>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Location (optional)
-            </Text>
-            <Input
-              value={editData.location ?? ""}
-              onChange={(e) => setEditData({ ...editData, location: e.target.value })}
-              placeholder="San Francisco, CA · Remote"
-              sx={{ fontSize: 2 }}
-            />
-          </Box>
+          <FormField
+            label="Location"
+            name="location"
+            value={editData.location ?? ""}
+            onChange={(value) => setEditData({ ...editData, location: value })}
+            placeholder="San Francisco, CA · Remote"
+          />
 
-          {/* Dates */}
           <Flex sx={{ gap: 3, flexDirection: ["column", "row"] }}>
             <Box sx={{ flex: 1 }}>
-              <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-                Start Date (YYYY-MM)
-              </Text>
-              <Input
-                value={editData.startDate}
-                onChange={(e) => setEditData({ ...editData, startDate: e.target.value })}
+              <FormField
+                label="Start Date (YYYY-MM)"
+                name="startDate"
+                value={editData.startDate ?? ""}
+                onChange={(value) => setEditData({ ...editData, startDate: value })}
                 placeholder="2023-01"
+                required
               />
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-                End Date (YYYY-MM or leave empty for Present)
-              </Text>
-              <Input
+              <FormField
+                label="End Date (YYYY-MM or leave empty for Present)"
+                name="endDate"
                 value={editData.endDate ?? ""}
-                onChange={(e) => setEditData({ ...editData, endDate: e.target.value || null })}
+                onChange={(value) => setEditData({ ...editData, endDate: value || null })}
                 placeholder="2024-12 or empty"
               />
             </Box>
           </Flex>
 
-          {/* Body */}
-          <Box>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Description
-            </Text>
-            <Textarea
-              value={editData.body ?? ""}
-              onChange={(e) => setEditData({ ...editData, body: e.target.value })}
-              rows={6}
-              sx={{ fontSize: 2, fontFamily: "body" }}
-            />
-          </Box>
+          <FormField
+            label="Description"
+            name="body"
+            value={editData.body ?? ""}
+            onChange={(value) => setEditData({ ...editData, body: value })}
+            type="textarea"
+            rows={6}
+          />
 
-          {/* Notes */}
-          <Box>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Notes (internal)
-            </Text>
-            <Textarea
-              value={editData.notes ?? ""}
-              onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
-              rows={2}
-              sx={{ fontSize: 1, fontFamily: "body" }}
-            />
-          </Box>
+          <FormField
+            label="Notes (internal)"
+            name="notes"
+            value={editData.notes ?? ""}
+            onChange={(value) => setEditData({ ...editData, notes: value })}
+            type="textarea"
+            rows={2}
+            sx={{ fontSize: 1 }}
+          />
 
-          {/* Actions */}
-          <Flex sx={{ gap: 2, justifyContent: "flex-end" }}>
-            <Button
-              onClick={handleDeleteClick}
-              disabled={isDeleting || isSaving}
-              variant="secondary.sm"
-              sx={{
-                bg: "red",
-                color: "white",
-                borderColor: "red",
-                "&:hover": { bg: "darkred", borderColor: "darkred" },
-              }}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-            <Button onClick={handleCancel} variant="secondary.sm" disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button onClick={() => void handleSave()} disabled={isSaving} variant="primary.sm">
-              {isSaving ? "Saving..." : "Save"}
-            </Button>
-          </Flex>
+          <FormActions
+            onCancel={handleCancel}
+            onSave={() => void handleSave()}
+            onDelete={handleDeleteClick}
+            isSubmitting={isSaving}
+            isDeleting={isDeleting}
+          />
         </Flex>
 
         <ConfirmDialog
@@ -286,44 +259,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
       )}
 
       {/* Body */}
-      {entry.body && (
-        <Box
-          sx={{
-            fontSize: 2,
-            lineHeight: 1.6,
-            mb: 3,
-            "& h1, & h2, & h3, & h4, & h5, & h6": {
-              mt: 3,
-              mb: 2,
-              fontWeight: "bold",
-            },
-            "& h2": {
-              fontSize: 3,
-            },
-            "& h3": {
-              fontSize: 2,
-            },
-            "& ul, & ol": {
-              pl: 4,
-              mb: 2,
-            },
-            "& li": {
-              mb: 1,
-            },
-            "& p": {
-              mb: 2,
-            },
-            "& code": {
-              bg: "muted",
-              px: 1,
-              borderRadius: "2px",
-              fontFamily: "monospace",
-            },
-          }}
-        >
-          <ReactMarkdown>{entry.body}</ReactMarkdown>
-        </Box>
-      )}
+      {entry.body && <MarkdownContent sx={{ mb: 3 }}>{entry.body}</MarkdownContent>}
 
       {/* Notes (only for editors) */}
       {isEditor && entry.notes && (
@@ -344,7 +280,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
       {/* Editor Actions */}
       {isEditor && (
         <Box sx={{ mt: 4 }}>
-          <Button onClick={() => setIsEditing(true)} variant="secondary.sm">
+          <Button type="button" onClick={() => setIsEditing(true)} variant="secondary.sm">
             Edit
           </Button>
         </Box>

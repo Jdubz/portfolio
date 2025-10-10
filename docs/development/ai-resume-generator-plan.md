@@ -1,5 +1,82 @@
 # AI Resume & Cover Letter Generator - Project Plan
 
+> **Status:** Ready to implement (Post Phase 1-3 refactoring)
+> **Last Updated:** October 10, 2025
+
+## Architecture Compatibility (Phase 1-3 Integration)
+
+This plan has been reviewed for compatibility with the recent Phase 1-3 refactoring. All prerequisites are in place:
+
+### ✅ Leveraging Phase 1: Configuration & Logging
+
+- **API Configuration**: Add OpenAI config to existing `web/src/config/api.ts`
+- **Logging**: Use centralized `logger` utility for generation tracking and error handling
+- **Environment Variables**: Add `OPENAI_API_KEY` to Secret Manager following existing patterns
+
+### ✅ Leveraging Phase 2: Form Components Library
+
+- **Viewer Form**: Use `FormField` for role/company/job description inputs
+- **Prompt Editor**: Reuse `MarkdownEditor` component (identical to BlurbEntry editing)
+- **Form Actions**: Use `FormActions` for download/delete buttons in document manager
+- **Form Validation**: Use existing `validators.ts` and `createValidator` factory
+- **Async Submission**: Use `useAsyncSubmit` hook for document generation and error handling
+
+### ✅ Leveraging Phase 3: API Architecture
+
+- **New Client**: Create `ResumeClient` extending `ApiClient` base class
+- **Blurb Integration**: Use existing `BlurbClient` for prompt storage (no new CRUD needed)
+- **Error Handling**: Inherit centralized error handling from ApiClient
+- **Type Safety**: Follow established patterns for API requests/responses
+
+### Implementation Example
+
+```typescript
+// web/src/api/resume-client.ts
+export class ResumeClient extends ApiClient {
+  async generateDocuments(data: DocumentGenerationRequest): Promise<DocumentGenerationResponse> {
+    return this.post<DocumentGenerationResponse>("/resume/generate", data, false)
+  }
+
+  async listDocuments(): Promise<GenerationLog[]> {
+    return this.get<GenerationLog[]>("/resume/documents", true)
+  }
+}
+
+export const resumeClient = new ResumeClient()
+```
+
+### UI Component Reuse
+
+```typescript
+// Viewer form (reusing Phase 2 components)
+<FormField
+  label="Target Role"
+  name="role"
+  value={formData.role}
+  onChange={(value) => setFormData({ ...formData, role: value })}
+  required
+/>
+
+// Prompt editor (identical to BlurbEntry)
+<MarkdownEditor
+  label="Resume System Prompt"
+  name="resume-system-prompt"
+  value={promptData.resumeSystemPrompt}
+  onChange={(value) => updatePrompt("resume-system-prompt", value)}
+  rows={12}
+  showPreview
+/>
+
+// Document generation (reusing Phase 2 hook)
+const { handleSubmit, isSubmitting, error } = useAsyncSubmit({
+  onSuccess: () => logger.info("Documents generated successfully"),
+})
+
+await handleSubmit(() => resumeClient.generateDocuments(formData))
+```
+
+---
+
 ## Overview
 
 Add an AI-powered resume and cover letter generator on a dedicated page that uses OpenAI's API to create tailored documents based on experience entries stored in Firestore. The feature supports two user roles: **viewers** (public users) can generate documents for specific jobs, while **editors** can manage prompts and view all generated documents. All documents are stored in Google Cloud Storage with role-based access controls.
@@ -8,7 +85,7 @@ Add an AI-powered resume and cover letter generator on a dedicated page that use
 
 ### For Viewers (Public Users)
 
-- Access `/resume` page without authentication
+- Access `/resume-builder` page without authentication
 - Enter **required** fields: Role, Company
 - Enter **optional** fields: Company website, Job description (URL or text)
 - Generate both resume and cover letter (single button click)
@@ -28,7 +105,7 @@ Add an AI-powered resume and cover letter generator on a dedicated page that use
 
 ### Technical Highlights
 
-- **Separate page:** `/resume` (linked from `/experience`)
+- **Separate page:** `/resume-builder` (linked from `/experience`)
 - **Dual output:** Always generates both resume and cover letter
 - **Editable prompts:** Stored as blurbs with variable substitution
 - **Document storage:** GCS bucket with 90-day auto-expiration
@@ -52,19 +129,19 @@ Add an AI-powered resume and cover letter generator on a dedicated page that use
 ### High-Level Flow
 
 ```
-Viewer → /resume page → Form (role, company, job details) → Cloud Function → OpenAI API → PDF Generation → GCS Storage → Download Links
+Viewer → /resume-builder page → Form (role, company, job details) → Cloud Function → OpenAI API → PDF Generation → GCS Storage → Download Links
                                                                     ↓
                                                                 Firestore
                                                             (log generation)
 
-Editor → /resume page → Auth (same as /experience) → Editable prompts (blurbs) + Document table → Manage all documents
+Editor → /resume-builder page → Auth (same as /experience) → Editable prompts (blurbs) + Document table → Manage all documents
 ```
 
 ### User Roles & Access
 
 **Viewer (Public User):**
 
-- Can access `/resume` page without authentication
+- Can access `/resume-builder` page without authentication
 - Required fields: Role, Company
 - Optional fields: Company website, Job description URL/text
 - Can generate resume + cover letter for their job application
@@ -82,7 +159,7 @@ Editor → /resume page → Auth (same as /experience) → Editable prompts (blu
 ### Components
 
 1. **Frontend (React/TypeScript)**
-   - **New page:** `/resume` (linked from `/experience` page)
+   - **New page:** `/resume-builder` (linked from `/experience` page)
    - Auth flow identical to experience page (Firebase Auth)
    - **Viewer UI:**
      - Job application form (role, company, optional website/job description)
@@ -571,10 +648,10 @@ export const getDocument = https.onCall(
 
 ### 6. Frontend Implementation
 
-#### Page: `/resume`
+#### Page: `/resume-builder`
 
 ```typescript
-// web/src/pages/resume.tsx
+// web/src/pages/resume-builder.tsx
 
 export default function ResumePage() {
   const { user, loading } = useAuth() // Same hook as experience page
@@ -597,7 +674,7 @@ export default function ResumePage() {
 #### Viewer Component
 
 ```typescript
-// web/src/components/resume/ViewerView.tsx
+// web/src/components/resume-builder/ViewerView.tsx
 
 export const ViewerView: React.FC = () => {
   const [generating, setGenerating] = useState(false)
@@ -706,7 +783,7 @@ export const ViewerView: React.FC = () => {
 #### Editor Component
 
 ```typescript
-// web/src/components/resume/EditorView.tsx
+// web/src/components/resume-builder/EditorView.tsx
 
 export const EditorView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'prompts' | 'documents'>('prompts')
@@ -731,7 +808,7 @@ export const EditorView: React.FC = () => {
 #### Prompt Editor (Inline Editing like Experience Page)
 
 ```typescript
-// web/src/components/resume/PromptEditor.tsx
+// web/src/components/resume-builder/PromptEditor.tsx
 
 export const PromptEditor: React.FC = () => {
   const blurbIds = [
@@ -777,7 +854,7 @@ export const PromptEditor: React.FC = () => {
 #### Document Management Table
 
 ```typescript
-// web/src/components/resume/DocumentManager.tsx
+// web/src/components/resume-builder/DocumentManager.tsx
 
 export const DocumentManager: React.FC = () => {
   const [documents, setDocuments] = useState<GenerationLog[]>([])
@@ -947,14 +1024,14 @@ export const DocumentManager: React.FC = () => {
 
 ### Phase 6: Frontend - Viewer UI (Week 3-4)
 
-- [ ] Create `/resume` page
+- [ ] Create `/resume-builder` page
 - [ ] Implement `ViewerView` component:
   - [ ] Job application form (role, company, optional fields)
   - [ ] Form validation
   - [ ] Progress indicators
   - [ ] Result display with download buttons
   - [ ] Session storage for sessionId
-- [ ] Add link from `/experience` page to `/resume`
+- [ ] Add link from `/experience` page to `/resume-builder`
 
 ### Phase 7: Frontend - Editor UI (Week 4)
 
