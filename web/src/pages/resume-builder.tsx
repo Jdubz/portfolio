@@ -5,6 +5,29 @@ import Seo from "../components/homepage/Seo"
 import { logger } from "../utils/logger"
 
 /**
+ * Type definitions for Resume Generator API
+ */
+interface GenerationMetadata {
+  company: string
+  role: string
+  model: string
+  tokenUsage?: number
+  costUsd?: number
+  durationMs: number
+}
+
+interface GenerationResponse {
+  success: boolean
+  message?: string
+  error?: string
+  resume?: string
+  coverLetter?: string
+  metadata?: GenerationMetadata
+}
+
+type GenerateType = "resume" | "coverLetter" | "both"
+
+/**
  * Resume Builder MVP Page
  *
  * Simple UI to test the AI Resume Generator
@@ -16,7 +39,7 @@ const ResumeBuilderPage: React.FC = () => {
   const [success, setSuccess] = useState(false)
 
   // Form state
-  const [generateType, setGenerateType] = useState<"resume" | "coverLetter" | "both">("both")
+  const [generateType, setGenerateType] = useState<GenerateType>("both")
   const [role, setRole] = useState("")
   const [company, setCompany] = useState("")
   const [companyWebsite, setCompanyWebsite] = useState("")
@@ -27,7 +50,7 @@ const ResumeBuilderPage: React.FC = () => {
   // Generated files
   const [resumePDF, setResumePDF] = useState<string | null>(null)
   const [coverLetterPDF, setCoverLetterPDF] = useState<string | null>(null)
-  const [metadata, setMetadata] = useState<any>(null)
+  const [metadata, setMetadata] = useState<GenerationMetadata | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,7 +83,7 @@ const ResumeBuilderPage: React.FC = () => {
       logger.info("Submitting generation request", payload)
 
       // Call the generator endpoint
-      const apiUrl = process.env.GATSBY_API_URL || "http://localhost:5001/static-sites-257923/us-central1"
+      const apiUrl = process.env.GATSBY_API_URL ?? "http://localhost:5001/static-sites-257923/us-central1"
       const response = await fetch(`${apiUrl}/manageGenerator/generator/generate`, {
         method: "POST",
         headers: {
@@ -69,13 +92,13 @@ const ResumeBuilderPage: React.FC = () => {
         body: JSON.stringify(payload),
       })
 
-      const data = await response.json()
+      const data = (await response.json()) as GenerationResponse
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || data.error || "Generation failed")
+        throw new Error(data.message ?? data.error ?? "Generation failed")
       }
 
-      logger.info("Generation successful", data)
+      logger.info("Generation successful", data as unknown as Record<string, unknown>)
 
       // Store the base64 PDFs
       if (data.resume) {
@@ -85,7 +108,9 @@ const ResumeBuilderPage: React.FC = () => {
         setCoverLetterPDF(data.coverLetter)
       }
 
-      setMetadata(data.metadata)
+      if (data.metadata) {
+        setMetadata(data.metadata)
+      }
       setSuccess(true)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
@@ -99,6 +124,7 @@ const ResumeBuilderPage: React.FC = () => {
   const downloadPDF = (base64: string, filename: string) => {
     try {
       // Convert base64 to blob
+      // eslint-disable-next-line no-undef
       const byteCharacters = atob(base64)
       const byteNumbers = new Array(byteCharacters.length)
       for (let i = 0; i < byteCharacters.length; i++) {
@@ -160,7 +186,9 @@ const ResumeBuilderPage: React.FC = () => {
       {/* Form */}
       <Box
         as="form"
-        onSubmit={handleSubmit}
+        onSubmit={(e: React.FormEvent) => {
+          void handleSubmit(e)
+        }}
         sx={{
           bg: "background",
           p: 4,
@@ -176,7 +204,7 @@ const ResumeBuilderPage: React.FC = () => {
           <Select
             id="generateType"
             value={generateType}
-            onChange={(e) => setGenerateType(e.target.value as any)}
+            onChange={(e) => setGenerateType(e.target.value as GenerateType)}
             disabled={generating}
             required
           >
@@ -288,6 +316,7 @@ const ResumeBuilderPage: React.FC = () => {
       </Box>
 
       {/* Results */}
+      {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing */}
       {(resumePDF || coverLetterPDF) && (
         <Box
           sx={{
@@ -312,9 +341,9 @@ const ResumeBuilderPage: React.FC = () => {
                 <br />
                 <strong>Model:</strong> {metadata.model}
                 <br />
-                <strong>Tokens:</strong> {metadata.tokenUsage?.total || "N/A"}
+                <strong>Tokens:</strong> {metadata.tokenUsage ?? "N/A"}
                 <br />
-                <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) || "N/A"}
+                <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) ?? "N/A"}
                 <br />
                 <strong>Duration:</strong> {(metadata.durationMs / 1000).toFixed(2)}s
               </Text>
@@ -353,9 +382,9 @@ const ResumeBuilderPage: React.FC = () => {
       {/* Footer Note */}
       <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
         <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
-          <strong>Note:</strong> This is a Phase 1 MVP test interface. The generator uses your default personal
-          settings from Firestore and pulls experience data from the experience page. Generated PDFs are returned
-          directly (not stored in GCS yet).
+          <strong>Note:</strong> This is a Phase 1 MVP test interface. The generator uses your default personal settings
+          from Firestore and pulls experience data from the experience page. Generated PDFs are returned directly (not
+          stored in GCS yet).
         </Text>
       </Box>
     </Box>

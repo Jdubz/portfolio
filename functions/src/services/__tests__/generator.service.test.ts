@@ -31,7 +31,8 @@ describe("GeneratorService", () => {
     }
 
     // Mock Firestore constructor
-    const { Firestore } = require("@google-cloud/firestore")
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { Firestore } = require("@google-cloud/firestore") as { Firestore: jest.Mock }
     Firestore.mockImplementation(() => mockDb)
 
     service = new GeneratorService()
@@ -39,17 +40,6 @@ describe("GeneratorService", () => {
 
   describe("getDefaults", () => {
     it("should return defaults when document exists", async () => {
-      const mockDefaults: GeneratorDefaults = {
-        id: "default",
-        type: "defaults",
-        name: "John Doe",
-        email: "john@example.com",
-        accentColor: "#3B82F6",
-        defaultStyle: "modern",
-        createdAt: { seconds: 1234567890 } as any,
-        updatedAt: { seconds: 1234567890 } as any,
-      }
-
       mockDb.get.mockResolvedValue({
         exists: true,
         id: "default",

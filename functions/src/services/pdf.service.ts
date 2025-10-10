@@ -7,6 +7,7 @@
 import puppeteer from "puppeteer-core"
 import chromium from "@sparticuz/chromium"
 import Handlebars from "handlebars"
+import type { TemplateDelegate as HandlebarsTemplateDelegate } from "handlebars"
 import * as fs from "fs/promises"
 import * as path from "path"
 import type { ResumeContent, CoverLetterContent } from "../types/generator.types"
