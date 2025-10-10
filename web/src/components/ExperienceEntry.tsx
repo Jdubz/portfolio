@@ -249,37 +249,39 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
         as="h2"
         sx={{
           fontSize: [3, 4],
-          mb: entry.role || entry.location ? 1 : 3,
+          mb: 2,
           color: "text",
         }}
       >
         {entry.title}
       </Heading>
 
-      {/* Role */}
-      {entry.role && (
-        <Text
-          sx={{
-            fontSize: 2,
-            color: "textMuted",
-            fontStyle: "italic",
-            mb: entry.location ? 1 : 3,
-          }}
-        >
-          {entry.role}
-        </Text>
-      )}
-
       {/* Location */}
       {entry.location && (
         <Text
           sx={{
+            display: "block",
             fontSize: 1,
             color: "textMuted",
-            mb: 3,
+            mb: 2,
           }}
         >
           {entry.location}
+        </Text>
+      )}
+
+      {/* Role */}
+      {entry.role && (
+        <Text
+          sx={{
+            display: "block",
+            fontSize: 2,
+            color: "textMuted",
+            fontStyle: "italic",
+            mb: 3,
+          }}
+        >
+          {entry.role}
         </Text>
       )}
 
