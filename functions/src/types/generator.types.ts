@@ -125,7 +125,7 @@ export interface GeneratorRequest {
 
   // Timestamps & Metadata
   createdAt: Timestamp
-  createdBy?: string // Email if editor, undefined if viewer
+  createdBy: string | null // Email if editor, null if anonymous viewer
 }
 
 export interface CreateGeneratorRequestData {

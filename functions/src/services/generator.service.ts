@@ -176,7 +176,7 @@ export class GeneratorService {
           viewerSessionId,
           isPublic: !editorEmail,
         },
-        createdBy: editorEmail,
+        createdBy: editorEmail || null,
       }
 
       await this.db
