@@ -1,6 +1,6 @@
 # AI Resume & Cover Letter Generator - Project Plan
 
-> **Status:** Ready to implement (Post Phase 1-3 refactoring)
+> **Status:** In Development - Phase 1 (MVP)
 > **Last Updated:** October 10, 2025
 
 ## Architecture Compatibility (Phase 1-3 Integration)
@@ -253,49 +253,65 @@ interface DocumentGenerationResponse {
 }
 ```
 
-#### Firestore Schema: Generation Logs
+#### Firestore Schema: Generator Collection
+
+**Collection:** `generator`
+
+This collection uses a **three-document-type approach** for clear separation of concerns:
+
+1. **One `default` document** - Default personal settings
+2. **Request documents (`resume-generator-request-{id}`)** - Generation requests with input snapshots
+3. **Response documents (`resume-generator-response-{id}`)** - Generated files, OpenAI outputs, metrics
+
+**Key Features:**
+
+- ✅ Request/response separation for better data organization
+- ✅ Flexible generation options: resume only, cover letter only, or both (same for editors & viewers)
+- ✅ Complete reproducibility via snapshots
+- ✅ Easy debugging (trace response → request → inputs)
+
+> **Note:** See [generator-firestore-schema.md](generator-firestore-schema.md) for complete schema documentation including:
+>
+> - Full TypeScript interfaces
+> - Example documents
+> - Query patterns
+> - Firestore indexes
+> - Security rules
+
+**Collection Structure:**
+
+```
+generator/
+├── default                                      # Default settings
+├── resume-generator-request-1697123456-abc123  # Request document
+├── resume-generator-response-1697123456-abc123 # Response document (matches request)
+└── ...
+```
+
+**Generation Types:**
 
 ```typescript
-interface GenerationLog {
-  id: string // = sessionId
-  timestamp: Timestamp
-
-  // Job details
-  role: string
-  company: string
-  companyWebsite?: string
-  jobDescriptionUrl?: string
-  hasJobDescription: boolean
-
-  // Generation config
-  style: string
-  emphasize?: string[]
-
-  // Results
-  success: boolean
-  error?: string
-
-  // Files
-  resumePath: string // GCS path
-  coverLetterPath: string // GCS path
-
-  // Metrics
-  durationMs: number
-  tokenUsage: {
-    resumePrompt: number
-    resumeCompletion: number
-    coverLetterPrompt: number
-    coverLetterCompletion: number
-    total: number
-  }
-  costUsd: number
-  model: string
-
-  // Access tracking
-  viewerSessionId: string // For viewers to retrieve their own docs
-  downloads: number
-}
+type GenerationType = "resume" | "coverLetter" | "both"
 ```
+
+Users (both editors and viewers) can choose to generate:
+
+- Resume only
+- Cover letter only
+- Both documents
+
+**Example Flow:**
+
+1. User submits generation request
+2. System creates `resume-generator-request-{id}` with:
+   - Generation type (resume/coverLetter/both)
+   - Job details (role, company, description)
+   - Snapshot of defaults and experience data
+3. System processes request and creates `resume-generator-response-{id}` with:
+   - OpenAI generated content
+   - GCS file paths and signed URLs
+   - Metrics (duration, tokens, cost)
+   - Download tracking
 
 ### 2. OpenAI Integration
 
@@ -955,6 +971,174 @@ export const DocumentManager: React.FC = () => {
 
 ## Implementation Plan
 
+### **UPDATED MVP APPROACH (Two Phases)**
+
+This replaces the original 10-phase plan with a streamlined two-phase approach.
+
+---
+
+### **Phase 1: MVP - Core Generation Proof of Concept**
+
+**Goal:** Prove we can generate a PDF resume from OpenAI API call
+
+**Scope:**
+
+- Minimal viable function to test OpenAI integration and PDF generation
+- No UI, no GCS storage, no rate limiting yet
+- Direct PDF response (download immediately)
+- Hardcoded or minimal inputs for testing
+
+**Tasks:**
+
+- [ ] Add OpenAI API key to Secret Manager
+- [ ] Create `generator` collection in Firestore:
+  - [ ] Create `default` document with `GeneratorDefaults` schema
+  - [ ] Fields: `name`, `email`, `phone`, `location`, `website`, `github`, `linkedin`, `avatar`, `logo`, `accentColor`, `defaultStyle`
+  - [ ] All fields required but handle empty/null gracefully
+  - [ ] Set up Firestore indexes for generation log queries
+- [ ] Install dependencies:
+  - [ ] `openai` SDK
+  - [ ] `puppeteer-core` + `@sparticuz/chromium`
+  - [ ] `handlebars`
+- [ ] Create Cloud Function: `generateResume` (basic version)
+  - [ ] Fetch experience-entries from Firestore
+  - [ ] Fetch experience-blurbs from Firestore
+  - [ ] Fetch generator defaults from `generator/default` document
+  - [ ] Build OpenAI prompt with structured output schema
+  - [ ] Call OpenAI API to generate resume content
+  - [ ] Create generation log document with `GenerationLog` schema
+  - [ ] Log request data, experience snapshot, and OpenAI response
+  - [ ] Generate HTML using Handlebars template
+  - [ ] Convert HTML to PDF using Puppeteer
+  - [ ] Return PDF as direct download (no GCS yet)
+  - [ ] Update generation log with metrics (duration, tokens, cost)
+- [ ] Create basic Handlebars resume template (modern style)
+- [ ] Test end-to-end with hardcoded job inputs
+
+**Deliverables:**
+
+- Working Cloud Function that generates a PDF resume
+- Proof of concept for OpenAI + Puppeteer integration
+- Basic resume template
+
+**Success Criteria:**
+
+- Can generate a PDF resume from Cloud Function
+- Resume contains real experience data from Firestore
+- PDF is downloadable and properly formatted
+- Total generation time < 30 seconds
+
+---
+
+### **Phase 2: Full Implementation - UI, Storage, Permissions**
+
+**Goal:** Production-ready feature with complete UI and all features
+
+**Scope:**
+
+- Full viewer and editor UI
+- GCS storage with signed URLs
+- Rate limiting and security
+- Cover letter generation
+- Document management
+- All advanced features
+
+**Tasks:**
+
+#### Backend
+
+- [ ] Set up GCS bucket `joshwentworth-resumes` with lifecycle policy (90-day expiration)
+- [ ] Expand Cloud Function to full implementation (generation logs already in `generator` collection):
+  - [ ] Support both resume AND cover letter generation
+  - [ ] Upload PDFs to GCS (path: `{sessionId}/{resume.pdf, cover-letter.pdf}`)
+  - [ ] Log generation to Firestore with metadata
+  - [ ] Generate signed URLs (1 hour for viewers, 7 days for editors)
+  - [ ] Handle job description URL fetching (via OpenAI)
+  - [ ] Implement rate limiting using `express-rate-limit` (10 per 15min for viewers)
+  - [ ] Add App Check verification (already have middleware)
+  - [ ] Support editor overrides for generator defaults
+- [ ] Create Cloud Function: `listDocuments` (editor-only)
+  - [ ] Auth middleware for editors
+  - [ ] Query generation logs with filters
+  - [ ] Return list with metadata
+- [ ] Create Cloud Function: `getDocument` (editor or viewer session check)
+  - [ ] Generate signed URLs for re-download
+  - [ ] Track download counts
+- [ ] Create 4 default prompt blurbs in Firestore:
+  - [ ] `resume-system-prompt`
+  - [ ] `resume-user-prompt-template`
+  - [ ] `cover-letter-system-prompt`
+  - [ ] `cover-letter-user-prompt-template`
+- [ ] Implement variable substitution for prompts
+- [ ] Create Handlebars template for cover letter
+
+#### Frontend
+
+- [ ] Create `/resume-builder` page
+- [ ] Implement Experience Data Provider (reduce redundant API calls)
+- [ ] Create `ViewerView` component:
+  - [ ] Form with required fields: role, company
+  - [ ] Optional fields: company website, job description URL/text
+  - [ ] URL validation
+  - [ ] Progress indicators during generation
+  - [ ] Result display with download buttons
+  - [ ] Store sessionId in sessionStorage
+- [ ] Create `EditorView` component with two tabs:
+  - [ ] **Tab 1: Prompt Editor**
+    - [ ] Display 4 prompt blurbs with inline editing
+    - [ ] Reuse `MarkdownEditor` from experience page
+    - [ ] Show variable documentation
+  - [ ] **Tab 2: Document Manager**
+    - [ ] Table with all generation logs
+    - [ ] Filters: search, date range
+    - [ ] Download buttons for resume and cover letter
+    - [ ] Pagination
+    - [ ] Stats: total cost, total generations, success rate
+- [ ] Create "Edit Defaults" modal for editors:
+  - [ ] Form to edit generator-defaults
+  - [ ] All fields editable before generation
+  - [ ] Save to Firestore
+- [ ] Add link from `/experience` page to `/resume-builder`
+- [ ] Create `ResumeClient` extending `ApiClient`
+
+#### Testing & Polish
+
+- [ ] Unit tests for Cloud Functions
+- [ ] Integration tests for OpenAI and GCS
+- [ ] E2E tests for viewer and editor flows
+- [ ] Error handling improvements
+- [ ] Load testing
+- [ ] Security review
+
+#### Deployment
+
+- [ ] Deploy to staging
+- [ ] Seed default prompts and generator-defaults
+- [ ] Test end-to-end
+- [ ] Deploy to production
+- [ ] Monitor initial usage
+
+**Deliverables:**
+
+- Complete, production-ready resume generator feature
+- Full UI for viewers and editors
+- Document storage and management
+- Monitoring and analytics
+
+**Success Criteria:**
+
+- All user flows work end-to-end
+- 95%+ generation success rate
+- < 30s average generation time
+- Rate limiting prevents abuse
+- Editors can manage prompts and view all documents
+
+---
+
+### Original 10-Phase Plan (DEPRECATED - Replaced by MVP Approach Above)
+
+The following phases are kept for reference but have been superseded by the two-phase MVP approach.
+
 ### Phase 1: Foundation & Infrastructure (Week 1)
 
 - [ ] Set up OpenAI API credentials in Secret Manager
@@ -1310,9 +1494,11 @@ export const DocumentManager: React.FC = () => {
   "openai": "^4.67.0",
   "puppeteer-core": "^23.0.0",
   "@sparticuz/chromium": "^131.0.0",
-  "pdfkit": "^0.15.0" // Alternative to Puppeteer
+  "handlebars": "^4.7.8"
 }
 ```
+
+**Note:** Using Handlebars for HTML templating with Puppeteer PDF generation.
 
 ### Frontend Dependencies
 
@@ -1379,6 +1565,41 @@ export const DocumentManager: React.FC = () => {
    - **Decision:** Yes, always generate both resume and cover letter together
    - Two separate PDFs
    - Separate OpenAI calls with different prompts
+
+6. ✅ **HTML Templating Library?**
+   - **Decision:** Use Handlebars for PDF generation
+   - Provides flexibility for advanced templating
+   - Built-in partials, helpers, and HTML escaping
+   - Clean separation of logic and templates
+
+7. ✅ **Rate Limiting Implementation?**
+   - **Decision:** Use existing `express-rate-limit` pattern (same as contact form)
+   - Already have Firebase App Check middleware for bot protection
+   - For resume generation: 10 requests per 15 minutes per IP (public users)
+   - Editors: More generous limits or no rate limiting
+
+8. ✅ **Personal Information Storage?**
+   - **Decision:** Create new `generator-defaults` collection in Firestore
+   - Single document contains: name, email, github, linkedin, avatar, logo, accentColor
+   - All values required but handle falsiness elegantly
+   - Editors can modify defaults via "Edit Defaults" modal before generation
+   - Viewers use stored defaults (no editing allowed)
+
+9. ✅ **Experience Data Provider?**
+   - **Decision:** Implement provider/context to reduce redundant API calls
+   - Reuse experience-entries and experience-blurbs data from existing experience page
+   - Share data between pages when already loaded
+
+10. ✅ **Job Description Handling?**
+    - **Decision:** OpenAI can read job descriptions from URLs directly
+    - Validate URL format on frontend
+    - Pass URL to OpenAI for automatic fetching and parsing
+    - Also support pasted text as alternative
+
+11. ✅ **MVP Implementation Plan?**
+    - **Decision:** Two-phase approach
+    - **Phase 1 (MVP):** Proof of concept - Generate PDF from OpenAI API call (no GCS, no UI)
+    - **Phase 2 (Full):** Complete UI, GCS storage, permissions, rate limiting, document management
 
 ### Open (Future Consideration)
 
