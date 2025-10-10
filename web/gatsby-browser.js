@@ -1,8 +1,10 @@
 import "./src/styles/fonts.css"
+import { initCacheVersionCheck } from "./src/utils/cache-version"
 
 // Log app version to console
-export const onClientEntry = () => {
+export const onClientEntry = async () => {
   const { version, name } = require("./package.json")
+  const cacheVersion = process.env.GATSBY_CACHE_VERSION || version
 
   // eslint-disable-next-line no-console
   console.log(
@@ -14,7 +16,12 @@ export const onClientEntry = () => {
   if (typeof window !== "undefined") {
     window.__APP_VERSION__ = version
     window.__APP_NAME__ = name
+    window.__CACHE_VERSION__ = cacheVersion
   }
+
+  // Initialize cache version check
+  // This will invalidate caches if version changed or CACHE_BUST flag is set
+  await initCacheVersionCheck()
 
   // Firebase is now lazy-loaded only when needed (e.g., ContactForm)
   // This saves ~200KB on initial page load

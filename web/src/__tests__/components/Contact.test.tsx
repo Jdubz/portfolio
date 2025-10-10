@@ -1,23 +1,23 @@
 import React from "react"
 import { render, screen } from "@testing-library/react"
-import Contact from "../../@lekoarts/gatsby-theme-cara/components/contact"
+import Contact from "../../components/homepage/Contact"
 
 // Mock the MDX component
-jest.mock("../../@lekoarts/gatsby-theme-cara/sections/contact.mdx", () => {
+jest.mock("../../content/sections/contact.mdx", () => {
   return function ContactMock() {
     return <div data-testid="contact-content">Contact Content</div>
   }
 })
 
 // Mock Footer component
-jest.mock("../../@lekoarts/gatsby-theme-cara/components/footer", () => {
+jest.mock("../../components/homepage/Footer", () => {
   return function FooterMock() {
     return <footer data-testid="footer">Footer</footer>
   }
 })
 
 // Mock components
-jest.mock("@lekoarts/gatsby-theme-cara/src/elements/divider", () => {
+jest.mock("../../components/elements/Divider", () => {
   return function DividerMock({ children, className }: any) {
     return (
       <div data-testid="divider" className={className}>
@@ -27,7 +27,7 @@ jest.mock("@lekoarts/gatsby-theme-cara/src/elements/divider", () => {
   }
 })
 
-jest.mock("@lekoarts/gatsby-theme-cara/src/elements/content", () => {
+jest.mock("../../components/elements/Content", () => {
   return function ContentMock({ children, className }: any) {
     return (
       <div data-testid="content" className={className}>
@@ -37,19 +37,19 @@ jest.mock("@lekoarts/gatsby-theme-cara/src/elements/content", () => {
   }
 })
 
-jest.mock("@lekoarts/gatsby-theme-cara/src/elements/inner", () => {
+jest.mock("../../components/elements/Inner", () => {
   return function InnerMock({ children }: any) {
     return <div data-testid="inner">{children}</div>
   }
 })
 
-jest.mock("../../@lekoarts/gatsby-theme-cara/components/svg", () => {
+jest.mock("../../components/homepage/Svg", () => {
   return function SvgMock() {
     return <svg data-testid="icon" />
   }
 })
 
-jest.mock("@lekoarts/gatsby-theme-cara/src/styles/animations", () => ({
+jest.mock("../../styles/animations", () => ({
   UpDown: ({ children }: any) => <div data-testid="updown">{children}</div>,
   UpDownWide: ({ children }: any) => <div data-testid="updownwide">{children}</div>,
   waveAnimation: jest.fn(() => "wave-animation"),

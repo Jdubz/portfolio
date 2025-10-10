@@ -1,1 +1,8 @@
+#!/usr/bin/env sh
+
+# Run linting (soft warning)
 npm run lint || echo "⚠️  Lint warnings detected but allowing commit to proceed"
+
+# Auto-generate changeset if needed
+# This will prompt for version type and summary
+node scripts/auto-changeset.js

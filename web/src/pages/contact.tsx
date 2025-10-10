@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
 import { Link } from "gatsby"
-import Layout from "../@lekoarts/gatsby-theme-cara/components/layout"
-import Seo from "@lekoarts/gatsby-theme-cara/src/components/seo"
+import Layout from "../components/homepage/Layout"
+import Seo from "../components/homepage/Seo"
 import ContactForm from "../components/ContactForm"
 
 const ContactPage = () => {

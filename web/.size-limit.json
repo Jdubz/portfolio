@@ -13,7 +13,7 @@
   },
   {
     "name": "Homepage component",
-    "path": "public/component---src-lekoarts-gatsby-theme-cara-templates-cara-tsx-*.js",
+    "path": "public/component---src-pages-index-tsx-*.js",
     "limit": "30 KB",
     "gzip": true
   },

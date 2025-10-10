@@ -42,43 +42,55 @@ const config: GatsbyConfig = {
   },
   trailingSlash: `always`,
   plugins: [
+    // MDX support for content sections
     {
-      resolve: `@lekoarts/gatsby-theme-cara`,
-      // Gatsby theme providing the core functionality
-      options: {},
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `sections`,
+        path: `${__dirname}/src/content/sections`,
+      },
     },
+    {
+      resolve: `gatsby-plugin-mdx`,
+      options: {
+        extensions: [`.mdx`, `.md`],
+        gatsbyRemarkPlugins: [],
+      },
+    },
+    // Theme-UI for styling
+    `gatsby-plugin-theme-ui`,
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
         name: `Josh Wentworth - Portfolio`,
-        short_name: `Josh Wentworth`,
+        short_name: `JW`,
         description: `Multidisciplinary engineer blending software, electronics/lighting, and digital fabrication`,
         start_url: `/`,
         background_color: `#141821`,
-        // This will impact how browsers show your PWA/website
-        // https://css-tricks.com/meta-theme-color-and-trickery/
-        // theme_color: `#f6ad55`,
+        theme_color: `#0EA5E9`,
         display: `standalone`,
         icons: [
           {
-            src: `/android-chrome-192x192.webp`,
-            sizes: `192x192`,
-            type: `image/webp`,
-          },
-          {
-            src: `/android-chrome-192x192.png`,
+            src: `/favicons/primary-192.png`,
             sizes: `192x192`,
             type: `image/png`,
           },
           {
-            src: `/android-chrome-512x512.webp`,
-            sizes: `512x512`,
-            type: `image/webp`,
-          },
-          {
-            src: `/android-chrome-512x512.png`,
+            src: `/favicons/primary-512.png`,
             sizes: `512x512`,
             type: `image/png`,
+          },
+          {
+            src: `/favicons/maskable-primary-192.png`,
+            sizes: `192x192`,
+            type: `image/png`,
+            purpose: `maskable`,
+          },
+          {
+            src: `/favicons/maskable-primary-512.png`,
+            sizes: `512x512`,
+            type: `image/png`,
+            purpose: `maskable`,
           },
         ],
       },

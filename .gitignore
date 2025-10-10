@@ -64,6 +64,10 @@ typings/
 !.env.production
 !.env.example
 
+# Cache version files (generated during build)
+.cache-version
+web/.env.cache
+
 # Gatsby cache and build
 .cache
 **/.cache
