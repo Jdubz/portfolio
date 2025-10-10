@@ -1,12 +1,30 @@
 import React, { useState } from "react"
-import { Box, Text, Button, Flex, Input, Textarea } from "theme-ui"
+import { Box, Text, Flex, Button } from "theme-ui"
 import type { CreateExperienceData } from "../types/experience"
-import { FormLabel } from "./FormLabel"
+import { FormField } from "./FormField"
+import { FormError } from "./FormError"
+import { createValidator, validators } from "../utils/validators"
 
 interface CreateExperienceFormProps {
   onCreate: (data: CreateExperienceData) => Promise<void>
   onCancel: () => void
 }
+
+// Create validator for experience form
+const validateExperience = createValidator<CreateExperienceData & Record<string, unknown>>([
+  { field: "title", validator: validators.required("Title") },
+  { field: "startDate", validator: validators.required("Start date") },
+  { field: "startDate", validator: validators.dateFormat },
+  {
+    field: "endDate",
+    validator: (value: unknown) => {
+      if (!value || value === null || (typeof value === "string" && !value.trim())) {
+        return null // End date is optional
+      }
+      return validators.dateFormat(value)
+    },
+  },
+])
 
 /**
  * Form for creating new experience entries
@@ -29,21 +47,11 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
     e.preventDefault()
     setError(null)
 
-    // Validation
-    if (!formData.title.trim()) {
-      setError("Title is required")
-      return
-    }
-    if (!formData.startDate.trim()) {
-      setError("Start date is required")
-      return
-    }
-    if (!/^\d{4}-\d{2}$/.test(formData.startDate)) {
-      setError("Start date must be in YYYY-MM format")
-      return
-    }
-    if (formData.endDate && !/^\d{4}-\d{2}$/.test(formData.endDate)) {
-      setError("End date must be in YYYY-MM format")
+    // Validate form
+    const errors = validateExperience(formData as CreateExperienceData & Record<string, unknown>)
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0]
+      setError(firstError ?? "Please fix form errors")
       return
     }
 
@@ -88,89 +96,77 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
         Create New Experience Entry
       </Text>
 
-      {error && <Box sx={{ bg: "red", color: "white", p: 2, borderRadius: "4px", mb: 3, fontSize: 1 }}>{error}</Box>}
+      <FormError message={error} />
 
       <Flex sx={{ flexDirection: "column", gap: 3 }}>
-        {/* Title */}
-        <Box>
-          <FormLabel>Title *</FormLabel>
-          <Input
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="Some Company"
-            required
-            sx={{ fontSize: 2 }}
-          />
-        </Box>
+        <FormField
+          label="Title"
+          name="title"
+          value={formData.title}
+          onChange={(value) => setFormData({ ...formData, title: value })}
+          placeholder="Some Company"
+          required
+        />
 
-        {/* Role */}
-        <Box>
-          <FormLabel>Role (optional)</FormLabel>
-          <Input
-            value={formData.role ?? ""}
-            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-            placeholder="Senior Developer, Lead Engineer, etc."
-            sx={{ fontSize: 2 }}
-          />
-        </Box>
+        <FormField
+          label="Role"
+          name="role"
+          value={formData.role ?? ""}
+          onChange={(value) => setFormData({ ...formData, role: value })}
+          placeholder="Senior Developer, Lead Engineer, etc."
+        />
 
-        {/* Location */}
-        <Box>
-          <FormLabel>Location (optional)</FormLabel>
-          <Input
-            value={formData.location ?? ""}
-            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-            placeholder="San Francisco, CA · Remote"
-            sx={{ fontSize: 2 }}
-          />
-        </Box>
+        <FormField
+          label="Location"
+          name="location"
+          value={formData.location ?? ""}
+          onChange={(value) => setFormData({ ...formData, location: value })}
+          placeholder="San Francisco, CA · Remote"
+        />
 
-        {/* Dates */}
         <Flex sx={{ gap: 3, flexDirection: ["column", "row"] }}>
           <Box sx={{ flex: 1 }}>
-            <FormLabel>Start Date (YYYY-MM) *</FormLabel>
-            <Input
+            <FormField
+              label="Start Date (YYYY-MM)"
+              name="startDate"
               value={formData.startDate}
-              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+              onChange={(value) => setFormData({ ...formData, startDate: value })}
               placeholder="2023-01"
               required
             />
           </Box>
           <Box sx={{ flex: 1 }}>
-            <FormLabel>End Date (YYYY-MM or leave empty for Present)</FormLabel>
-            <Input
+            <FormField
+              label="End Date (YYYY-MM or leave empty for Present)"
+              name="endDate"
               value={formData.endDate ?? ""}
-              onChange={(e) => setFormData({ ...formData, endDate: e.target.value || null })}
+              onChange={(value) => setFormData({ ...formData, endDate: value || null })}
               placeholder="2024-12 or empty"
             />
           </Box>
         </Flex>
 
-        {/* Body */}
-        <Box>
-          <FormLabel>Description</FormLabel>
-          <Textarea
-            value={formData.body}
-            onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-            rows={6}
-            placeholder="Describe your role, responsibilities, and achievements..."
-            sx={{ fontSize: 2, fontFamily: "body" }}
-          />
-        </Box>
+        <FormField
+          label="Description"
+          name="body"
+          value={formData.body ?? ""}
+          onChange={(value) => setFormData({ ...formData, body: value })}
+          type="textarea"
+          rows={6}
+          placeholder="Describe your role, responsibilities, and achievements..."
+        />
 
-        {/* Notes */}
-        <Box>
-          <FormLabel>Notes (internal, only visible to editors)</FormLabel>
-          <Textarea
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            rows={2}
-            placeholder="Internal notes..."
-            sx={{ fontSize: 1, fontFamily: "body" }}
-          />
-        </Box>
+        <FormField
+          label="Notes (internal, only visible to editors)"
+          name="notes"
+          value={formData.notes ?? ""}
+          onChange={(value) => setFormData({ ...formData, notes: value })}
+          type="textarea"
+          rows={2}
+          placeholder="Internal notes..."
+          sx={{ fontSize: 1 }}
+        />
 
-        {/* Actions */}
         <Flex sx={{ gap: 2, justifyContent: "flex-end" }}>
           <Button type="button" onClick={onCancel} variant="secondary.sm" disabled={isCreating}>
             Cancel

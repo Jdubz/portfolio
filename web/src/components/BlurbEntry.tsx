@@ -1,8 +1,10 @@
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Flex, Input, Textarea } from "theme-ui"
+import { Box, Heading, Text, Button, Flex } from "theme-ui"
 import type { BlurbEntry as BlurbEntryType, UpdateBlurbData } from "../types/experience"
 import { MarkdownContent } from "./MarkdownContent"
-import { FormLabel } from "./FormLabel"
+import { FormField } from "./FormField"
+import { FormActions } from "./FormActions"
+import { MarkdownEditor } from "./MarkdownEditor"
 import { logger } from "../utils/logger"
 
 interface BlurbEntryProps {
@@ -78,36 +80,29 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
         }}
       >
         <Flex sx={{ flexDirection: "column", gap: 3 }}>
-          {/* Title */}
-          <Box>
-            <FormLabel>Title</FormLabel>
-            <Input
-              value={editData.title}
-              onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-              sx={{ fontSize: 2 }}
-            />
-          </Box>
+          <FormField
+            label="Title"
+            name="title"
+            value={editData.title ?? ""}
+            onChange={(value) => setEditData({ ...editData, title: value })}
+            required
+          />
 
-          {/* Content */}
-          <Box>
-            <FormLabel>Content (Markdown)</FormLabel>
-            <Textarea
-              value={editData.content}
-              onChange={(e) => setEditData({ ...editData, content: e.target.value })}
-              rows={12}
-              sx={{ fontSize: 2, fontFamily: "monospace" }}
-            />
-          </Box>
+          <MarkdownEditor
+            label="Content (Markdown)"
+            name="content"
+            value={editData.content ?? ""}
+            onChange={(value) => setEditData({ ...editData, content: value })}
+            rows={12}
+            showPreview
+          />
 
-          {/* Actions */}
-          <Flex sx={{ gap: 2, justifyContent: "flex-end" }}>
-            <Button onClick={handleCancel} variant="secondary.sm" disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button onClick={() => void handleSave()} disabled={isSaving} variant="primary.sm">
-              {isSaving ? "Saving..." : blurb ? "Save" : "Create"}
-            </Button>
-          </Flex>
+          <FormActions
+            onCancel={handleCancel}
+            onSave={() => void handleSave()}
+            isSubmitting={isSaving}
+            saveText={blurb ? "Save" : "Create"}
+          />
         </Flex>
       </Box>
     )

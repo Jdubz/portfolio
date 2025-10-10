@@ -1,9 +1,10 @@
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Flex, Input, Textarea } from "theme-ui"
+import { Box, Heading, Text, Button, Flex } from "theme-ui"
 import type { ExperienceEntry as ExperienceEntryType, UpdateExperienceData } from "../types/experience"
 import { ConfirmDialog } from "./ConfirmDialog"
 import { MarkdownContent } from "./MarkdownContent"
-import { FormLabel } from "./FormLabel"
+import { FormField } from "./FormField"
+import { FormActions } from "./FormActions"
 import { logger } from "../utils/logger"
 
 interface ExperienceEntryProps {
@@ -105,102 +106,78 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
         }}
       >
         <Flex sx={{ flexDirection: "column", gap: 3 }}>
-          {/* Title */}
-          <Box>
-            <FormLabel>Title</FormLabel>
-            <Input
-              value={editData.title}
-              onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-              sx={{ fontSize: 2 }}
-            />
-          </Box>
+          <FormField
+            label="Title"
+            name="title"
+            value={editData.title ?? ""}
+            onChange={(value) => setEditData({ ...editData, title: value })}
+            required
+          />
 
-          {/* Role */}
-          <Box>
-            <FormLabel>Role (optional)</FormLabel>
-            <Input
-              value={editData.role ?? ""}
-              onChange={(e) => setEditData({ ...editData, role: e.target.value })}
-              placeholder="Senior Developer, Lead Engineer, etc."
-              sx={{ fontSize: 2 }}
-            />
-          </Box>
+          <FormField
+            label="Role"
+            name="role"
+            value={editData.role ?? ""}
+            onChange={(value) => setEditData({ ...editData, role: value })}
+            placeholder="Senior Developer, Lead Engineer, etc."
+          />
 
-          {/* Location */}
-          <Box>
-            <FormLabel>Location (optional)</FormLabel>
-            <Input
-              value={editData.location ?? ""}
-              onChange={(e) => setEditData({ ...editData, location: e.target.value })}
-              placeholder="San Francisco, CA · Remote"
-              sx={{ fontSize: 2 }}
-            />
-          </Box>
+          <FormField
+            label="Location"
+            name="location"
+            value={editData.location ?? ""}
+            onChange={(value) => setEditData({ ...editData, location: value })}
+            placeholder="San Francisco, CA · Remote"
+          />
 
-          {/* Dates */}
           <Flex sx={{ gap: 3, flexDirection: ["column", "row"] }}>
             <Box sx={{ flex: 1 }}>
-              <FormLabel>Start Date (YYYY-MM)</FormLabel>
-              <Input
-                value={editData.startDate}
-                onChange={(e) => setEditData({ ...editData, startDate: e.target.value })}
+              <FormField
+                label="Start Date (YYYY-MM)"
+                name="startDate"
+                value={editData.startDate ?? ""}
+                onChange={(value) => setEditData({ ...editData, startDate: value })}
                 placeholder="2023-01"
+                required
               />
             </Box>
             <Box sx={{ flex: 1 }}>
-              <FormLabel>End Date (YYYY-MM or leave empty for Present)</FormLabel>
-              <Input
+              <FormField
+                label="End Date (YYYY-MM or leave empty for Present)"
+                name="endDate"
                 value={editData.endDate ?? ""}
-                onChange={(e) => setEditData({ ...editData, endDate: e.target.value || null })}
+                onChange={(value) => setEditData({ ...editData, endDate: value || null })}
                 placeholder="2024-12 or empty"
               />
             </Box>
           </Flex>
 
-          {/* Body */}
-          <Box>
-            <FormLabel>Description</FormLabel>
-            <Textarea
-              value={editData.body ?? ""}
-              onChange={(e) => setEditData({ ...editData, body: e.target.value })}
-              rows={6}
-              sx={{ fontSize: 2, fontFamily: "body" }}
-            />
-          </Box>
+          <FormField
+            label="Description"
+            name="body"
+            value={editData.body ?? ""}
+            onChange={(value) => setEditData({ ...editData, body: value })}
+            type="textarea"
+            rows={6}
+          />
 
-          {/* Notes */}
-          <Box>
-            <FormLabel>Notes (internal)</FormLabel>
-            <Textarea
-              value={editData.notes ?? ""}
-              onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
-              rows={2}
-              sx={{ fontSize: 1, fontFamily: "body" }}
-            />
-          </Box>
+          <FormField
+            label="Notes (internal)"
+            name="notes"
+            value={editData.notes ?? ""}
+            onChange={(value) => setEditData({ ...editData, notes: value })}
+            type="textarea"
+            rows={2}
+            sx={{ fontSize: 1 }}
+          />
 
-          {/* Actions */}
-          <Flex sx={{ gap: 2, justifyContent: "flex-end" }}>
-            <Button
-              onClick={handleDeleteClick}
-              disabled={isDeleting || isSaving}
-              variant="secondary.sm"
-              sx={{
-                bg: "red",
-                color: "white",
-                borderColor: "red",
-                "&:hover": { bg: "darkred", borderColor: "darkred" },
-              }}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-            <Button onClick={handleCancel} variant="secondary.sm" disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button onClick={() => void handleSave()} disabled={isSaving} variant="primary.sm">
-              {isSaving ? "Saving..." : "Save"}
-            </Button>
-          </Flex>
+          <FormActions
+            onCancel={handleCancel}
+            onSave={() => void handleSave()}
+            onDelete={handleDeleteClick}
+            isSubmitting={isSaving}
+            isDeleting={isDeleting}
+          />
         </Flex>
 
         <ConfirmDialog
