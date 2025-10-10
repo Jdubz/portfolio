@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api seed-emulators screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api seed-emulators screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -66,6 +66,9 @@ help:
 	@echo "  make deploy-staging        - Build and deploy to staging"
 	@echo "  make deploy-prod           - Build and deploy to production"
 	@echo "  make deploy-function FUNC=<name> - Deploy single Cloud Function with correct build SA"
+	@echo ""
+	@echo "Database:"
+	@echo "  make sync-prod-to-staging  - Copy production data to staging database"
 	@echo ""
 
 # Web commands
@@ -270,3 +273,27 @@ lint-functions-fix:
 lint: lint-web lint-functions
 
 lint-fix: lint-web-fix lint-functions-fix
+
+# Database sync
+sync-prod-to-staging:
+	@echo "Syncing production data to staging database..."
+	@echo "Step 1: Exporting production database..."
+	@gcloud firestore export gs://static-sites-257923-firestore-backup/sync-$(shell date +%Y%m%d-%H%M%S) \
+		--database=portfolio \
+		--project=static-sites-257923 \
+		--async
+	@echo ""
+	@echo "Waiting for export to complete (this may take a few minutes)..."
+	@sleep 15
+	@echo ""
+	@echo "Step 2: Importing to staging database..."
+	@LATEST_EXPORT=$$(gsutil ls -d gs://static-sites-257923-firestore-backup/sync-* | tail -1 | sed 's:/*$$::'); \
+	echo "Using export: $$LATEST_EXPORT"; \
+	gcloud firestore import $$LATEST_EXPORT \
+		--database=portfolio-staging \
+		--project=static-sites-257923 \
+		--async
+	@echo ""
+	@echo "✅ Data sync initiated!"
+	@echo "   The import will continue in the background."
+	@echo "   Check status: gcloud firestore operations list --database=portfolio-staging"

@@ -317,6 +317,7 @@ async function handleListEntries(req: Request, res: Response, requestId: string)
       success: true,
       data: {
         entries,
+        count: entries.length,
       },
       requestId,
     })
@@ -373,7 +374,7 @@ async function handleCreateEntry(req: AuthenticatedRequest, res: Response, reque
 
     res.status(201).json({
       success: true,
-      entry,
+      data: { entry },
       requestId,
     })
   } catch (error) {
@@ -440,9 +441,7 @@ async function handleUpdateEntry(
 
     res.status(200).json({
       success: true,
-      data: {
-        entry,
-      },
+      data: { entry },
       requestId,
     })
   } catch (error) {
@@ -551,6 +550,7 @@ async function handleListBlurbs(req: Request, res: Response, requestId: string):
       success: true,
       data: {
         blurbs,
+      count: blurbs.length,
       },
       requestId,
     })
@@ -591,9 +591,7 @@ async function handleGetBlurb(req: Request, res: Response, requestId: string, na
 
     res.status(200).json({
       success: true,
-      data: {
-        blurb,
-      },
+      data: { blurb },
       requestId,
     })
   } catch (error) {
@@ -650,7 +648,7 @@ async function handleCreateBlurb(req: AuthenticatedRequest, res: Response, reque
 
     res.status(201).json({
       success: true,
-      blurb,
+      data: { blurb },
       requestId,
     })
   } catch (error) {
@@ -717,9 +715,7 @@ async function handleUpdateBlurb(
 
     res.status(200).json({
       success: true,
-      data: {
-        blurb,
-      },
+      data: { blurb },
       requestId,
     })
   } catch (error) {
