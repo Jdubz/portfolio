@@ -33,7 +33,7 @@ const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
         <Svg icon="box" width={72} color="icon_blue" left="18%" top="88%" />
       </UpDownWide>
       {/* Mid-section - sparser, smaller bubbles for depth */}
-      <Svg icon="wifi" width={36} stroke color="icon_teal" left="92%" top="48%" />
+      <Svg icon="wifi" width={32} stroke color="icon_teal" left="92%" top="48%" />
     </Divider>
     <Content speed={0.4} offset={offset} factor={factor} className="content">
       <Inner>
