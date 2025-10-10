@@ -126,6 +126,15 @@ Centralized markdown styling for consistent content rendering.
 
 **contact-form**: Contact form submission handler
 
+### Secrets Management
+
+Secrets are stored in Google Cloud Secret Manager:
+
+- **openai-api-key**: OpenAI API key for AI resume generator
+  - Accessible by Cloud Functions default service account
+  - Created: October 2025
+  - Purpose: Resume and cover letter generation (planned feature)
+
 ### Authentication
 
 - **Firebase Auth** with Google OAuth provider
