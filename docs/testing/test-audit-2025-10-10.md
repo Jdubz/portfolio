@@ -4,8 +4,8 @@
 
 **Current State:**
 - **Functions Tests:** 51.86% coverage (82 tests) - ✅ GOOD
-- **Web Tests:** 3.27% coverage (26 tests) - ⚠️ CRITICAL GAP
-- **Total Tests:** 108 tests across 9 test files
+- **Web Tests:** 8.56% coverage (33 tests) - ⚠️ NEEDS IMPROVEMENT
+- **Total Tests:** 115 tests across 10 test files
 
 **Critical Finding:**
 Today's API response format bug reached staging because:
@@ -50,18 +50,26 @@ Today's API response format bug reached staging because:
 - ⚠️ **Integration tests** between services
 - ⚠️ **API response format contract** tests
 
-### Web (Frontend) - 3.27% Coverage ❌ CRITICAL
+### Web (Frontend) - 8.56% Coverage ⚠️ NEEDS IMPROVEMENT
 
-#### What's Covered (26 tests):
+#### What's Covered (33 tests):
 - ✅ **Component Smoke Tests** (4 test files)
   - About.test.tsx (7 tests) - renders without crashing
   - Contact.test.tsx (7 tests) - renders without crashing
   - Hero.test.tsx (5 tests) - renders without crashing
   - Projects.test.tsx (7 tests) - renders without crashing
 
+- ✅ **API Contract Tests** (`experience-client.test.ts` - 7 tests) ✨ NEW
+  - Validates API response with data wrapper
+  - Regression test for missing data wrapper
+  - Tests empty entries array handling
+  - Tests createEntry() with authentication
+  - Tests API error handling with proper structure
+  - Tests network error propagation
+  - Validates endpoint and method usage
+
 #### What's NOT Covered:
-- ❌ **API Client Integration** - No tests for ExperienceClient
-- ❌ **API Response Parsing** - No tests validating response structure
+- ⚠️ **Contact Form API Client** - No contract tests for contact form
 - ❌ **React Hooks** - No tests for useExperienceData
 - ❌ **Error Handling** - No tests for API error scenarios
 - ❌ **Authentication Flow** - No tests for auth context
@@ -165,12 +173,12 @@ it('should fetch and display experience entries', async () => {
 
 ### Before Merging Resume Generator:
 
-- [ ] Add ExperienceClient API contract tests
+- [x] Add ExperienceClient API contract tests (DONE ✅ - 7 tests added)
 - [ ] Add integration test for experience page
-- [ ] Add tests for API error scenarios
+- [x] Add tests for API error scenarios (DONE ✅ - covered in contract tests)
 - [ ] Verify all new resume generator endpoints have tests
-- [ ] Ensure pre-push hook runs all tests (DONE ✅)
-- [ ] Ensure CI runs all tests (DONE ✅)
+- [x] Ensure pre-push hook runs all tests (DONE ✅)
+- [x] Ensure CI runs all tests (DONE ✅)
 
 ### For Each New Feature:
 
@@ -182,16 +190,21 @@ it('should fetch and display experience entries', async () => {
 
 ## Conclusion
 
-**Current Risk Level:** MEDIUM-HIGH
+**Current Risk Level:** MEDIUM (improved from MEDIUM-HIGH)
 
-While functions have decent coverage (51.86%), the web layer is critically under-tested (3.27%). The lack of API contract and integration tests allowed a breaking change to reach staging.
+While functions have decent coverage (51.86%), the web layer improved from 3.27% to 8.56% with the addition of API contract tests. Testing enforcement has been strengthened through pre-push hooks and CI pipeline updates.
 
-**Before merging resume generator:**
-1. Add API contract tests for existing experience endpoints
-2. Add integration tests for critical paths
-3. Ensure new resume endpoints have comprehensive tests
+**Completed Improvements:**
+1. ✅ Added API contract tests for ExperienceClient (7 tests)
+2. ✅ Strengthened pre-push hook to block on test failures
+3. ✅ Added functions tests to CI pipeline
 
-**Estimated Effort:** 4-6 hours to add critical missing tests
+**Still Needed Before Resume Generator:**
+1. Add integration tests for critical user paths
+2. Ensure new resume endpoints have comprehensive tests
+3. Consider adding React hook tests
+
+**Estimated Remaining Effort:** 2-3 hours for integration tests
 
 ---
 
