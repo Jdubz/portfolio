@@ -100,16 +100,18 @@ const ResumeBuilderPage: React.FC = () => {
 
       logger.info("Generation successful", data as unknown as Record<string, unknown>)
 
-      // Store the base64 PDFs
-      if (data.resume) {
-        setResumePDF(data.resume)
+      // Store the base64 PDFs (data is wrapped in data.data per API contract)
+      const responseData = (data as { data?: { resume?: string; coverLetter?: string; metadata?: GenerationMetadata } })
+        .data
+      if (responseData?.resume) {
+        setResumePDF(responseData.resume)
       }
-      if (data.coverLetter) {
-        setCoverLetterPDF(data.coverLetter)
+      if (responseData?.coverLetter) {
+        setCoverLetterPDF(responseData.coverLetter)
       }
 
-      if (data.metadata) {
-        setMetadata(data.metadata)
+      if (responseData?.metadata) {
+        setMetadata(responseData.metadata)
       }
       setSuccess(true)
     } catch (err) {

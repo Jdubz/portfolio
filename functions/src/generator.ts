@@ -395,23 +395,25 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       // For now, return base64 encoded PDFs
       res.status(200).json({
         success: true,
-        generationId: generationRequestId,
-        responseId: generationRequestId.replace("request", "response"),
-        metadata: {
-          generatedAt: new Date().toISOString(),
-          role: job.role,
-          company: job.company,
-          generateType,
-          tokenUsage: {
-            total: totalTokens,
+        data: {
+          generationId: generationRequestId,
+          responseId: generationRequestId.replace("request", "response"),
+          metadata: {
+            generatedAt: new Date().toISOString(),
+            role: job.role,
+            company: job.company,
+            generateType,
+            tokenUsage: {
+              total: totalTokens,
+            },
+            costUsd,
+            model: resumeResult?.model || coverLetterResult?.model || "gpt-4o-2024-08-06",
+            durationMs,
           },
-          costUsd,
-          model: resumeResult?.model || coverLetterResult?.model || "gpt-4o-2024-08-06",
-          durationMs,
+          // Return PDFs as base64 for Phase 1 MVP
+          resume: resumePDF ? resumePDF.toString("base64") : undefined,
+          coverLetter: coverLetterPDF ? coverLetterPDF.toString("base64") : undefined,
         },
-        // Return PDFs as base64 for Phase 1 MVP
-        resume: resumePDF ? resumePDF.toString("base64") : undefined,
-        coverLetter: coverLetterPDF ? coverLetterPDF.toString("base64") : undefined,
         requestId, // HTTP request ID for tracking
       })
     } catch (generationError) {
@@ -475,7 +477,7 @@ async function handleGetDefaults(req: Request, res: Response, requestId: string)
 
     res.status(200).json({
       success: true,
-      defaults,
+      data: defaults,
       requestId,
     })
   } catch (error) {
@@ -530,7 +532,7 @@ async function handleUpdateDefaults(req: AuthenticatedRequest, res: Response, re
 
     res.status(200).json({
       success: true,
-      defaults,
+      data: defaults,
       requestId,
     })
   } catch (error) {
@@ -560,8 +562,10 @@ async function handleListRequests(req: AuthenticatedRequest, res: Response, requ
 
     res.status(200).json({
       success: true,
-      requests,
-      count: requests.length,
+      data: {
+        requests,
+        count: requests.length,
+      },
       requestId,
     })
   } catch (error) {
