@@ -117,8 +117,10 @@ describe("Experience Cloud Function", () => {
       expect(statusMock).toHaveBeenCalledWith(200)
       expect(jsonMock).toHaveBeenCalledWith({
         success: true,
-        entries,
-        count: 1,
+        data: {
+          entries,
+          count: 1,
+        },
         requestId: expect.any(String),
       })
     })
@@ -131,8 +133,10 @@ describe("Experience Cloud Function", () => {
       expect(statusMock).toHaveBeenCalledWith(200)
       expect(jsonMock).toHaveBeenCalledWith({
         success: true,
-        entries: [],
-        count: 0,
+        data: {
+          entries: [],
+          count: 0,
+        },
         requestId: expect.any(String),
       })
     })
@@ -187,7 +191,7 @@ describe("Experience Cloud Function", () => {
       expect(statusMock).toHaveBeenCalledWith(201)
       expect(jsonMock).toHaveBeenCalledWith({
         success: true,
-        entry: mockEntry,
+        data: { entry: mockEntry },
         requestId: expect.any(String),
       })
     })
@@ -308,7 +312,7 @@ describe("Experience Cloud Function", () => {
       expect(statusMock).toHaveBeenCalledWith(200)
       expect(jsonMock).toHaveBeenCalledWith({
         success: true,
-        entry: updatedEntry,
+        data: { entry: updatedEntry },
         requestId: expect.any(String),
       })
     })

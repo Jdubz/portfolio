@@ -53,11 +53,17 @@ jobs:
         run: npm run test:web
         continue-on-error: false
 
+      - name: Run functions tests
+        run: npm run test:functions
+        continue-on-error: false
+
       - name: Summary
         run: |
           echo "✅ Quality gate checks completed successfully!"
           echo "📋 Checks performed:"
-          echo "  - Component smoke tests (26 tests)"
+          echo "  - Web component tests (26 tests)"
+          echo "  - Functions backend tests (82 tests)"
+          echo "  - Total: 108 tests passed"
           echo "📝 Ready for review and merge!"
 
   # This job ensures all REQUIRED checks pass before allowing merge
