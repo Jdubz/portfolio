@@ -1,29 +1,8 @@
 import { useState, useEffect, useCallback } from "react"
 import type { BlurbEntry, CreateBlurbData, UpdateBlurbData, BlurbApiResponse } from "../types/experience"
 import { getIdToken } from "./useAuth"
-
-// API Configuration
-const API_CONFIG = {
-  projectId: "static-sites-257923",
-  region: "us-central1",
-  functionName: "manageExperience",
-  emulatorPort: 5001,
-  defaultEmulatorHost: "localhost",
-}
-
-const getApiUrl = () => {
-  // Use emulator in development, production URL otherwise
-  if (process.env.NODE_ENV === "development") {
-    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
-    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/${API_CONFIG.functionName}`
-  }
-
-  // Production/staging URL from env
-  return (
-    process.env.GATSBY_EXPERIENCE_API_URL ??
-    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.functionName}`
-  )
-}
+import { getApiUrl } from "../config/api"
+import { logger } from "../utils/logger"
 
 interface UseBlurbAPI {
   blurbs: Record<string, BlurbEntry>
@@ -68,7 +47,10 @@ export const useBlurbAPI = (): UseBlurbAPI => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load blurbs"
       setError(errorMessage)
-      console.error("Fetch blurbs error:", err)
+      logger.error("Failed to fetch blurbs", err as Error, {
+        hook: "useBlurbAPI",
+        action: "fetchBlurbs",
+      })
     } finally {
       setLoading(false)
     }
@@ -114,7 +96,11 @@ export const useBlurbAPI = (): UseBlurbAPI => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create blurb"
       setError(errorMessage)
-      console.error("Create blurb error:", err)
+      logger.error("Failed to create blurb", err as Error, {
+        hook: "useBlurbAPI",
+        action: "createBlurb",
+        blurbName: data.name,
+      })
       return null
     }
   }, [])
@@ -154,7 +140,11 @@ export const useBlurbAPI = (): UseBlurbAPI => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to update blurb"
       setError(errorMessage)
-      console.error("Update blurb error:", err)
+      logger.error("Failed to update blurb", err as Error, {
+        hook: "useBlurbAPI",
+        action: "updateBlurb",
+        blurbName: name,
+      })
       return null
     }
   }, [])
@@ -188,7 +178,11 @@ export const useBlurbAPI = (): UseBlurbAPI => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete blurb"
       setError(errorMessage)
-      console.error("Delete blurb error:", err)
+      logger.error("Failed to delete blurb", err as Error, {
+        hook: "useBlurbAPI",
+        action: "deleteBlurb",
+        blurbName: name,
+      })
       return false
     }
   }, [])

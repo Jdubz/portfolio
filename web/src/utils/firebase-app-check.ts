@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from "firebase/app"
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check"
+import { logger } from "./logger"
 
 /**
  * Firebase App Check initialization
@@ -41,8 +42,10 @@ export const initializeFirebaseAppCheck = (): void => {
   // Skip App Check entirely in development to avoid unhandled promise rejections
   const isProduction = process.env.NODE_ENV === "production"
   if (!isProduction) {
-    // eslint-disable-next-line no-console
-    console.log("[AppCheck] Skipped in development (prevents HMR errors)")
+    logger.info("AppCheck skipped in development", {
+      util: "firebase-app-check",
+      action: "initializeFirebaseAppCheck",
+    })
     // Still initialize Firebase app for other services
     if (getApps().length === 0) {
       initializeApp(firebaseConfig)
@@ -60,10 +63,15 @@ export const initializeFirebaseAppCheck = (): void => {
       isTokenAutoRefreshEnabled: true,
     })
 
-    // eslint-disable-next-line no-console
-    console.log("[AppCheck] Initialized successfully")
+    logger.info("AppCheck initialized successfully", {
+      util: "firebase-app-check",
+      action: "initializeFirebaseAppCheck",
+    })
   } catch (error) {
-    console.error("[AppCheck] Failed to initialize:", error)
+    logger.error("Failed to initialize AppCheck", error as Error, {
+      util: "firebase-app-check",
+      action: "initializeFirebaseAppCheck",
+    })
     // Don't throw - app should still work without App Check in development
   }
 }

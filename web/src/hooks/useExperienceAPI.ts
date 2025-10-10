@@ -6,29 +6,8 @@ import type {
   ExperienceApiResponse,
 } from "../types/experience"
 import { getIdToken } from "./useAuth"
-
-// API Configuration
-const API_CONFIG = {
-  projectId: "static-sites-257923",
-  region: "us-central1",
-  functionName: "manageExperience",
-  emulatorPort: 5001,
-  defaultEmulatorHost: "localhost",
-}
-
-const getApiUrl = () => {
-  // Use emulator in development, production URL otherwise
-  if (process.env.NODE_ENV === "development") {
-    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
-    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/${API_CONFIG.functionName}`
-  }
-
-  // Production/staging URL from env
-  return (
-    process.env.GATSBY_EXPERIENCE_API_URL ??
-    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.functionName}`
-  )
-}
+import { getApiUrl } from "../config/api"
+import { logger } from "../utils/logger"
 
 interface UseExperienceAPI {
   entries: ExperienceEntry[]
@@ -65,7 +44,10 @@ export const useExperienceAPI = (): UseExperienceAPI => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load experience entries"
       setError(errorMessage)
-      console.error("Fetch entries error:", err)
+      logger.error("Failed to fetch experience entries", err as Error, {
+        hook: "useExperienceAPI",
+        action: "fetchEntries",
+      })
     } finally {
       setLoading(false)
     }
@@ -107,7 +89,10 @@ export const useExperienceAPI = (): UseExperienceAPI => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create entry"
       setError(errorMessage)
-      console.error("Create entry error:", err)
+      logger.error("Failed to create experience entry", err as Error, {
+        hook: "useExperienceAPI",
+        action: "createEntry",
+      })
       return null
     }
   }, [])
@@ -143,7 +128,11 @@ export const useExperienceAPI = (): UseExperienceAPI => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to update entry"
       setError(errorMessage)
-      console.error("Update entry error:", err)
+      logger.error("Failed to update experience entry", err as Error, {
+        hook: "useExperienceAPI",
+        action: "updateEntry",
+        entryId: id,
+      })
       return null
     }
   }, [])
@@ -173,7 +162,11 @@ export const useExperienceAPI = (): UseExperienceAPI => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete entry"
       setError(errorMessage)
-      console.error("Delete entry error:", err)
+      logger.error("Failed to delete experience entry", err as Error, {
+        hook: "useExperienceAPI",
+        action: "deleteEntry",
+        entryId: id,
+      })
       return false
     }
   }, [])

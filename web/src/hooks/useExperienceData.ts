@@ -8,29 +8,8 @@ import type {
   UpdateBlurbData,
 } from "../types/experience"
 import { getIdToken } from "./useAuth"
-
-// API Configuration
-const API_CONFIG = {
-  projectId: "static-sites-257923",
-  region: "us-central1",
-  functionName: "manageExperience",
-  emulatorPort: 5001,
-  defaultEmulatorHost: "localhost",
-}
-
-const getApiUrl = () => {
-  // Use emulator in development, production URL otherwise
-  if (process.env.NODE_ENV === "development") {
-    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
-    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/${API_CONFIG.functionName}`
-  }
-
-  // Production/staging URL from env
-  return (
-    process.env.GATSBY_EXPERIENCE_API_URL ??
-    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.functionName}`
-  )
-}
+import { getApiUrl } from "../config/api"
+import { logger } from "../utils/logger"
 
 interface CombinedApiResponse {
   success: boolean
@@ -92,7 +71,10 @@ export const useExperienceData = (): UseExperienceData => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load experience data"
       setError(errorMessage)
-      console.error("Fetch experience data error:", err)
+      logger.error("Failed to fetch experience data", err as Error, {
+        hook: "useExperienceData",
+        action: "fetchData",
+      })
     } finally {
       setLoading(false)
     }
@@ -135,7 +117,10 @@ export const useExperienceData = (): UseExperienceData => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create entry"
       setError(errorMessage)
-      console.error("Create entry error:", err)
+      logger.error("Failed to create experience entry", err as Error, {
+        hook: "useExperienceData",
+        action: "createEntry",
+      })
       return null
     }
   }, [])
@@ -171,7 +156,11 @@ export const useExperienceData = (): UseExperienceData => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to update entry"
       setError(errorMessage)
-      console.error("Update entry error:", err)
+      logger.error("Failed to update experience entry", err as Error, {
+        hook: "useExperienceData",
+        action: "updateEntry",
+        entryId: id,
+      })
       return null
     }
   }, [])
@@ -201,7 +190,11 @@ export const useExperienceData = (): UseExperienceData => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete entry"
       setError(errorMessage)
-      console.error("Delete entry error:", err)
+      logger.error("Failed to delete experience entry", err as Error, {
+        hook: "useExperienceData",
+        action: "deleteEntry",
+        entryId: id,
+      })
       return false
     }
   }, [])
@@ -242,7 +235,11 @@ export const useExperienceData = (): UseExperienceData => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create blurb"
       setError(errorMessage)
-      console.error("Create blurb error:", err)
+      logger.error("Failed to create blurb", err as Error, {
+        hook: "useExperienceData",
+        action: "createBlurb",
+        blurbName: data.name,
+      })
       return null
     }
   }, [])
@@ -282,7 +279,11 @@ export const useExperienceData = (): UseExperienceData => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to update blurb"
       setError(errorMessage)
-      console.error("Update blurb error:", err)
+      logger.error("Failed to update blurb", err as Error, {
+        hook: "useExperienceData",
+        action: "updateBlurb",
+        blurbName: name,
+      })
       return null
     }
   }, [])
@@ -316,7 +317,11 @@ export const useExperienceData = (): UseExperienceData => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete blurb"
       setError(errorMessage)
-      console.error("Delete blurb error:", err)
+      logger.error("Failed to delete blurb", err as Error, {
+        hook: "useExperienceData",
+        action: "deleteBlurb",
+        blurbName: name,
+      })
       return false
     }
   }, [])

@@ -8,6 +8,7 @@ import { ExperienceEntry } from "../components/ExperienceEntry"
 import { BlurbEntry } from "../components/BlurbEntry"
 import { CreateExperienceForm } from "../components/CreateExperienceForm"
 import type { UpdateExperienceData, CreateExperienceData, UpdateBlurbData } from "../types/experience"
+import { logger } from "../utils/logger"
 
 /**
  * Experience Portfolio Page
@@ -48,7 +49,10 @@ const ExperiencePage: React.FC = () => {
 
   const handleSignOut = () => {
     void signOut().catch((error) => {
-      console.error("Sign out failed:", error)
+      logger.error("Failed to sign out", error as Error, {
+        page: "experience",
+        action: "handleSignOut",
+      })
     })
   }
 
@@ -158,7 +162,10 @@ const ExperiencePage: React.FC = () => {
       // Reload the page to update the download link
       window.location.reload()
     } catch (error) {
-      console.error("Resume upload failed:", error)
+      logger.error("Resume upload failed", error as Error, {
+        page: "experience",
+        action: "handleResumeUpload",
+      })
       setUploadError(error instanceof Error ? error.message : "Upload failed")
     } finally {
       setUploadingResume(false)

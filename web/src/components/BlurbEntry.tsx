@@ -1,7 +1,9 @@
 import React, { useState } from "react"
 import { Box, Heading, Text, Button, Flex, Input, Textarea } from "theme-ui"
-import ReactMarkdown from "react-markdown"
 import type { BlurbEntry as BlurbEntryType, UpdateBlurbData } from "../types/experience"
+import { MarkdownContent } from "./MarkdownContent"
+import { FormLabel } from "./FormLabel"
+import { logger } from "../utils/logger"
 
 interface BlurbEntryProps {
   name: string
@@ -45,7 +47,11 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
       }
       setIsEditing(false)
     } catch (error) {
-      console.error("Save failed:", error)
+      logger.error("Failed to save blurb", error as Error, {
+        component: "BlurbEntry",
+        action: "handleSave",
+        blurbName: name,
+      })
     } finally {
       setIsSaving(false)
     }
@@ -74,9 +80,7 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
         <Flex sx={{ flexDirection: "column", gap: 3 }}>
           {/* Title */}
           <Box>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Title
-            </Text>
+            <FormLabel>Title</FormLabel>
             <Input
               value={editData.title}
               onChange={(e) => setEditData({ ...editData, title: e.target.value })}
@@ -86,9 +90,7 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
 
           {/* Content */}
           <Box>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Content (Markdown)
-            </Text>
+            <FormLabel>Content (Markdown)</FormLabel>
             <Textarea
               value={editData.content}
               onChange={(e) => setEditData({ ...editData, content: e.target.value })}
@@ -176,48 +178,7 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
         {blurb.title}
       </Heading>
 
-      <Box
-        sx={{
-          fontSize: 2,
-          lineHeight: 1.6,
-          "& h1, & h2, & h3, & h4, & h5, & h6": {
-            mt: 3,
-            mb: 2,
-            fontWeight: "bold",
-          },
-          "& h2": {
-            fontSize: 3,
-          },
-          "& h3": {
-            fontSize: 2,
-          },
-          "& ul, & ol": {
-            pl: 4,
-            mb: 2,
-          },
-          "& li": {
-            mb: 1,
-          },
-          "& p": {
-            mb: 2,
-          },
-          "& code": {
-            bg: "muted",
-            px: 1,
-            borderRadius: "2px",
-            fontFamily: "monospace",
-          },
-          "& a": {
-            color: "primary",
-            textDecoration: "none",
-            "&:hover": {
-              textDecoration: "underline",
-            },
-          },
-        }}
-      >
-        <ReactMarkdown>{blurb.content}</ReactMarkdown>
-      </Box>
+      <MarkdownContent>{blurb.content}</MarkdownContent>
 
       {/* Editor Actions */}
       {isEditor && (

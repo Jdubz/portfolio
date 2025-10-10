@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
 import React, { useState, useEffect, useRef } from "react"
+import { logger } from "../utils/logger"
 
 interface FormData {
   name: string
@@ -52,7 +53,10 @@ const ContactForm = (): React.JSX.Element => {
         await initializeFirebaseAnalytics()
         firebaseInitialized.current = true
       } catch (error) {
-        console.error("[ContactForm] Failed to initialize Firebase:", error)
+        logger.error("Failed to initialize Firebase", error as Error, {
+          component: "ContactForm",
+          action: "initFirebase",
+        })
       }
     }
 
@@ -111,7 +115,11 @@ const ContactForm = (): React.JSX.Element => {
           headers["X-Firebase-AppCheck"] = appCheckToken.token
         }
       } catch (appCheckError) {
-        console.warn("[AppCheck] Failed to get token, continuing without it:", appCheckError)
+        logger.warn("Failed to get AppCheck token, continuing without it", {
+          component: "ContactForm",
+          action: "handleSubmit",
+          error: appCheckError instanceof Error ? appCheckError.message : String(appCheckError),
+        })
         // Continue anyway - in development, App Check might not be fully configured
       }
 
@@ -161,8 +169,10 @@ const ContactForm = (): React.JSX.Element => {
           spanId?: string
         }
 
-        // Log detailed error info to console for debugging (includes trace IDs for correlation)
-        console.error("[ContactForm] Request failed:", {
+        // Log detailed error info for debugging (includes trace IDs for correlation)
+        logger.error("Contact form request failed", new Error(response.statusText), {
+          component: "ContactForm",
+          action: "handleSubmit",
           status: response.status,
           statusText: response.statusText,
           errorCode: errorData.errorCode,
@@ -183,8 +193,9 @@ const ContactForm = (): React.JSX.Element => {
         throw new Error(userMessage)
       }
 
-      // eslint-disable-next-line no-console
-      console.log("[ContactForm] Message sent successfully:", {
+      logger.info("Contact form message sent successfully", {
+        component: "ContactForm",
+        action: "handleSubmit",
         duration: `${duration}ms`,
         status: response.status,
         timestamp: new Date().toISOString(),

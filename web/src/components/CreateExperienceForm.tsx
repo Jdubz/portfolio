@@ -1,6 +1,7 @@
 import React, { useState } from "react"
-import { Box, Button, Flex, Input, Text, Textarea } from "theme-ui"
+import { Box, Text, Button, Flex, Input, Textarea } from "theme-ui"
 import type { CreateExperienceData } from "../types/experience"
+import { FormLabel } from "./FormLabel"
 
 interface CreateExperienceFormProps {
   onCreate: (data: CreateExperienceData) => Promise<void>
@@ -92,9 +93,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
       <Flex sx={{ flexDirection: "column", gap: 3 }}>
         {/* Title */}
         <Box>
-          <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-            Title *
-          </Text>
+          <FormLabel>Title *</FormLabel>
           <Input
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -106,9 +105,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
 
         {/* Role */}
         <Box>
-          <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-            Role (optional)
-          </Text>
+          <FormLabel>Role (optional)</FormLabel>
           <Input
             value={formData.role ?? ""}
             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
@@ -119,9 +116,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
 
         {/* Location */}
         <Box>
-          <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-            Location (optional)
-          </Text>
+          <FormLabel>Location (optional)</FormLabel>
           <Input
             value={formData.location ?? ""}
             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
@@ -133,9 +128,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
         {/* Dates */}
         <Flex sx={{ gap: 3, flexDirection: ["column", "row"] }}>
           <Box sx={{ flex: 1 }}>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Start Date (YYYY-MM) *
-            </Text>
+            <FormLabel>Start Date (YYYY-MM) *</FormLabel>
             <Input
               value={formData.startDate}
               onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
@@ -144,9 +137,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
             />
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              End Date (YYYY-MM or leave empty for Present)
-            </Text>
+            <FormLabel>End Date (YYYY-MM or leave empty for Present)</FormLabel>
             <Input
               value={formData.endDate ?? ""}
               onChange={(e) => setFormData({ ...formData, endDate: e.target.value || null })}
@@ -157,9 +148,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
 
         {/* Body */}
         <Box>
-          <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-            Description
-          </Text>
+          <FormLabel>Description</FormLabel>
           <Textarea
             value={formData.body}
             onChange={(e) => setFormData({ ...formData, body: e.target.value })}
@@ -171,9 +160,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
 
         {/* Notes */}
         <Box>
-          <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-            Notes (internal, only visible to editors)
-          </Text>
+          <FormLabel>Notes (internal, only visible to editors)</FormLabel>
           <Textarea
             value={formData.notes}
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
