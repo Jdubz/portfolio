@@ -146,14 +146,7 @@ export class ApiClient {
       // Log to console with clear formatting
       // eslint-disable-next-line no-console
       console.group(`🚨 API Error: ${response.status} ${response.statusText}`)
-      console.error("URL:", response.url)
-      console.error("Status:", response.status, response.statusText)
-      console.error("Error Code:", data.errorCode ?? "N/A")
-      console.error("Message:", errorMessage)
-      if (data.requestId) {
-        console.error("Request ID:", data.requestId)
-      }
-      console.error("Full Response:", data)
+      console.error(errorDetails)
       // eslint-disable-next-line no-console
       console.groupEnd()
 
