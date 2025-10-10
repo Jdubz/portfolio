@@ -280,7 +280,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
       {/* Editor Actions */}
       {isEditor && (
         <Box sx={{ mt: 4 }}>
-          <Button onClick={() => setIsEditing(true)} variant="secondary.sm">
+          <Button type="button" onClick={() => setIsEditing(true)} variant="secondary.sm">
             Edit
           </Button>
         </Box>

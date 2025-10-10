@@ -96,6 +96,7 @@ export const FormActions: React.FC<FormActionsProps> = ({
     <Flex sx={{ gap: 2, justifyContent: "flex-end", ...sx }}>
       {onDelete && (
         <Button
+          type="button"
           onClick={onDelete}
           disabled={disabled}
           variant="secondary.sm"
@@ -109,10 +110,10 @@ export const FormActions: React.FC<FormActionsProps> = ({
           {isDeleting ? `${deleteText.replace(/e?$/, "")}ing...` : deleteText}
         </Button>
       )}
-      <Button onClick={onCancel} variant="secondary.sm" disabled={isSubmitting}>
+      <Button type="button" onClick={onCancel} variant="secondary.sm" disabled={isSubmitting}>
         {cancelText}
       </Button>
-      <Button onClick={onSave} variant="primary.sm" disabled={disabled}>
+      <Button type="button" onClick={onSave} variant="primary.sm" disabled={disabled}>
         {isSubmitting ? `${saveText.replace(/e?$/, "")}ing...` : saveText}
       </Button>
     </Flex>

@@ -159,8 +159,10 @@ const ExperiencePage: React.FC = () => {
         fileInputRef.current.value = ""
       }
 
-      // Reload the page to update the download link
-      window.location.reload()
+      logger.info("Resume uploaded successfully", {
+        page: "experience",
+        action: "handleResumeUpload",
+      })
     } catch (error) {
       logger.error("Resume upload failed", error as Error, {
         page: "experience",
