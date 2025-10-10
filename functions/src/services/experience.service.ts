@@ -130,25 +130,39 @@ export class ExperienceService {
     try {
       const now = Timestamp.now()
 
-      const entry = {
+      // Build entry object, omitting undefined/empty fields
+      // Firestore doesn't accept undefined values, so we only include defined fields
+      const entry: Record<string, unknown> = {
         title: data.title,
-        role: data.role && data.role.trim() !== "" ? data.role : undefined,
-        location: data.location && data.location.trim() !== "" ? data.location : undefined,
-        body: data.body && data.body.trim() !== "" ? data.body : undefined,
         startDate: data.startDate,
         endDate: data.endDate || null,
-        notes: data.notes && data.notes.trim() !== "" ? data.notes : undefined,
         createdAt: now,
         updatedAt: now,
         createdBy: userEmail,
         updatedBy: userEmail,
       }
 
+      // Only add optional fields if they have non-empty values
+      if (data.role && data.role.trim() !== "") {
+        entry.role = data.role
+      }
+      if (data.location && data.location.trim() !== "") {
+        entry.location = data.location
+      }
+      if (data.body && data.body.trim() !== "") {
+        entry.body = data.body
+      }
+      if (data.notes && data.notes.trim() !== "") {
+        entry.notes = data.notes
+      }
+
       const docRef = await this.db.collection(this.collectionName).add(entry)
 
+      // Return the created entry with the generated ID
+      // Cast entry as Omit<ExperienceEntry, "id"> since we know it has all required fields
       const createdEntry: ExperienceEntry = {
         id: docRef.id,
-        ...entry,
+        ...(entry as Omit<ExperienceEntry, "id">),
       }
 
       this.logger.info("Created experience entry", {
@@ -180,20 +194,36 @@ export class ExperienceService {
         throw new Error(`Experience entry not found: ${id}`)
       }
 
-      const updates: Partial<ExperienceEntry> = {
+      // Build updates object, omitting undefined values
+      // Firestore doesn't accept undefined, but null is OK for clearing fields
+      const updates: Record<string, unknown> = {
         updatedAt: Timestamp.now(),
         updatedBy: userEmail,
       }
 
-      // Only update provided fields (convert empty strings to undefined to avoid storing empty values)
-      if (data.title !== undefined) updates.title = data.title
-      if (data.role !== undefined) updates.role = data.role && data.role.trim() !== "" ? data.role : undefined
-      if (data.location !== undefined)
-        updates.location = data.location && data.location.trim() !== "" ? data.location : undefined
-      if (data.body !== undefined) updates.body = data.body && data.body.trim() !== "" ? data.body : undefined
-      if (data.startDate !== undefined) updates.startDate = data.startDate
-      if (data.endDate !== undefined) updates.endDate = data.endDate
-      if (data.notes !== undefined) updates.notes = data.notes && data.notes.trim() !== "" ? data.notes : undefined
+      // Only update provided fields
+      if (data.title !== undefined) {
+        updates.title = data.title
+      }
+      if (data.role !== undefined) {
+        // If empty string, use null to clear the field
+        updates.role = data.role && data.role.trim() !== "" ? data.role : null
+      }
+      if (data.location !== undefined) {
+        updates.location = data.location && data.location.trim() !== "" ? data.location : null
+      }
+      if (data.body !== undefined) {
+        updates.body = data.body && data.body.trim() !== "" ? data.body : null
+      }
+      if (data.startDate !== undefined) {
+        updates.startDate = data.startDate
+      }
+      if (data.endDate !== undefined) {
+        updates.endDate = data.endDate
+      }
+      if (data.notes !== undefined) {
+        updates.notes = data.notes && data.notes.trim() !== "" ? data.notes : null
+      }
 
       await docRef.update(updates)
 

@@ -93,5 +93,26 @@ export const logger = {
   debug: (message: string, context?: Record<string, unknown>) => log("debug", message, context),
   info: (message: string, context?: Record<string, unknown>) => log("info", message, context),
   warn: (message: string, context?: Record<string, unknown>) => log("warn", message, context),
-  error: (message: string, context?: Record<string, unknown>) => log("error", message, context),
+  error: (
+    message: string,
+    errorOrContext?: Error | Record<string, unknown>,
+    maybeContext?: Record<string, unknown>
+  ) => {
+    // Handle both error(message, error, context) and error(message, context) signatures
+    let context: Record<string, unknown> | undefined
+
+    if (errorOrContext instanceof Error) {
+      // error(message, error, context) signature
+      context = {
+        ...maybeContext,
+        error: errorOrContext.message,
+        stack: errorOrContext.stack,
+      }
+    } else {
+      // error(message, context) signature
+      context = errorOrContext
+    }
+
+    log("error", message, context)
+  },
 }

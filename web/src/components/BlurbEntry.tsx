@@ -1,7 +1,11 @@
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Flex, Input, Textarea } from "theme-ui"
-import ReactMarkdown from "react-markdown"
+import { Box, Heading, Text, Button, Flex } from "theme-ui"
 import type { BlurbEntry as BlurbEntryType, UpdateBlurbData } from "../types/experience"
+import { MarkdownContent } from "./MarkdownContent"
+import { FormField } from "./FormField"
+import { FormActions } from "./FormActions"
+import { MarkdownEditor } from "./MarkdownEditor"
+import { logger } from "../utils/logger"
 
 interface BlurbEntryProps {
   name: string
@@ -45,7 +49,11 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
       }
       setIsEditing(false)
     } catch (error) {
-      console.error("Save failed:", error)
+      logger.error("Failed to save blurb", error as Error, {
+        component: "BlurbEntry",
+        action: "handleSave",
+        blurbName: name,
+      })
     } finally {
       setIsSaving(false)
     }
@@ -72,40 +80,29 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
         }}
       >
         <Flex sx={{ flexDirection: "column", gap: 3 }}>
-          {/* Title */}
-          <Box>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Title
-            </Text>
-            <Input
-              value={editData.title}
-              onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-              sx={{ fontSize: 2 }}
-            />
-          </Box>
+          <FormField
+            label="Title"
+            name="title"
+            value={editData.title ?? ""}
+            onChange={(value) => setEditData({ ...editData, title: value })}
+            required
+          />
 
-          {/* Content */}
-          <Box>
-            <Text as="label" sx={{ fontSize: 1, fontWeight: "bold", mb: 1, display: "block" }}>
-              Content (Markdown)
-            </Text>
-            <Textarea
-              value={editData.content}
-              onChange={(e) => setEditData({ ...editData, content: e.target.value })}
-              rows={12}
-              sx={{ fontSize: 2, fontFamily: "monospace" }}
-            />
-          </Box>
+          <MarkdownEditor
+            label="Content (Markdown)"
+            name="content"
+            value={editData.content ?? ""}
+            onChange={(value) => setEditData({ ...editData, content: value })}
+            rows={12}
+            showPreview
+          />
 
-          {/* Actions */}
-          <Flex sx={{ gap: 2, justifyContent: "flex-end" }}>
-            <Button onClick={handleCancel} variant="secondary.sm" disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button onClick={() => void handleSave()} disabled={isSaving} variant="primary.sm">
-              {isSaving ? "Saving..." : blurb ? "Save" : "Create"}
-            </Button>
-          </Flex>
+          <FormActions
+            onCancel={handleCancel}
+            onSave={() => void handleSave()}
+            isSubmitting={isSaving}
+            saveText={blurb ? "Save" : "Create"}
+          />
         </Flex>
       </Box>
     )
@@ -147,7 +144,7 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
         {/* Editor Actions */}
         {isEditor && (
           <Box sx={{ mt: 4 }}>
-            <Button onClick={() => setIsEditing(true)} variant="secondary.sm">
+            <Button type="button" onClick={() => setIsEditing(true)} variant="secondary.sm">
               Create Content
             </Button>
           </Box>
@@ -176,53 +173,12 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
         {blurb.title}
       </Heading>
 
-      <Box
-        sx={{
-          fontSize: 2,
-          lineHeight: 1.6,
-          "& h1, & h2, & h3, & h4, & h5, & h6": {
-            mt: 3,
-            mb: 2,
-            fontWeight: "bold",
-          },
-          "& h2": {
-            fontSize: 3,
-          },
-          "& h3": {
-            fontSize: 2,
-          },
-          "& ul, & ol": {
-            pl: 4,
-            mb: 2,
-          },
-          "& li": {
-            mb: 1,
-          },
-          "& p": {
-            mb: 2,
-          },
-          "& code": {
-            bg: "muted",
-            px: 1,
-            borderRadius: "2px",
-            fontFamily: "monospace",
-          },
-          "& a": {
-            color: "primary",
-            textDecoration: "none",
-            "&:hover": {
-              textDecoration: "underline",
-            },
-          },
-        }}
-      >
-        <ReactMarkdown>{blurb.content}</ReactMarkdown>
-      </Box>
+      <MarkdownContent>{blurb.content}</MarkdownContent>
 
       {/* Editor Actions */}
       {isEditor && (
         <Box sx={{ mt: 4 }}>
-          <Button onClick={() => setIsEditing(true)} variant="secondary.sm">
+          <Button type="button" onClick={() => setIsEditing(true)} variant="secondary.sm">
             Edit
           </Button>
         </Box>

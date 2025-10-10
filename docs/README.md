@@ -6,72 +6,26 @@ This directory contains all documentation for the Josh Wentworth Portfolio proje
 
 ```
 docs/
-├── setup/              # Setup and configuration guides
-├── deployment/         # Deployment documentation
-├── development/        # Development guides, quick links, and roadmap
-├── audit/             # Code and security audits
+├── development/        # Current architecture, audits, and future plans
 ├── brand/             # Brand assets and guidelines
-├── archive/           # Historical documentation (completed checklists, old analyses)
 └── CHANGELOG.md       # Version history
 ```
 
 ## 📚 Documentation Index
 
-### Setup & Configuration
+### Architecture & Development
 
-- **[Contact Form Setup](./setup/CONTACT_FORM_SETUP.md)**
-  Complete guide for setting up the contact form Cloud Function, including Mailgun configuration, GCP Secret Manager setup, and environment variables.
+- **[ARCHITECTURE.md](./development/ARCHITECTURE.md)**
+  Comprehensive architecture documentation covering project structure, API clients, state management, form components, Firebase setup, and development workflow.
 
-- **[Contact Function Setup](./setup/CONTACT_FUNCTION_SETUP.md)**
-  Detailed Cloud Function deployment guide with troubleshooting steps.
+- **[CODEBASE_AUDIT_2025-10-10.md](./development/CODEBASE_AUDIT_2025-10-10.md)**
+  Recent codebase audit documenting Phase 1-3 refactoring (configuration consolidation, form components library, unified API architecture).
 
-- **[Firebase Emulators](./setup/FIREBASE_EMULATORS.md)**
-  Local development environment setup using Firebase emulators for functions and hosting.
+- **[PLANNED_IMPROVEMENTS.md](./development/PLANNED_IMPROVEMENTS.md)**
+  Future roadmap including high-priority improvements and planned features.
 
-- **[Firebase Analytics](./setup/firebase-analytics.md)**
-  Firebase Analytics integration guide with environment configuration, custom event tracking, and usage examples.
-
-- **[Security Setup](./setup/security-setup.md)**
-  Cloud Function security setup including Firebase App Check, rate limiting, and CORS configuration.
-
-### Deployment
-
-- **[Deployment Guide](./deployment/DEPLOYMENT.md)**
-  Main deployment documentation covering Firebase hosting, Cloud Functions, and CI/CD workflows.
-
-- **[GitHub Actions CI/CD](./deployment/github-actions-cicd.md)**
-  Current CI/CD pipeline architecture, security setup, and troubleshooting guide.
-
-- **[Workload Identity Setup](./deployment/workload-identity-setup.md)**
-  Detailed Workload Identity Federation configuration for secure GitHub Actions deployments.
-
-- **[Functions Deployment](./deployment/functions-deployment.md)**
-  Cloud Functions-specific deployment instructions, including staging vs production environments.
-
-- **[Versioning Strategy](./deployment/VERSIONING.md)**
-  Semantic versioning guidelines and automated release process documentation.
-
-### Development
-
-- **[Quick Links & Resources](./development/TODO.md)**
-  Quick access to live URLs, dashboards, external projects, and common development commands.
-
-- **[Planned Improvements](./development/planned-improvements.md)**
-  Roadmap of future enhancements, optimizations, and technical debt to address.
-
-- **[Known Issues](./development/KNOWN_ISSUES.md)**
-  Current known issues, workarounds, and their status.
-
-- **[Monorepo Migration](./development/MONOREPO_MIGRATION.md)**
-  Historical documentation of the migration from separate repositories to a unified monorepo structure.
-
-### Audit & Security
-
-- **[Code Audit Report](./audit/code-audit.md)**
-  Comprehensive code quality audit covering dependencies, TypeScript configuration, build processes, and best practices.
-
-- **[Security Audit](./audit/SECURITY_AUDIT.md)**
-  Security findings, exposed secrets analysis, and remediation recommendations.
+- **[AI Resume Generator Plan](./development/ai-resume-generator-plan.md)**
+  Detailed implementation plan for AI-powered resume and cover letter generator feature (next major addition).
 
 ### Brand Assets
 
@@ -84,36 +38,39 @@ docs/
   - Favicon in multiple formats
   - Photography and visual assets
 
+### Version History
+
+- **[CHANGELOG.md](./CHANGELOG.md)**
+  Version history and release notes for all major changes.
+
 ## 🔍 Quick Reference
 
 ### Getting Started
-1. Read [Contact Form Setup](./setup/CONTACT_FORM_SETUP.md) for initial configuration
-2. Check [Firebase Emulators](./setup/FIREBASE_EMULATORS.md) for local development
-3. Review [Firebase Analytics](./setup/firebase-analytics.md) for tracking setup
-4. Review [Deployment Guide](./deployment/DEPLOYMENT.md) before deploying
 
-### Troubleshooting
-1. Check [Known Issues](./development/KNOWN_ISSUES.md) first
-2. Review [GitHub Actions CI/CD](./deployment/github-actions-cicd.md) troubleshooting section
-3. Check [Security Audit](./audit/SECURITY_AUDIT.md) for environment variable issues
-4. Review relevant setup guides for specific features
+1. Read [ARCHITECTURE.md](./development/ARCHITECTURE.md) to understand the codebase structure
+2. Check [PLANNED_IMPROVEMENTS.md](./development/PLANNED_IMPROVEMENTS.md) for the current roadmap
+3. Review [CODEBASE_AUDIT_2025-10-10.md](./development/CODEBASE_AUDIT_2025-10-10.md) for recent changes
 
 ### Making Changes
-1. Review [Code Audit Report](./audit/code-audit.md) for code quality standards
-2. Check [Planned Improvements](./development/planned-improvements.md) for roadmap
-3. Use [Quick Links](./development/TODO.md) for dashboards and live URLs
-4. Update [CHANGELOG](./CHANGELOG.md) with your changes
-5. Follow [Versioning Strategy](./deployment/VERSIONING.md) for releases
+
+1. Review [ARCHITECTURE.md](./development/ARCHITECTURE.md) for architectural patterns
+2. Check [PLANNED_IMPROVEMENTS.md](./development/PLANNED_IMPROVEMENTS.md) for planned work
+3. Update [CHANGELOG.md](./CHANGELOG.md) with your changes
+
+### Project Information
+
+- **Live Site:** https://joshwentworth.com
+- **Source Code:** https://github.com/Jdubz/portfolio
+- **Firebase Console:** https://console.firebase.google.com/project/static-sites-257923
+- **GCP Console:** https://console.cloud.google.com/home/dashboard?project=static-sites-257923
 
 ## 📝 Contributing to Documentation
 
 When adding or updating documentation:
 
 1. **Place files in appropriate directories**:
-   - Setup/configuration → `setup/`
-   - Deployment guides → `deployment/`
-   - Development notes → `development/`
-   - Audit reports → `audit/`
+   - Architecture/development notes → `development/`
+   - Brand assets → `brand/`
 
 2. **Update this index** when adding new documentation
 
@@ -129,8 +86,8 @@ When adding or updating documentation:
 - [Firebase Documentation](https://firebase.google.com/docs)
 - [Google Cloud Functions](https://cloud.google.com/functions/docs)
 - [Theme UI Documentation](https://theme-ui.com/)
-- [Mailgun API Documentation](https://documentation.mailgun.com/)
+- [React Documentation](https://react.dev/)
 
 ---
 
-**Last Updated:** 2025-10-06
+**Last Updated:** 2025-10-10
