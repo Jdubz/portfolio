@@ -49,12 +49,32 @@ export const useAuth = (): AuthState => {
 
         // Connect to emulators in development
         if (process.env.GATSBY_USE_FIREBASE_EMULATORS === "true") {
-          const { connectAuthEmulator } = await import("firebase/auth")
+          const { connectAuthEmulator, signOut } = await import("firebase/auth")
           const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? "localhost"
           try {
             connectAuthEmulator(auth, `http://${emulatorHost}:9099`, { disableWarnings: true })
           } catch {
             // Emulator already connected, ignore
+          }
+
+          // Proactively clear any stale auth tokens when connecting to emulator
+          // This prevents 400 errors from token validation after emulator restarts
+          const currentUser = auth.currentUser
+          if (currentUser) {
+            try {
+              // Try to validate the token first
+              await currentUser.getIdToken(false)
+            } catch {
+              // Token is invalid (emulator restarted), sign out silently
+              logger.info("Clearing stale auth token from previous emulator session", {
+                email: currentUser.email,
+              })
+              try {
+                await signOut(auth)
+              } catch {
+                // Ignore sign out errors
+              }
+            }
           }
         }
 
