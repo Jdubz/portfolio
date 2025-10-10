@@ -155,17 +155,63 @@ export const useAuth = (): AuthState => {
 
 /**
  * Sign in with Google popup
+ *
+ * In development (with emulators):
+ * - Shows emulator auth UI with test accounts
+ * - Use credentials from scripts/setup-emulator-auth.js
+ *
+ * In production:
+ * - Shows real Google OAuth popup
  */
 export const signInWithGoogle = async (): Promise<User | null> => {
   try {
     const { getAuth, GoogleAuthProvider, signInWithPopup } = await import("firebase/auth")
     const auth = getAuth()
     const provider = new GoogleAuthProvider()
+
+    // In development with emulators, this will show the emulator's auth UI
+    // where you can select a test account that was created with editor role
     const result = await signInWithPopup(auth, provider)
+
+    logger.info("Sign-in successful", {
+      email: result.user.email,
+      uid: result.user.uid,
+    })
+
     return result.user
   } catch (error) {
-    logger.error("Google sign-in error", {
-      error: error instanceof Error ? error.message : "Sign-in failed",
+    logger.error("Google sign-in error", error as Error, {
+      action: "signInWithGoogle",
+    })
+    throw error
+  }
+}
+
+/**
+ * Sign in with email/password (for local development with emulator)
+ *
+ * Only use this in development with the emulator.
+ * Production uses Google OAuth exclusively.
+ *
+ * @param email - Email address (e.g., contact@joshwentworth.com)
+ * @param password - Password (e.g., testpassword123)
+ */
+export const signInWithEmail = async (email: string, password: string): Promise<User | null> => {
+  try {
+    const { getAuth, signInWithEmailAndPassword } = await import("firebase/auth")
+    const auth = getAuth()
+    const result = await signInWithEmailAndPassword(auth, email, password)
+
+    logger.info("Email sign-in successful", {
+      email: result.user.email,
+      uid: result.user.uid,
+    })
+
+    return result.user
+  } catch (error) {
+    logger.error("Email sign-in error", error as Error, {
+      action: "signInWithEmail",
+      email,
     })
     throw error
   }
