@@ -122,6 +122,18 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
 
           const path = req.path || req.url
 
+          // Route: GET /health - Health check (public)
+          if (req.method === "GET" && path === "/health") {
+            res.status(200).json({
+              success: true,
+              service: "manageGenerator",
+              status: "healthy",
+              timestamp: new Date().toISOString(),
+            })
+            resolve()
+            return
+          }
+
           // Route: POST /generator/generate - Generate documents (public)
           if (req.method === "POST" && path === "/generator/generate") {
             await handleGenerate(req, res, requestId)

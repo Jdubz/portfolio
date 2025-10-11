@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging health-check health-check-local health-check-staging health-check-prod
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -75,6 +75,12 @@ help:
 	@echo ""
 	@echo "Database:"
 	@echo "  make sync-prod-to-staging  - Copy production data to staging database"
+	@echo ""
+	@echo "Health Checks:"
+	@echo "  make health-check          - Check health of all Cloud Functions"
+	@echo "  make health-check-local    - Check health of local emulator functions"
+	@echo "  make health-check-staging  - Check health of staging functions"
+	@echo "  make health-check-prod     - Check health of production functions"
 	@echo ""
 
 # Web commands
@@ -349,3 +355,16 @@ seed-generator-prod:
 	@echo "Database: portfolio"
 	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
 	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio npx tsx scripts/seed-generator-defaults.ts
+
+# Health Check Commands
+health-check:
+	@./scripts/health-check.sh all
+
+health-check-local:
+	@./scripts/health-check.sh local
+
+health-check-staging:
+	@./scripts/health-check.sh staging
+
+health-check-prod:
+	@./scripts/health-check.sh production

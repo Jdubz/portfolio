@@ -62,7 +62,7 @@ const corsOptions = {
     "http://localhost:8000",
     "http://localhost:3000",
   ],
-  methods: ["POST", "OPTIONS"],
+  methods: ["GET", "POST", "OPTIONS"], // Added GET for health check
   allowedHeaders: ["Content-Type", "Authorization", "X-Firebase-AppCheck"],
   credentials: true,
 }
@@ -124,6 +124,17 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
       // Handle OPTIONS preflight request
       if (req.method === "OPTIONS") {
         res.status(204).send("")
+        return
+      }
+
+      // Health check endpoint (no rate limiting or AppCheck required)
+      if (req.method === "GET" && (req.path === "/health" || req.url === "/health")) {
+        res.status(200).json({
+          success: true,
+          service: "contact-form",
+          status: "healthy",
+          timestamp: new Date().toISOString(),
+        })
         return
       }
 

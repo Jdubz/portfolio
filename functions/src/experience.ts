@@ -150,6 +150,18 @@ const handleExperienceRequest = async (req: Request, res: Response): Promise<voi
 
           const path = req.path || req.url
 
+          // Route: GET /health - Health check (public)
+          if (req.method === "GET" && path === "/health") {
+            res.status(200).json({
+              success: true,
+              service: "manageExperience",
+              status: "healthy",
+              timestamp: new Date().toISOString(),
+            })
+            resolve()
+            return
+          }
+
           // Route: GET /experience/all - List all entries and blurbs (public, optimized)
           if (req.method === "GET" && path === "/experience/all") {
             await handleListAll(req, res, requestId)
