@@ -18,6 +18,7 @@ export class GeneratorClient extends ApiClient {
   constructor() {
     super()
     // Override baseUrl to point to manageGenerator function
+    // Environment variables are baked in at build time
     // Use the same pattern as getApiUrl() in api.ts
     if (process.env.NODE_ENV === "development") {
       const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
