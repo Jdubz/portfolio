@@ -18,13 +18,17 @@ export class GeneratorClient extends ApiClient {
   constructor() {
     super()
     // Override baseUrl to point to manageGenerator function
-    // Environment variables are baked in at build time
-    // Use the same pattern as getApiUrl() in api.ts
-    if (process.env.NODE_ENV === "development") {
+    // Use runtime hostname check instead of NODE_ENV to avoid localhost URLs in deployed builds
+    const isLocalhost =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+
+    if (isLocalhost) {
+      // Use emulator in local development
       const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
       this.baseUrl = `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/manageGenerator`
     } else {
-      // Production/staging URL from env var
+      // Production/staging URL from env var (baked in at build time)
       this.baseUrl =
         process.env.GATSBY_GENERATOR_API_URL ??
         `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/manageGenerator`

@@ -82,13 +82,13 @@ if [ "$ENVIRONMENT" = "local" ] || [ "$ENVIRONMENT" = "all" ]; then
 
   if lsof -Pi :5001 -sTCP:LISTEN -t >/dev/null 2>&1; then
     check_health "contact-form (local)" "http://localhost:5001/$PROJECT_ID/$REGION/contact-form/health" || ((failures++))
-    ((total++))
+    ((total++)) || true
 
     check_health "manageExperience (local)" "http://localhost:5001/$PROJECT_ID/$REGION/manageExperience/health" || ((failures++))
-    ((total++))
+    ((total++)) || true
 
     check_health "manageGenerator (local)" "http://localhost:5001/$PROJECT_ID/$REGION/manageGenerator/health" || ((failures++))
-    ((total++))
+    ((total++)) || true
   else
     echo -e "${YELLOW}⚠ Emulator not running (port 5001 not listening)${NC}"
   fi
@@ -101,13 +101,13 @@ if [ "$ENVIRONMENT" = "staging" ] || [ "$ENVIRONMENT" = "all" ]; then
   echo "--- Staging Functions ---"
 
   check_health "contact-form-staging" "https://$REGION-$PROJECT_ID.cloudfunctions.net/contact-form-staging/health" || ((failures++))
-  ((total++))
+  ((total++)) || true
 
   check_health "manageExperience-staging" "https://$REGION-$PROJECT_ID.cloudfunctions.net/manageExperience-staging/health" || ((failures++))
-  ((total++))
+  ((total++)) || true
 
   check_health "manageGenerator-staging" "https://$REGION-$PROJECT_ID.cloudfunctions.net/manageGenerator-staging/health" || ((failures++))
-  ((total++))
+  ((total++)) || true
 
   echo ""
 fi
@@ -117,14 +117,14 @@ if [ "$ENVIRONMENT" = "production" ] || [ "$ENVIRONMENT" = "all" ]; then
   echo "--- Production Functions ---"
 
   check_health "contact-form" "https://$REGION-$PROJECT_ID.cloudfunctions.net/contact-form/health" || ((failures++))
-  ((total++))
+  ((total++)) || true
 
   check_health "manageExperience" "https://$REGION-$PROJECT_ID.cloudfunctions.net/manageExperience/health" || ((failures++))
-  ((total++))
+  ((total++)) || true
 
   # Note: manageGenerator production not yet deployed
   # check_health "manageGenerator" "https://$REGION-$PROJECT_ID.cloudfunctions.net/manageGenerator/health" || ((failures++))
-  # ((total++))
+  # ((total++)) || true
 
   echo ""
 fi
