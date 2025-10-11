@@ -11,7 +11,9 @@ interface GenerationMetadata {
   company: string
   role: string
   model: string
-  tokenUsage?: number
+  tokenUsage?: {
+    total: number
+  }
   costUsd?: number
   durationMs: number
 }
@@ -343,7 +345,7 @@ const ResumeBuilderPage: React.FC = () => {
                 <br />
                 <strong>Model:</strong> {metadata.model}
                 <br />
-                <strong>Tokens:</strong> {metadata.tokenUsage ?? "N/A"}
+                <strong>Tokens:</strong> {metadata.tokenUsage?.total ?? "N/A"}
                 <br />
                 <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) ?? "N/A"}
                 <br />

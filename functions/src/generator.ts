@@ -9,7 +9,7 @@ import { OpenAIService } from "./services/openai.service"
 import { PDFService } from "./services/pdf.service"
 import { SecretManagerService } from "./services/secret-manager.service"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
-import type { GenerationType } from "./types/generator.types"
+import type { GenerationType, GeneratorResponse } from "./types/generator.types"
 
 // Error codes for generator API
 const ERROR_CODES = {
@@ -359,22 +359,46 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         (coverLetterResult ? OpenAIService.calculateCost(coverLetterResult.tokenUsage) : 0)
 
       // Step 6: Create response document
+      // Build result object without undefined values (Firestore doesn't allow them)
+      const result: GeneratorResponse["result"] = {
+        success: true,
+      }
+
+      if (resumeResult) {
+        result.resume = resumeResult.content
+      }
+
+      if (coverLetterResult) {
+        result.coverLetter = coverLetterResult.content
+      }
+
+      // Build metrics object without undefined values (Firestore doesn't allow them)
+      const tokenUsage: {
+        resumePrompt?: number
+        resumeCompletion?: number
+        coverLetterPrompt?: number
+        coverLetterCompletion?: number
+        total: number
+      } = {
+        total: totalTokens,
+      }
+
+      if (resumeResult) {
+        tokenUsage.resumePrompt = resumeResult.tokenUsage.promptTokens
+        tokenUsage.resumeCompletion = resumeResult.tokenUsage.completionTokens
+      }
+
+      if (coverLetterResult) {
+        tokenUsage.coverLetterPrompt = coverLetterResult.tokenUsage.promptTokens
+        tokenUsage.coverLetterCompletion = coverLetterResult.tokenUsage.completionTokens
+      }
+
       await generatorService.createResponse(
         generationRequestId,
-        {
-          success: true,
-          resume: resumeResult?.content,
-          coverLetter: coverLetterResult?.content,
-        },
+        result,
         {
           durationMs,
-          tokenUsage: {
-            resumePrompt: resumeResult?.tokenUsage.promptTokens,
-            resumeCompletion: resumeResult?.tokenUsage.completionTokens,
-            coverLetterPrompt: coverLetterResult?.tokenUsage.promptTokens,
-            coverLetterCompletion: coverLetterResult?.tokenUsage.completionTokens,
-            total: totalTokens,
-          },
+          tokenUsage,
           costUsd,
           model: resumeResult?.model || coverLetterResult?.model || "gpt-4o-2024-08-06",
         }
