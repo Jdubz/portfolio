@@ -29,7 +29,9 @@ export interface GenerationMetadata {
   company: string
   role: string
   model: string
-  tokenUsage?: number
+  tokenUsage?: {
+    total: number
+  }
   costUsd?: number
   durationMs: number
 }

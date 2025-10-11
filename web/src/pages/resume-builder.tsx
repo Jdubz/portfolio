@@ -3,31 +3,13 @@ import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Fle
 import { type HeadFC } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { logger } from "../utils/logger"
+import type { GenerationType, GenerationMetadata, GenerateResponse } from "../types/generator"
 
-/**
- * Type definitions for Resume Generator API
- */
-interface GenerationMetadata {
-  company: string
-  role: string
-  model: string
-  tokenUsage?: {
-    total: number
-  }
-  costUsd?: number
-  durationMs: number
-}
-
-interface GenerationResponse {
-  success: boolean
+// Extend GenerateResponse for local use
+interface GenerationResponse extends GenerateResponse {
   message?: string
   error?: string
-  resume?: string
-  coverLetter?: string
-  metadata?: GenerationMetadata
 }
-
-type GenerateType = "resume" | "coverLetter" | "both"
 
 /**
  * Resume Builder MVP Page
@@ -41,7 +23,7 @@ const ResumeBuilderPage: React.FC = () => {
   const [success, setSuccess] = useState(false)
 
   // Form state
-  const [generateType, setGenerateType] = useState<GenerateType>("both")
+  const [generateType, setGenerateType] = useState<GenerationType>("both")
   const [role, setRole] = useState("")
   const [company, setCompany] = useState("")
   const [companyWebsite, setCompanyWebsite] = useState("")
@@ -208,7 +190,7 @@ const ResumeBuilderPage: React.FC = () => {
           <Select
             id="generateType"
             value={generateType}
-            onChange={(e) => setGenerateType(e.target.value as GenerateType)}
+            onChange={(e) => setGenerateType(e.target.value as GenerationType)}
             disabled={generating}
             required
           >

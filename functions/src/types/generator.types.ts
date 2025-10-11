@@ -27,7 +27,7 @@ export interface GeneratorDefaults {
   id: "default"
   type: "defaults"
 
-  // Personal Information (all required, handle falsy gracefully)
+  // Personal Information (name and email required, others optional)
   name: string
   email: string
   phone?: string
