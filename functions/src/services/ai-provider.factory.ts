@@ -77,21 +77,25 @@ export async function createAIProvider(
     }
 
     case "gemini": {
-      // For Gemini, we can use Firebase AI Logic (free tier) or API key
-      // Check if GEMINI_API_KEY exists in environment or Secret Manager
+      // For Gemini, use GOOGLE_API_KEY environment variable (set by Firebase/Cloud Functions)
+      // Get a free key from: https://makersuite.google.com/app/apikey
+      // Or set in Secret Manager as "gemini-api-key" for production
+
+      // Check environment variable first (Firebase AI Logic sets this automatically)
+      if (process.env.GOOGLE_API_KEY) {
+        logger?.info("Using GOOGLE_API_KEY environment variable for Gemini")
+        return new GeminiProvider(process.env.GOOGLE_API_KEY, logger)
+      }
+
+      // Try Secret Manager (for production deployment)
       try {
         const apiKey = await getApiKey("gemini-api-key", logger)
         return new GeminiProvider(apiKey, logger)
-      } catch {
-        // If Gemini API key is not found, try using Google Cloud API key
-        logger?.warning("Gemini API key not found, attempting to use Google Cloud default credentials")
-        try {
-          const apiKey = await getApiKey("google-api-key", logger)
-          return new GeminiProvider(apiKey, logger)
-        } catch (fallbackError) {
-          logger?.error("Failed to retrieve any API key for Gemini", { error: fallbackError })
-          throw new Error("No API key available for Gemini provider")
-        }
+      } catch (error) {
+        logger?.error("No Gemini API key found in environment or Secret Manager", { error })
+        throw new Error(
+          "No API key available for Gemini. Set GOOGLE_API_KEY environment variable or add gemini-api-key to Secret Manager."
+        )
       }
     }
 
