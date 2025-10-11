@@ -102,7 +102,10 @@ Build AI-powered resume generator using existing experience data.
 
 **Priority Order**: 2.1 (cover letter) → 2.3 (auth) → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (quality)
 
-**Detailed Documentation**: See [AI_RESUME_GENERATOR_STATUS.md](./AI_RESUME_GENERATOR_STATUS.md) for complete implementation status, architecture details, and Phase 3 future enhancements.
+**Documentation**: See [generator/](./generator/) for complete details:
+- [README.md](./generator/README.md) - Current status, architecture, getting started
+- [PHASE_2_PLAN.md](./generator/PHASE_2_PLAN.md) - Detailed Phase 2 tasks and timeline
+- [SCHEMA.md](./generator/SCHEMA.md) - Firestore database schema reference
 
 ### 2. Content Upload Improvements
 
