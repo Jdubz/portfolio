@@ -36,8 +36,8 @@ export class GeminiProvider implements AIProvider {
   readonly model: string = "gemini-2.0-flash"
   readonly providerType: AIProviderType = "gemini"
   readonly pricing = {
-    inputCostPer1M: 0.10,    // $0.10 per 1M input tokens
-    outputCostPer1M: 0.40,   // $0.40 per 1M output tokens
+    inputCostPer1M: 0.1, // $0.10 per 1M input tokens
+    outputCostPer1M: 0.4, // $0.40 per 1M output tokens
   }
 
   constructor(apiKey: string, logger?: SimpleLogger) {
@@ -427,7 +427,7 @@ Generate a compelling cover letter that showcases the candidate's qualifications
         summary: `Experienced software engineer with a proven track record of building scalable systems. Passionate about ${options.job.role.toLowerCase()} work.`,
         contact: {
           email: options.personalInfo.email,
-          location: options.personalInfo.location || "San Francisco, CA",
+          location: options.personalInfo.location || "Portland, OR",
           website: options.personalInfo.website || "",
           linkedin: options.personalInfo.linkedin || "",
           github: options.personalInfo.github || "",

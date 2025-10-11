@@ -302,7 +302,15 @@ export interface GeneratorResponse {
     error?: {
       message: string
       code?: string
-      stage?: "fetch_defaults" | "fetch_experience" | "openai_resume" | "openai_cover_letter" | "pdf_generation" | "gcs_upload"
+      stage?:
+        | "fetch_defaults"
+        | "fetch_experience"
+        | "openai_resume"
+        | "openai_cover_letter"
+        | "openai_generation"
+        | "gemini_generation"
+        | "pdf_generation"
+        | "gcs_upload"
       details?: unknown
     }
   }

@@ -127,7 +127,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
             name="location"
             value={editData.location ?? ""}
             onChange={(value) => setEditData({ ...editData, location: value })}
-            placeholder="San Francisco, CA · Remote"
+            placeholder="Portland, OR · Remote"
           />
 
           <Flex sx={{ gap: 3, flexDirection: ["column", "row"] }}>

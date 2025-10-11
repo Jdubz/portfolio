@@ -39,8 +39,8 @@ export class OpenAIService implements AIProvider {
   readonly model: string = "gpt-4o-2024-08-06" // Supports structured outputs
   readonly providerType: AIProviderType = "openai"
   readonly pricing = {
-    inputCostPer1M: 2.50,    // $2.50 per 1M input tokens
-    outputCostPer1M: 10.00,  // $10.00 per 1M output tokens
+    inputCostPer1M: 2.5, // $2.50 per 1M input tokens
+    outputCostPer1M: 10.0, // $10.00 per 1M output tokens
   }
 
   constructor(apiKey: string, logger?: SimpleLogger) {
@@ -474,7 +474,7 @@ Generate a compelling cover letter that showcases the candidate's qualifications
         summary: `Experienced software engineer with a proven track record of building scalable systems and leading technical initiatives. Passionate about ${options.job.role.toLowerCase()} work and delivering high-impact solutions.`,
         contact: {
           email: options.personalInfo.email,
-          location: options.personalInfo.location || "San Francisco, CA",
+          location: options.personalInfo.location || "Portland, OR",
           website: options.personalInfo.website || "",
           linkedin: options.personalInfo.linkedin || "",
           github: options.personalInfo.github || "",

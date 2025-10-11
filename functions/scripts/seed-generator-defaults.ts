@@ -36,7 +36,7 @@ async function seedDefaults() {
     name: "Josh Wentworth",
     email: "josh@joshwentworth.com",
     phone: "",
-    location: "San Francisco, CA",
+    location: "Portland, OR",
     website: "https://joshwentworth.com",
     github: "https://github.com/jdubz",
     linkedin: "https://linkedin.com/in/joshwentworth",

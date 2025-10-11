@@ -141,7 +141,7 @@ describe("GeneratorClient API Contract", () => {
         name: "John Doe",
         email: "john@example.com",
         phone: "555-1234",
-        location: "San Francisco, CA",
+        location: "Portland, OR",
         website: "https://johndoe.com",
         github: "https://github.com/johndoe",
         linkedin: "https://linkedin.com/in/johndoe",

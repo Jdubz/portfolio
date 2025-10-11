@@ -7,6 +7,7 @@
 ### Files Created/Modified
 
 #### Cloud Functions Backend
+
 - [functions/src/config/database.ts](../../functions/src/config/database.ts) - Added `GENERATOR_COLLECTION`
 - [functions/src/types/generator.types.ts](../../functions/src/types/generator.types.ts) - Complete type definitions
 - [functions/src/services/generator.service.ts](../../functions/src/services/generator.service.ts) - Firestore CRUD operations
@@ -18,9 +19,11 @@
 - [functions/src/index.ts](../../functions/src/index.ts) - Export `manageGenerator` function
 
 #### Web Frontend
+
 - [web/src/pages/resume-builder.tsx](../../web/src/pages/resume-builder.tsx) - MVP test UI at `/resume-builder`
 
 #### Dependencies Installed
+
 ```json
 {
   "openai": "^6.3.0",
@@ -51,6 +54,7 @@ echo -n "YOUR_NEW_OPENAI_API_KEY" | gcloud secrets versions add openai-api-key \
 ```
 
 **To get an OpenAI API key:**
+
 1. Go to https://platform.openai.com/api-keys
 2. Create a new secret key
 3. Copy the key immediately (it won't be shown again)
@@ -63,6 +67,7 @@ echo -n "YOUR_NEW_OPENAI_API_KEY" | gcloud secrets versions add openai-api-key \
 **Required** - The generator needs a `generator/default` document in Firestore.
 
 **Option A: Via Firestore Console**
+
 1. Go to [Firestore Console](https://console.firebase.google.com/project/static-sites-257923/firestore)
 2. Select database: `(default)` for local, `portfolio` for production
 3. Create collection: `generator`
@@ -75,7 +80,7 @@ type: "defaults" (string)
 name: "Josh Wentworth" (string)
 email: "josh@joshwentworth.com" (string)
 phone: "" (string, optional)
-location: "San Francisco, CA" (string, optional)
+location: "Portland, OR" (string, optional)
 website: "https://joshwentworth.com" (string, optional)
 github: "https://github.com/jdubz" (string, optional)
 linkedin: "https://linkedin.com/in/joshwentworth" (string, optional)
@@ -104,7 +109,7 @@ async function seedDefaults() {
     name: "Josh Wentworth",
     email: "josh@joshwentworth.com",
     phone: "",
-    location: "San Francisco, CA",
+    location: "Portland, OR",
     website: "https://joshwentworth.com",
     github: "https://github.com/jdubz",
     linkedin: "https://linkedin.com/in/joshwentworth",
@@ -124,6 +129,7 @@ seedDefaults().catch(console.error)
 ```
 
 Run with:
+
 ```bash
 cd functions
 npx tsx scripts/seed-defaults.ts
@@ -136,10 +142,12 @@ npx tsx scripts/seed-defaults.ts
 **Required** - The generator pulls experience entries and blurbs from Firestore.
 
 Check that you have data in:
+
 - Collection: `experience-entries` - Your work experience
 - Collection: `experience-blurbs` - Reusable content snippets
 
 **To verify:**
+
 ```bash
 # Start emulators
 firebase emulators:start
@@ -157,18 +165,21 @@ If the experience page loads successfully with data, you're good to go!
 ### Local Testing (Emulators)
 
 1. **Start Firebase Emulators:**
+
 ```bash
 cd /home/jdubz/Development/portfolio
 firebase emulators:start
 ```
 
 2. **Start Gatsby Dev Server:**
+
 ```bash
 cd web
 npm run develop
 ```
 
 3. **Navigate to Resume Builder:**
+
 ```
 http://localhost:8000/resume-builder
 ```
@@ -196,12 +207,14 @@ http://localhost:8000/resume-builder
 ⚠️ **Wait until local testing succeeds first**
 
 1. **Deploy Cloud Functions:**
+
 ```bash
 cd functions
 npm run deploy
 ```
 
 2. **Deploy Gatsby Site:**
+
 ```bash
 cd web
 npm run build
@@ -209,6 +222,7 @@ firebase deploy --only hosting
 ```
 
 3. **Navigate to:**
+
 ```
 https://staging.joshwentworth.com/resume-builder
 # or
@@ -224,6 +238,7 @@ https://joshwentworth.com/resume-builder
 **Description**: Generate resume and/or cover letter
 
 **Request Body:**
+
 ```json
 {
   "generateType": "resume" | "coverLetter" | "both",
@@ -241,6 +256,7 @@ https://joshwentworth.com/resume-builder
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -283,6 +299,7 @@ https://joshwentworth.com/resume-builder
 ### Error: "OpenAI API key not found"
 
 **Solution**: Ensure the `openai-api-key` secret exists and has the correct permissions:
+
 ```bash
 gcloud secrets describe openai-api-key --project=static-sites-257923
 ```
@@ -300,11 +317,13 @@ gcloud secrets describe openai-api-key --project=static-sites-257923
 **Symptom**: Function times out after 5 minutes
 
 **Possible Causes**:
+
 - Large number of experience entries
 - Slow OpenAI API response
 - Puppeteer taking too long to render
 
 **Solutions**:
+
 1. Check Cloud Functions logs for specific errors
 2. Verify Chromium is launching correctly in Cloud Functions environment
 3. Consider increasing timeout in [functions/src/generator.ts:415](../../functions/src/generator.ts#L415)
@@ -314,6 +333,7 @@ gcloud secrets describe openai-api-key --project=static-sites-257923
 **Symptom**: Browser blocks request with CORS error
 
 **Solution**: Verify your origin is in the CORS allowlist in [functions/src/generator.ts:51-58](../../functions/src/generator.ts#L51-L58):
+
 ```typescript
 const corsOptions = {
   origin: [
@@ -353,11 +373,13 @@ See [ai-resume-generator-plan.md](./ai-resume-generator-plan.md) for complete ro
 **Dependencies**: OpenAI API, Puppeteer, Handlebars, Firestore
 
 **Collections Used**:
+
 - `generator` - Default settings, requests, responses
 - `experience-entries` - Work experience data
 - `experience-blurbs` - Reusable content snippets
 
 **Secrets Required**:
+
 - `openai-api-key` - OpenAI API key
 
 **Service Account**: `cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com`
