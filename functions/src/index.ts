@@ -433,3 +433,9 @@ export { manageExperience } from "./experience"
  */
 export { uploadResume } from "./resume"
 
+/**
+ * AI Resume Generator endpoint
+ * Deployed via: firebase deploy --only functions:manageGenerator
+ */
+export { manageGenerator } from "./generator"
+
