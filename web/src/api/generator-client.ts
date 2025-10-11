@@ -5,6 +5,7 @@
  */
 
 import { ApiClient } from "./client"
+import { API_CONFIG } from "../config/api"
 import type {
   GenerateRequest,
   GenerateResponse,
@@ -13,7 +14,30 @@ import type {
   GenerationRequest,
 } from "../types/generator"
 
+/**
+ * Get the Generator API base URL
+ * Uses manageGenerator function instead of manageExperience
+ */
+const getGeneratorApiUrl = (): string => {
+  // Use emulator in development
+  if (process.env.NODE_ENV === "development") {
+    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
+    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/manageGenerator`
+  }
+
+  // Production/staging URL
+  return (
+    process.env.GATSBY_GENERATOR_API_URL ??
+    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/manageGenerator`
+  )
+}
+
 export class GeneratorClient extends ApiClient {
+  constructor() {
+    super()
+    // Override baseUrl to point to manageGenerator function
+    this.baseUrl = getGeneratorApiUrl()
+  }
   /**
    * Generate resume and/or cover letter
    * Public endpoint - no auth required

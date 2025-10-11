@@ -7,6 +7,7 @@ import Projects from "../components/homepage/Projects"
 import About from "../components/homepage/About"
 import Contact from "../components/homepage/Contact"
 import Seo from "../components/homepage/Seo"
+import HamburgerMenu from "../components/homepage/HamburgerMenu"
 
 // Extend Window interface to include scrollToSection
 declare global {
@@ -60,6 +61,9 @@ const Cara = () => {
           </p>
         </div>
       </div>
+
+      {/* Hamburger Menu */}
+      <HamburgerMenu />
 
       {/* Main Parallax content */}
       <Layout>
