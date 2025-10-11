@@ -246,6 +246,32 @@ export class GeneratorService {
   }
 
   /**
+   * Update request progress
+   */
+  async updateProgress(
+    requestId: string,
+    stage: NonNullable<GeneratorRequest["progress"]>["stage"],
+    message: string,
+    percentage: number
+  ): Promise<void> {
+    try {
+      await this.db.collection(this.collectionName).doc(requestId).update({
+        progress: {
+          stage,
+          message,
+          percentage,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+      })
+
+      this.logger.info("Updated progress", { requestId, stage, message, percentage })
+    } catch (error) {
+      this.logger.error("Failed to update progress", { error, requestId })
+      // Don't throw - progress updates are non-critical
+    }
+  }
+
+  /**
    * Create a generation response document
    */
   async createResponse(

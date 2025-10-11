@@ -63,6 +63,14 @@ export class GeneratorClient extends ApiClient {
   }
 
   /**
+   * Get a generation request by ID (for polling progress)
+   * Public endpoint - no auth required
+   */
+  async getRequest(generationId: string): Promise<GenerationRequest> {
+    return this.get<GenerationRequest>(`/generator/requests/${generationId}`, false)
+  }
+
+  /**
    * List generation requests
    * Auth required - editor only
    */

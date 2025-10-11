@@ -117,6 +117,14 @@ export interface GeneratorRequest {
   // Request Status
   status: "pending" | "processing" | "completed" | "failed"
 
+  // Progress Information
+  progress?: {
+    stage: "initializing" | "fetching_data" | "generating_resume" | "generating_cover_letter" | "creating_pdf" | "finalizing"
+    message: string
+    percentage: number // 0-100
+    updatedAt: Timestamp
+  }
+
   // Access Control
   access: {
     viewerSessionId?: string // For public users to retrieve their own docs
