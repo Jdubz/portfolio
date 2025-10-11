@@ -76,6 +76,7 @@ const corsHandler = cors(corsOptions)
 // Validation schemas
 const generateRequestSchema = Joi.object({
   generateType: Joi.string().valid("resume", "coverLetter", "both").required(),
+  provider: Joi.string().valid("openai", "gemini").optional().default("gemini"),
   job: Joi.object({
     role: Joi.string().trim().min(1).max(200).required(),
     company: Joi.string().trim().min(1).max(200).required(),
