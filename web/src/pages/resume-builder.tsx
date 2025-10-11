@@ -1,10 +1,10 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Flex, Select } from "theme-ui"
 import { Link, type HeadFC } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { logger } from "../utils/logger"
 import { generatorClient } from "../api/generator-client"
-import type { GenerationType, GenerationMetadata } from "../types/generator"
+import type { GenerationType, GenerationMetadata, AIProviderType } from "../types/generator"
 
 /**
  * Resume Builder MVP Page
@@ -19,12 +19,28 @@ const ResumeBuilderPage: React.FC = () => {
 
   // Form state
   const [generateType, setGenerateType] = useState<GenerationType>("both")
+  const [aiProvider, setAIProvider] = useState<AIProviderType>("gemini")
   const [role, setRole] = useState("")
   const [company, setCompany] = useState("")
   const [companyWebsite, setCompanyWebsite] = useState("")
   const [jobDescriptionUrl, setJobDescriptionUrl] = useState("")
   const [jobDescriptionText, setJobDescriptionText] = useState("")
   const [emphasize, setEmphasize] = useState("")
+
+  // Load AI provider preference from localStorage on mount
+  useEffect(() => {
+    const savedProvider = localStorage.getItem("aiProvider") as AIProviderType | null
+    if (savedProvider === "openai" || savedProvider === "gemini") {
+      setAIProvider(savedProvider)
+    }
+  }, [])
+
+  // Save AI provider preference to localStorage when it changes
+  const handleProviderChange = (provider: AIProviderType) => {
+    setAIProvider(provider)
+    localStorage.setItem("aiProvider", provider)
+    logger.info("AI provider changed", { provider })
+  }
 
   // Generated files
   const [resumePDF, setResumePDF] = useState<string | null>(null)
@@ -44,6 +60,7 @@ const ResumeBuilderPage: React.FC = () => {
       // Prepare request payload
       const payload = {
         generateType,
+        provider: aiProvider,
         job: {
           role: role.trim(),
           company: company.trim(),
@@ -195,6 +212,26 @@ const ResumeBuilderPage: React.FC = () => {
             <option value="resume">Resume Only</option>
             <option value="coverLetter">Cover Letter Only</option>
           </Select>
+        </Box>
+
+        {/* AI Provider Selection */}
+        <Box sx={{ mb: 3 }}>
+          <Label htmlFor="aiProvider">AI Provider</Label>
+          <Select
+            id="aiProvider"
+            value={aiProvider}
+            onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
+            disabled={generating}
+            required
+          >
+            <option value="gemini">Gemini (Recommended - 96% cheaper, $0.0006/generation)</option>
+            <option value="openai">OpenAI GPT-4o ($0.015/generation)</option>
+          </Select>
+          <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>
+            {aiProvider === "gemini"
+              ? "✨ Gemini 2.0 Flash: Fast, accurate, and cost-effective"
+              : "🚀 GPT-4o: Premium quality, higher cost"}
+          </Text>
         </Box>
 
         {/* Role */}
