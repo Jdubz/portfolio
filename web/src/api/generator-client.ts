@@ -19,8 +19,13 @@ import type {
  * Uses manageGenerator function instead of manageExperience
  */
 const getGeneratorApiUrl = (): string => {
+  // Check if running on localhost (development) - use runtime check, not build-time
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+
   // Use emulator in development
-  if (process.env.NODE_ENV === "development") {
+  if (isLocalhost) {
     const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
     return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/manageGenerator`
   }
