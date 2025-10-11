@@ -349,13 +349,13 @@ seed-generator-staging:
 	@echo "Seeding generator defaults to STAGING database..."
 	@echo "Database: portfolio-staging"
 	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
-	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio-staging npx tsx scripts/seed-generator-defaults.ts
+	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 FIRESTORE_DATABASE_ID=portfolio-staging npx tsx scripts/seed-generator-defaults.ts
 
 seed-generator-prod:
 	@echo "⚠️  WARNING: Seeding generator defaults to PRODUCTION database!"
 	@echo "Database: portfolio"
 	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
-	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio npx tsx scripts/seed-generator-defaults.ts
+	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 FIRESTORE_DATABASE_ID=portfolio npx tsx scripts/seed-generator-defaults.ts
 
 # Health Check Commands
 health-check:
