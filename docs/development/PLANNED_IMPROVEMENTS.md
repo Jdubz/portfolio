@@ -35,29 +35,77 @@
 
 ### 1. AI Resume Generator Feature
 
-**Status**: Ready to implement (infrastructure in place)
+**Status**: Phase 1 Complete ✅ | Phase 2 Detailed Plan Ready
 
 Build AI-powered resume generator using existing experience data.
 
-**What it does**:
-- Generates tailored resumes from experience entries
-- Uses OpenAI API to customize content for job descriptions
-- Exports to PDF, DOCX, and Markdown formats
-- Tracks generation history and token usage
+**Phase 1 Complete** (Oct 2025):
+- ✅ Resume generation Cloud Function with OpenAI integration
+- ✅ PDF export with Puppeteer (logo + avatar support)
+- ✅ Firestore request/response tracking with request/response separation
+- ✅ Mock mode for local development (OPENAI_MOCK_MODE=true)
+- ✅ Basic web UI with job details form and PDF download
+- ✅ Token usage and cost tracking
+- ✅ Rate limiting (10 requests per 15 min)
+- ✅ Comprehensive API client with 28 passing tests
+- ✅ Local Chrome detection for faster development
+- ✅ Type-safe end-to-end (TypeScript + Joi validation)
 
-**Prerequisites** (all complete):
-- ✅ Experience API client
-- ✅ Form validation utilities
-- ✅ Async submission handling
-- ✅ Structured logging
+**Phase 2: Feature Completion** (2-3 weeks):
 
-**Implementation**:
-1. Create resume generator UI components
-2. Add resume generation Cloud Function
-3. Implement document export service
-4. Add generation history tracking
+**Phase 2.1: Cover Letter Integration** (1-2 days)
+- [ ] Expose `generateType` parameter in API ("resume" | "coverLetter" | "both")
+- [ ] Add UI checkbox for "Generate cover letter"
+- [ ] Return both PDFs in single API response
+- [ ] Display both download buttons
+- [ ] Show separate metrics for each document
+- **Note:** Cover letter service already implemented, just needs UI integration
 
-**Estimated Effort**: 2-3 weeks
+**Phase 2.2: GCS Storage & Document History** (2-3 days)
+- [ ] Create GCS bucket `joshwentworth-resumes` with 90-day lifecycle
+- [ ] Upload PDFs to GCS instead of base64 response
+- [ ] Generate signed URLs for downloads (1hr viewers, 7 days editors)
+- [ ] Add `GET /generator/requests` endpoint for document history
+- [ ] Create document history table (editors only)
+- [ ] Download from signed URLs with tracking
+
+**Phase 2.3: Authentication & Editor Features** (3-4 days)
+- [ ] Add Firebase Auth (same pattern as experience page)
+- [ ] Conditional UI based on auth state (viewer vs editor)
+- [ ] Editor tabs: Generate | History | Settings
+- [ ] `PUT /generator/defaults` route for editing personal info
+- [ ] Higher rate limits for authenticated editors (20 vs 10)
+- [ ] Show all generations in history table with filters
+
+**Phase 2.4: Prompt Management** (2-3 days)
+- [ ] Create default prompt blurbs in Firestore (4 blurbs)
+- [ ] Implement variable substitution in prompts
+- [ ] Add "Prompts" tab to editor view
+- [ ] Reuse BlurbEditor component from experience page
+- [ ] Display available variables documentation
+- [ ] Fetch prompts dynamically instead of hardcoded strings
+
+**Phase 2.5: Additional Templates** (2-3 days)
+- [ ] Create `resume-traditional.hbs` template
+- [ ] Create `resume-technical.hbs` template
+- [ ] Create `resume-executive.hbs` template
+- [ ] Add style selector dropdown in UI
+- [ ] Update PDFService to load templates dynamically
+- [ ] Optional: Template preview images
+
+**Phase 2.6: Code Quality** (1 day)
+- [ ] Extract Chrome detection to `findLocalChrome()` helper (pdf.service.ts)
+- [ ] Extract job description builder to `buildJobDescription()` helper (generator.ts)
+- [ ] Document service account configuration (experience.ts)
+
+**Total Estimated Effort Phase 2**: 12-17 days (2-3 weeks)
+
+**Priority Order**: 2.1 (cover letter) → 2.3 (auth) → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (quality)
+
+**Documentation**: See [generator/](./generator/) for complete details:
+- [README.md](./generator/README.md) - Current status, architecture, getting started
+- [PHASE_2_PLAN.md](./generator/PHASE_2_PLAN.md) - Detailed Phase 2 tasks and timeline
+- [SCHEMA.md](./generator/SCHEMA.md) - Firestore database schema reference
 
 ### 2. Content Upload Improvements
 

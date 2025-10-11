@@ -824,7 +824,7 @@ export const manageExperience = https.onRequest(
     memory: "256MiB",
     maxInstances: 10,
     timeoutSeconds: 60,
-    serviceAccount: "cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com",
+    serviceAccount: "789847666726-compute@developer.gserviceaccount.com",
   },
   handleExperienceRequest
 )

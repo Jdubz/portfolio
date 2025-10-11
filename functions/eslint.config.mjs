@@ -13,6 +13,7 @@ export default [
       "*.config.mjs",
       "**/dist/**",
       "contact-form/dist/**",
+      "scripts/**",
     ],
   },
 

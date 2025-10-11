@@ -78,6 +78,12 @@ jobs:
             memory: 256Mi
             max_instances: 10
             secrets: ""
+          - name: manageGenerator
+            entry_point: manageGenerator
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 512Mi
+            max_instances: 10
+            secrets: "OPENAI_API_KEY=openai-api-key:latest"
 
     steps:
       - name: Checkout repository
@@ -198,6 +204,12 @@ jobs:
             memory: 256Mi
             max_instances: 10
             secrets: ""
+          - name: manageGenerator
+            entry_point: manageGenerator
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 512Mi
+            max_instances: 10
+            secrets: "OPENAI_API_KEY=openai-api-key:latest"
 
     steps:
       - name: Checkout repository
