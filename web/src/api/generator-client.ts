@@ -14,34 +14,20 @@ import type {
   GenerationRequest,
 } from "../types/generator"
 
-/**
- * Get the Generator API base URL
- * Uses manageGenerator function instead of manageExperience
- */
-const getGeneratorApiUrl = (): string => {
-  // Check if running on localhost (development) - use runtime check, not build-time
-  const isLocalhost =
-    typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-
-  // Use emulator in development
-  if (isLocalhost) {
-    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
-    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/manageGenerator`
-  }
-
-  // Production/staging URL
-  return (
-    process.env.GATSBY_GENERATOR_API_URL ??
-    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/manageGenerator`
-  )
-}
-
 export class GeneratorClient extends ApiClient {
   constructor() {
     super()
     // Override baseUrl to point to manageGenerator function
-    this.baseUrl = getGeneratorApiUrl()
+    // Use the same pattern as getApiUrl() in api.ts
+    if (process.env.NODE_ENV === "development") {
+      const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
+      this.baseUrl = `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/manageGenerator`
+    } else {
+      // Production/staging URL from env var
+      this.baseUrl =
+        process.env.GATSBY_GENERATOR_API_URL ??
+        `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/manageGenerator`
+    }
   }
   /**
    * Generate resume and/or cover letter
