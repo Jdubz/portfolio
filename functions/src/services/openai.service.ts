@@ -440,7 +440,7 @@ Generate a compelling cover letter that showcases the candidate's qualifications
           },
         },
       },
-      required: ["personalInfo", "professionalSummary", "experience"],
+      required: ["personalInfo", "professionalSummary", "experience", "skills", "education"],
       additionalProperties: false,
     }
   }
