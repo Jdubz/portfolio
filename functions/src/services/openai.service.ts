@@ -128,7 +128,7 @@ export class OpenAIService {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.3, // Lower for consistency
+        temperature: 0, // Zero for maximum factual accuracy (prevent hallucination)
         response_format: {
           type: "json_schema",
           json_schema: {
@@ -229,17 +229,30 @@ export class OpenAIService {
    * Build system prompt for resume generation
    */
   private buildResumeSystemPrompt(): string {
-    return `You are an expert resume writer with 20+ years of experience helping software engineers land positions at top tech companies.
+    return `You are a professional resume formatter with strict adherence to factual accuracy.
 
-You specialize in ATS-friendly resumes that highlight technical accomplishments with quantifiable impact. You tailor each resume to the specific role and company, emphasizing relevant experience and skills.
+CRITICAL RULES - THESE ARE ABSOLUTE AND NON-NEGOTIABLE:
+1. ONLY use information explicitly provided in the experience data
+2. NEVER add metrics, numbers, percentages, or statistics not in the original data
+3. NEVER invent job responsibilities, accomplishments, or technologies
+4. NEVER create companies, roles, dates, or locations not provided
+5. If information is missing or unclear, omit it entirely - DO NOT guess or infer
+6. You may REFORMAT wording for clarity, but NEVER change factual content
+7. You may REORGANIZE content for better presentation, but NEVER add new information
 
-Key principles:
-- Use action verbs and quantify achievements where possible
-- Focus on impact and results, not just responsibilities
-- Tailor content to match the job description
-- Keep it concise and scannable (target 1 page)
-- Ensure ATS compatibility (avoid complex formatting in content)
-- Highlight relevant technologies and skills for the role`
+Your role is to:
+- Format and structure the provided experience data professionally
+- Emphasize relevant experience for the target role BY ORDERING, not by fabrication
+- Improve phrasing and grammar while preserving all factual details
+- Ensure ATS-friendliness through proper formatting
+- Use action verbs from the source material
+- Focus on impact and results that are stated in the data
+
+What you CANNOT do:
+- Add accomplishments not stated in the source data
+- Insert metrics or quantification not explicitly provided
+- Infer skills, technologies, or methodologies not mentioned
+- Create education entries if none are provided`
   }
 
   /**
@@ -248,22 +261,25 @@ Key principles:
   private buildResumeUserPrompt(options: GenerateResumeOptions): string {
     const style = options.style || "modern"
 
-    // Format experience data
+    // Format experience data with explicit boundaries
     const experienceData = options.experienceEntries
-      .map((entry) => {
+      .map((entry, index) => {
         const blurb = options.experienceBlurbs.find((b) => b.name === entry.id)
         return `
-Title: ${entry.title}
-${entry.role ? `Role: ${entry.role}` : ""}
-${entry.location ? `Location: ${entry.location}` : ""}
+EXPERIENCE ENTRY #${index + 1} (USE ONLY THIS DATA - DO NOT ADD ANYTHING):
+Company/Title: ${entry.title}
+${entry.role ? `Role: ${entry.role}` : "NO ROLE PROVIDED"}
+${entry.location ? `Location: ${entry.location}` : "NO LOCATION PROVIDED"}
 Start Date: ${entry.startDate}
 End Date: ${entry.endDate || "Present"}
-${entry.body ? `Description: ${entry.body}` : ""}
-${blurb ? `Highlights:\n${blurb.content}` : ""}
-${entry.notes ? `Notes: ${entry.notes}` : ""}
+${entry.body ? `Description: ${entry.body}` : "NO DESCRIPTION PROVIDED"}
+${blurb ? `Accomplishments:\n${blurb.content}` : "NO ACCOMPLISHMENTS PROVIDED"}
+${entry.notes ? `Additional Context: ${entry.notes}` : "NO ADDITIONAL CONTEXT PROVIDED"}
+
+END OF ENTRY #${index + 1} - USE NOTHING BEYOND THIS POINT FOR THIS ENTRY
 `.trim()
       })
-      .join("\n\n---\n\n")
+      .join("\n\n" + "=".repeat(80) + "\n\n")
 
     return `Create a ${style} resume for the "${options.job.role}" position at ${options.job.company}.
 
@@ -276,27 +292,36 @@ ${options.personalInfo.website ? `- Website: ${options.personalInfo.website}` : 
 ${options.personalInfo.linkedin ? `- LinkedIn: ${options.personalInfo.linkedin}` : ""}
 ${options.personalInfo.github ? `- GitHub: ${options.personalInfo.github}` : ""}
 
-JOB DETAILS:
+TARGET JOB INFORMATION:
 - Company: ${options.job.company}
 - Role: ${options.job.role}
 ${options.job.companyWebsite ? `- Company Website: ${options.job.companyWebsite}` : ""}
-${options.job.jobDescription ? `- Job Description:\n${options.job.jobDescription}` : ""}
+${options.job.jobDescription ? `\n- Job Description (for relevance ranking ONLY, DO NOT fabricate experience to match):\n${options.job.jobDescription}` : ""}
 
-EXPERIENCE DATA:
+EXPERIENCE DATA (YOUR ONLY SOURCE OF TRUTH):
 ${experienceData}
 
-REQUIREMENTS:
-- Create a compelling professional summary that positions the candidate for this specific role
-- Select and order the most relevant experience entries for this job
-- Rewrite experience highlights to emphasize skills/technologies mentioned in the job description
-- Use strong action verbs and quantify achievements where possible
-${options.emphasize ? `- Emphasize these keywords: ${options.emphasize.join(", ")}` : ""}
-- Target length: Concise, scannable content (roughly 1 page when formatted)
-- Focus on recent and relevant experience
-- Extract or infer appropriate skills and categorize them
-- Include education if relevant (can infer from experience if not explicitly provided)
+END OF ALL PROVIDED DATA - NO OTHER INFORMATION EXISTS
 
-Generate a complete, ATS-friendly resume optimized for this specific role.`
+TASK REQUIREMENTS:
+1. Create a professional summary using ONLY skills and experience present in the data above
+2. Select and order the most relevant experience entries for the ${options.job.role} role
+3. Reformat (NOT rewrite) experience accomplishments for clarity while preserving all facts
+4. If an accomplishment mentions technology relevant to the job description, emphasize it through placement
+5. Extract skills ONLY from technologies explicitly mentioned in the experience entries above
+${options.emphasize && options.emphasize.length > 0 ? `6. If these keywords appear in the experience data, ensure they are prominent: ${options.emphasize.join(", ")}` : ""}
+7. Use action verbs that appear in the source material or are direct synonyms
+8. For education: Include ONLY if education information appears in the experience data or notes. Otherwise omit entirely.
+
+FORBIDDEN ACTIONS (will result in rejection):
+❌ Adding metrics/numbers not in source data (e.g., "increased by 50%", "serving 10K users")
+❌ Inventing job responsibilities or projects
+❌ Creating skills or technologies not mentioned in the data
+❌ Fabricating education credentials
+❌ Adding companies or roles not in the experience entries
+❌ Inferring information from context or job description
+
+Generate a complete, ATS-friendly resume using ONLY the factual information explicitly provided above.`
   }
 
   /**
