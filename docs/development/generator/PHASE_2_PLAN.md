@@ -100,6 +100,12 @@ See [PROGRESS_UPDATES_PLAN.md](./PROGRESS_UPDATES_PLAN.md) for complete implemen
 **Backend:**
 - [ ] Add auth middleware to editor routes
 - [ ] Create `PUT /generator/defaults` route (editor-only)
+- [ ] Add Firebase Storage integration for avatar/logo uploads
+  - [ ] Create `/generator-assets/avatars/` bucket path
+  - [ ] Create `/generator-assets/logos/` bucket path
+  - [ ] Generate public URLs or signed URLs for uploaded images
+  - [ ] Store URLs in generator defaults document
+  - [ ] Update PDF service to fetch from Storage URLs when provided
 - [ ] Implement higher rate limits for editors (20 vs 10)
 - [ ] Add `createdBy` tracking for authenticated users
 
@@ -110,6 +116,12 @@ See [PROGRESS_UPDATES_PLAN.md](./PROGRESS_UPDATES_PLAN.md) for complete implemen
   - Viewer: Simple form + download
   - Editor: Tabs (Generate | History | Settings)
 - [ ] Add "Edit Defaults" form for personal info
+  - [ ] Text fields: name, email, phone, location
+  - [ ] URL fields: website, GitHub, LinkedIn
+  - [ ] File upload: avatar (profile photo)
+  - [ ] File upload: logo (personal branding)
+  - [ ] Color picker: accent color
+  - [ ] Dropdown: default template style
 - [ ] Show auth status indicator
 - [ ] Login/logout buttons
 
@@ -117,6 +129,9 @@ See [PROGRESS_UPDATES_PLAN.md](./PROGRESS_UPDATES_PLAN.md) for complete implemen
 - Viewers can use without login
 - Editors must authenticate
 - Editors see additional features
+- Editors can upload and update avatar/logo images
+- Uploaded images appear in generated resumes
+- System falls back to template assets when no custom images uploaded
 - Rate limits differ by role
 
 ---
