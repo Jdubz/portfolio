@@ -13,6 +13,30 @@ Phase 2 adds the remaining features to make this production-ready:
 - Additional templates
 - Code quality improvements
 
+## Phase 2.1a: Progress Updates (Backend Complete ✅)
+
+**Timeline:** 1-1.5 hours remaining (frontend only)
+**Complexity:** Low
+**Status:** Backend implemented, frontend pending
+
+### Completed Tasks ✅
+- ✅ Added progress field to GeneratorRequest type
+- ✅ Added updateProgress() method to GeneratorService
+- ✅ Added progress updates at 7 key stages in generation flow
+- ✅ Added GET /generator/requests/:id endpoint for status polling
+- ✅ Added GenerationProgress type to frontend
+- ✅ Added getRequest() method to GeneratorClient
+
+### Remaining Tasks
+- [ ] Add polling logic in resume-builder.tsx
+- [ ] Add progress bar UI component
+- [ ] Test end-to-end with real generation
+
+### Documentation
+See [PROGRESS_UPDATES_PLAN.md](./PROGRESS_UPDATES_PLAN.md) for complete implementation details.
+
+---
+
 ## Phase 2.1: Cover Letter Integration
 
 **Timeline:** 1-2 days

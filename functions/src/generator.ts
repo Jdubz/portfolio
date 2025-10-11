@@ -136,6 +136,13 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
             return
           }
 
+          // Route: GET /generator/requests/:id - Get request status (public for polling)
+          if (req.method === "GET" && path.startsWith("/generator/requests/")) {
+            await handleGetRequest(req, res, requestId)
+            resolve()
+            return
+          }
+
           // All other routes require authentication
           await new Promise<void>((resolveAuth, rejectAuth) => {
             verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
@@ -256,9 +263,15 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
     // Update status to processing
     await generatorService.updateRequestStatus(generationRequestId, "processing")
 
+    // Progress: Initializing
+    await generatorService.updateProgress(generationRequestId, "initializing", "Initializing AI service...", 10)
+
     // Step 4: Initialize OpenAI service
     const openaiApiKey = await secretManager.getSecret("openai-api-key")
     const openaiService = new OpenAIService(openaiApiKey, logger)
+
+    // Progress: Data fetched
+    await generatorService.updateProgress(generationRequestId, "fetching_data", "Experience data loaded", 20)
 
     // Step 5: Generate documents based on type
     let resumeResult: Awaited<ReturnType<typeof openaiService.generateResume>> | undefined
@@ -275,6 +288,14 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
 
       // Generate resume if requested
       if (generateType === "resume" || generateType === "both") {
+        // Progress: Generating resume
+        await generatorService.updateProgress(
+          generationRequestId,
+          "generating_resume",
+          "Generating tailored resume content...",
+          generateType === "both" ? 30 : 40
+        )
+
         logger.info("Generating resume", { requestId })
 
         resumeResult = await openaiService.generateResume({
@@ -299,6 +320,14 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           emphasize: preferences?.emphasize,
         })
 
+        // Progress: Creating PDF
+        await generatorService.updateProgress(
+          generationRequestId,
+          "creating_pdf",
+          "Creating PDF document...",
+          generateType === "both" ? 50 : 70
+        )
+
         // Generate PDF
         resumePDF = await pdfService.generateResumePDF(
           resumeResult.content,
@@ -314,6 +343,14 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
 
       // Generate cover letter if requested
       if (generateType === "coverLetter" || generateType === "both") {
+        // Progress: Generating cover letter
+        await generatorService.updateProgress(
+          generationRequestId,
+          "generating_cover_letter",
+          "Writing cover letter...",
+          generateType === "both" ? 60 : 40
+        )
+
         logger.info("Generating cover letter", { requestId })
 
         const jobDescription =
@@ -336,6 +373,14 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           experienceBlurbs: blurbs,
         })
 
+        // Progress: Creating PDF
+        await generatorService.updateProgress(
+          generationRequestId,
+          "creating_pdf",
+          "Creating PDF document...",
+          generateType === "both" ? 80 : 70
+        )
+
         // Generate PDF
         coverLetterPDF = await pdfService.generateCoverLetterPDF(
           coverLetterResult.content,
@@ -349,6 +394,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           pdfSize: coverLetterPDF.length,
         })
       }
+
+      // Progress: Finalizing
+      await generatorService.updateProgress(generationRequestId, "finalizing", "Finalizing documents...", 95)
 
       // Calculate total metrics
       const durationMs = Date.now() - startTime
@@ -414,6 +462,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         totalTokens,
         costUsd,
       })
+
+      // Progress: Complete
+      await generatorService.updateProgress(generationRequestId, "finalizing", "Complete!", 100)
 
       // Step 7: Return PDFs directly (Phase 1 MVP - no GCS yet)
       // For now, return base64 encoded PDFs
@@ -506,6 +557,67 @@ async function handleGetDefaults(req: Request, res: Response, requestId: string)
     })
   } catch (error) {
     logger.error("Failed to get defaults", { error, requestId })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /generator/requests/:id - Get request status (public for polling)
+ */
+async function handleGetRequest(req: Request, res: Response, requestId: string): Promise<void> {
+  try {
+    const path = req.path || req.url
+    const generationRequestId = path.split("/").pop()
+
+    if (!generationRequestId) {
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: "Request ID is required",
+        requestId,
+      })
+      return
+    }
+
+    logger.info("Getting generation request", { requestId, generationRequestId })
+
+    const request = await generatorService.getRequest(generationRequestId)
+
+    if (!request) {
+      const err = ERROR_CODES.NOT_FOUND
+      res.status(err.status).json({
+        success: false,
+        error: "NOT_FOUND",
+        errorCode: err.code,
+        message: "Generation request not found",
+        requestId,
+      })
+      return
+    }
+
+    // Return only status and progress information (don't leak full request details)
+    res.status(200).json({
+      success: true,
+      data: {
+        id: request.id,
+        status: request.status,
+        progress: request.progress,
+        createdAt: request.createdAt,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to get request", { error, requestId })
 
     const err = ERROR_CODES.FIRESTORE_ERROR
     res.status(err.status).json({

@@ -78,6 +78,19 @@ export interface UpdateDefaultsData {
   defaultStyle?: "modern" | "traditional" | "technical" | "executive"
 }
 
+export interface GenerationProgress {
+  stage:
+    | "initializing"
+    | "fetching_data"
+    | "generating_resume"
+    | "generating_cover_letter"
+    | "creating_pdf"
+    | "finalizing"
+  message: string
+  percentage: number
+  updatedAt: string
+}
+
 export interface GenerationRequest {
   id: string
   type: "request"
@@ -85,6 +98,7 @@ export interface GenerationRequest {
   job: JobDetails
   preferences?: GenerationPreferences
   status: "pending" | "processing" | "completed" | "failed"
+  progress?: GenerationProgress
   createdAt: string
   updatedAt: string
   completedAt?: string

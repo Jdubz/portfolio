@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api seed-emulators screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -61,6 +61,12 @@ help:
 	@echo "  make test-contact-form     - Test contact form function (single quick test)"
 	@echo "  make test-contact-form-all - Run comprehensive contact form test suite"
 	@echo "  make test-experience-api   - Test experience API with auth (auto-seeds data)"
+	@echo "  make test-generator-api    - Test AI resume generator API (local emulator)"
+	@echo ""
+	@echo "AI Resume Generator:"
+	@echo "  make seed-generator-defaults     - Seed generator defaults (local emulator)"
+	@echo "  make seed-generator-staging      - Seed generator defaults (staging database)"
+	@echo "  make seed-generator-prod         - Seed generator defaults (production database)"
 	@echo ""
 	@echo "Deployment:"
 	@echo "  make deploy-staging        - Build and deploy to staging"
@@ -221,6 +227,7 @@ deploy-function:
 		echo "Available functions:"; \
 		echo "  - uploadResume"; \
 		echo "  - manageExperience"; \
+		echo "  - manageGenerator"; \
 		echo "  - handleContactForm"; \
 		exit 1; \
 	fi
@@ -313,3 +320,32 @@ sync-prod-to-staging:
 	echo "✅ Data import initiated!"; \
 	echo "   Import operation: $$IMPORT_OP"; \
 	echo "   Check status: gcloud firestore operations describe $$IMPORT_OP --project=static-sites-257923"
+
+# AI Resume Generator Commands
+test-generator-api:
+	@echo "Testing AI Resume Generator API locally..."
+	@echo "Building function..."
+	@cd functions && npm run build
+	@echo ""
+	@echo "Testing resume generation..."
+	@curl -s -X POST http://localhost:5001/static-sites-257923/us-central1/manageGenerator/generator/generate \
+		-H "Content-Type: application/json" \
+		-d '{"generateType": "resume", "job": {"role": "Senior Software Engineer", "company": "Test Company", "jobDescription": "We are looking for an experienced software engineer."}, "preferences": {"emphasize": ["TypeScript", "React"]}}' \
+		| jq . || echo "\n⚠️  Emulators not running. Start with: make firebase-emulators"
+
+seed-generator-defaults:
+	@echo "Seeding generator defaults to local emulator..."
+	@echo "⚠️  Make sure emulators are running first!"
+	@cd functions && FIRESTORE_EMULATOR_HOST="localhost:8080" npx tsx scripts/seed-generator-defaults.ts
+
+seed-generator-staging:
+	@echo "Seeding generator defaults to STAGING database..."
+	@echo "Database: portfolio-staging"
+	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio-staging npx tsx scripts/seed-generator-defaults.ts
+
+seed-generator-prod:
+	@echo "⚠️  WARNING: Seeding generator defaults to PRODUCTION database!"
+	@echo "Database: portfolio"
+	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
+	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio npx tsx scripts/seed-generator-defaults.ts
