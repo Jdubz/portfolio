@@ -620,3 +620,4 @@ export const manageGenerator = https.onRequest(
   },
   handleGeneratorRequest
 )
+
