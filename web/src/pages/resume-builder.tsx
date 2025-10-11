@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Flex, Select } from "theme-ui"
-import { type HeadFC } from "gatsby"
+import { Link, type HeadFC } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { logger } from "../utils/logger"
 import type { GenerationType, GenerationMetadata, GenerateResponse } from "../types/generator"
@@ -145,6 +145,22 @@ const ResumeBuilderPage: React.FC = () => {
         py: 5,
       }}
     >
+      {/* Back to Home Button */}
+      <Box sx={{ mb: 4 }}>
+        <Link
+          to="/"
+          style={{
+            color: "inherit",
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            fontSize: "16px",
+          }}
+        >
+          ← Back to Home
+        </Link>
+      </Box>
+
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Heading as="h1" sx={{ fontSize: [4, 5, 6], mb: 2 }}>
