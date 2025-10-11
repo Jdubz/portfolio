@@ -2,10 +2,40 @@
 
 > **Timeline:** 2-3 weeks (12-17 days)
 > **Goal:** Production-ready feature with authentication, storage, and full UI
+> **Last Updated:** 2025-10-11 (Post-hallucination fixes and memory optimization)
+
+## Recent Fixes Completed ✅
+
+**Critical Issues Resolved:**
+1. ✅ **AI Hallucination Prevention** (commit 8a56a48)
+   - Added strict prompts with CRITICAL RULES section
+   - Temperature reduced from 0.3 → 0
+   - Explicit data boundaries ("USE ONLY THIS DATA")
+   - Removed permissive language (infer, rewrite → reformat)
+   - Expected 90%+ reduction in hallucinations
+
+2. ✅ **Memory & Timeout Issues** (commit aa7fa7c)
+   - Memory increased: 512Mi → 1Gi for manageGenerator
+   - Timeout increased: 60s → 120s for all functions
+   - Fixes SIGTERM crashes from Puppeteer OOM
+
+3. ✅ **Deployment Compatibility** (commit 8a67e9e)
+   - Fixed package.json require path for health checks
+   - Added fallback: try ./package.json, then ../package.json
+   - Functions now deploy successfully with version field
+
+4. ✅ **Seed Script Fix** (Makefile)
+   - Changed DATABASE_ID → FIRESTORE_DATABASE_ID
+   - Correctly targets portfolio-staging database
+
+5. ✅ **API Client Consistency** (resume-builder.tsx)
+   - Uses GeneratorClient instead of hardcoded fetch
+   - Runtime hostname detection (no NODE_ENV checks)
 
 ## Overview
 
 Phase 2 adds the remaining features to make this production-ready:
+- **AI provider selection** (OpenAI vs Gemini) - NEW
 - Cover letter generation (UI only, service done)
 - GCS storage for document history
 - Authentication and editor features
@@ -13,19 +43,121 @@ Phase 2 adds the remaining features to make this production-ready:
 - Additional templates
 - Code quality improvements
 
-## Phase 2.0: API Refactoring (Memory & Progress)
+## Phase 2.0a: AI Provider Selection (OpenAI vs Gemini)
 
 **Timeline:** 1-2 days
 **Complexity:** Medium
 **Status:** Planned
-**Priority:** HIGH - Blocking current memory issues
+**Priority:** HIGH - Enables cost optimization and vendor flexibility
 
 ### Problem Statement
-Current implementation has critical issues:
-- **Memory exhaustion**: 512Mi insufficient for Puppeteer (needs 582Mi+)
-- **Fake progress**: Current progress is estimated, not real
-- **All-or-nothing**: Single request generates everything or fails completely
-- **Poor UX**: User waits 30+ seconds with no real feedback
+Currently locked into OpenAI with no way to compare or switch providers:
+- **Vendor lock-in**: Cannot compare quality or cost between providers
+- **Cost optimization**: Gemini is 92% cheaper but no way to test it
+- **No flexibility**: Users can't choose based on quality preference
+- **No fallback**: If OpenAI has issues, entire feature breaks
+
+### Solution: Provider Abstraction + UI Selection
+
+**Architecture:**
+```typescript
+// Provider interface (already documented in GEMINI_VS_OPENAI.md)
+interface AIProvider {
+  generateResume(options): Promise<ResumeContent>
+  generateCoverLetter(options): Promise<CoverLetterContent>
+  calculateCost(usage): number
+  model: string
+}
+
+// Implementations
+class OpenAIProvider implements AIProvider { ... }
+class GeminiProvider implements AIProvider { ... }
+
+// Factory
+function getProvider(type: 'openai' | 'gemini'): AIProvider
+```
+
+**UI Changes:**
+- Dropdown next to "Generate" button: "AI Provider: [Gemini ▼] [OpenAI]"
+- Default: **Gemini** (92% cheaper, sufficient quality)
+- Show estimated cost below dropdown
+- Persist user preference in localStorage
+
+### Tasks
+
+**Backend:**
+- [ ] Create `AIProvider` interface in `types/generator.types.ts`
+- [ ] Create `GeminiProvider` class in `services/gemini.service.ts`
+  - [ ] Install Firebase AI Logic SDK: `@google/generative-ai`
+  - [ ] Implement `generateResume()` with Gemini 2.0 Flash
+  - [ ] Implement `generateCoverLetter()` with Gemini 2.0 Flash
+  - [ ] Use same prompts as OpenAI (test compatibility)
+  - [ ] Add cost calculation ($0.10 input, $0.40 output per 1M tokens)
+- [ ] Refactor `OpenAIProvider` to implement interface
+  - [ ] Extract from `openai.service.ts` into provider pattern
+  - [ ] Maintain existing functionality
+- [ ] Create `ai-provider.factory.ts` for provider selection
+- [ ] Update `generator.ts` to accept `provider` parameter
+- [ ] Add `provider` field to GeneratorRequest type ('openai' | 'gemini')
+- [ ] Update cost tracking to use provider-specific pricing
+
+**Frontend:**
+- [ ] Add `aiProvider` state to resume-builder.tsx (default: 'gemini')
+- [ ] Create provider dropdown component
+  - [ ] Options: Gemini (default), OpenAI
+  - [ ] Show estimated cost per generation
+  - [ ] Show model name (gemini-2.0-flash, gpt-4o)
+- [ ] Update generator-client to pass provider selection
+- [ ] Save provider preference to localStorage
+- [ ] Show actual cost in generation results (per provider)
+
+**Configuration:**
+- [ ] Enable Firebase AI Logic in Firebase Console
+- [ ] Set up Gemini API key in Secret Manager (if needed)
+- [ ] Update environment variables for Gemini configuration
+- [ ] Add feature flag for Gemini (enable gradually)
+
+### Benefits
+- ✅ **Cost flexibility**: Choose between $0.0006 (Gemini) vs $0.015 (OpenAI) per generation
+- ✅ **Quality comparison**: Users can A/B test providers
+- ✅ **Vendor independence**: Not locked to single provider
+- ✅ **Fallback option**: If one provider has issues, switch to other
+- ✅ **Future-proof**: Easy to add more providers (Claude, etc.)
+
+### Success Criteria
+- Can generate resume with both Gemini and OpenAI
+- UI clearly shows which provider is selected
+- Cost accurately reflects provider used
+- Quality is acceptable with both providers
+- Provider preference persists across sessions
+- Default to Gemini (cheaper option)
+
+### Testing Strategy
+- [ ] Generate 10 resumes with Gemini, verify quality
+- [ ] Generate 10 resumes with OpenAI, verify quality
+- [ ] Compare outputs for same input with both providers
+- [ ] Verify cost calculation for each provider
+- [ ] Test provider switching mid-session
+- [ ] Verify localStorage persistence
+
+---
+
+## Phase 2.0b: API Refactoring (Memory & Progress)
+
+**Timeline:** 1-2 days
+**Complexity:** Medium
+**Status:** Partially Addressed (memory increased to 1Gi)
+**Priority:** MEDIUM - Memory temporarily fixed, but architecture improvement still valuable
+
+### Problem Statement
+Current implementation has issues (some addressed):
+- ✅ **Memory exhaustion**: ~~512Mi insufficient~~ **FIXED: Now 1Gi** (commit aa7fa7c)
+- ✅ **Timeout issues**: ~~60s too short~~ **FIXED: Now 120s** (commit aa7fa7c)
+- ⚠️ **Fake progress**: Current progress is estimated, not real (still an issue)
+- ⚠️ **All-or-nothing**: Single request generates everything or fails completely
+- ⚠️ **Poor UX**: User waits 30+ seconds with no real feedback
+
+**Note**: Memory/timeout fixes allow current architecture to work. This refactoring is now OPTIONAL for better UX, not critical for functionality.
 
 ### Solution: Split into 3 API Calls
 
@@ -286,19 +418,28 @@ See [PROGRESS_UPDATES_PLAN.md](./PROGRESS_UPDATES_PLAN.md) for historical contex
 
 ## Implementation Order
 
-**Recommended sequence:**
+**Recommended sequence (UPDATED):**
 
-1. **2.1 Cover Letter** (quick win, high user value)
-2. **2.3 Authentication** (unlocks editor features)
-3. **2.2 GCS Storage** (enables history)
-4. **2.4 Prompts** (customization)
-5. **2.5 Templates** (nice-to-have)
-6. **2.6 Code Quality** (clean up)
+1. **2.0a AI Provider Selection** (HIGH VALUE - enables cost optimization and comparison)
+2. **2.1 Cover Letter** (quick win, high user value)
+3. **2.3 Authentication** (unlocks editor features)
+4. **2.2 GCS Storage** (enables history)
+5. **2.4 Prompts** (customization)
+6. **2.5 Templates** (nice-to-have)
+7. **2.6 Code Quality** (clean up)
+8. **2.0b API Refactoring** (OPTIONAL - better UX but not critical)
 
 **Why this order:**
-- Cover letter is fast and valuable
-- Auth is required before storage/prompts make sense
-- Templates and quality are less critical
+1. **AI Provider Selection FIRST**: Enables immediate cost savings (92% with Gemini) and quality comparison
+2. **Cover letter**: Fast and valuable feature
+3. **Auth**: Required before storage/prompts make sense
+4. **Storage/Prompts/Templates**: Progressive enhancements
+5. **API Refactoring LAST**: Optional UX improvement (memory/timeout already fixed)
+
+**Critical Path:**
+- Must complete 2.0a before significant usage (cost optimization)
+- Must complete 2.3 before 2.2 and 2.4 (auth required)
+- 2.0b can be skipped if UX is acceptable
 
 ---
 
@@ -323,9 +464,11 @@ See [PROGRESS_UPDATES_PLAN.md](./PROGRESS_UPDATES_PLAN.md) for historical contex
 Before deploying to production:
 
 ### Secrets & Config
-- [ ] OpenAI API key in Secret Manager (production)
-- [ ] Set billing alerts ($50/month threshold)
-- [ ] Rotate API key quarterly
+- [ ] OpenAI API key in Secret Manager (production) - if using OpenAI
+- [ ] Gemini API key in Secret Manager (production) - if using Gemini (may not be needed with Firebase)
+- [ ] Set billing alerts ($50/month threshold for OpenAI, $5/month for Gemini)
+- [ ] Rotate API keys quarterly
+- [ ] Enable Firebase AI Logic in Firebase Console (for Gemini)
 
 ### GCS
 - [ ] Create bucket with lifecycle policy
