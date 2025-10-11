@@ -123,4 +123,55 @@ describe("handleContactForm", () => {
     // For now it demonstrates the test structure
     await expect(handleContactForm(mockRequest as Request, mockResponse as Response)).resolves.not.toThrow()
   })
+
+  describe("Health Endpoint", () => {
+    it("should respond to GET /health request", async () => {
+      mockRequest = {
+        ...mockRequest,
+        method: "GET",
+        path: "/health",
+        url: "/health",
+      }
+
+      await handleContactForm(mockRequest as Request, mockResponse as Response)
+
+      expect(mockStatus).toHaveBeenCalledWith(200)
+      expect(mockJson).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          service: "contact-form",
+          status: "healthy",
+          timestamp: expect.any(String),
+        })
+      )
+    })
+
+    it("should respond to GET /health without rate limiting", async () => {
+      mockRequest = {
+        ...mockRequest,
+        method: "GET",
+        path: "/health",
+        url: "/health",
+      }
+
+      await handleContactForm(mockRequest as Request, mockResponse as Response)
+
+      // Should succeed without requiring AppCheck or rate limiting
+      expect(mockStatus).toHaveBeenCalledWith(200)
+    })
+
+    it("should return valid ISO timestamp", async () => {
+      mockRequest = {
+        ...mockRequest,
+        method: "GET",
+        path: "/health",
+        url: "/health",
+      }
+
+      await handleContactForm(mockRequest as Request, mockResponse as Response)
+
+      const response = mockJson.mock.calls[0][0]
+      expect(response.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+    })
+  })
 })

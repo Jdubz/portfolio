@@ -484,6 +484,53 @@ describe("Experience Cloud Function", () => {
     })
   })
 
+  describe("GET /health - Health Check", () => {
+    beforeEach(() => {
+      mockRequest.method = "GET"
+      mockRequest.path = "/health"
+      mockRequest.url = "/health"
+    })
+
+    it("should respond to health check without authentication", async () => {
+      await manageExperience(mockRequest, mockResponse as Response)
+
+      expect(statusMock).toHaveBeenCalledWith(200)
+      expect(jsonMock).toHaveBeenCalledWith({
+        success: true,
+        service: "manageExperience",
+        status: "healthy",
+        timestamp: expect.any(String),
+      })
+    })
+
+    it("should not require authentication for health check", async () => {
+      await manageExperience(mockRequest, mockResponse as Response)
+
+      // Should succeed without calling auth middleware
+      expect(mockVerifyAuthenticatedEditor).not.toHaveBeenCalled()
+      expect(statusMock).toHaveBeenCalledWith(200)
+    })
+
+    it("should return valid ISO 8601 timestamp", async () => {
+      await manageExperience(mockRequest, mockResponse as Response)
+
+      const response = jsonMock.mock.calls[0][0]
+      expect(response.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+    })
+
+    it("should respond quickly for health checks", async () => {
+      const startTime = Date.now()
+
+      await manageExperience(mockRequest, mockResponse as Response)
+
+      const endTime = Date.now()
+      const responseTime = endTime - startTime
+
+      expect(responseTime).toBeLessThan(100) // Should respond in < 100ms
+      expect(statusMock).toHaveBeenCalledWith(200)
+    })
+  })
+
   describe("Integration with Auth Middleware", () => {
     beforeEach(() => {
       mockRequest.method = "POST"
