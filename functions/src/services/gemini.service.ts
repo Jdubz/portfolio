@@ -29,7 +29,7 @@ type SimpleLogger = {
 
 export class GeminiProvider implements AIProvider {
   private client: GoogleGenerativeAI
-  private model: GenerativeModel
+  private generativeModel: GenerativeModel
   private logger: SimpleLogger
   private useMockMode: boolean
 
@@ -42,7 +42,7 @@ export class GeminiProvider implements AIProvider {
 
   constructor(apiKey: string, logger?: SimpleLogger) {
     this.client = new GoogleGenerativeAI(apiKey)
-    this.model = this.client.getGenerativeModel({ model: "gemini-2.0-flash" })
+    this.generativeModel = this.client.getGenerativeModel({ model: "gemini-2.0-flash" })
 
     const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
     this.useMockMode = process.env.GEMINI_MOCK_MODE === "true"
@@ -87,7 +87,7 @@ export class GeminiProvider implements AIProvider {
       // Combine system and user prompts (Gemini doesn't have separate system role)
       const fullPrompt = `${systemPrompt}\n\n${userPrompt}\n\nIMPORTANT: Respond ONLY with valid JSON matching the resume schema. No markdown, no explanation, just pure JSON.`
 
-      const result = await this.model.generateContent({
+      const result = await this.generativeModel.generateContent({
         contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
         generationConfig: {
           temperature: 0, // Zero for maximum factual accuracy
@@ -148,7 +148,7 @@ export class GeminiProvider implements AIProvider {
 
       const fullPrompt = `${systemPrompt}\n\n${userPrompt}\n\nIMPORTANT: Respond ONLY with valid JSON matching the cover letter schema. No markdown, no explanation, just pure JSON.`
 
-      const result = await this.model.generateContent({
+      const result = await this.generativeModel.generateContent({
         contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
         generationConfig: {
           temperature: 0,

@@ -27,9 +27,9 @@ type SimpleLogger = {
   error: (message: string, data?: unknown) => void
 }
 
-// Legacy exports for backward compatibility
-export interface ResumeGenerationResult extends AIResumeGenerationResult {}
-export interface CoverLetterGenerationResult extends AICoverLetterGenerationResult {}
+// Legacy type aliases for backward compatibility
+export type ResumeGenerationResult = AIResumeGenerationResult
+export type CoverLetterGenerationResult = AICoverLetterGenerationResult
 
 export class OpenAIService implements AIProvider {
   private client: OpenAI
