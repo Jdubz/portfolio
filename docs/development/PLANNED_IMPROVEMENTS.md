@@ -35,29 +35,44 @@
 
 ### 1. AI Resume Generator Feature
 
-**Status**: Ready to implement (infrastructure in place)
+**Status**: Phase 1 Complete ✅ | Phase 2 Planned
 
 Build AI-powered resume generator using existing experience data.
 
-**What it does**:
-- Generates tailored resumes from experience entries
-- Uses OpenAI API to customize content for job descriptions
-- Exports to PDF, DOCX, and Markdown formats
-- Tracks generation history and token usage
+**Phase 1 Complete** (Oct 2025):
+- ✅ Resume generation Cloud Function with OpenAI integration
+- ✅ PDF export with Puppeteer (logo + avatar support)
+- ✅ Firestore request/response tracking
+- ✅ Mock mode for local development
+- ✅ Basic web UI for testing
+- ✅ Token usage and cost tracking
 
-**Prerequisites** (all complete):
-- ✅ Experience API client
-- ✅ Form validation utilities
-- ✅ Async submission handling
-- ✅ Structured logging
+**Phase 2 Planned** (Code Quality & Features):
 
-**Implementation**:
-1. Create resume generator UI components
-2. Add resume generation Cloud Function
-3. Implement document export service
-4. Add generation history tracking
+**Code Quality Improvements** (from PR review):
+1. Extract Chrome detection logic to separate method in `pdf.service.ts`
+   - Current: Complex try-catch blocks inline
+   - Proposed: `findLocalChrome()` helper method
+   - Benefit: Better readability and testability
 
-**Estimated Effort**: 2-3 weeks
+2. Extract job description builder to helper function in `generator.ts`
+   - Current: Duplicated at lines 272-274 and 319-322
+   - Proposed: `buildJobDescription(job)` helper
+   - Benefit: DRY principle, easier maintenance
+
+3. Document service account configuration in `experience.ts`
+   - Current: Changed from cloud-functions-builder to compute service account
+   - Needed: Document why and when to use each account
+   - Benefit: Clarity for future deployments
+
+**Feature Enhancements**:
+- Cover letter generation
+- Multiple resume templates (modern, traditional, technical, executive)
+- Resume history/versioning
+- Download history tracking
+- GCS storage for generated files (currently returns base64)
+
+**Estimated Effort Phase 2**: 1-2 weeks
 
 ### 2. Content Upload Improvements
 
