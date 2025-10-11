@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging health-check health-check-local health-check-staging health-check-prod
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging health-check health-check-local health-check-staging health-check-prod test-health-check
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -81,6 +81,7 @@ help:
 	@echo "  make health-check-local    - Check health of local emulator functions"
 	@echo "  make health-check-staging  - Check health of staging functions"
 	@echo "  make health-check-prod     - Check health of production functions"
+	@echo "  make test-health-check     - Run regression tests for health check script"
 	@echo ""
 
 # Web commands
@@ -368,3 +369,7 @@ health-check-staging:
 
 health-check-prod:
 	@./scripts/health-check.sh production
+
+test-health-check:
+	@echo "Running health check regression tests..."
+	@./scripts/test-health-check.sh
