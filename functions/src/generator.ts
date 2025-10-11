@@ -250,6 +250,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
     const generateType: GenerationType = value.generateType
     const job = value.job
     const preferences = value.preferences
+    const provider = value.provider // AI provider selection (openai or gemini)
 
     logger.info("Processing generation request", {
       requestId,
@@ -282,7 +283,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         blurbs,
       },
       preferences,
-      requestId // Use HTTP request ID as viewer session ID for now
+      requestId, // Use HTTP request ID as viewer session ID for now
+      undefined, // editorEmail (undefined for now)
+      provider // AI provider selection (openai or gemini, defaults to gemini)
     )
 
     // Update status to processing

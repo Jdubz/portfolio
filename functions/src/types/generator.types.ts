@@ -19,6 +19,129 @@ import type { BlurbEntry } from "../services/blurb.service"
 export type GenerationType = "resume" | "coverLetter" | "both"
 
 // =============================================================================
+// AI Provider Types
+// =============================================================================
+
+/**
+ * AI Provider Type (for selecting between OpenAI, Gemini, etc.)
+ */
+export type AIProviderType = "openai" | "gemini"
+
+/**
+ * Token usage for AI generation
+ */
+export interface TokenUsage {
+  promptTokens: number
+  completionTokens: number
+  totalTokens: number
+}
+
+/**
+ * Result from AI resume generation
+ */
+export interface AIResumeGenerationResult {
+  content: ResumeContent
+  tokenUsage: TokenUsage
+  model: string
+}
+
+/**
+ * Result from AI cover letter generation
+ */
+export interface AICoverLetterGenerationResult {
+  content: CoverLetterContent
+  tokenUsage: TokenUsage
+  model: string
+}
+
+/**
+ * Options for generating a resume with AI
+ */
+export interface GenerateResumeOptions {
+  personalInfo: {
+    name: string
+    email: string
+    phone?: string
+    location?: string
+    website?: string
+    github?: string
+    linkedin?: string
+  }
+  job: {
+    role: string
+    company: string
+    companyWebsite?: string
+    jobDescription?: string
+  }
+  experienceEntries: ExperienceEntry[]
+  experienceBlurbs: BlurbEntry[]
+  style?: string
+  emphasize?: string[]
+}
+
+/**
+ * Options for generating a cover letter with AI
+ */
+export interface GenerateCoverLetterOptions {
+  personalInfo: {
+    name: string
+    email: string
+  }
+  job: {
+    role: string
+    company: string
+    companyWebsite?: string
+    jobDescription?: string
+  }
+  experienceEntries: ExperienceEntry[]
+  experienceBlurbs: BlurbEntry[]
+}
+
+/**
+ * AI Provider Interface
+ *
+ * Abstracts the AI provider (OpenAI, Gemini, etc.) to enable:
+ * - Cost optimization (switch to cheaper provider)
+ * - Vendor flexibility (not locked to single provider)
+ * - Quality comparison (A/B test providers)
+ * - Fallback options (if one provider has issues)
+ */
+export interface AIProvider {
+  /**
+   * Generate resume content using AI
+   */
+  generateResume(options: GenerateResumeOptions): Promise<AIResumeGenerationResult>
+
+  /**
+   * Generate cover letter content using AI
+   */
+  generateCoverLetter(options: GenerateCoverLetterOptions): Promise<AICoverLetterGenerationResult>
+
+  /**
+   * Calculate cost in USD from token usage
+   */
+  calculateCost(tokenUsage: TokenUsage): number
+
+  /**
+   * Get the model name/identifier
+   */
+  readonly model: string
+
+  /**
+   * Get the provider type
+   */
+  readonly providerType: AIProviderType
+
+  /**
+   * Get pricing information (per 1M tokens)
+   */
+  readonly pricing: {
+    inputCostPer1M: number
+    outputCostPer1M: number
+  }
+}
+
+// =============================================================================
 // Generator Defaults (Default Settings Document)
 // =============================================================================
 
@@ -77,6 +200,9 @@ export interface GeneratorRequest {
 
   // Generation Options (same for editors and viewers)
   generateType: GenerationType
+
+  // AI Provider Selection
+  provider: AIProviderType // Which AI service to use (openai or gemini)
 
   // Snapshot of defaults at request time
   defaults: {
@@ -138,6 +264,7 @@ export interface GeneratorRequest {
 
 export interface CreateGeneratorRequestData {
   generateType: GenerationType
+  provider?: AIProviderType // Optional, defaults to 'gemini' if not provided
   job: {
     role: string
     company: string
@@ -295,6 +422,7 @@ export interface CoverLetterContent {
  */
 export interface GenerateDocumentsRequest {
   generateType: GenerationType
+  provider?: AIProviderType // Optional, defaults to 'gemini' if not provided
   job: {
     role: string
     company: string

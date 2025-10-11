@@ -24,6 +24,7 @@
     "@google-cloud/functions-framework": "^3.4.6",
     "@google-cloud/logging": "^11.0.0",
     "@google-cloud/secret-manager": "^5.5.0",
+    "@google/generative-ai": "^0.24.1",
     "@sparticuz/chromium": "^141.0.0",
     "@types/busboy": "^1.5.4",
     "busboy": "^1.6.0",
