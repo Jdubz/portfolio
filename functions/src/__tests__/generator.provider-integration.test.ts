@@ -3,7 +3,6 @@
  * Tests that the generator correctly uses different AI providers based on request
  */
 
-import type { Request, Response } from "express"
 import type { AIProvider } from "../types/generator.types"
 
 // Mock AI Provider Factory
