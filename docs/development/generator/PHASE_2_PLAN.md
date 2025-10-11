@@ -13,27 +13,84 @@ Phase 2 adds the remaining features to make this production-ready:
 - Additional templates
 - Code quality improvements
 
-## Phase 2.1a: Progress Updates (Backend Complete ✅)
+## Phase 2.0: API Refactoring (Memory & Progress)
 
-**Timeline:** 1-1.5 hours remaining (frontend only)
-**Complexity:** Low
-**Status:** Backend implemented, frontend pending
+**Timeline:** 1-2 days
+**Complexity:** Medium
+**Status:** Planned
+**Priority:** HIGH - Blocking current memory issues
 
-### Completed Tasks ✅
-- ✅ Added progress field to GeneratorRequest type
-- ✅ Added updateProgress() method to GeneratorService
-- ✅ Added progress updates at 7 key stages in generation flow
-- ✅ Added GET /generator/requests/:id endpoint for status polling
-- ✅ Added GenerationProgress type to frontend
-- ✅ Added getRequest() method to GeneratorClient
+### Problem Statement
+Current implementation has critical issues:
+- **Memory exhaustion**: 512Mi insufficient for Puppeteer (needs 582Mi+)
+- **Fake progress**: Current progress is estimated, not real
+- **All-or-nothing**: Single request generates everything or fails completely
+- **Poor UX**: User waits 30+ seconds with no real feedback
 
-### Remaining Tasks
-- [ ] Add polling logic in resume-builder.tsx
-- [ ] Add progress bar UI component
-- [ ] Test end-to-end with real generation
+### Solution: Split into 3 API Calls
+
+**New API Flow:**
+1. `POST /generator/requests` - Create request, prepare data (fast, < 1s)
+   - Returns `requestId` immediately
+   - Status: `pending`
+
+2. `POST /generator/requests/:id/resume` - Generate resume (20-30s)
+   - OpenAI call + PDF generation
+   - Returns resume PDF
+   - Updates status: `resume_complete`
+
+3. `POST /generator/requests/:id/cover-letter` - Generate cover letter (15-20s)
+   - OpenAI call + PDF generation
+   - Returns cover letter PDF
+   - Updates status: `complete`
+
+### Benefits
+- **Lower memory per call**: Each operation uses <300Mi
+- **True progress**: Real status updates, not estimates
+- **Partial success**: Get resume even if cover letter fails
+- **Better UX**: Show resume immediately, cover letter follows
+- **Easier retry**: Retry individual steps without re-doing work
+
+### Tasks
+
+**Backend:**
+- [ ] Refactor generator.ts into 3 separate handlers
+  - [ ] `createRequest()` - Prepare data, create document
+  - [ ] `generateResume()` - OpenAI + PDF for resume only
+  - [ ] `generateCoverLetter()` - OpenAI + PDF for cover letter only
+- [ ] Update request status flow: `pending` → `resume_complete` → `complete`
+- [ ] Store intermediate results in Firestore document
+- [ ] Add proper error recovery for each step
+
+**Frontend:**
+- [ ] Update generator-client with 3 new methods
+  - [ ] `createRequest()`
+  - [ ] `generateResume(requestId)`
+  - [ ] `generateCoverLetter(requestId)`
+- [ ] Add state machine for request lifecycle
+- [ ] Show resume download immediately after resume completes
+- [ ] Continue generating cover letter in background
+- [ ] Handle partial failures gracefully
+
+### Success Criteria
+- Each API call uses <400Mi memory
+- User sees resume within 30 seconds
+- Cover letter available 15-20 seconds later
+- Failed cover letter doesn't affect resume
+- Progress bar shows real status
+
+---
+
+## Phase 2.1a: Progress Updates (DEPRECATED - See 2.0)
+
+**Status:** Superseded by Phase 2.0 refactoring
+
+The progress update implementation is being replaced with a better architecture
+that splits generation into separate API calls, providing true progress instead
+of estimates.
 
 ### Documentation
-See [PROGRESS_UPDATES_PLAN.md](./PROGRESS_UPDATES_PLAN.md) for complete implementation details.
+See [PROGRESS_UPDATES_PLAN.md](./PROGRESS_UPDATES_PLAN.md) for historical context.
 
 ---
 
