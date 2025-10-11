@@ -81,7 +81,7 @@ jobs:
           - name: manageGenerator
             entry_point: manageGenerator
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 512Mi
+            memory: 1Gi
             max_instances: 10
             secrets: "OPENAI_API_KEY=openai-api-key:latest"
 
@@ -137,7 +137,7 @@ jobs:
             --service-account=${{ matrix.function.runtime_service_account }} \
             --build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
             --memory=${{ matrix.function.memory }} \
-            --timeout=60s \
+            --timeout=120s \
             --max-instances=${{ matrix.function.max_instances }} \
             --set-env-vars=NODE_ENV=staging,ENVIRONMENT=staging"
 
@@ -207,7 +207,7 @@ jobs:
           - name: manageGenerator
             entry_point: manageGenerator
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 512Mi
+            memory: 1Gi
             max_instances: 10
             secrets: "OPENAI_API_KEY=openai-api-key:latest"
 
@@ -263,7 +263,7 @@ jobs:
             --service-account=${{ matrix.function.runtime_service_account }} \
             --build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
             --memory=${{ matrix.function.memory }} \
-            --timeout=60s \
+            --timeout=120s \
             --max-instances=${{ matrix.function.max_instances }} \
             --set-env-vars=NODE_ENV=production,ENVIRONMENT=production"
 
