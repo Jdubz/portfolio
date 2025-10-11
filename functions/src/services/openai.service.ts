@@ -75,6 +75,7 @@ export class OpenAIService {
   private client: OpenAI
   private logger: SimpleLogger
   private model = "gpt-4o-2024-08-06" // Supports structured outputs
+  private useMockMode: boolean
 
   constructor(apiKey: string, logger?: SimpleLogger) {
     this.client = new OpenAI({
@@ -82,6 +83,7 @@ export class OpenAIService {
     })
 
     const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
+    this.useMockMode = process.env.OPENAI_MOCK_MODE === "true"
 
     this.logger = logger || {
       info: (message: string, data?: unknown) => {
@@ -94,6 +96,10 @@ export class OpenAIService {
         if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
       },
     }
+
+    if (this.useMockMode) {
+      this.logger.warning("⚠️  OpenAI MOCK MODE ENABLED - Using mock responses instead of real API calls")
+    }
   }
 
   /**
@@ -101,6 +107,11 @@ export class OpenAIService {
    */
   async generateResume(options: GenerateResumeOptions): Promise<ResumeGenerationResult> {
     try {
+      // Return mock response if mock mode is enabled
+      if (this.useMockMode) {
+        return this.generateMockResume(options)
+      }
+
       const systemPrompt = this.buildResumeSystemPrompt()
       const userPrompt = this.buildResumeUserPrompt(options)
 
@@ -157,6 +168,11 @@ export class OpenAIService {
    */
   async generateCoverLetter(options: GenerateCoverLetterOptions): Promise<CoverLetterGenerationResult> {
     try {
+      // Return mock response if mock mode is enabled
+      if (this.useMockMode) {
+        return this.generateMockCoverLetter(options)
+      }
+
       const systemPrompt = this.buildCoverLetterSystemPrompt()
       const userPrompt = this.buildCoverLetterUserPrompt(options)
 
@@ -447,6 +463,120 @@ Generate a compelling cover letter that showcases the candidate's qualifications
       },
       required: ["greeting", "openingParagraph", "bodyParagraphs", "closingParagraph", "signature"],
       additionalProperties: false,
+    }
+  }
+
+  /**
+   * Generate a mock resume for local development
+   * This avoids hitting OpenAI API quota limits during testing
+   */
+  private generateMockResume(options: GenerateResumeOptions): ResumeGenerationResult {
+    this.logger.info("🎭 Generating MOCK resume (no API call)", {
+      role: options.job.role,
+      company: options.job.company,
+    })
+
+    const mockContent: ResumeContent = {
+      personalInfo: {
+        name: options.personalInfo.name,
+        title: `${options.job.role}`,
+        summary: `Experienced software engineer with a proven track record of building scalable systems and leading technical initiatives. Passionate about ${options.job.role.toLowerCase()} work and delivering high-impact solutions.`,
+        contact: {
+          email: options.personalInfo.email,
+          location: options.personalInfo.location || "San Francisco, CA",
+          website: options.personalInfo.website || "",
+          linkedin: options.personalInfo.linkedin || "",
+          github: options.personalInfo.github || "",
+        },
+      },
+      professionalSummary: `Highly skilled ${options.job.role} with extensive experience in software development, system architecture, and technical leadership. Proven ability to deliver complex projects on time while maintaining high code quality standards. Strong background in full-stack development with expertise in modern web technologies.`,
+      experience: options.experienceEntries.slice(0, 3).map((entry) => ({
+        company: entry.title,
+        role: entry.role || options.job.role,
+        location: entry.location || "Remote",
+        startDate: entry.startDate,
+        endDate: entry.endDate || null,
+        highlights: [
+          "Led development of core features that increased user engagement by 35%",
+          "Architected and implemented scalable microservices handling 1M+ daily requests",
+          "Mentored junior engineers and established best practices for code review",
+          "Reduced deployment time by 60% through CI/CD pipeline improvements",
+        ],
+        technologies: ["TypeScript", "React", "Node.js", "PostgreSQL", "AWS"],
+      })),
+      skills: [
+        {
+          category: "Languages",
+          items: ["TypeScript", "JavaScript", "Python", "Go"],
+        },
+        {
+          category: "Frontend",
+          items: ["React", "Vue.js", "Next.js", "Tailwind CSS"],
+        },
+        {
+          category: "Backend",
+          items: ["Node.js", "Express", "PostgreSQL", "Redis"],
+        },
+        {
+          category: "Cloud & DevOps",
+          items: ["AWS", "Docker", "Kubernetes", "CI/CD"],
+        },
+      ],
+      education: [
+        {
+          institution: "University of California",
+          degree: "Bachelor of Science",
+          field: "Computer Science",
+          startDate: "2015",
+          endDate: "2019",
+        },
+      ],
+    }
+
+    const mockTokenUsage: TokenUsage = {
+      promptTokens: 2500,
+      completionTokens: 1200,
+      totalTokens: 3700,
+    }
+
+    return {
+      content: mockContent,
+      tokenUsage: mockTokenUsage,
+      model: "gpt-4o-2024-08-06 (MOCK)",
+    }
+  }
+
+  /**
+   * Generate a mock cover letter for local development
+   * This avoids hitting OpenAI API quota limits during testing
+   */
+  private generateMockCoverLetter(options: GenerateCoverLetterOptions): CoverLetterGenerationResult {
+    this.logger.info("🎭 Generating MOCK cover letter (no API call)", {
+      role: options.job.role,
+      company: options.job.company,
+    })
+
+    const mockContent: CoverLetterContent = {
+      greeting: "Dear Hiring Manager,",
+      openingParagraph: `I am writing to express my strong interest in the ${options.job.role} position at ${options.job.company}. With my extensive background in software engineering and passion for building innovative solutions, I am confident I would be a valuable addition to your team.`,
+      bodyParagraphs: [
+        `Throughout my career, I have consistently delivered high-impact technical solutions that drive business value. In my most recent role, I led the development of scalable microservices that handle millions of daily requests, while maintaining a focus on code quality and team collaboration. My experience with modern web technologies and cloud infrastructure aligns perfectly with the requirements for this position.`,
+        `What excites me most about ${options.job.company} is your commitment to innovation and technical excellence. I am particularly drawn to the opportunity to work on challenging problems at scale and contribute to a team that values continuous learning and growth. My background in full-stack development and system architecture would allow me to make immediate contributions while continuing to expand my skills.`,
+      ],
+      closingParagraph: `I would welcome the opportunity to discuss how my experience and passion for technology could contribute to ${options.job.company}'s continued success. Thank you for your consideration, and I look forward to speaking with you soon.`,
+      signature: `Sincerely,\n${options.personalInfo.name}`,
+    }
+
+    const mockTokenUsage: TokenUsage = {
+      promptTokens: 1800,
+      completionTokens: 800,
+      totalTokens: 2600,
+    }
+
+    return {
+      content: mockContent,
+      tokenUsage: mockTokenUsage,
+      model: "gpt-4o-2024-08-06 (MOCK)",
     }
   }
 
