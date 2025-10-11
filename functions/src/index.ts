@@ -10,8 +10,16 @@ import { verifyAppCheck } from "./middleware/app-check.middleware"
 import { contactFormRateLimiter } from "./middleware/rate-limit.middleware"
 
 // Import package.json to get version
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const packageJson = require("../package.json")
+// Try ./package.json first (deployed), fallback to ../package.json (development)
+const packageJson = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require("./package.json")
+  } catch {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require("../package.json")
+  }
+})()
 
 // Error codes for contact form API
 const ERROR_CODES = {
