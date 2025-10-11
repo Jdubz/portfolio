@@ -21,10 +21,33 @@
     }
 
     .header {
-      text-align: center;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
       border-bottom: 2px solid {{accentColor}};
       padding-bottom: 16px;
       margin-bottom: 24px;
+      position: relative;
+    }
+
+    .header-logo {
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+    }
+
+    .header-center {
+      flex: 1;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .header-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
     }
 
     .header h1 {
@@ -190,23 +213,37 @@
 <body>
   <!-- Header -->
   <div class="header">
-    <h1>{{personalInfo.name}}</h1>
-    <div class="title">{{personalInfo.title}}</div>
-    <div class="contact">
-      <a href="mailto:{{personalInfo.contact.email}}">{{personalInfo.contact.email}}</a>
-      {{#if personalInfo.contact.location}}
-        <span>•</span> {{personalInfo.contact.location}}
-      {{/if}}
-      {{#if personalInfo.contact.website}}
-        <span>•</span> <a href="{{personalInfo.contact.website}}">{{personalInfo.contact.website}}</a>
-      {{/if}}
-      {{#if personalInfo.contact.linkedin}}
-        <span>•</span> <a href="{{personalInfo.contact.linkedin}}">LinkedIn</a>
-      {{/if}}
-      {{#if personalInfo.contact.github}}
-        <span>•</span> <a href="{{personalInfo.contact.github}}">GitHub</a>
-      {{/if}}
+    {{#if logoDataUrl}}
+      <img src="{{logoDataUrl}}" alt="Logo" class="header-logo">
+    {{else}}
+      <div class="header-logo"></div>
+    {{/if}}
+
+    <div class="header-center">
+      <h1>{{personalInfo.name}}</h1>
+      <div class="title">{{personalInfo.title}}</div>
+      <div class="contact">
+        <a href="mailto:{{personalInfo.contact.email}}">{{personalInfo.contact.email}}</a>
+        {{#if personalInfo.contact.location}}
+          <span>•</span> {{personalInfo.contact.location}}
+        {{/if}}
+        {{#if personalInfo.contact.website}}
+          <span>•</span> <a href="{{personalInfo.contact.website}}">{{personalInfo.contact.website}}</a>
+        {{/if}}
+        {{#if personalInfo.contact.linkedin}}
+          <span>•</span> <a href="{{personalInfo.contact.linkedin}}">LinkedIn</a>
+        {{/if}}
+        {{#if personalInfo.contact.github}}
+          <span>•</span> <a href="{{personalInfo.contact.github}}">GitHub</a>
+        {{/if}}
+      </div>
     </div>
+
+    {{#if avatarDataUrl}}
+      <img src="{{avatarDataUrl}}" alt="Avatar" class="header-avatar">
+    {{else}}
+      <div class="header-avatar"></div>
+    {{/if}}
   </div>
 
   <!-- Professional Summary -->

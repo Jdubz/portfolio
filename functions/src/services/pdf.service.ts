@@ -57,10 +57,33 @@ export class PDFService {
         this.resumeTemplate = Handlebars.compile(templateSource)
       }
 
+      // Load logo and avatar as base64 data URLs
+      const logoPath = path.join(__dirname, "..", "templates", "assets", "logo.svg")
+      const avatarPath = path.join(__dirname, "..", "templates", "assets", "avatar.jpg")
+
+      let logoDataUrl = ""
+      let avatarDataUrl = ""
+
+      try {
+        const logoBuffer = await fs.readFile(logoPath)
+        logoDataUrl = `data:image/svg+xml;base64,${logoBuffer.toString("base64")}`
+      } catch {
+        this.logger.warning("Logo file not found, proceeding without logo")
+      }
+
+      try {
+        const avatarBuffer = await fs.readFile(avatarPath)
+        avatarDataUrl = `data:image/jpeg;base64,${avatarBuffer.toString("base64")}`
+      } catch {
+        this.logger.warning("Avatar file not found, proceeding without avatar")
+      }
+
       // Render HTML from template
       const html = this.resumeTemplate({
         ...content,
         accentColor,
+        logoDataUrl,
+        avatarDataUrl,
       })
 
       // Generate PDF using Puppeteer
