@@ -162,11 +162,46 @@ export class PDFService {
       this.logger.info("Launching Puppeteer", { isLocal })
 
       if (isLocal) {
-        // Local development - use system Chrome/Chromium
-        browser = await puppeteer.launch({
+        // Local development - try to use Chrome channel first, fallback to common paths
+        const launchOptions: Parameters<typeof puppeteer.launch>[0] = {
           headless: true,
           args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        })
+        }
+
+        // Try Chrome channel first (works on most systems)
+        try {
+          browser = await puppeteer.launch({
+            ...launchOptions,
+            channel: "chrome",
+          })
+        } catch {
+          // Fallback to common Chrome paths
+          const chromePaths = [
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium-browser",
+            "/usr/bin/chromium",
+            "/snap/bin/chromium",
+            process.env.CHROME_PATH,
+          ].filter((p): p is string => p !== undefined)
+
+          for (const executablePath of chromePaths) {
+            try {
+              browser = await puppeteer.launch({
+                ...launchOptions,
+                executablePath,
+              })
+              break
+            } catch {
+              continue
+            }
+          }
+
+          if (!browser) {
+            throw new Error(
+              "Chrome not found. Please install Chrome or Chromium, or set CHROME_PATH environment variable."
+            )
+          }
+        }
       } else {
         // Cloud Functions - use @sparticuz/chromium
         browser = await puppeteer.launch({
