@@ -3,13 +3,8 @@ import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Fle
 import { Link, type HeadFC } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { logger } from "../utils/logger"
-import type { GenerationType, GenerationMetadata, GenerateResponse } from "../types/generator"
-
-// Extend GenerateResponse for local use
-interface GenerationResponse extends GenerateResponse {
-  message?: string
-  error?: string
-}
+import { generatorClient } from "../api/generator-client"
+import type { GenerationType, GenerationMetadata } from "../types/generator"
 
 /**
  * Resume Builder MVP Page
@@ -66,27 +61,13 @@ const ResumeBuilderPage: React.FC = () => {
 
       logger.info("Submitting generation request", payload)
 
-      // Call the generator endpoint
-      const apiUrl = process.env.GATSBY_API_URL ?? "http://localhost:5001/static-sites-257923/us-central1"
-      const response = await fetch(`${apiUrl}/manageGenerator/generator/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      })
-
-      const data = (await response.json()) as GenerationResponse
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message ?? data.error ?? "Generation failed")
-      }
+      // Call the generator endpoint using the API client
+      const data = await generatorClient.generate(payload)
 
       logger.info("Generation successful", data as unknown as Record<string, unknown>)
 
-      // Store the base64 PDFs (data is wrapped in data.data per API contract)
-      const responseData = (data as { data?: { resume?: string; coverLetter?: string; metadata?: GenerationMetadata } })
-        .data
+      // Store the base64 PDFs
+      const responseData = data
       if (responseData?.resume) {
         setResumePDF(responseData.resume)
       }
