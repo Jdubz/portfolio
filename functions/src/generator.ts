@@ -11,6 +11,10 @@ import { SecretManagerService } from "./services/secret-manager.service"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import type { GenerationType, GeneratorResponse } from "./types/generator.types"
 
+// Import package.json to get version
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const packageJson = require("../package.json")
+
 // Error codes for generator API
 const ERROR_CODES = {
   // Client errors (4xx)
@@ -128,6 +132,7 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
               success: true,
               service: "manageGenerator",
               status: "healthy",
+              version: packageJson.version,
               timestamp: new Date().toISOString(),
             })
             resolve()

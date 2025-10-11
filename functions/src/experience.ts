@@ -6,6 +6,10 @@ import { ExperienceService } from "./services/experience.service"
 import { BlurbService } from "./services/blurb.service"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
 
+// Import package.json to get version
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const packageJson = require("../package.json")
+
 // Error codes for experience API
 const ERROR_CODES = {
   // Client errors (400, 404, 405)
@@ -156,6 +160,7 @@ const handleExperienceRequest = async (req: Request, res: Response): Promise<voi
               success: true,
               service: "manageExperience",
               status: "healthy",
+              version: packageJson.version,
               timestamp: new Date().toISOString(),
             })
             resolve()

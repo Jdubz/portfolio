@@ -45,10 +45,11 @@ check_health() {
     # Parse JSON response
     service=$(echo "$body" | jq -r '.service' 2>/dev/null || echo "unknown")
     status=$(echo "$body" | jq -r '.status' 2>/dev/null || echo "unknown")
+    version=$(echo "$body" | jq -r '.version' 2>/dev/null || echo "unknown")
     timestamp=$(echo "$body" | jq -r '.timestamp' 2>/dev/null || echo "unknown")
 
     if [ "$status" = "healthy" ]; then
-      echo -e "${GREEN}✓ HEALTHY${NC} (service: $service, time: $timestamp)"
+      echo -e "${GREEN}✓ HEALTHY${NC} (service: $service, version: $version, time: $timestamp)"
       return 0
     else
       echo -e "${YELLOW}⚠ UNHEALTHY${NC} (status: $status)"

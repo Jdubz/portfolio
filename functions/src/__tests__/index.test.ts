@@ -141,6 +141,7 @@ describe("handleContactForm", () => {
           success: true,
           service: "contact-form",
           status: "healthy",
+          version: expect.any(String),
           timestamp: expect.any(String),
         })
       )

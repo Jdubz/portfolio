@@ -499,6 +499,7 @@ describe("Experience Cloud Function", () => {
         success: true,
         service: "manageExperience",
         status: "healthy",
+        version: expect.any(String),
         timestamp: expect.any(String),
       })
     })

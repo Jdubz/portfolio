@@ -9,6 +9,10 @@ import { SecretManagerService } from "./services/secret-manager.service"
 import { verifyAppCheck } from "./middleware/app-check.middleware"
 import { contactFormRateLimiter } from "./middleware/rate-limit.middleware"
 
+// Import package.json to get version
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const packageJson = require("../package.json")
+
 // Error codes for contact form API
 const ERROR_CODES = {
   // Client errors (4xx)
@@ -133,6 +137,7 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
           success: true,
           service: "contact-form",
           status: "healthy",
+          version: packageJson.version,
           timestamp: new Date().toISOString(),
         })
         return

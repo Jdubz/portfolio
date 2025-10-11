@@ -110,6 +110,7 @@ describe("Generator Cloud Function", () => {
         success: true,
         service: "manageGenerator",
         status: "healthy",
+        version: expect.any(String),
         timestamp: expect.any(String),
       })
     })
@@ -150,10 +151,11 @@ describe("Generator Cloud Function", () => {
       expect(response).toHaveProperty("success", true)
       expect(response).toHaveProperty("service", "manageGenerator")
       expect(response).toHaveProperty("status", "healthy")
+      expect(response).toHaveProperty("version")
       expect(response).toHaveProperty("timestamp")
 
       // Should not have extra fields
-      expect(Object.keys(response)).toHaveLength(4)
+      expect(Object.keys(response)).toHaveLength(5)
     })
   })
 
