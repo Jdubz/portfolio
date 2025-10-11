@@ -5,7 +5,7 @@
  */
 
 import { ApiClient } from "./client"
-import { API_CONFIG } from "../config/api"
+import { API_CONFIG, isLocalhost } from "../config/api"
 import type {
   GenerateRequest,
   GenerateResponse,
@@ -18,12 +18,8 @@ export class GeneratorClient extends ApiClient {
   constructor() {
     super()
     // Override baseUrl to point to manageGenerator function
-    // Use runtime hostname check instead of NODE_ENV to avoid localhost URLs in deployed builds
-    const isLocalhost =
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-
-    if (isLocalhost) {
+    // Use runtime hostname check (shared helper from config/api)
+    if (isLocalhost()) {
       // Use emulator in local development
       const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
       this.baseUrl = `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/manageGenerator`

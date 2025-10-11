@@ -15,22 +15,35 @@ export const API_CONFIG = {
 } as const
 
 /**
+ * Determines if the app is running in local development
+ * Uses runtime hostname check instead of NODE_ENV to avoid localhost URLs in deployed builds
+ *
+ * @returns true if running on localhost, false otherwise
+ */
+export const isLocalhost = (): boolean => {
+  if (typeof window === "undefined") {
+    return false
+  }
+  return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+}
+
+/**
  * Get the API base URL based on environment
  *
  * @returns Base URL for API requests
  *
  * Environments:
- * - Development: Uses Firebase emulator on localhost
- * - Production/Staging: Uses Cloud Functions URL
+ * - Local Development (localhost): Uses Firebase emulator on localhost
+ * - Deployed (staging/production): Uses Cloud Functions URL from env vars
  */
 export const getApiUrl = (): string => {
-  // Use emulator in development
-  if (process.env.NODE_ENV === "development") {
+  // Use emulator in local development (runtime hostname check)
+  if (isLocalhost()) {
     const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
     return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/${API_CONFIG.functionName}`
   }
 
-  // Production/staging URL from env
+  // Production/staging URL from env var (baked in at build time)
   return (
     process.env.GATSBY_EXPERIENCE_API_URL ??
     `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.functionName}`
