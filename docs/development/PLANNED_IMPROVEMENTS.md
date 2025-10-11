@@ -35,44 +35,74 @@
 
 ### 1. AI Resume Generator Feature
 
-**Status**: Phase 1 Complete ✅ | Phase 2 Planned
+**Status**: Phase 1 Complete ✅ | Phase 2 Detailed Plan Ready
 
 Build AI-powered resume generator using existing experience data.
 
 **Phase 1 Complete** (Oct 2025):
 - ✅ Resume generation Cloud Function with OpenAI integration
 - ✅ PDF export with Puppeteer (logo + avatar support)
-- ✅ Firestore request/response tracking
-- ✅ Mock mode for local development
-- ✅ Basic web UI for testing
+- ✅ Firestore request/response tracking with request/response separation
+- ✅ Mock mode for local development (OPENAI_MOCK_MODE=true)
+- ✅ Basic web UI with job details form and PDF download
 - ✅ Token usage and cost tracking
+- ✅ Rate limiting (10 requests per 15 min)
+- ✅ Comprehensive API client with 28 passing tests
+- ✅ Local Chrome detection for faster development
+- ✅ Type-safe end-to-end (TypeScript + Joi validation)
 
-**Phase 2 Planned** (Code Quality & Features):
+**Phase 2: Feature Completion** (2-3 weeks):
 
-**Code Quality Improvements** (from PR review):
-1. Extract Chrome detection logic to separate method in `pdf.service.ts`
-   - Current: Complex try-catch blocks inline
-   - Proposed: `findLocalChrome()` helper method
-   - Benefit: Better readability and testability
+**Phase 2.1: Cover Letter Integration** (1-2 days)
+- [ ] Expose `generateType` parameter in API ("resume" | "coverLetter" | "both")
+- [ ] Add UI checkbox for "Generate cover letter"
+- [ ] Return both PDFs in single API response
+- [ ] Display both download buttons
+- [ ] Show separate metrics for each document
+- **Note:** Cover letter service already implemented, just needs UI integration
 
-2. Extract job description builder to helper function in `generator.ts`
-   - Current: Duplicated at lines 272-274 and 319-322
-   - Proposed: `buildJobDescription(job)` helper
-   - Benefit: DRY principle, easier maintenance
+**Phase 2.2: GCS Storage & Document History** (2-3 days)
+- [ ] Create GCS bucket `joshwentworth-resumes` with 90-day lifecycle
+- [ ] Upload PDFs to GCS instead of base64 response
+- [ ] Generate signed URLs for downloads (1hr viewers, 7 days editors)
+- [ ] Add `GET /generator/requests` endpoint for document history
+- [ ] Create document history table (editors only)
+- [ ] Download from signed URLs with tracking
 
-3. Document service account configuration in `experience.ts`
-   - Current: Changed from cloud-functions-builder to compute service account
-   - Needed: Document why and when to use each account
-   - Benefit: Clarity for future deployments
+**Phase 2.3: Authentication & Editor Features** (3-4 days)
+- [ ] Add Firebase Auth (same pattern as experience page)
+- [ ] Conditional UI based on auth state (viewer vs editor)
+- [ ] Editor tabs: Generate | History | Settings
+- [ ] `PUT /generator/defaults` route for editing personal info
+- [ ] Higher rate limits for authenticated editors (20 vs 10)
+- [ ] Show all generations in history table with filters
 
-**Feature Enhancements**:
-- Cover letter generation
-- Multiple resume templates (modern, traditional, technical, executive)
-- Resume history/versioning
-- Download history tracking
-- GCS storage for generated files (currently returns base64)
+**Phase 2.4: Prompt Management** (2-3 days)
+- [ ] Create default prompt blurbs in Firestore (4 blurbs)
+- [ ] Implement variable substitution in prompts
+- [ ] Add "Prompts" tab to editor view
+- [ ] Reuse BlurbEditor component from experience page
+- [ ] Display available variables documentation
+- [ ] Fetch prompts dynamically instead of hardcoded strings
 
-**Estimated Effort Phase 2**: 1-2 weeks
+**Phase 2.5: Additional Templates** (2-3 days)
+- [ ] Create `resume-traditional.hbs` template
+- [ ] Create `resume-technical.hbs` template
+- [ ] Create `resume-executive.hbs` template
+- [ ] Add style selector dropdown in UI
+- [ ] Update PDFService to load templates dynamically
+- [ ] Optional: Template preview images
+
+**Phase 2.6: Code Quality** (1 day)
+- [ ] Extract Chrome detection to `findLocalChrome()` helper (pdf.service.ts)
+- [ ] Extract job description builder to `buildJobDescription()` helper (generator.ts)
+- [ ] Document service account configuration (experience.ts)
+
+**Total Estimated Effort Phase 2**: 12-17 days (2-3 weeks)
+
+**Priority Order**: 2.1 (cover letter) → 2.3 (auth) → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (quality)
+
+**Detailed Documentation**: See [AI_RESUME_GENERATOR_STATUS.md](./AI_RESUME_GENERATOR_STATUS.md) for complete implementation status, architecture details, and Phase 3 future enhancements.
 
 ### 2. Content Upload Improvements
 
