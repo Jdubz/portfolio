@@ -57,14 +57,17 @@ Build AI-powered resume generator using existing experience data.
 
 **Phase 2: Feature Completion** (2-3 weeks):
 
-**Phase 2.1: Cover Letter Integration** (1-2 days)
+**Phase 2.1: Cover Letter Integration** ✅ COMPLETE (1-2 days)
 
-- [ ] Expose `generateType` parameter in API ("resume" | "coverLetter" | "both")
-- [ ] Add UI checkbox for "Generate cover letter"
-- [ ] Return both PDFs in single API response
-- [ ] Display both download buttons
-- [ ] Show separate metrics for each document
-- **Note:** Cover letter service already implemented, just needs UI integration
+- ✅ Expose `generateType` parameter in API ("resume" | "coverLetter" | "both")
+- ✅ Add UI checkbox for "Generate cover letter"
+- ✅ Return both PDFs in single API response
+- ✅ Display both download buttons
+- ✅ Show separate metrics for each document
+- ✅ Implement document length constraints (resume: 2 pages max, cover letter: 1 page max)
+- ✅ Update AI prompts to enforce page limits (OpenAI + Gemini)
+- ℹ️ Validation/truncation logic not needed - AI prompt constraints are sufficient
+- **Note:** Cover letter service already implemented, UI was already integrated in Phase 1
 
 **Phase 2.2: GCS Storage & Document History** (2-3 days)
 
@@ -100,17 +103,28 @@ Build AI-powered resume generator using existing experience data.
 - [ ] Create `resume-executive.hbs` template
 - [ ] Add style selector dropdown in UI
 - [ ] Update PDFService to load templates dynamically
+- [ ] Add footer with "Generated using custom AI implementation" link to resume builder
 - [ ] Optional: Template preview images
 
-**Phase 2.6: Code Quality** (1 day)
+**Phase 2.6: Client Timestamp & Attribution** (1 day)
+
+- [ ] Use client timestamp instead of server timestamp in resume generation
+- [ ] Add metadata field to track client-provided generation time
+- [ ] Update all PDF templates to include attribution footer
+- [ ] Attribution text: "This document was generated using a [custom AI implementation](link to resume builder)"
+- [ ] Ensure attribution is visible but unobtrusive in all template styles
+
+**Phase 2.7: Code Quality** (1 day)
 
 - [ ] Extract Chrome detection to `findLocalChrome()` helper (pdf.service.ts)
 - [ ] Extract job description builder to `buildJobDescription()` helper (generator.ts)
 - [ ] Document service account configuration (experience.ts)
 
-**Total Estimated Effort Phase 2**: 12-17 days (2-3 weeks)
+**Total Estimated Effort Phase 2**: 14-19 days (3 weeks)
+**Completed**: 2 days (Phase 2.1) ✅
+**Remaining**: 12-17 days
 
-**Priority Order**: 2.1 (cover letter) → 2.3 (auth) → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (quality)
+**Priority Order**: ~~2.1 (cover letter)~~ ✅ → **2.3 (auth) NEXT** → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (timestamp/attribution) → 2.7 (quality)
 
 **Documentation**: See [generator/](./generator/) for complete details:
 

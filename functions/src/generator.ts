@@ -1,6 +1,5 @@
 import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
-import cors from "cors"
 import Joi from "joi"
 import { GeneratorService } from "./services/generator.service"
 import { ExperienceService } from "./services/experience.service"
@@ -8,70 +7,19 @@ import { BlurbService } from "./services/blurb.service"
 import { createAIProvider } from "./services/ai-provider.factory"
 import { PDFService } from "./services/pdf.service"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
+import { generatorRateLimiter, generatorEditorRateLimiter } from "./middleware/rate-limit.middleware"
 import type { GenerationType, GeneratorResponse } from "./types/generator.types"
-
-// Import package.json to get version
-// Try ./package.json first (deployed), fallback to ../package.json (development)
-const packageJson = (() => {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require("./package.json")
-  } catch {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require("../package.json")
-  }
-})()
-
-// Error codes for generator API
-const ERROR_CODES = {
-  // Client errors (4xx)
-  VALIDATION_FAILED: { code: "GEN_VAL_001", status: 400, message: "Validation failed" },
-  NOT_FOUND: { code: "GEN_REQ_001", status: 404, message: "Resource not found" },
-  METHOD_NOT_ALLOWED: { code: "GEN_REQ_002", status: 405, message: "Method not allowed" },
-
-  // Server errors (5xx)
-  OPENAI_ERROR: { code: "GEN_AI_001", status: 503, message: "AI service error" },
-  PDF_GENERATION_ERROR: { code: "GEN_PDF_001", status: 500, message: "PDF generation failed" },
-  FIRESTORE_ERROR: { code: "GEN_DB_001", status: 503, message: "Database error" },
-  INTERNAL_ERROR: { code: "GEN_SYS_001", status: 500, message: "Internal server error" },
-} as const
-
-// Simple logger for cloud functions
-const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
-
-const logger = {
-  info: (message: string, data?: unknown) => {
-    if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
-  },
-  warning: (message: string, data?: unknown) => {
-    if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
-  },
-  error: (message: string, data?: unknown) => {
-    if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
-  },
-}
+import { logger } from "./utils/logger"
+import { generateRequestId } from "./utils/request-id"
+import { corsHandler } from "./config/cors"
+import { GENERATOR_ERROR_CODES as ERROR_CODES } from "./config/error-codes"
+import { PACKAGE_VERSION } from "./config/versions"
 
 // Initialize services
 const generatorService = new GeneratorService(logger)
 const experienceService = new ExperienceService(logger)
 const blurbService = new BlurbService(logger)
 const pdfService = new PDFService(logger)
-
-// CORS configuration
-const corsOptions = {
-  origin: [
-    "https://joshwentworth.com",
-    "https://www.joshwentworth.com",
-    "https://staging.joshwentworth.com",
-    "http://localhost:8000",
-    "http://localhost:3000",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}
-
-const corsHandler = cors(corsOptions)
 
 // Validation schemas
 const generateRequestSchema = Joi.object({
@@ -107,13 +55,6 @@ const updateDefaultsSchema = Joi.object({
 })
 
 /**
- * Generate a unique request ID for tracking
- */
-function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
-}
-
-/**
  * Main handler for generator requests
  */
 const handleGeneratorRequest = async (req: Request, res: Response): Promise<void> => {
@@ -139,15 +80,41 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
               success: true,
               service: "manageGenerator",
               status: "healthy",
-              version: packageJson.version,
+              version: PACKAGE_VERSION,
               timestamp: new Date().toISOString(),
             })
             resolve()
             return
           }
 
-          // Route: POST /generator/generate - Generate documents (public)
+          // Route: POST /generator/generate - Generate documents (public, rate limited)
           if (req.method === "POST" && path === "/generator/generate") {
+            // Check if user is authenticated (optional auth check, doesn't reject)
+            let isAuthenticated = false
+            try {
+              await new Promise<void>((resolveAuth) => {
+                verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
+                  if (err) resolveAuth() // Auth failed, treat as unauthenticated
+                  else {
+                    isAuthenticated = true
+                    resolveAuth()
+                  }
+                })
+              })
+            } catch {
+              // Auth check failed, user is not authenticated
+              isAuthenticated = false
+            }
+
+            // Apply appropriate rate limiting
+            const rateLimiter = isAuthenticated ? generatorEditorRateLimiter : generatorRateLimiter
+            await new Promise<void>((resolveRateLimit, rejectRateLimit) => {
+              rateLimiter(req, res, (err) => {
+                if (err) rejectRateLimit(err)
+                else resolveRateLimit()
+              })
+            })
+
             await handleGenerate(req, res, requestId)
             resolve()
             return

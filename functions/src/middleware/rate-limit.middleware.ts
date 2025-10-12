@@ -77,3 +77,110 @@ export const strictRateLimiter = rateLimit({
   },
   // Note: No custom keyGenerator - uses default IP-based limiting that handles IPv6 properly
 })
+
+/**
+ * Rate limiter for Experience API (public reads)
+ *
+ * Generous limits to allow legitimate browsing while preventing abuse.
+ *
+ * Limits:
+ * - 100 requests per minute per IP (public viewers)
+ * - Editors are exempt (checked before applying this middleware)
+ */
+export const experienceRateLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100, // 100 requests per minute per IP
+  message: {
+    success: false,
+    error: "RATE_LIMIT_EXCEEDED",
+    errorCode: "EXP_SEC_001",
+    message: "Too many requests. Please slow down.",
+  },
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  skip: () => isTestEnvironment,
+  handler: (req, res) => {
+    console.warn("[RateLimit] Experience API rate limit exceeded", {
+      ip: req.ip,
+      path: req.path,
+    })
+
+    res.status(429).json({
+      success: false,
+      error: "RATE_LIMIT_EXCEEDED",
+      errorCode: "EXP_SEC_001",
+      message: "Too many requests from this IP. Please try again in a minute.",
+    })
+  },
+})
+
+/**
+ * Rate limiter for Generator API (public viewers)
+ *
+ * Conservative limits for AI generation to prevent abuse and control costs.
+ *
+ * Limits:
+ * - 10 requests per 15 minutes per IP (public viewers)
+ * - Editors get higher limits (20 per 15 minutes)
+ */
+export const generatorRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 requests per 15 minutes for viewers
+  message: {
+    success: false,
+    error: "RATE_LIMIT_EXCEEDED",
+    errorCode: "GEN_SEC_001",
+    message: "Too many generation requests. Please try again later.",
+  },
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  skip: () => isTestEnvironment,
+  handler: (req, res) => {
+    console.warn("[RateLimit] Generator API rate limit exceeded", {
+      ip: req.ip,
+      path: req.path,
+    })
+
+    res.status(429).json({
+      success: false,
+      error: "RATE_LIMIT_EXCEEDED",
+      errorCode: "GEN_SEC_001",
+      message: "Generation rate limit exceeded. Please try again in 15 minutes.",
+    })
+  },
+})
+
+/**
+ * Rate limiter for authenticated editors (generator API)
+ *
+ * Higher limits for authenticated editors.
+ *
+ * Limits:
+ * - 20 requests per 15 minutes per authenticated user
+ */
+export const generatorEditorRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 requests per 15 minutes for editors
+  message: {
+    success: false,
+    error: "RATE_LIMIT_EXCEEDED",
+    errorCode: "GEN_SEC_002",
+    message: "Editor rate limit exceeded. Please try again later.",
+  },
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  skip: () => isTestEnvironment,
+  handler: (req, res) => {
+    console.warn("[RateLimit] Generator editor rate limit exceeded", {
+      ip: req.ip,
+      path: req.path,
+    })
+
+    res.status(429).json({
+      success: false,
+      error: "RATE_LIMIT_EXCEEDED",
+      errorCode: "GEN_SEC_002",
+      message: "Editor generation rate limit exceeded. Please try again in 15 minutes.",
+    })
+  },
+})
