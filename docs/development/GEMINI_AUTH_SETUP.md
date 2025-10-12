@@ -1,5 +1,11 @@
 # Gemini Authentication Setup
 
+> **⚠️ IMPORTANT UPDATE (2025):** This document describes the current implementation using direct Gemini API calls. However, **Firebase explicitly recommends migrating to Firebase Genkit** for production Cloud Functions. See [FIREBASE_GENKIT_MIGRATION.md](./FIREBASE_GENKIT_MIGRATION.md) for the recommended approach.
+>
+> **Firebase's Official Statement:**
+> > "Calling the Gemini API directly from your web app using the Google Gen AI SDK is only for prototyping and exploring the Gemini generative AI models... you should use Firebase AI Logic instead."
+> > — [Firebase AI Logic Documentation](https://firebase.google.com/docs/ai-logic)
+
 ## Current Issue (Staging Deployment)
 
 The resume generator is failing in staging with:
@@ -8,7 +14,9 @@ No API key available for Gemini. Set GEMINI_MOCK_MODE=true for local dev,
 GOOGLE_API_KEY environment variable, or add gemini-api-key to Secret Manager.
 ```
 
-## Solution: Add Gemini API Key to Secret Manager
+## Immediate Fix: Add Gemini API Key to Secret Manager
+
+**Note:** This is a temporary fix for the current implementation. The long-term solution is migrating to Firebase Genkit (see migration plan linked above).
 
 ### Step 1: Get a Gemini API Key
 
@@ -36,22 +44,28 @@ echo 'YOUR_GEMINI_API_KEY_HERE' | gcloud secrets versions add gemini-api-key \
 ```bash
 # Grant the generator function's service account access to the secret
 gcloud secrets add-iam-policy-binding gemini-api-key \
-  --member="serviceAccount:generator-runtime@static-sites-257923.iam.gserviceaccount.com" \
+  --member="serviceAccount:cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor" \
   --project=static-sites-257923
 ```
 
-### Step 4: Update Function Deployment (if needed)
+### Step 4: Verify Deployment Configuration
 
-The function deployment should already be configured to access `gemini-api-key` from Secret Manager. If not, ensure the deployment includes:
+The function deployment is already configured to access `gemini-api-key` from Secret Manager in [generator.ts:731](../../functions/src/generator.ts#L731):
 
-```bash
---set-secrets=GEMINI_API_KEY=gemini-api-key:latest
+```typescript
+export const manageGenerator = https.onRequest(
+  {
+    secrets: ["openai-api-key", "gemini-api-key"],  // Already configured
+    serviceAccount: "cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com",
+  },
+  handleGeneratorRequest
+)
 ```
 
-Or in the function configuration, add `gemini-api-key` to the secrets list.
+## Current Authentication Flow (Legacy)
 
-## Current Authentication Flow
+⚠️ **This approach is for prototyping only according to Firebase**
 
 The `ai-provider.factory.ts` checks for Gemini API keys in this order:
 
@@ -60,7 +74,7 @@ The `ai-provider.factory.ts` checks for Gemini API keys in this order:
    export GEMINI_MOCK_MODE=true
    ```
 
-2. **Environment Variable** (Firebase AI automatic):
+2. **Environment Variable** (manual setup):
    ```bash
    export GOOGLE_API_KEY=your-api-key
    ```
@@ -69,22 +83,66 @@ The `ai-provider.factory.ts` checks for Gemini API keys in this order:
    - Automatically retrieved from `gemini-api-key` secret
    - Cached to avoid repeated Secret Manager calls
 
-## Firebase Recommended Approach
+## Recommended Approach: Firebase Genkit (Production)
 
-According to [Firebase documentation](https://firebase.google.com/docs/vertex-ai/get-started), there are two approaches:
+According to Firebase's 2025 best practices, production applications should use **Firebase Genkit** instead of direct API calls.
 
-### Option A: Generative AI SDK with API Keys (Current)
-- Uses `@google/generative-ai` package
-- Requires API key from Google AI Studio
-- Simpler setup, works everywhere
-- **Currently implemented** ✅
+### Why Genkit?
 
-### Option B: Vertex AI SDK with ADC (Alternative)
-- Uses `@google-cloud/vertexai` package
-- Uses Application Default Credentials
-- No API key needed in production
-- Better for enterprise deployments
-- Requires more setup
+| Feature | Current (Direct API) | Genkit (Recommended) |
+|---------|---------------------|----------------------|
+| **Purpose** | Prototyping only ❌ | Production-ready ✅ |
+| **Secret Management** | Manual code | Automatic via `defineSecret()` |
+| **Authentication** | Custom middleware | Built-in `authPolicy` |
+| **Streaming** | Not supported | Built-in `sendChunk()` |
+| **Monitoring** | Manual logging | Firebase Console dashboards |
+| **Dev Tools** | None | Genkit Developer UI |
+| **Multi-provider** | Custom factory | Built-in plugins |
+
+### Migration Path
+
+See [FIREBASE_GENKIT_MIGRATION.md](./FIREBASE_GENKIT_MIGRATION.md) for complete migration plan (6-9 days estimated).
+
+Quick example of the Genkit approach:
+
+```typescript
+// config/secrets.ts
+import { defineSecret } from 'firebase-functions/params'
+export const geminiApiKey = defineSecret('GEMINI_API_KEY')
+
+// flows/resume.flow.ts
+import { ai } from '@genkit-ai/core'
+export const generateResumeFlow = ai.defineFlow(
+  {
+    name: 'generateResume',
+    inputSchema: ResumeInputSchema,
+    outputSchema: z.string(),
+    streamSchema: z.string(),
+  },
+  async (input, { sendChunk }) => {
+    const { stream, output } = await ai.generateStream({
+      model: gemini20FlashExp,
+      prompt: buildResumePrompt(input),
+    })
+
+    for await (const chunk of stream) {
+      sendChunk(chunk.text)  // Stream to client
+    }
+
+    return (await output).text
+  }
+)
+
+// index.ts
+export const generateResume = onCallGenkit(
+  {
+    secrets: [geminiApiKey],
+    enforceAppCheck: true,
+    authPolicy: hasClaim('email_verified'),
+  },
+  generateResumeFlow
+)
+```
 
 ## Local Development
 
@@ -139,34 +197,17 @@ Rate limiting is enforced:
 - **Cause**: Too many requests to Gemini API
 - **Solution**: Normal - wait 15 minutes or use editor account for higher limits
 
-## Next Steps (Optional Migration to Vertex AI)
+## Next Steps
 
-If you want to migrate to Vertex AI with ADC (no API keys needed):
-
-1. Install Vertex AI SDK:
-   ```bash
-   npm install @google-cloud/vertexai -w contact-form-function
-   ```
-
-2. Update `gemini.service.ts` to use Vertex AI SDK
-
-3. Grant Vertex AI permissions to service account:
-   ```bash
-   gcloud projects add-iam-policy-binding static-sites-257923 \
-     --member="serviceAccount:generator-runtime@static-sites-257923.iam.gserviceaccount.com" \
-     --role="roles/aiplatform.user"
-   ```
-
-4. Enable Vertex AI API:
-   ```bash
-   gcloud services enable aiplatform.googleapis.com --project=static-sites-257923
-   ```
-
-This is a more robust solution for production but requires more setup.
+1. **Immediate:** Follow steps 1-3 above to add `gemini-api-key` to Secret Manager (fixes current staging issue)
+2. **Short-term (Optional):** Test Genkit locally with Developer UI
+3. **Long-term (Recommended):** Migrate to Firebase Genkit (see [migration plan](./FIREBASE_GENKIT_MIGRATION.md))
 
 ## References
 
-- [Google AI Studio](https://aistudio.google.com/apikey)
-- [Firebase Vertex AI Docs](https://firebase.google.com/docs/vertex-ai/get-started)
+- [Firebase AI Logic Documentation](https://firebase.google.com/docs/ai-logic) - Why direct API is prototyping-only
+- [Firebase Genkit Documentation](https://firebase.google.com/docs/genkit) - Recommended production approach
+- [Streaming Cloud Functions with Genkit](https://firebase.blog/posts/2025/03/streaming-cloud-functions-genkit/) - Official best practices
+- [Google AI Studio](https://aistudio.google.com/apikey) - Get API key (temporary fix)
 - [Gemini API Pricing](https://ai.google.dev/pricing)
 - [Secret Manager Documentation](https://cloud.google.com/secret-manager/docs)
