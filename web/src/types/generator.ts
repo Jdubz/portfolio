@@ -40,8 +40,8 @@ export interface GenerationMetadata {
 
 export interface GenerateResponse {
   success: boolean
-  resumeUrl?: string // Signed URL for resume download (Phase 2.2)
-  coverLetterUrl?: string // Signed URL for cover letter download (Phase 2.2)
+  resumeUrl?: string // Signed URL for resume download (Phase 2.3)
+  coverLetterUrl?: string // Signed URL for cover letter download (Phase 2.3)
   urlExpiresIn?: string // Human-readable expiry time ("1 hour" or "7 days")
   // Legacy fields (Phase 1) - kept for backwards compatibility
   resume?: string // @deprecated Use resumeUrl instead (base64 PDF)

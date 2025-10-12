@@ -385,8 +385,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       }
 
       // Step 5: Upload PDFs to GCS
-      let resumeUploadResult: Awaited<ReturnType<typeof storageService.uploadPDF>> | undefined
-      let coverLetterUploadResult: Awaited<ReturnType<typeof storageService.uploadPDF>> | undefined
+      type UploadResult = Awaited<ReturnType<typeof storageService.uploadPDF>>
+      let resumeUploadResult: UploadResult | undefined
+      let coverLetterUploadResult: UploadResult | undefined
       let resumeSignedUrl: string | undefined
       let coverLetterSignedUrl: string | undefined
 
@@ -514,7 +515,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       // Progress: Complete
       await generatorService.updateProgress(generationRequestId, "finalizing", "Complete!", 100)
 
-      // Step 7: Return signed URLs for GCS downloads
+      // Step 6: Return signed URLs for GCS downloads
       res.status(200).json({
         success: true,
         data: {

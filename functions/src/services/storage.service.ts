@@ -125,7 +125,7 @@ export class StorageService {
 
   /**
    * Generate a signed URL for downloading a PDF
-   * @param gcsPath - Full GCS path (e.g., "resumes/2025-10-12/filename.pdf")
+   * @param gcsPath - Full GCS path (e.g., "resumes/YYYY-MM-DD/filename.pdf")
    * @param options - Expiration options (1 hour for viewers, 7 days for editors)
    */
   async generateSignedUrl(gcsPath: string, options: SignedUrlOptions): Promise<string> {
