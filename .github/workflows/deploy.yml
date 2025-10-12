@@ -35,7 +35,24 @@ jobs:
           sudo apt-get install -y python3 make g++
 
       - name: Install root dependencies
-        run: npm ci --prefer-offline --no-audit
+        run: |
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if npm ci --prefer-offline --no-audit; then
+              echo "✓ Dependencies installed successfully"
+              break
+            else
+              if [ $attempt -eq $max_attempts ]; then
+                echo "✗ Failed after $max_attempts attempts"
+                exit 1
+              fi
+              echo "⚠ Installation failed, retrying in 10 seconds..."
+              sleep 10
+              attempt=$((attempt + 1))
+            fi
+          done
         env:
           NPM_CONFIG_FETCH_RETRIES: 3
           NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 20000
@@ -43,7 +60,24 @@ jobs:
 
       - name: Install web dependencies
         working-directory: web
-        run: npm ci --include=optional --legacy-peer-deps --prefer-offline --no-audit
+        run: |
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if npm ci --include=optional --legacy-peer-deps --prefer-offline --no-audit; then
+              echo "✓ Dependencies installed successfully"
+              break
+            else
+              if [ $attempt -eq $max_attempts ]; then
+                echo "✗ Failed after $max_attempts attempts"
+                exit 1
+              fi
+              echo "⚠ Installation failed, retrying in 10 seconds..."
+              sleep 10
+              attempt=$((attempt + 1))
+            fi
+          done
         env:
           NPM_CONFIG_FETCH_RETRIES: 3
           NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 20000
