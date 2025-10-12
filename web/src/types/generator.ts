@@ -6,6 +6,8 @@
 
 export type GenerationType = "resume" | "coverLetter" | "both"
 
+export type AIProviderType = "openai" | "gemini"
+
 export interface JobDetails {
   role: string
   company: string
@@ -23,6 +25,7 @@ export interface GenerateRequest {
   generateType: GenerationType
   job: JobDetails
   preferences?: GenerationPreferences
+  provider?: AIProviderType
 }
 
 export interface GenerationMetadata {

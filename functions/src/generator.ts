@@ -5,9 +5,8 @@ import Joi from "joi"
 import { GeneratorService } from "./services/generator.service"
 import { ExperienceService } from "./services/experience.service"
 import { BlurbService } from "./services/blurb.service"
-import { OpenAIService } from "./services/openai.service"
+import { createAIProvider } from "./services/ai-provider.factory"
 import { PDFService } from "./services/pdf.service"
-import { SecretManagerService } from "./services/secret-manager.service"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import type { GenerationType, GeneratorResponse } from "./types/generator.types"
 
@@ -57,7 +56,6 @@ const generatorService = new GeneratorService(logger)
 const experienceService = new ExperienceService(logger)
 const blurbService = new BlurbService(logger)
 const pdfService = new PDFService(logger)
-const secretManager = new SecretManagerService()
 
 // CORS configuration
 const corsOptions = {
@@ -78,6 +76,7 @@ const corsHandler = cors(corsOptions)
 // Validation schemas
 const generateRequestSchema = Joi.object({
   generateType: Joi.string().valid("resume", "coverLetter", "both").required(),
+  provider: Joi.string().valid("openai", "gemini").optional().default("gemini"),
   job: Joi.object({
     role: Joi.string().trim().min(1).max(200).required(),
     company: Joi.string().trim().min(1).max(200).required(),
@@ -250,6 +249,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
     const generateType: GenerationType = value.generateType
     const job = value.job
     const preferences = value.preferences
+    const provider = value.provider // AI provider selection (openai or gemini)
 
     logger.info("Processing generation request", {
       requestId,
@@ -282,7 +282,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         blurbs,
       },
       preferences,
-      requestId // Use HTTP request ID as viewer session ID for now
+      requestId, // Use HTTP request ID as viewer session ID for now
+      undefined, // editorEmail (undefined for now)
+      provider // AI provider selection (openai or gemini, defaults to gemini)
     )
 
     // Update status to processing
@@ -291,16 +293,21 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
     // Progress: Initializing
     await generatorService.updateProgress(generationRequestId, "initializing", "Initializing AI service...", 10)
 
-    // Step 4: Initialize OpenAI service
-    const openaiApiKey = await secretManager.getSecret("openai-api-key")
-    const openaiService = new OpenAIService(openaiApiKey, logger)
+    // Step 4: Initialize AI provider (OpenAI or Gemini)
+    const aiProvider = await createAIProvider(provider || "gemini", logger)
+
+    logger.info("AI provider initialized", {
+      provider: aiProvider.providerType,
+      model: aiProvider.model,
+      requestId,
+    })
 
     // Progress: Data fetched
     await generatorService.updateProgress(generationRequestId, "fetching_data", "Experience data loaded", 20)
 
     // Step 5: Generate documents based on type
-    let resumeResult: Awaited<ReturnType<typeof openaiService.generateResume>> | undefined
-    let coverLetterResult: Awaited<ReturnType<typeof openaiService.generateCoverLetter>> | undefined
+    let resumeResult: Awaited<ReturnType<typeof aiProvider.generateResume>> | undefined
+    let coverLetterResult: Awaited<ReturnType<typeof aiProvider.generateCoverLetter>> | undefined
     let resumePDF: Buffer | undefined
     let coverLetterPDF: Buffer | undefined
 
@@ -323,7 +330,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
 
         logger.info("Generating resume", { requestId })
 
-        resumeResult = await openaiService.generateResume({
+        resumeResult = await aiProvider.generateResume({
           personalInfo: {
             name: defaults.name,
             email: defaults.email,
@@ -383,7 +390,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
             ? `${job.jobDescriptionText || ""}\n${job.jobDescriptionUrl ? `Job URL: ${job.jobDescriptionUrl}` : ""}`.trim()
             : undefined
 
-        coverLetterResult = await openaiService.generateCoverLetter({
+        coverLetterResult = await aiProvider.generateCoverLetter({
           personalInfo: {
             name: defaults.name,
             email: defaults.email,
@@ -428,8 +435,8 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       const totalTokens =
         (resumeResult?.tokenUsage.totalTokens || 0) + (coverLetterResult?.tokenUsage.totalTokens || 0)
       const costUsd =
-        (resumeResult ? OpenAIService.calculateCost(resumeResult.tokenUsage) : 0) +
-        (coverLetterResult ? OpenAIService.calculateCost(coverLetterResult.tokenUsage) : 0)
+        (resumeResult ? aiProvider.calculateCost(resumeResult.tokenUsage) : 0) +
+        (coverLetterResult ? aiProvider.calculateCost(coverLetterResult.tokenUsage) : 0)
 
       // Step 6: Create response document
       // Build result object without undefined values (Firestore doesn't allow them)
@@ -473,7 +480,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           durationMs,
           tokenUsage,
           costUsd,
-          model: resumeResult?.model || coverLetterResult?.model || "gpt-4o-2024-08-06",
+          model: resumeResult?.model || coverLetterResult?.model || aiProvider.model,
         }
       )
 
@@ -507,7 +514,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
               total: totalTokens,
             },
             costUsd,
-            model: resumeResult?.model || coverLetterResult?.model || "gpt-4o-2024-08-06",
+            model: resumeResult?.model || coverLetterResult?.model || aiProvider.model,
             durationMs,
           },
           // Return PDFs as base64 for Phase 1 MVP
@@ -526,12 +533,14 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           success: false,
           error: {
             message: generationError instanceof Error ? generationError.message : String(generationError),
-            stage: "openai_resume",
+            stage: (provider === "openai" ? "openai_generation" : "gemini_generation") as
+              | "openai_generation"
+              | "gemini_generation",
           },
         },
         {
           durationMs: Date.now() - startTime,
-          model: "gpt-4o-2024-08-06",
+          model: aiProvider.model,
         }
       )
 
@@ -541,12 +550,12 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
     logger.error("Failed to generate documents", { error, requestId })
 
     const errorMessage = error instanceof Error ? error.message : String(error)
-    const isOpenAIError = errorMessage.includes("OpenAI") || errorMessage.includes("AI service")
-    const err = isOpenAIError ? ERROR_CODES.OPENAI_ERROR : ERROR_CODES.INTERNAL_ERROR
+    const isAIError = errorMessage.includes("OpenAI") || errorMessage.includes("Gemini") || errorMessage.includes("AI")
+    const err = isAIError ? ERROR_CODES.OPENAI_ERROR : ERROR_CODES.INTERNAL_ERROR
 
     res.status(err.status).json({
       success: false,
-      error: isOpenAIError ? "OPENAI_ERROR" : "INTERNAL_ERROR",
+      error: isAIError ? "AI_ERROR" : "INTERNAL_ERROR",
       errorCode: err.code,
       message: errorMessage,
       requestId,
@@ -752,7 +761,7 @@ export const manageGenerator = https.onRequest(
     memory: "1GiB", // Higher for Puppeteer
     maxInstances: 10,
     timeoutSeconds: 300, // 5 minutes for generation
-    secrets: ["openai-api-key"],
+    secrets: ["openai-api-key", "gemini-api-key"],
     serviceAccount: "cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com",
   },
   handleGeneratorRequest

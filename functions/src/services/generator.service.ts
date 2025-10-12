@@ -6,6 +6,7 @@ import type {
   GeneratorRequest,
   GeneratorResponse,
   GenerationType,
+  AIProviderType,
 } from "../types/generator.types"
 import type { ExperienceEntry } from "./experience.service"
 import type { BlurbEntry } from "./blurb.service"
@@ -144,7 +145,8 @@ export class GeneratorService {
       emphasize?: string[]
     },
     viewerSessionId?: string,
-    editorEmail?: string
+    editorEmail?: string,
+    provider?: AIProviderType
   ): Promise<string> {
     try {
       const timestamp = Date.now()
@@ -155,6 +157,7 @@ export class GeneratorService {
         id: requestId,
         type: "request",
         generateType,
+        provider: provider || "gemini", // Default to Gemini (92% cheaper)
         defaults: {
           name: defaults.name,
           email: defaults.email,

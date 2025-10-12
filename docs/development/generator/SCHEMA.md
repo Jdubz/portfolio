@@ -13,6 +13,7 @@ The `generator` collection uses a **three-document-type approach**:
 3. **Response documents (`resume-generator-response-{id}`)** - Generated documents with GCS links and reference to request
 
 This design ensures:
+
 - ✅ Clear separation of request/response data
 - ✅ Complete reproducibility (request stores snapshot of all inputs)
 - ✅ Easy debugging (trace from response → request → inputs)
@@ -39,7 +40,7 @@ interface GeneratorDefaults {
   name: string // "Josh Wentworth"
   email: string // "josh@example.com"
   phone?: string // "(555) 123-4567"
-  location?: string // "San Francisco, CA"
+  location?: string // "Portland, OR"
 
   // Online Presence
   website?: string // "https://joshwentworth.com"
@@ -70,7 +71,7 @@ interface GeneratorDefaults {
   "name": "Josh Wentworth",
   "email": "josh@joshwentworth.com",
   "phone": "",
-  "location": "San Francisco, CA",
+  "location": "Portland, OR",
   "website": "https://joshwentworth.com",
   "github": "https://github.com/jdubz",
   "linkedin": "https://linkedin.com/in/joshwentworth",
@@ -167,7 +168,7 @@ interface GeneratorRequest {
     "name": "Josh Wentworth",
     "email": "josh@joshwentworth.com",
     "phone": "",
-    "location": "San Francisco, CA",
+    "location": "Portland, OR",
     "website": "https://joshwentworth.com",
     "github": "https://github.com/jdubz",
     "linkedin": "https://linkedin.com/in/joshwentworth",
@@ -247,7 +248,13 @@ interface GeneratorResponse {
     error?: {
       message: string
       code?: string
-      stage?: "fetch_defaults" | "fetch_experience" | "openai_resume" | "openai_cover_letter" | "pdf_generation" | "gcs_upload"
+      stage?:
+        | "fetch_defaults"
+        | "fetch_experience"
+        | "openai_resume"
+        | "openai_cover_letter"
+        | "pdf_generation"
+        | "gcs_upload"
       details?: unknown
     }
   }
@@ -536,31 +543,32 @@ generator/
 ### Get Default Settings
 
 ```typescript
-const defaultsDoc = await db.collection('generator').doc('default').get()
+const defaultsDoc = await db.collection("generator").doc("default").get()
 const defaults = defaultsDoc.data() as GeneratorDefaults
 ```
 
 ### List All Requests (Document Manager)
 
 ```typescript
-const snapshot = await db.collection('generator')
-  .where('type', '==', 'request')
-  .orderBy('createdAt', 'desc')
+const snapshot = await db
+  .collection("generator")
+  .where("type", "==", "request")
+  .orderBy("createdAt", "desc")
   .limit(50)
   .get()
 
-const requests = snapshot.docs.map(doc => doc.data() as GeneratorRequest)
+const requests = snapshot.docs.map((doc) => doc.data() as GeneratorRequest)
 ```
 
 ### Get Request and Response Together
 
 ```typescript
 const requestId = "resume-generator-request-1697123456-abc123"
-const responseId = requestId.replace('request', 'response')
+const responseId = requestId.replace("request", "response")
 
 const [requestDoc, responseDoc] = await Promise.all([
-  db.collection('generator').doc(requestId).get(),
-  db.collection('generator').doc(responseId).get()
+  db.collection("generator").doc(requestId).get(),
+  db.collection("generator").doc(responseId).get(),
 ])
 
 const request = requestDoc.data() as GeneratorRequest
@@ -570,34 +578,27 @@ const response = responseDoc.data() as GeneratorResponse
 ### Find My Generations (Viewer)
 
 ```typescript
-const sessionId = sessionStorage.getItem('resumeSessionId')
+const sessionId = sessionStorage.getItem("resumeSessionId")
 
-const requestsSnapshot = await db.collection('generator')
-  .where('type', '==', 'request')
-  .where('access.viewerSessionId', '==', sessionId)
-  .orderBy('createdAt', 'desc')
+const requestsSnapshot = await db
+  .collection("generator")
+  .where("type", "==", "request")
+  .where("access.viewerSessionId", "==", sessionId)
+  .orderBy("createdAt", "desc")
   .get()
 
 // Then fetch corresponding responses
-const responseIds = requestsSnapshot.docs.map(doc =>
-  doc.id.replace('request', 'response')
-)
+const responseIds = requestsSnapshot.docs.map((doc) => doc.id.replace("request", "response"))
 
-const responses = await Promise.all(
-  responseIds.map(id => db.collection('generator').doc(id).get())
-)
+const responses = await Promise.all(responseIds.map((id) => db.collection("generator").doc(id).get()))
 ```
 
 ### Calculate Success Rate (Analytics)
 
 ```typescript
-const responsesSnapshot = await db.collection('generator')
-  .where('type', '==', 'response')
-  .get()
+const responsesSnapshot = await db.collection("generator").where("type", "==", "response").get()
 
-const successful = responsesSnapshot.docs.filter(
-  doc => doc.data().result.success
-).length
+const successful = responsesSnapshot.docs.filter((doc) => doc.data().result.success).length
 
 const successRate = (successful / responsesSnapshot.size) * 100
 ```
@@ -605,23 +606,22 @@ const successRate = (successful / responsesSnapshot.size) * 100
 ### Calculate Total Cost (Analytics)
 
 ```typescript
-const responsesSnapshot = await db.collection('generator')
-  .where('type', '==', 'response')
-  .where('result.success', '==', true)
+const responsesSnapshot = await db
+  .collection("generator")
+  .where("type", "==", "response")
+  .where("result.success", "==", true)
   .get()
 
-const totalCost = responsesSnapshot.docs.reduce(
-  (sum, doc) => sum + (doc.data().metrics.costUsd || 0),
-  0
-)
+const totalCost = responsesSnapshot.docs.reduce((sum, doc) => sum + (doc.data().metrics.costUsd || 0), 0)
 ```
 
 ### Search by Company or Role
 
 ```typescript
-const requestsSnapshot = await db.collection('generator')
-  .where('type', '==', 'request')
-  .where('job.company', '==', 'Google')
+const requestsSnapshot = await db
+  .collection("generator")
+  .where("type", "==", "request")
+  .where("job.company", "==", "Google")
   .get()
 ```
 
@@ -629,21 +629,24 @@ const requestsSnapshot = await db.collection('generator')
 
 ```typescript
 // Only resume generations
-const resumeOnlySnapshot = await db.collection('generator')
-  .where('type', '==', 'request')
-  .where('generateType', '==', 'resume')
+const resumeOnlySnapshot = await db
+  .collection("generator")
+  .where("type", "==", "request")
+  .where("generateType", "==", "resume")
   .get()
 
 // Only cover letter generations
-const coverLetterOnlySnapshot = await db.collection('generator')
-  .where('type', '==', 'request')
-  .where('generateType', '==', 'coverLetter')
+const coverLetterOnlySnapshot = await db
+  .collection("generator")
+  .where("type", "==", "request")
+  .where("generateType", "==", "coverLetter")
   .get()
 
 // Both documents
-const bothSnapshot = await db.collection('generator')
-  .where('type', '==', 'request')
-  .where('generateType', '==', 'both')
+const bothSnapshot = await db
+  .collection("generator")
+  .where("type", "==", "request")
+  .where("generateType", "==", "both")
   .get()
 ```
 
@@ -718,6 +721,7 @@ Create these composite indexes for efficient queries:
 ### 2. Complete Reproducibility
 
 Every request stores:
+
 - ✅ All personal info settings (snapshot)
 - ✅ Complete experience data (entries + blurbs)
 - ✅ Exact job details
@@ -728,6 +732,7 @@ Every request stores:
 ### 3. Flexible Generation Options
 
 Same for editors and viewers:
+
 - ✅ Generate resume only
 - ✅ Generate cover letter only
 - ✅ Generate both documents
@@ -743,6 +748,7 @@ Same for editors and viewers:
 ### 5. Better Analytics
 
 Track separately:
+
 - ✅ Request patterns (what people are requesting)
 - ✅ Response success rates (what's working)
 - ✅ Generation types (resume vs cover letter popularity)
@@ -792,14 +798,14 @@ service cloud.firestore {
 ## Example: Creating Request and Response
 
 ```typescript
-import { db } from './config/database'
-import { FieldValue } from 'firebase-admin/firestore'
+import { db } from "./config/database"
+import { FieldValue } from "firebase-admin/firestore"
 
 async function createGenerationRequest(
   generateType: GenerationType,
   job: JobDetails,
   defaults: GeneratorDefaults,
-  experienceData: { entries: ExperienceEntry[], blurbs: Blurb[] },
+  experienceData: { entries: ExperienceEntry[]; blurbs: Blurb[] },
   preferences?: GenerationPreferences,
   viewerSessionId?: string,
   editorEmail?: string
@@ -810,7 +816,7 @@ async function createGenerationRequest(
 
   const request: GeneratorRequest = {
     id: requestId,
-    type: 'request',
+    type: "request",
     generateType,
     defaults: {
       name: defaults.name,
@@ -828,7 +834,7 @@ async function createGenerationRequest(
     job,
     preferences,
     experienceData,
-    status: 'pending',
+    status: "pending",
     access: {
       viewerSessionId,
       isPublic: !editorEmail,
@@ -837,7 +843,7 @@ async function createGenerationRequest(
     createdBy: editorEmail,
   }
 
-  await db.collection('generator').doc(requestId).set(request)
+  await db.collection("generator").doc(requestId).set(request)
 
   return requestId
 }
@@ -848,11 +854,11 @@ async function createGenerationResponse(
   files: GeneratedFiles,
   metrics: GenerationMetrics
 ): Promise<void> {
-  const responseId = requestId.replace('request', 'response')
+  const responseId = requestId.replace("request", "response")
 
   const response: GeneratorResponse = {
     id: responseId,
-    type: 'response',
+    type: "response",
     requestId,
     result,
     files,
@@ -863,7 +869,7 @@ async function createGenerationResponse(
     createdAt: FieldValue.serverTimestamp(),
   }
 
-  await db.collection('generator').doc(responseId).set(response)
+  await db.collection("generator").doc(responseId).set(response)
 }
 ```
 

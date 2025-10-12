@@ -3,12 +3,23 @@
  *
  * Handles all OpenAI API interactions for resume and cover letter generation.
  * Uses structured outputs for consistent, type-safe responses.
+ *
+ * Cost: $2.50 input / $10.00 output per 1M tokens
+ * Model: gpt-4o-2024-08-06
  */
 
 import OpenAI from "openai"
-import type { ResumeContent, CoverLetterContent } from "../types/generator.types"
-import type { ExperienceEntry } from "./experience.service"
-import type { BlurbEntry } from "./blurb.service"
+import type {
+  AIProvider,
+  AIProviderType,
+  AIResumeGenerationResult,
+  AICoverLetterGenerationResult,
+  GenerateResumeOptions,
+  GenerateCoverLetterOptions,
+  TokenUsage,
+  ResumeContent,
+  CoverLetterContent,
+} from "../types/generator.types"
 
 type SimpleLogger = {
   info: (message: string, data?: unknown) => void
@@ -16,66 +27,21 @@ type SimpleLogger = {
   error: (message: string, data?: unknown) => void
 }
 
-interface GenerateResumeOptions {
-  personalInfo: {
-    name: string
-    email: string
-    phone?: string
-    location?: string
-    website?: string
-    github?: string
-    linkedin?: string
-  }
-  job: {
-    role: string
-    company: string
-    companyWebsite?: string
-    jobDescription?: string
-  }
-  experienceEntries: ExperienceEntry[]
-  experienceBlurbs: BlurbEntry[]
-  style?: string
-  emphasize?: string[]
-}
+// Legacy type aliases for backward compatibility
+export type ResumeGenerationResult = AIResumeGenerationResult
+export type CoverLetterGenerationResult = AICoverLetterGenerationResult
 
-interface GenerateCoverLetterOptions {
-  personalInfo: {
-    name: string
-    email: string
-  }
-  job: {
-    role: string
-    company: string
-    companyWebsite?: string
-    jobDescription?: string
-  }
-  experienceEntries: ExperienceEntry[]
-  experienceBlurbs: BlurbEntry[]
-}
-
-interface TokenUsage {
-  promptTokens: number
-  completionTokens: number
-  totalTokens: number
-}
-
-export interface ResumeGenerationResult {
-  content: ResumeContent
-  tokenUsage: TokenUsage
-  model: string
-}
-
-export interface CoverLetterGenerationResult {
-  content: CoverLetterContent
-  tokenUsage: TokenUsage
-  model: string
-}
-
-export class OpenAIService {
+export class OpenAIService implements AIProvider {
   private client: OpenAI
   private logger: SimpleLogger
-  private model = "gpt-4o-2024-08-06" // Supports structured outputs
   private useMockMode: boolean
+
+  readonly model: string = "gpt-4o-2024-08-06" // Supports structured outputs
+  readonly providerType: AIProviderType = "openai"
+  readonly pricing = {
+    inputCostPer1M: 2.5, // $2.50 per 1M input tokens
+    outputCostPer1M: 10.0, // $10.00 per 1M output tokens
+  }
 
   constructor(apiKey: string, logger?: SimpleLogger) {
     this.client = new OpenAI({
@@ -105,7 +71,7 @@ export class OpenAIService {
   /**
    * Generate a resume using OpenAI structured outputs
    */
-  async generateResume(options: GenerateResumeOptions): Promise<ResumeGenerationResult> {
+  async generateResume(options: GenerateResumeOptions): Promise<AIResumeGenerationResult> {
     try {
       // Return mock response if mock mode is enabled
       if (this.useMockMode) {
@@ -166,7 +132,7 @@ export class OpenAIService {
   /**
    * Generate a cover letter using OpenAI structured outputs
    */
-  async generateCoverLetter(options: GenerateCoverLetterOptions): Promise<CoverLetterGenerationResult> {
+  async generateCoverLetter(options: GenerateCoverLetterOptions): Promise<AICoverLetterGenerationResult> {
     try {
       // Return mock response if mock mode is enabled
       if (this.useMockMode) {
@@ -508,7 +474,7 @@ Generate a compelling cover letter that showcases the candidate's qualifications
         summary: `Experienced software engineer with a proven track record of building scalable systems and leading technical initiatives. Passionate about ${options.job.role.toLowerCase()} work and delivering high-impact solutions.`,
         contact: {
           email: options.personalInfo.email,
-          location: options.personalInfo.location || "San Francisco, CA",
+          location: options.personalInfo.location || "Portland, OR",
           website: options.personalInfo.website || "",
           linkedin: options.personalInfo.linkedin || "",
           github: options.personalInfo.github || "",
@@ -608,6 +574,17 @@ Generate a compelling cover letter that showcases the candidate's qualifications
   /**
    * Calculate cost in USD from token usage
    * Based on GPT-4o pricing: $2.50/1M input tokens, $10.00/1M output tokens
+   */
+  calculateCost(tokenUsage: TokenUsage): number {
+    const inputCost = (tokenUsage.promptTokens / 1_000_000) * this.pricing.inputCostPer1M
+    const outputCost = (tokenUsage.completionTokens / 1_000_000) * this.pricing.outputCostPer1M
+
+    return inputCost + outputCost
+  }
+
+  /**
+   * Static method for backward compatibility
+   * @deprecated Use instance method instead
    */
   static calculateCost(tokenUsage: TokenUsage): number {
     const inputCostPer1M = 2.5

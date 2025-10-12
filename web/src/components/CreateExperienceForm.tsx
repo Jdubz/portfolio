@@ -121,7 +121,7 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
           name="location"
           value={formData.location ?? ""}
           onChange={(value) => setFormData({ ...formData, location: value })}
-          placeholder="San Francisco, CA · Remote"
+          placeholder="Portland, OR · Remote"
         />
 
         <Flex sx={{ gap: 3, flexDirection: ["column", "row"] }}>
