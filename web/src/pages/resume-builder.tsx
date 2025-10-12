@@ -205,43 +205,52 @@ const ResumeBuilderPage: React.FC = () => {
           <Box sx={{ flexShrink: 0 }}>
             {authLoading ? (
               <Spinner size={24} />
-            ) : user ? (
-              <Flex sx={{ alignItems: "center", gap: 2, flexDirection: ["column", "row"] }}>
-                <Text sx={{ fontSize: 1, color: "text", opacity: 0.8, textAlign: ["center", "left"] }}>
-                  {user.email}
-                  {isEditor && (
-                    <Text as="span" sx={{ ml: 2, color: "primary", fontWeight: "bold" }}>
-                      (Editor)
-                    </Text>
-                  )}
-                </Text>
-                {isEditor && (
-                  <Button
-                    onClick={() => void navigate("/resume-settings")}
-                    variant="secondary"
-                    sx={{ fontSize: 1, px: 3, py: 2 }}
-                  >
-                    Settings
-                  </Button>
-                )}
-                <Button onClick={handleSignOut} variant="secondary" sx={{ fontSize: 1, px: 3, py: 2 }}>
-                  Sign Out
-                </Button>
-              </Flex>
             ) : (
-              <Button onClick={handleSignIn} disabled={signingIn} variant="primary" sx={{ fontSize: 1, px: 3, py: 2 }}>
-                {signingIn ? "Signing In..." : "Sign In with Google"}
-              </Button>
+              <Box>
+                <Flex
+                  sx={{
+                    alignItems: "center",
+                    gap: 3,
+                    flexDirection: ["column", "row"],
+                  }}
+                >
+                  {isEditor && (
+                    <Button
+                      onClick={() => void navigate("/resume-settings")}
+                      variant="secondary.sm"
+                      sx={{
+                        cursor: "pointer",
+                      }}
+                    >
+                      Settings
+                    </Button>
+                  )}
+                  <Button
+                    onClick={user ? handleSignOut : handleSignIn}
+                    variant="secondary.sm"
+                    disabled={signingIn}
+                    sx={{
+                      cursor: signingIn ? "wait" : "pointer",
+                    }}
+                  >
+                    {isEditor ? "Editor" : "Viewer"}
+                  </Button>
+                </Flex>
+                {authError && (
+                  <Text
+                    sx={{
+                      mt: 2,
+                      fontSize: 1,
+                      color: "red",
+                    }}
+                  >
+                    {authError}
+                  </Text>
+                )}
+              </Box>
             )}
           </Box>
         </Flex>
-
-        {/* Auth Error */}
-        {authError && (
-          <Alert variant="error" sx={{ mt: 3 }}>
-            {authError}
-          </Alert>
-        )}
 
         {/* Editor Benefits */}
         {!authLoading && !user && (
