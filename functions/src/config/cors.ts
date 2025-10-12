@@ -37,11 +37,11 @@ export const CONTACT_FORM_CORS_OPTIONS: cors.CorsOptions = {
 }
 
 /**
- * CORS options for resume upload (POST only)
+ * CORS options for resume upload (POST only, GET for health check)
  */
 export const RESUME_UPLOAD_CORS_OPTIONS: cors.CorsOptions = {
   ...DEFAULT_CORS_OPTIONS,
-  methods: ["POST", "OPTIONS"],
+  methods: ["GET", "POST", "OPTIONS"],
 }
 
 /**

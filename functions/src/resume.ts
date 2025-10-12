@@ -48,6 +48,18 @@ const handleResumeRequest = async (req: Request, res: Response): Promise<void> =
     return
   }
 
+  // Health check endpoint (no auth required)
+  if (req.method === "GET" && (req.path === "/health" || req.url === "/health")) {
+    res.status(200).json({
+      success: true,
+      service: "uploadResume",
+      status: "healthy",
+      version: PACKAGE_VERSION,
+      timestamp: new Date().toISOString(),
+    })
+    return
+  }
+
   try {
 
     // Only allow POST requests
