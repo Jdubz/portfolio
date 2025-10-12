@@ -17,7 +17,6 @@ export interface JobDetails {
 }
 
 export interface GenerationPreferences {
-  style?: "modern" | "traditional" | "technical" | "executive"
   emphasize?: string[]
 }
 
@@ -41,10 +40,24 @@ export interface GenerationMetadata {
 
 export interface GenerateResponse {
   success: boolean
-  resume?: string
-  coverLetter?: string
+  resumeUrl?: string // Signed URL for resume download (Phase 2.2)
+  coverLetterUrl?: string // Signed URL for cover letter download (Phase 2.2)
+  urlExpiresIn?: string // Human-readable expiry time ("1 hour" or "7 days")
+  // Legacy fields (Phase 1) - kept for backwards compatibility
+  resume?: string // @deprecated Use resumeUrl instead (base64 PDF)
+  coverLetter?: string // @deprecated Use coverLetterUrl instead (base64 PDF)
   metadata?: GenerationMetadata
   requestId?: string
+}
+
+export type StorageClass = "STANDARD" | "COLDLINE"
+
+export interface FileMetadata {
+  gcsPath: string
+  signedUrl?: string
+  signedUrlExpiry?: string
+  size?: number
+  storageClass?: StorageClass
 }
 
 export interface GeneratorDefaults {
@@ -60,7 +73,6 @@ export interface GeneratorDefaults {
   avatar?: string
   logo?: string
   accentColor?: string
-  defaultStyle?: "modern" | "traditional" | "technical" | "executive"
   createdAt: string
   updatedAt: string
   createdBy?: string
@@ -78,7 +90,6 @@ export interface UpdateDefaultsData {
   avatar?: string
   logo?: string
   accentColor?: string
-  defaultStyle?: "modern" | "traditional" | "technical" | "executive"
 }
 
 export interface GenerationProgress {

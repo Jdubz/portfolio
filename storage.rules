@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for Generated Resumes & Cover Letters
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Resumes folder
+    match /resumes/{date}/{filename} {
+      // Anyone can read (public access via signed URLs)
+      allow read: if true;
+
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Cover letters folder
+    match /cover-letters/{date}/{filename} {
+      // Anyone can read (public access via signed URLs)
+      allow read: if true;
+
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Deny everything else
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

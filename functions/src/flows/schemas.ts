@@ -52,7 +52,6 @@ export const ResumeInputSchema = z.object({
   job: JobInfoSchema,
   experienceEntries: z.array(ExperienceEntrySchema),
   experienceBlurbs: z.array(ExperienceBlurbSchema),
-  style: z.enum(["modern", "traditional", "technical", "executive"]).optional(),
   emphasize: z.array(z.string()).optional(),
 })
 

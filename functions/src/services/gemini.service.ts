@@ -81,7 +81,6 @@ export class GeminiProvider implements AIProvider {
         model: this.model,
         role: options.job.role,
         company: options.job.company,
-        style: options.style || "modern",
       })
 
       // Combine system and user prompts (Gemini doesn't have separate system role)
@@ -283,8 +282,6 @@ You must respond with valid JSON matching this schema:
    * EXACT same prompt as OpenAI for consistency
    */
   private buildResumeUserPrompt(options: GenerateResumeOptions): string {
-    const style = options.style || "modern"
-
     // Format experience data with explicit boundaries
     const experienceData = options.experienceEntries
       .map((entry, index) => {
@@ -305,7 +302,7 @@ END OF ENTRY #${index + 1} - USE NOTHING BEYOND THIS POINT FOR THIS ENTRY
       })
       .join("\n\n" + "=".repeat(80) + "\n\n")
 
-    return `Create a ${style} resume for the "${options.job.role}" position at ${options.job.company}.
+    return `Create a modern resume for the "${options.job.role}" position at ${options.job.company}.
 
 PERSONAL INFORMATION:
 - Name: ${options.personalInfo.name}

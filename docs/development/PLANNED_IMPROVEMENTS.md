@@ -71,12 +71,15 @@ Build AI-powered resume generator using existing experience data.
 
 **Phase 2.2: GCS Storage & Document History** (2-3 days)
 
-- [ ] Create GCS bucket `joshwentworth-resumes` with 90-day lifecycle
-- [ ] Upload PDFs to GCS instead of base64 response
-- [ ] Generate signed URLs for downloads (1hr viewers, 7 days editors)
+- [x] Create GCS buckets with environment-aware selection (local/staging/prod)
+- [x] Implement lifecycle policy (Coldline after 90 days, never deleted)
+- [x] Upload PDFs to GCS with mock mode for local development
+- [x] Generate signed URLs for downloads (1hr viewers, 7 days editors)
+- [x] Update web UI to download from signed URLs
+- [x] Update Firestore schema to store GCS paths and metadata
 - [ ] Add `GET /generator/requests` endpoint for document history
-- [ ] Create document history table (editors only)
-- [ ] Download from signed URLs with tracking
+- [ ] Create document history table UI (editors only)
+- [ ] Implement download tracking in Firestore
 
 **Phase 2.3: Authentication & Editor Features** (3-4 days)
 
@@ -163,7 +166,36 @@ Enhance content upload experience:
 
 **Estimated Effort**: 1-2 days
 
-### 3. Error Boundary Components
+### 3. Navigation Menu Improvements
+
+**Status**: Not started
+
+**Problem**: Navigation menu (hamburger menu) is not consistently available across all pages and needs better styling.
+
+**Current Issues**:
+
+- Not all pages have the navigation menu
+- Menu styling needs improvement for consistency
+- Missing on key pages like resume builder, experience page, etc.
+
+**Implementation**:
+
+- Ensure hamburger menu is present on all pages
+- Update menu styling for consistent look and feel
+- Verify menu functionality across all routes
+- Improve mobile responsiveness
+- Add consistent spacing and animations
+
+**Benefits**:
+
+- Better navigation UX across the entire site
+- Consistent brand experience
+- Improved mobile usability
+- Easier access to all sections
+
+**Estimated Effort**: 1-2 days
+
+### 4. Error Boundary Components
 
 **Status**: Not started
 
@@ -180,7 +212,43 @@ Add React error boundaries for graceful error handling:
 
 ## Medium Priority
 
-### 4. Enhanced Analytics
+### 5. API Response Caching Context
+
+**Status**: Not started
+
+**Problem**: API clients (ExperienceClient, BlurbClient) currently don't use global context for caching responses. When users navigate away from a page and return, data is refetched unnecessarily.
+
+**Current Behavior**:
+
+- `useExperienceData` hook has local state caching
+- Cache is lost on component unmount (navigation)
+- Repeated API calls on page revisits
+
+**Proposed Solution**:
+
+- Create global context provider for API response caching
+- Cache experience data, blurb data, and other API responses
+- Persist cache during session (in-memory, not localStorage)
+- Reduce repeated API calls and improve performance
+
+**Implementation**:
+
+- Create `APIResponseCacheContext.tsx` with cache state management
+- Implement cache invalidation strategy (TTL, manual invalidation)
+- Update API clients to check cache before making requests
+- Wrap app with `APIResponseCacheProvider` in `gatsby-browser.js`
+- Update hooks (`useExperienceData`, etc.) to use cache context
+
+**Benefits**:
+
+- Reduced API calls (faster page loads, lower costs)
+- Improved user experience (instant data display)
+- Network efficiency (fewer Cloud Functions invocations)
+- Consistent with existing context pattern (see `ResumeFormContext`)
+
+**Estimated Effort**: 2-3 days
+
+### 6. Enhanced Analytics
 
 **Status**: Basic analytics in place
 
@@ -196,7 +264,7 @@ Needed: Better tracking and insights
 
 **Estimated Effort**: 1 week
 
-### 5. Centralized Firebase Initialization
+### 7. Centralized Firebase Initialization
 
 **Status**: Deferred from Phase 3
 
@@ -215,7 +283,42 @@ Consolidate Firebase initialization across:
 
 **Estimated Effort**: 3-4 hours
 
-### 6. Improved Loading States
+### 8. GCS to NAS Archival Integration
+
+**Status**: Not started
+
+**Problem**: Long-term storage of generated resumes and cover letters for permanent archival.
+
+**Current Setup**:
+
+- GCS bucket `joshwentworth-resumes` with Coldline storage after 90 days
+- Files never deleted from GCS, but Coldline has retrieval costs
+- Need offline backup to local NAS for true long-term archival
+
+**Proposed Solution**:
+
+- Automated sync from GCS to local NAS storage
+- FTP, rsync, or rclone integration
+- Scheduled Cloud Function or cron job to sync files
+- Keep GCS as hot cache, NAS as cold archival
+
+**Implementation Options**:
+
+1. **Cloud Function + FTP**: Scheduled function to FTP files to NAS
+2. **Local rsync**: Periodic local script using gsutil rsync
+3. **rclone**: Bidirectional sync between GCS and NAS
+4. **GCS Transfer Service**: Might not support local NAS endpoints
+
+**Benefits**:
+
+- True offline backup of all generated documents
+- Reduced long-term GCS storage costs
+- Local control of archival data
+- Disaster recovery option
+
+**Estimated Effort**: 1-2 days
+
+### 9. Improved Loading States
 
 **Status**: Basic loading states exist
 
@@ -232,7 +335,7 @@ Add skeleton screens and better loading UX:
 
 ## Low Priority / Future Enhancements
 
-### 7. Advanced Form Features
+### 10. Advanced Form Features
 
 **Status**: Optional enhancements
 
@@ -243,7 +346,7 @@ Add skeleton screens and better loading UX:
 
 **Estimated Effort**: 1-2 weeks
 
-### 8. Performance Optimizations
+### 11. Performance Optimizations
 
 **Status**: Ongoing
 
@@ -254,7 +357,7 @@ Add skeleton screens and better loading UX:
 
 **Estimated Effort**: Ongoing
 
-### 9. Accessibility Improvements
+### 12. Accessibility Improvements
 
 **Status**: Basic a11y in place
 
@@ -265,7 +368,7 @@ Add skeleton screens and better loading UX:
 
 **Estimated Effort**: 1 week
 
-### 10. Testing Enhancements
+### 13. Testing Enhancements
 
 **Status**: Basic tests in place (91 tests)
 

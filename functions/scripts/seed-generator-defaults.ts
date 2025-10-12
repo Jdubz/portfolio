@@ -43,7 +43,6 @@ async function seedDefaults() {
     avatar: "",
     logo: "",
     accentColor: "#3B82F6",
-    defaultStyle: "modern" as const,
     createdAt: existing.exists ? existing.data()?.createdAt : Timestamp.now(),
     updatedAt: Timestamp.now(),
   }
@@ -60,7 +59,6 @@ async function seedDefaults() {
   console.log("  Email:", defaultsDoc.email)
   console.log("  Location:", defaultsDoc.location)
   console.log("  Accent Color:", defaultsDoc.accentColor)
-  console.log("  Default Style:", defaultsDoc.defaultStyle)
 }
 
 seedDefaults()

@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging health-check health-check-local health-check-staging health-check-prod test-health-check
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging health-check health-check-local health-check-staging health-check-prod test-health-check editor-add editor-remove editor-list editor-check
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -67,6 +67,12 @@ help:
 	@echo "  make seed-generator-defaults     - Seed generator defaults (local emulator)"
 	@echo "  make seed-generator-staging      - Seed generator defaults (staging database)"
 	@echo "  make seed-generator-prod         - Seed generator defaults (production database)"
+	@echo ""
+	@echo "Editor Role Management:"
+	@echo "  make editor-add EMAIL=<email>    - Grant editor role to user"
+	@echo "  make editor-remove EMAIL=<email> - Revoke editor role from user"
+	@echo "  make editor-list                 - List all users with editor role"
+	@echo "  make editor-check EMAIL=<email>  - Check if user has editor role"
 	@echo ""
 	@echo "Deployment:"
 	@echo "  make deploy-staging        - Build and deploy to staging"
@@ -373,3 +379,35 @@ health-check-prod:
 test-health-check:
 	@echo "Running health check regression tests..."
 	@./scripts/test-health-check.sh
+
+# Editor Role Management
+editor-add:
+	@if [ -z "$(EMAIL)" ]; then \
+		echo "Error: Email required"; \
+		echo "Usage: make editor-add EMAIL=user@example.com"; \
+		exit 1; \
+	fi
+	@echo "Granting editor role to: $(EMAIL)"
+	@node scripts/manage-editor-role.js add $(EMAIL)
+
+editor-remove:
+	@if [ -z "$(EMAIL)" ]; then \
+		echo "Error: Email required"; \
+		echo "Usage: make editor-remove EMAIL=user@example.com"; \
+		exit 1; \
+	fi
+	@echo "Revoking editor role from: $(EMAIL)"
+	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	@node scripts/manage-editor-role.js remove $(EMAIL)
+
+editor-list:
+	@echo "Listing all users with editor role..."
+	@node scripts/manage-editor-role.js list
+
+editor-check:
+	@if [ -z "$(EMAIL)" ]; then \
+		echo "Error: Email required"; \
+		echo "Usage: make editor-check EMAIL=user@example.com"; \
+		exit 1; \
+	fi
+	@node scripts/manage-editor-role.js check $(EMAIL)
