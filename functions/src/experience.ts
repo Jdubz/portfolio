@@ -1,72 +1,18 @@
 import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
-import cors from "cors"
 import Joi from "joi"
 import { ExperienceService } from "./services/experience.service"
 import { BlurbService } from "./services/blurb.service"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
-
-// Import package.json to get version
-// Try ./package.json first (deployed), fallback to ../package.json (development)
-const packageJson = (() => {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require("./package.json")
-  } catch {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require("../package.json")
-  }
-})()
-
-// Error codes for experience API
-const ERROR_CODES = {
-  // Client errors (400, 404, 405)
-  VALIDATION_FAILED: { code: "EXP_VAL_001", status: 400, message: "Validation failed" },
-  INVALID_DATE: { code: "EXP_VAL_002", status: 400, message: "Invalid date format (expected YYYY-MM)" },
-  MISSING_TITLE: { code: "EXP_VAL_003", status: 400, message: "Title is required" },
-  MISSING_START_DATE: { code: "EXP_VAL_004", status: 400, message: "Start date is required" },
-  NOT_FOUND: { code: "EXP_REQ_001", status: 404, message: "Experience entry not found" },
-  METHOD_NOT_ALLOWED: { code: "EXP_REQ_002", status: 405, message: "Method not allowed" },
-
-  // Server errors (5xx)
-  FIRESTORE_ERROR: { code: "EXP_DB_001", status: 503, message: "Database error" },
-  INTERNAL_ERROR: { code: "EXP_SYS_001", status: 500, message: "Internal server error" },
-} as const
-
-// Simple logger for cloud functions
-const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
-
-const logger = {
-  info: (message: string, data?: unknown) => {
-    if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
-  },
-  warning: (message: string, data?: unknown) => {
-    if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
-  },
-  error: (message: string, data?: unknown) => {
-    if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
-  },
-}
+import { logger } from "./utils/logger"
+import { generateRequestId } from "./utils/request-id"
+import { corsHandler } from "./config/cors"
+import { EXPERIENCE_ERROR_CODES as ERROR_CODES } from "./config/error-codes"
+import { PACKAGE_VERSION } from "./config/versions"
 
 // Initialize services
 const experienceService = new ExperienceService(logger)
 const blurbService = new BlurbService(logger)
-
-// CORS configuration
-const corsOptions = {
-  origin: [
-    "https://joshwentworth.com",
-    "https://www.joshwentworth.com",
-    "https://staging.joshwentworth.com",
-    "http://localhost:8000",
-    "http://localhost:3000",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}
-
-const corsHandler = cors(corsOptions)
 
 // Validation schemas
 const createSchema = Joi.object({
@@ -119,13 +65,6 @@ const updateBlurbSchema = Joi.object({
 })
 
 /**
- * Generate a unique request ID for tracking
- */
-function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
-}
-
-/**
  * Cloud Function to manage experience entries and blurbs
  *
  * Optimized Routes:
@@ -168,7 +107,7 @@ const handleExperienceRequest = async (req: Request, res: Response): Promise<voi
               success: true,
               service: "manageExperience",
               status: "healthy",
-              version: packageJson.version,
+              version: PACKAGE_VERSION,
               timestamp: new Date().toISOString(),
             })
             resolve()

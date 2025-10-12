@@ -205,6 +205,7 @@ CRITICAL RULES - THESE ARE ABSOLUTE AND NON-NEGOTIABLE:
 5. If information is missing or unclear, omit it entirely - DO NOT guess or infer
 6. You may REFORMAT wording for clarity, but NEVER change factual content
 7. You may REORGANIZE content for better presentation, but NEVER add new information
+8. MAXIMUM LENGTH: The resume MUST fit within 2 pages when rendered to PDF (approximately 700-800 words total)
 
 Your role is to:
 - Format and structure the provided experience data professionally
@@ -213,12 +214,14 @@ Your role is to:
 - Ensure ATS-friendliness through proper formatting
 - Use action verbs from the source material
 - Focus on impact and results that are stated in the data
+- Keep content concise to fit within 2-page limit
 
 What you CANNOT do:
 - Add accomplishments not stated in the source data
 - Insert metrics or quantification not explicitly provided
 - Infer skills, technologies, or methodologies not mentioned
-- Create education entries if none are provided`
+- Create education entries if none are provided
+- Exceed 2 pages of content`
   }
 
   /**
@@ -298,6 +301,7 @@ Generate a complete, ATS-friendly resume using ONLY the factual information expl
 
 Your letters are:
 - Concise (3-4 paragraphs maximum)
+- MAXIMUM LENGTH: Must fit on 1 page when rendered to PDF (approximately 250-350 words total)
 - Professional but warm in tone
 - Focused on relevant accomplishments and fit for the specific role
 - Free of clichés and generic phrases

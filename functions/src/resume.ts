@@ -3,65 +3,20 @@ import type { Request as ExpressRequest, Response } from "express"
 import { Storage } from "@google-cloud/storage"
 import busboy from "busboy"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
+import { logger } from "./utils/logger"
+import { generateRequestId } from "./utils/request-id"
+import { RESUME_UPLOAD_CORS_OPTIONS } from "./config/cors"
+import { RESUME_ERROR_CODES as ERROR_CODES } from "./config/error-codes"
+import { PACKAGE_VERSION } from "./config/versions"
 
 // Extend Express Request to include rawBody from Firebase Functions
 type Request = ExpressRequest & { rawBody?: Buffer }
-
-// Error codes for resume API
-const ERROR_CODES = {
-  // Client errors (400, 405, 413)
-  VALIDATION_FAILED: { code: "RES_VAL_001", status: 400, message: "Validation failed" },
-  INVALID_FILE_TYPE: { code: "RES_VAL_002", status: 400, message: "Only PDF files are allowed" },
-  FILE_TOO_LARGE: { code: "RES_VAL_003", status: 413, message: "File size must be less than 10MB" },
-  NO_FILE_PROVIDED: { code: "RES_VAL_004", status: 400, message: "No file provided" },
-  METHOD_NOT_ALLOWED: { code: "RES_REQ_001", status: 405, message: "Method not allowed" },
-
-  // Server errors (5xx)
-  STORAGE_ERROR: { code: "RES_STOR_001", status: 503, message: "Storage service error" },
-  INTERNAL_ERROR: { code: "RES_SYS_001", status: 500, message: "Internal server error" },
-} as const
-
-// Simple logger for cloud functions
-const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
-
-const logger = {
-  info: (message: string, data?: unknown) => {
-    if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
-  },
-  warning: (message: string, data?: unknown) => {
-    if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
-  },
-  error: (message: string, data?: unknown) => {
-    if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
-  },
-}
 
 // Initialize Google Cloud Storage
 const storage = new Storage()
 const BUCKET_NAME = "joshwentworth-resume"
 const RESUME_FILENAME = "resume.pdf"
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-
-// CORS configuration
-const corsOptions = {
-  origin: [
-    "https://joshwentworth.com",
-    "https://www.joshwentworth.com",
-    "https://staging.joshwentworth.com",
-    "http://localhost:8000",
-    "http://localhost:3000",
-  ],
-  methods: ["POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}
-
-/**
- * Generate a unique request ID for tracking
- */
-function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
-}
 
 /**
  * Cloud Function to handle resume uploads
@@ -74,15 +29,18 @@ const handleResumeRequest = async (req: Request, res: Response): Promise<void> =
 
   // Set CORS headers manually to avoid middleware consuming body
   const origin = req.headers.origin || ""
-  const isAllowedOrigin = corsOptions.origin.includes(origin)
+  const allowedOrigins = RESUME_UPLOAD_CORS_OPTIONS.origin as string[]
+  const isAllowedOrigin = allowedOrigins.includes(origin)
 
   if (isAllowedOrigin) {
     res.setHeader("Access-Control-Allow-Origin", origin)
     res.setHeader("Access-Control-Allow-Credentials", "true")
   }
 
-  res.setHeader("Access-Control-Allow-Methods", corsOptions.methods.join(", "))
-  res.setHeader("Access-Control-Allow-Headers", corsOptions.allowedHeaders.join(", "))
+  const methods = RESUME_UPLOAD_CORS_OPTIONS.methods as string[]
+  const headers = RESUME_UPLOAD_CORS_OPTIONS.allowedHeaders as string[]
+  res.setHeader("Access-Control-Allow-Methods", methods.join(", "))
+  res.setHeader("Access-Control-Allow-Headers", headers.join(", "))
 
   // Handle OPTIONS preflight (must be before any auth checks)
   if (req.method === "OPTIONS") {
