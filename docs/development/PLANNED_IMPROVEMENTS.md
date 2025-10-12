@@ -120,17 +120,27 @@ Build AI-powered resume generator using existing experience data.
 - [ ] Extract job description builder to `buildJobDescription()` helper (generator.ts)
 - [ ] Document service account configuration (experience.ts)
 
-**Phase 2.8: Form State Management** ❌ SKIPPED
+**Phase 2.8: Form State Management** (1 day)
 
-- ❌ Not needed - localStorage persistence beyond authentication not required
-- Form state doesn't need to survive navigation/refresh for this use case
-- Users can fill form in single session without persistence needs
+- [ ] Create React Context provider for resume form state
+- [ ] Maintain form state during page navigation (within session)
+- [ ] Migrate job info, preferences, and personal info to context
+- [ ] Add "Clear Form" button to reset state
+- [ ] ❌ NO localStorage persistence (beyond authentication)
+- [ ] Form state resets on browser refresh (acceptable)
+
+**Benefits**:
+
+- State persists during navigation within the same session
+- Centralized form state management
+- Foundation for multi-step form flow
+- Clean separation of concerns
 
 **Total Estimated Effort Phase 2**: 14-19 days (~3 weeks)
 **Completed**: 2 days (Phase 2.1) ✅
 **Remaining**: 12-17 days
 
-**Priority Order**: ~~2.1 (cover letter)~~ ✅ → ~~2.8 (form state)~~ ❌ → **2.3 (auth) NEXT** → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (timestamp/attribution) → 2.7 (quality)
+**Priority Order**: ~~2.1 (cover letter)~~ ✅ → **2.8 (form context) NEXT** → 2.3 (auth) → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (timestamp/attribution) → 2.7 (quality)
 
 **Documentation**: See [generator/](./generator/) for complete details:
 
