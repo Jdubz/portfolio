@@ -1,3 +1,10 @@
+/**
+ * Resume & Cover Letter Generator Cloud Function
+ *
+ * Supports both OpenAI and Gemini AI providers with optional authentication
+ * for tiered rate limiting.
+ */
+
 import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
 import Joi from "joi"
