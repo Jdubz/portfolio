@@ -120,11 +120,30 @@ Build AI-powered resume generator using existing experience data.
 - [ ] Extract job description builder to `buildJobDescription()` helper (generator.ts)
 - [ ] Document service account configuration (experience.ts)
 
-**Total Estimated Effort Phase 2**: 14-19 days (3 weeks)
-**Completed**: 2 days (Phase 2.1) ✅
-**Remaining**: 12-17 days
+**Phase 2.8: Form State Management** (1-2 days)
 
-**Priority Order**: ~~2.1 (cover letter)~~ ✅ → **2.3 (auth) NEXT** → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (timestamp/attribution) → 2.7 (quality)
+- [ ] Abstract form state to React Context provider
+- [ ] Persist form data in localStorage/sessionStorage
+- [ ] Form data survives page navigation and refresh
+- [ ] Auto-save form on input changes (debounced)
+- [ ] Restore form state on page load
+- [ ] Add "Clear Form" button to reset state
+- [ ] Show "Unsaved changes" indicator
+- [ ] Migrate job info, preferences, and personal info to context
+- [ ] Optional: Add form validation at context level
+
+**Benefits**:
+
+- Better UX - users don't lose work on accidental navigation
+- Auto-save functionality
+- Consistent state across all resume builder components
+- Foundation for future "Save Draft" feature
+
+**Total Estimated Effort Phase 2**: 16-22 days (~3-4 weeks)
+**Completed**: 2 days (Phase 2.1) ✅
+**Remaining**: 14-20 days
+
+**Priority Order**: ~~2.1 (cover letter)~~ ✅ → **2.8 (form state) NEXT** → 2.3 (auth) → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (timestamp/attribution) → 2.7 (quality)
 
 **Documentation**: See [generator/](./generator/) for complete details:
 
