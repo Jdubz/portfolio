@@ -35,11 +35,19 @@ jobs:
           sudo apt-get install -y python3 make g++
 
       - name: Install root dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
+        env:
+          NPM_CONFIG_FETCH_RETRIES: 3
+          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 20000
+          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 120000
 
       - name: Install web dependencies
         working-directory: web
-        run: npm ci --include=optional --legacy-peer-deps
+        run: npm ci --include=optional --legacy-peer-deps --prefer-offline --no-audit
+        env:
+          NPM_CONFIG_FETCH_RETRIES: 3
+          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 20000
+          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 120000
 
       - name: Install and verify @parcel/watcher
         run: |
