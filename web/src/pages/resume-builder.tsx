@@ -4,28 +4,35 @@ import { Link, type HeadFC } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { logger } from "../utils/logger"
 import { generatorClient } from "../api/generator-client"
+import { useResumeForm } from "../contexts/ResumeFormContext"
 import type { GenerationType, GenerationMetadata, AIProviderType } from "../types/generator"
 
 /**
  * Resume Builder MVP Page
  *
- * Simple UI to test the AI Resume Generator
- * Uses default settings only (no editing in MVP)
+ * Uses ResumeFormContext to maintain form state during navigation.
+ * Form persists within session but resets on page refresh.
  */
 const ResumeBuilderPage: React.FC = () => {
+  // Get form state from context
+  const {
+    formState,
+    setGenerateType,
+    setAIProvider,
+    setRole,
+    setCompany,
+    setCompanyWebsite,
+    setJobDescriptionUrl,
+    setJobDescriptionText,
+    setEmphasize,
+    clearForm,
+    isFormEmpty,
+  } = useResumeForm()
+
+  // UI state (not persisted in context)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-
-  // Form state
-  const [generateType, setGenerateType] = useState<GenerationType>("both")
-  const [aiProvider, setAIProvider] = useState<AIProviderType>("gemini")
-  const [role, setRole] = useState("")
-  const [company, setCompany] = useState("")
-  const [companyWebsite, setCompanyWebsite] = useState("")
-  const [jobDescriptionUrl, setJobDescriptionUrl] = useState("")
-  const [jobDescriptionText, setJobDescriptionText] = useState("")
-  const [emphasize, setEmphasize] = useState("")
 
   // Load AI provider preference from localStorage on mount
   useEffect(() => {
@@ -33,7 +40,7 @@ const ResumeBuilderPage: React.FC = () => {
     if (savedProvider === "openai" || savedProvider === "gemini") {
       setAIProvider(savedProvider)
     }
-  }, [])
+  }, [setAIProvider])
 
   // Save AI provider preference to localStorage when it changes
   const handleProviderChange = (provider: AIProviderType) => {
@@ -57,19 +64,19 @@ const ResumeBuilderPage: React.FC = () => {
     setMetadata(null)
 
     try {
-      // Prepare request payload
+      // Prepare request payload using formState
       const payload = {
-        generateType,
-        provider: aiProvider,
+        generateType: formState.generateType,
+        provider: formState.aiProvider,
         job: {
-          role: role.trim(),
-          company: company.trim(),
-          companyWebsite: companyWebsite.trim() || undefined,
-          jobDescriptionUrl: jobDescriptionUrl.trim() || undefined,
-          jobDescriptionText: jobDescriptionText.trim() || undefined,
+          role: formState.role.trim(),
+          company: formState.company.trim(),
+          companyWebsite: formState.companyWebsite.trim() || undefined,
+          jobDescriptionUrl: formState.jobDescriptionUrl.trim() || undefined,
+          jobDescriptionText: formState.jobDescriptionText.trim() || undefined,
         },
         preferences: {
-          emphasize: emphasize
+          emphasize: formState.emphasize
             .split(",")
             .map((s) => s.trim())
             .filter((s) => s.length > 0),
@@ -203,7 +210,7 @@ const ResumeBuilderPage: React.FC = () => {
           <Label htmlFor="generateType">What would you like to generate?</Label>
           <Select
             id="generateType"
-            value={generateType}
+            value={formState.generateType}
             onChange={(e) => setGenerateType(e.target.value as GenerationType)}
             disabled={generating}
             required
@@ -219,7 +226,7 @@ const ResumeBuilderPage: React.FC = () => {
           <Label htmlFor="aiProvider">AI Provider</Label>
           <Select
             id="aiProvider"
-            value={aiProvider}
+            value={formState.aiProvider}
             onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
             disabled={generating}
             required
@@ -228,7 +235,7 @@ const ResumeBuilderPage: React.FC = () => {
             <option value="openai">OpenAI GPT-4o ($0.015/generation)</option>
           </Select>
           <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>
-            {aiProvider === "gemini"
+            {formState.aiProvider === "gemini"
               ? "✨ Gemini 2.0 Flash: Fast, accurate, and cost-effective"
               : "🚀 GPT-4o: Premium quality, higher cost"}
           </Text>
@@ -243,7 +250,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="role"
             type="text"
             placeholder="e.g., Senior Full-Stack Engineer"
-            value={role}
+            value={formState.role}
             onChange={(e) => setRole(e.target.value)}
             disabled={generating}
             required
@@ -259,7 +266,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="company"
             type="text"
             placeholder="e.g., Google"
-            value={company}
+            value={formState.company}
             onChange={(e) => setCompany(e.target.value)}
             disabled={generating}
             required
@@ -273,7 +280,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="companyWebsite"
             type="url"
             placeholder="https://example.com"
-            value={companyWebsite}
+            value={formState.companyWebsite}
             onChange={(e) => setCompanyWebsite(e.target.value)}
             disabled={generating}
           />
@@ -286,7 +293,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="jobDescriptionUrl"
             type="url"
             placeholder="https://example.com/jobs/123"
-            value={jobDescriptionUrl}
+            value={formState.jobDescriptionUrl}
             onChange={(e) => setJobDescriptionUrl(e.target.value)}
             disabled={generating}
           />
@@ -302,7 +309,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="jobDescriptionText"
             placeholder="Paste the job description here..."
             rows={6}
-            value={jobDescriptionText}
+            value={formState.jobDescriptionText}
             onChange={(e) => setJobDescriptionText(e.target.value)}
             disabled={generating}
           />
@@ -315,24 +322,39 @@ const ResumeBuilderPage: React.FC = () => {
             id="emphasize"
             type="text"
             placeholder="TypeScript, React, Node.js, AWS"
-            value={emphasize}
+            value={formState.emphasize}
             onChange={(e) => setEmphasize(e.target.value)}
             disabled={generating}
           />
           <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>Comma-separated list of keywords</Text>
         </Box>
 
-        {/* Submit Button */}
-        <Button type="submit" disabled={generating} sx={{ width: "100%" }}>
-          {generating ? (
-            <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
-              <Spinner size={20} sx={{ mr: 2 }} />
-              Generating... (this may take 30-60 seconds)
-            </Flex>
-          ) : (
-            "Generate Documents"
-          )}
-        </Button>
+        {/* Action Buttons */}
+        <Flex sx={{ gap: 2 }}>
+          <Button type="submit" disabled={generating} sx={{ flex: 1 }}>
+            {generating ? (
+              <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
+                <Spinner size={20} sx={{ mr: 2 }} />
+                Generating... (this may take 30-60 seconds)
+              </Flex>
+            ) : (
+              "Generate Documents"
+            )}
+          </Button>
+
+          <Button
+            type="button"
+            onClick={() => {
+              clearForm()
+              logger.info("Form cleared")
+            }}
+            disabled={generating || isFormEmpty()}
+            variant="secondary"
+            sx={{ flexShrink: 0 }}
+          >
+            Clear Form
+          </Button>
+        </Flex>
       </Box>
 
       {/* Results */}
@@ -375,7 +397,10 @@ const ResumeBuilderPage: React.FC = () => {
             {resumePDF && (
               <Button
                 onClick={() =>
-                  downloadPDF(resumePDF, `${company.replace(/\s+/g, "_")}_${role.replace(/\s+/g, "_")}_Resume.pdf`)
+                  downloadPDF(
+                    resumePDF,
+                    `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_Resume.pdf`
+                  )
                 }
                 variant="secondary"
               >
@@ -387,7 +412,7 @@ const ResumeBuilderPage: React.FC = () => {
                 onClick={() =>
                   downloadPDF(
                     coverLetterPDF,
-                    `${company.replace(/\s+/g, "_")}_${role.replace(/\s+/g, "_")}_CoverLetter.pdf`
+                    `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_CoverLetter.pdf`
                   )
                 }
                 variant="secondary"
