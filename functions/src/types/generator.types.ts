@@ -13,6 +13,16 @@ import type { ExperienceEntry } from "../services/experience.service"
 import type { BlurbEntry } from "../services/blurb.service"
 
 // =============================================================================
+// Logging
+// =============================================================================
+
+export interface SimpleLogger {
+  info: (message: string, data?: unknown) => void
+  warning: (message: string, data?: unknown) => void
+  error: (message: string, data?: unknown) => void
+}
+
+// =============================================================================
 // Generation Type
 // =============================================================================
 
@@ -75,7 +85,6 @@ export interface GenerateResumeOptions {
   }
   experienceEntries: ExperienceEntry[]
   experienceBlurbs: BlurbEntry[]
-  style?: string
   emphasize?: string[]
 }
 
@@ -164,10 +173,7 @@ export interface GeneratorDefaults {
   // Visual Branding
   avatar?: string // URL or GCS path to profile photo
   logo?: string // URL or GCS path to personal logo
-  accentColor: string // Hex color for resume styling
-
-  // Resume Style Preferences
-  defaultStyle: "modern" | "traditional" | "technical" | "executive"
+  accentColor: string // Hex color for resume styling (always "modern" style)
 
   // Metadata
   createdAt: Timestamp
@@ -186,7 +192,6 @@ export interface UpdateGeneratorDefaultsData {
   avatar?: string
   logo?: string
   accentColor?: string
-  defaultStyle?: "modern" | "traditional" | "technical" | "executive"
 }
 
 // =============================================================================
@@ -216,7 +221,6 @@ export interface GeneratorRequest {
     avatar?: string
     logo?: string
     accentColor: string
-    defaultStyle: string
   }
 
   // Job Application Details
@@ -228,9 +232,8 @@ export interface GeneratorRequest {
     jobDescriptionText?: string
   }
 
-  // Generation Preferences (optional overrides)
+  // Generation Preferences
   preferences?: {
-    style?: string // Override defaultStyle
     emphasize?: string[] // Keywords to emphasize
   }
 
@@ -322,12 +325,14 @@ export interface GeneratorResponse {
       signedUrl?: string
       signedUrlExpiry?: Timestamp
       size?: number
+      storageClass?: "STANDARD" | "COLDLINE"
     }
     coverLetter?: {
       gcsPath: string
       signedUrl?: string
       signedUrlExpiry?: Timestamp
       size?: number
+      storageClass?: "STANDARD" | "COLDLINE"
     }
   }
 
@@ -349,17 +354,6 @@ export interface GeneratorResponse {
 
     // Model information
     model: string
-  }
-
-  // Download Tracking
-  tracking: {
-    downloads: number
-    lastDownloadedAt?: Timestamp
-    downloadHistory?: Array<{
-      timestamp: Timestamp
-      documentType: "resume" | "coverLetter"
-      downloadedBy?: string
-    }>
   }
 
   // Timestamps

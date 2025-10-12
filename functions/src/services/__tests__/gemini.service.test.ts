@@ -87,7 +87,6 @@ describe("GeminiProvider", () => {
           updatedBy: "test@example.com",
         },
       ],
-      style: "modern",
       emphasize: ["TypeScript", "React"],
     }
 

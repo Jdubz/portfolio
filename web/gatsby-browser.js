@@ -1,5 +1,12 @@
 import "./src/styles/fonts.css"
+import React from "react"
 import { initCacheVersionCheck } from "./src/utils/cache-version"
+import { ResumeFormProvider } from "./src/contexts/ResumeFormContext"
+
+// Wrap root element with providers
+export const wrapRootElement = ({ element }) => {
+  return <ResumeFormProvider>{element}</ResumeFormProvider>
+}
 
 // Log app version to console
 export const onClientEntry = async () => {

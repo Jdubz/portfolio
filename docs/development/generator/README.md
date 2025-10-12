@@ -1,282 +1,217 @@
-# AI Resume Generator# AI Resume Generator
+# AI Resume Generator
 
-> **Status:** Phase 2.0a Complete ✅ | Ready for Testing & Deployment> **Status:** Phase 1 Complete ✅ | Phase 2 Ready to Start
-
-> **Last Updated:** October 11, 2025> **Last Updated:** October 10, 2025
-
+> **Status:** Phase 2.3 Complete ✅ | Production Ready
+>
+> **Last Updated:** October 12, 2025
+>
 > **Branch:** `resume-generator`
 
-AI-powered resume generator using OpenAI GPT-4o, Puppeteer PDF export, and Firestore tracking.
+AI-powered resume and cover letter generator with multi-provider support (OpenAI GPT-4o, Google Gemini 2.0), GCS storage, Firebase Authentication, and comprehensive Firestore tracking.
 
-AI-powered resume and cover letter generator with multi-provider support (OpenAI GPT-4o, Google Gemini), Puppeteer PDF export, and Firestore tracking.
-
-## Quick Links
+---
 
 ## Quick Links
 
-- **[Phase 2 Plan](./PHASE_2_PLAN.md)** - Next steps for full feature set (2-3 weeks)
+- **[Firestore Schema](./SCHEMA.md)** - Complete database structure and types
+- **[GCS Environment Setup](./GCS_ENVIRONMENT_SETUP.md)** - Storage configuration (local/staging/prod)
+- **[Quickstart Guide](./QUICKSTART.md)** - Get started in 5 minutes
 
-- **[Firestore Schema](./SCHEMA.md)** - Database structure and types reference- **[Firestore Schema](./SCHEMA.md)** - Database structure reference
+---
 
-- **[PLANNED_IMPROVEMENTS.md](../PLANNED_IMPROVEMENTS.md)** - Overall project roadmap- **[PLANNED_IMPROVEMENTS.md](../PLANNED_IMPROVEMENTS.md)** - Overall project roadmap
+## What's Built ✅
 
----## Phase 1: What's Working ✅
+### Core Features
 
-## Current Status### Features
+- ✅ **AI Generation**
+  - Multi-provider support (OpenAI GPT-4o, Google Gemini 2.0 Flash)
+  - Provider selection UI with real-time cost comparison
+  - Mock mode for local development (both providers)
+  - Resume + Cover Letter generation
 
-- ✅ Resume generation with OpenAI GPT-4o
+- ✅ **PDF Export**
+  - Modern template with Puppeteer + Handlebars
+  - Logo and avatar support
+  - Accent color customization
+  - Professional formatting
 
-### Phase 1: MVP ✅ COMPLETE- ✅ PDF export with logo/avatar support
+- ✅ **Cloud Storage (GCS)**
+  - Environment-aware bucket selection (local/staging/production)
+  - Firebase Storage Emulator for local dev with persistence
+  - Signed URLs (1 hour for viewers, 7 days for editors)
+  - Lifecycle management (90-day COLDLINE transition)
+  - Storage class tracking in Firestore
 
-- ✅ Job-tailored content based on description
+- ✅ **Authentication & Authorization**
+  - Optional Firebase Auth (Google sign-in)
+  - Editor role via custom claims
+  - Tiered rate limiting (10 viewer / 20 editor requests per 15min)
+  - Makefile scripts for role management
 
-**Features:**- ✅ Firestore request/response tracking
+- ✅ **Database & Tracking**
+  - Firestore request/response documents
+  - Experience data snapshots for reproducibility
+  - Token usage and cost metrics
+  - Composite indexes for production queries
+  - Document history for editors
 
-- ✅ Resume generation with OpenAI GPT-4o- ✅ Token usage and cost metrics
+- ✅ **Developer Experience**
+  - Type-safe end-to-end (TypeScript)
+  - Comprehensive test coverage (211+ tests)
+  - Local emulator support with data persistence
+  - Environment-aware configuration
+  - Detailed logging and error handling
 
-- ✅ Cover letter generation (backend complete)- ✅ Rate limiting (10 requests/15min)
+### Cost Comparison
 
-- ✅ PDF export with logo/avatar support- ✅ Mock mode for local dev (OPENAI_MOCK_MODE=true)
+| Provider | Cost per Generation | Speed | Notes |
+|----------|-------------------|-------|-------|
+| **Gemini 2.0 Flash** | **$0.0011** | ~3-5s | Default, 96% cheaper |
+| OpenAI GPT-4o | $0.0275 | ~4-6s | Slightly better quality |
 
-- ✅ Job-tailored content based on description- ✅ Type-safe end-to-end
+**Savings: 96% cheaper with Gemini while maintaining excellent quality**
 
-- ✅ Firestore request/response tracking
+---
 
-- ✅ Token usage and cost metrics### Architecture
+## Architecture
 
-- ✅ Rate limiting (10 requests/15min)
+### Backend (`functions/src/`)
 
-- ✅ Mock mode for local dev (`OPENAI_MOCK_MODE=true`)**Backend** ([functions/src/](../../functions/src/))
-
-- ✅ Type-safe end-to-end```
-
-- ✅ Comprehensive test coverage (211 tests passing)generator.ts # Cloud Function (POST /generator/generate)
-
+```
+generator.ts                      # Cloud Function (POST /generator/generate)
 ├── services/
-
-### Phase 2.0a: AI Provider Selection ✅ COMPLETE│ ├── generator.service.ts # Firestore CRUD
-
-│ ├── openai.service.ts # OpenAI structured outputs
-
-**Features:**│ └── pdf.service.ts # Puppeteer + Handlebars
-
-- ✅ Multi-provider support (OpenAI + Gemini)├── templates/
-
-- ✅ Provider selection UI with cost comparison│ └── resume-modern.hbs # PDF template
-
-- ✅ LocalStorage preference persistence└── types/
-
-- ✅ 96% cost savings with Gemini vs OpenAI └── generator.types.ts # Shared types
-
-- ✅ Factory pattern for provider abstraction```
-
-- ✅ Provider-specific cost calculation
-
-- ✅ Comprehensive unit tests (17 factory + 15 Gemini tests)**Frontend** ([web/src/](../../web/src/))
-
-```````
-
-**Cost Comparison:**pages/resume-builder.tsx       # Basic UI at /resume-builder
-
-- Gemini 2.0 Flash: **$0.0011/generation** (default)api/generator-client.ts        # API client (28 tests)
-
-- OpenAI GPT-4o: **$0.0275/generation**types/generator.ts             # Shared types
-
-- **Savings: 96% cheaper with Gemini**```
-
-
-
-**What's Ready:**### Key Decisions
-
-- ✅ Backend: Fully implemented and tested
-
-- ✅ Frontend: Provider selection dropdown with cost display**What we shipped:**
-
-- ✅ Tests: 211/211 passing- Resume-only generation (cover letter service exists but not exposed)
-
-- 🔄 Next: Local testing → Staging deployment → Production- Base64 PDF response (no GCS storage yet)
-
-- Public access (no authentication required)
-
----- Single template (modern style)
-
-
-
-## Architecture**Why:**
-
-- Prove core generation works
-
-### Backend (`functions/src/`)- Minimize scope for MVP
-
-- Faster iteration
-
-```text
-
-generator.ts                    # Cloud Function (POST /generator/generate)## Current Limitations
-
-├── services/
-
-│   ├── generator.service.ts    # Firestore CRUD1. **No cover letter in UI** - Service implemented, needs checkbox
-
-│   ├── ai-provider.factory.ts  # Provider factory (NEW ✨)2. **No document history** - PDFs not stored, need GCS
-
-│   ├── gemini.service.ts       # Gemini provider (NEW ✨)3. **No authentication** - All users are viewers, no editor features
-
-│   ├── openai.service.ts       # OpenAI provider (refactored)4. **Single template** - Only "modern" style
-
-│   └── pdf.service.ts          # Puppeteer + Handlebars5. **Rate limiting applies to all** - No bypass for editors
-
+│   ├── generator.service.ts      # Firestore CRUD (defaults, requests, responses)
+│   ├── ai-provider.factory.ts    # Provider abstraction layer
+│   ├── openai.service.ts         # OpenAI GPT-4o integration
+│   ├── gemini.service.ts         # Google Gemini 2.0 integration
+│   ├── pdf.service.ts            # Puppeteer PDF generation
+│   ├── storage.service.ts        # GCS uploads and signed URLs
+│   └── experience.service.ts     # Experience data fetching
 ├── templates/
-
-│   └── resume-modern.hbs       # PDF template## Local Development
-
-└── types/
-
-    └── generator.types.ts      # Shared types + AIProvider interface### Prerequisites
-
-``````bash
-
-# 1. Install dependencies
-
-**Key Components:**cd functions && npm install
-
-
-
-1. **AI Provider Factory** (`ai-provider.factory.ts`)# 2. Set environment variables
-
-   - Factory pattern for creating provider instancesecho "OPENAI_MOCK_MODE=true" >> functions/.env.local
-
-   - Environment-based configuration (API keys from Secret Manager)echo "ENVIRONMENT=development" >> functions/.env.local
-
-   - Mock mode support for development
-
-   - 17 passing unit tests# 3. Seed defaults document (one-time)
-
-# Via Firestore console or script - see SCHEMA.md
-
-2. **Gemini Provider** (`gemini.service.ts`)```
-
-   - Uses `@google/generative-ai` SDK
-
-   - Model: `gemini-2.0-flash-exp`### Run
-
-   - Structured JSON output with schema validation```bash
-
-   - Temperature 0 for deterministic outputs# Terminal 1: Start emulators
-
-   - 15 passing unit testsnpm run emulators
-
-
-
-3. **OpenAI Provider** (`openai.service.ts`)# Terminal 2: Start web dev server
-
-   - Refactored to implement AIProvider interfacecd web && npm run dev
-
-   - Model: `gpt-4o-2024-08-06````
-
-   - Structured outputs with JSON schema
-
-   - Maintains all existing functionality**Test:** http://localhost:8000/resume-builder
-
-
-
-4. **Generator Service** (`generator.ts`)### Testing
-
-   - Accepts `provider` parameter in requests```bash
-
-   - Validates provider selection ('openai' | 'gemini')# All tests (136 total)
-
-   - Uses factory to instantiate appropriate providernpm test
-
-   - Tracks provider used in response metadata
-
-   - Provider-specific cost calculation# Generator tests only
-
-cd functions && npm test -- generator
-
-### Frontend (`web/src/`)```
-
-
-
-```text## Deployment
-
-pages/resume-builder.tsx        # Main UI at /resume-builder
-
-├── Provider selection dropdown**Not yet deployed to production**
-
-├── Job description input
-
-├── Generate type selector (resume/cover letter/both)Phase 1 is working in local dev. Deployment planned after Phase 2.3 (authentication) is complete.
-
-├── Cost display (estimated + actual)
-
-└── PDF download## Getting Help
-
-
-
-api/generator-client.ts         # API client (28 tests)**Found a bug?** Open an issue with:
-
-types/generator.ts              # Shared types- What you tried
-
-```- Expected vs actual behavior
-
-- Error logs (check browser console + function logs)
-
-**UI Features:**
-
-- Provider dropdown (Gemini default, OpenAI premium)**Want to contribute?** See [Phase 2 Plan](./PHASE_2_PLAN.md) for tasks.
-
-- Model name display (e.g., "gemini-2.0-flash-exp")
-
-- Estimated cost before generation## Recent Changes
-
-- Actual cost after generation
-
-- LocalStorage persistence for provider preference- `062f1f5` - docs: Phase 1 status and Phase 2 plan
-
-- `75f2278` - refactor: type consistency fixes
-
----- `d46eb49` - fix: Firestore undefined value errors
-
-- `c598985` - feat: logo/avatar in PDF template
-
-## Environment Setup- `eeb6773` - feat: Phase 1 MVP implementation
-
-
-
-### Required Environment VariablesSee full history: `git log --oneline --grep="resume\|generator" -i`
-
-
-**Cloud Functions:**
-
-```bash
-GOOGLE_API_KEY          # For Gemini (Secret Manager)
-OPENAI_API_KEY          # For OpenAI (Secret Manager)
-OPENAI_MOCK_MODE=true   # Optional: Local dev mock mode
-```````
-
-**Secret Manager Setup:**
-
-```bash
-# Gemini API Key
-echo -n "YOUR_GEMINI_API_KEY" | gcloud secrets create GOOGLE_API_KEY \
-  --data-file=- \
-  --project=portfolio-staging
-
-# OpenAI API Key (if not already set)
-echo -n "YOUR_OPENAI_API_KEY" | gcloud secrets create OPENAI_API_KEY \
-  --data-file=- \
-  --project=portfolio-staging
+│   └── resume-modern.hbs         # PDF template (Handlebars)
+├── types/
+│   └── generator.types.ts        # Shared types
+└── config/
+    ├── database.ts               # Firestore configuration
+    └── openai-schema.ts          # Structured output schemas
 ```
 
-### Cloud Function Configuration
+### Frontend (`web/src/`)
 
-**manageGenerator Function:**
+```
+pages/resume-builder.tsx          # Main UI at /resume-builder
+├── contexts/
+│   └── ResumeFormContext.tsx     # Form state management
+├── api/
+│   └── generator-client.ts       # API client (28 tests)
+├── hooks/
+│   └── useAuth.ts                # Firebase Auth hook
+└── types/
+    └── generator.ts              # Frontend types
+```
 
-- Memory: **1Gi** (increased for Puppeteer)
-- Timeout: **120s** (increased for PDF generation)
-- Runtime: Node.js 20
-- Region: us-central1
+### Database Structure (`generator` collection)
+
+```
+generator/
+├── default                       # Personal info defaults (editors only)
+├── resume-generator-request-*    # Generation requests
+└── resume-generator-response-*   # Generation results with GCS paths
+```
+
+See [SCHEMA.md](./SCHEMA.md) for complete details.
+
+---
+
+## Getting Started
+
+### 1. Prerequisites
+
+```bash
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp functions/.env.example functions/.env
+
+# Required: OpenAI API key
+OPENAI_API_KEY=sk-...
+
+# Required: Google AI API key (for Gemini)
+GOOGLE_API_KEY=...
+
+# Optional: Enable mock mode for local dev
+OPENAI_MOCK_MODE=true
+GEMINI_MOCK_MODE=true
+```
+
+### 2. Seed Default Settings
+
+```bash
+# Local emulator (requires emulators running)
+make seed-generator-defaults
+
+# Staging database
+make seed-generator-staging
+
+# Production database
+make seed-generator-prod
+```
+
+### 3. Start Development
+
+```bash
+# Start Firebase emulators (with persistence)
+make firebase-emulators
+
+# In another terminal: Start Gatsby dev server
+make dev
+```
+
+Visit: http://localhost:8000/resume-builder
+
+### 4. Create Storage Buckets
+
+```bash
+# Production bucket (already exists)
+# gs://joshwentworth-resumes
+
+# Staging bucket
+gcloud storage buckets create gs://joshwentworth-resumes-staging \
+  --location=us-central1 \
+  --uniform-bucket-level-access
+
+# Local uses Firebase Storage Emulator (automatic)
+```
+
+See [GCS_ENVIRONMENT_SETUP.md](./GCS_ENVIRONMENT_SETUP.md) for complete setup.
+
+---
+
+## Editor Role Management
+
+Editors get:
+- 20 requests per 15 minutes (vs 10 for viewers)
+- 7-day signed URLs (vs 1 hour)
+- Access to document history
+- Ability to update default personal info
+
+### Commands
+
+```bash
+# Grant editor role
+make editor-add EMAIL=user@example.com
+
+# Revoke editor role
+make editor-remove EMAIL=user@example.com
+
+# List all editors
+make editor-list
+
+# Check user's role
+make editor-check EMAIL=user@example.com
+```
+
+**Note:** Users must sign out and sign back in for role changes to take effect.
 
 ---
 
@@ -285,66 +220,27 @@ echo -n "YOUR_OPENAI_API_KEY" | gcloud secrets create OPENAI_API_KEY \
 ### Run All Tests
 
 ```bash
-# Backend tests (169 passing)
-cd functions
-npm test
+# Functions tests (211+ tests)
+cd functions && npm test
 
-# Frontend tests (42 passing)
-cd web
-npm test
+# Web tests (28+ tests)
+cd web && npm test
 
-# Total: 211 tests passing ✅
+# Specific test suites
+cd functions && npm test -- generator
+cd functions && npm test -- ai-provider
 ```
 
-### Key Test Suites
+### Test Coverage
 
-**Backend:**
-
-- `ai-provider.factory.test.ts` - 17 tests (provider factory)
-- `gemini.service.test.ts` - 15 tests (Gemini integration)
-- `openai.service.test.ts` - Existing coverage
-- `generator.integration.test.ts` - End-to-end tests
-
-**Frontend:**
-
-- `generator-client.test.ts` - 28 tests (API client)
-
----
-
-## Local Development
-
-### 1. Start Emulators
-
-```bash
-# Terminal 1: Start Firebase emulators
-npm run emulators
-```
-
-### 2. Seed Test Data
-
-```bash
-# Terminal 2: Seed Firestore with defaults
-make seed-generator
-```
-
-### 3. Start Web Dev Server
-
-```bash
-# Terminal 3: Start Gatsby dev
-cd web
-npm run dev
-```
-
-### 4. Test the UI
-
-Visit: [http://localhost:8000/resume-builder](http://localhost:8000/resume-builder)
-
-**Test both providers:**
-
-1. Select "Gemini" → Generate → Verify result
-2. Select "OpenAI" → Generate → Verify result
-3. Check localStorage persistence (reload page, verify selection)
-4. Verify cost calculations display correctly
+- ✅ Generator service (request/response CRUD)
+- ✅ OpenAI service (structured outputs, error handling)
+- ✅ Gemini service (JSON parsing, error handling)
+- ✅ AI provider factory (provider selection, cost calculation)
+- ✅ PDF service (template rendering)
+- ✅ Storage service (environment-aware buckets)
+- ✅ Generator endpoint (integration tests for both providers)
+- ✅ Generator client (API calls, error handling)
 
 ---
 
@@ -353,165 +249,195 @@ Visit: [http://localhost:8000/resume-builder](http://localhost:8000/resume-build
 ### Staging
 
 ```bash
-# Deploy functions
-firebase deploy --only functions:manageGenerator --project portfolio-staging
+# Deploy everything to staging
+npm run deploy:staging
 
-# Verify deployment
-curl -X POST https://us-central1-portfolio-staging.cloudfunctions.net/manageGenerator/generator/generate \
-  -H "Content-Type: application/json" \
-  -d '{"jobDescription":"Software Engineer","generateType":"resume","provider":"gemini"}'
+# Or deploy just the generator function
+make deploy-function FUNC=manageGenerator
 ```
 
 ### Production
 
 ```bash
-# Deploy functions
-firebase deploy --only functions:manageGenerator --project portfolio-prod
-
-# Add production secrets (if not already done)
-echo -n "PROD_GEMINI_KEY" | gcloud secrets create GOOGLE_API_KEY \
-  --data-file=- \
-  --project=portfolio-prod
+# Build and deploy to production
+npm run deploy:production
 ```
 
----
+### Post-Deployment Checklist
 
-## Roadmap: Phase 2 (Next Steps)
-
-### Phase 2.1: Cover Letter UI Integration
-
-**Timeline:** 1-2 days | **Status:** Not Started
-
-- [ ] Add "Also generate cover letter" checkbox
-- [ ] Handle `generateType: "both"` in frontend
-- [ ] Display two download buttons when both generated
-- [ ] Show separate cost metrics for each document
-- [ ] Test with both AI providers
-
-**Files to Update:**
-
-- `web/src/pages/resume-builder.tsx` - Add checkbox and dual download UI
-- Backend already fully supports cover letters ✅
-
-### Phase 2.2: GCS Storage & Document History
-
-**Timeline:** 2-3 days | **Status:** Not Started
-
-- [ ] Create GCS bucket with lifecycle policy
-- [ ] Update generator to upload PDFs to GCS
-- [ ] Add signed URL generation for downloads
-- [ ] Create document history API endpoints
-- [ ] Build history table UI
-- [ ] Add "View History" page
-
-### Phase 2.3: Authentication & Editor Features
-
-**Timeline:** 3-4 days | **Status:** Not Started
-
-- [ ] Add auth middleware to editor routes
-- [ ] Create settings editor UI for defaults
-- [ ] Implement avatar/logo upload to Firebase Storage
-- [ ] Add role-based features (viewer vs editor)
-- [ ] Higher rate limits for authenticated editors
-
-### Phase 2.4: Prompt Management UI
-
-**Timeline:** 2-3 days | **Status:** Not Started
-
-- [ ] Create prompt editor UI
-- [ ] Store prompt versions in Firestore
-- [ ] A/B testing framework for prompts
-- [ ] Rollback capability
-- [ ] Performance metrics per prompt version
-
-### Phase 2.5: Additional Templates
-
-**Timeline:** 2-3 days | **Status:** Not Started
-
-- [ ] Design 2-3 additional resume templates
-- [ ] Template selection UI
-- [ ] Template preview before generation
-- [ ] Template-specific styling
-
-### Phase 2.6: Code Quality & Polish
-
-**Timeline:** 1 day | **Status:** Not Started
-
-- [ ] Comprehensive error handling review
-- [ ] Performance optimization
-- [ ] Security audit
-- [ ] Documentation updates
-- [ ] User-facing help text
-
-**Total Phase 2 Estimate:** 12-17 days
+1. ✅ Verify Firestore indexes are created
+2. ✅ Verify GCS lifecycle policies are active
+3. ✅ Test generation with both providers
+4. ✅ Test auth flow (sign in, editor role)
+5. ✅ Verify signed URLs work
+6. ✅ Check rate limiting
 
 ---
 
-## Key Technical Decisions
+## Configuration
 
-### Why Multi-Provider Support?
+### Environment Variables
 
-1. **Cost Optimization:** 96% savings with Gemini
-2. **Risk Mitigation:** Not locked into one vendor
-3. **Quality Options:** Users can choose based on preference
-4. **Future Flexibility:** Easy to add Claude, Llama, etc.
+**Functions** (`functions/.env`):
 
-### Why Gemini as Default?
+```bash
+# AI Providers
+OPENAI_API_KEY=sk-...           # Required
+GOOGLE_API_KEY=...              # Required for Gemini
 
-1. **Cost:** $0.0011 vs $0.0275 per generation
-2. **Quality:** Comparable quality for resume generation
-3. **Speed:** Very fast (gemini-2.0-flash-exp)
-4. **Free Tier:** Available for testing
+# Mock Mode (local dev)
+OPENAI_MOCK_MODE=true           # Skip OpenAI API calls
+GEMINI_MOCK_MODE=true           # Skip Gemini API calls
 
-### Why Factory Pattern?
+# Firestore
+FUNCTIONS_EMULATOR=true         # Auto-set by emulator
+FIRESTORE_EMULATOR_HOST=localhost:8080
 
-1. **Extensibility:** Easy to add new providers
-2. **Testability:** Mock providers for testing
-3. **Consistency:** All providers implement same interface
-4. **Maintainability:** Provider-specific logic encapsulated
+# GCS Storage
+FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199
+```
 
-### Why Firestore for Tracking?
+**Web** (automatic, no config needed):
+- Provider preference stored in localStorage
+- Auto-detects Firebase emulators
+- API client points to correct environment
 
-1. **Reproducibility:** Complete request snapshots
-2. **Debugging:** Trace from response → request → inputs
-3. **Analytics:** Token usage, costs, success rates
-4. **Audit Trail:** Full history of generations
+### Firebase Configuration
+
+**firebase.json:**
+```json
+{
+  "emulators": {
+    "auth": { "port": 9099 },
+    "functions": { "port": 5001 },
+    "firestore": { "port": 8080 },
+    "storage": { "port": 9199 },
+    "ui": { "enabled": true, "port": 4000 },
+    "hub": { "port": 4400 }
+  }
+}
+```
+
+**firestore.indexes.json:**
+- 5 composite indexes for production queries
+- See [SCHEMA.md](./SCHEMA.md) for details
+
+**storage.rules:**
+- Public read via signed URLs
+- Write access only for Cloud Functions
+
+---
+
+## Key Implementation Details
+
+### 1. Provider Selection
+
+The system uses a factory pattern to abstract AI providers:
+
+```typescript
+// User selects provider in UI
+const provider = formState.aiProvider // "openai" | "gemini"
+
+// Backend creates appropriate provider
+const aiProvider = AIProviderFactory.createProvider(provider, logger)
+
+// Generate content (same interface for both providers)
+const result = await aiProvider.generateResume(options)
+```
+
+### 2. GCS Storage Flow
+
+```typescript
+// 1. Generate PDF
+const pdf = await pdfService.generateResumePDF(content, style, color)
+
+// 2. Upload to GCS (environment-aware bucket)
+const { gcsPath, storageClass } = await storageService.uploadPDF(pdf, filename, "resume")
+
+// 3. Generate signed URL (expiry based on user role)
+const signedUrl = await storageService.generateSignedUrl(gcsPath, {
+  expiresInHours: isEditor ? 168 : 1
+})
+
+// 4. Store in Firestore response document
+await generatorService.createResponse(requestId, result, metrics, {
+  resume: { gcsPath, signedUrl, size, storageClass }
+})
+```
+
+### 3. Rate Limiting
+
+Implemented using Firestore atomic operations:
+
+```typescript
+// Check rate limit
+const sessionId = req.body.sessionId || generateSessionId()
+const limit = isEditor ? 20 : 10  // requests per 15 min
+const allowed = await checkRateLimit(sessionId, limit)
+```
+
+### 4. Experience Data Snapshot
+
+For reproducibility, all experience data is snapshotted in the request document:
+
+```typescript
+const request = {
+  experienceData: {
+    entries: [...],  // Snapshot of experience-entries
+    blurbs: [...]    // Snapshot of experience-blurbs
+  }
+}
+```
+
+This ensures:
+- Regenerating from history uses exact same data
+- Debugging failures is easier
+- Compliance/audit trail
 
 ---
 
 ## Monitoring & Analytics
 
-### Key Metrics to Track (Post-Deployment)
+### Available Queries
 
-**Usage:**
+```typescript
+// List all requests for a viewer
+const requests = await db.collection("generator")
+  .where("type", "==", "request")
+  .where("access.viewerSessionId", "==", sessionId)
+  .where("createdAt", ">=", startDate)
+  .orderBy("createdAt", "desc")
+  .get()
 
-- Total generations per day/week/month
-- Provider distribution (% Gemini vs OpenAI)
-- Generate type distribution (resume vs cover letter vs both)
+// Calculate success rate
+const responses = await db.collection("generator")
+  .where("type", "==", "response")
+  .where("result.success", "==", true)
+  .get()
 
-**Performance:**
+// Calculate total cost
+let totalCost = 0
+responses.forEach(doc => {
+  totalCost += doc.data().metrics.costUsd || 0
+})
 
-- Average generation time by provider
-- Success rate by provider
-- Error rates and types
+// Filter by company
+const companyRequests = await db.collection("generator")
+  .where("type", "==", "request")
+  .where("job.company", "==", "Google")
+  .get()
+```
 
-**Cost:**
+See [SCHEMA.md](./SCHEMA.md) for more query examples.
 
-- Total cost per provider
-- Average cost per generation
-- Cost trends over time
+### Metrics Tracked
 
-**Quality:**
-
-- User feedback/ratings
-- Regeneration rate (indicates quality issues)
-
-### Billing Alerts
-
-Set up alerts for cost thresholds:
-
-- Gemini: $5/month (conservative for 96% cheaper model)
-- OpenAI: $50/month (higher threshold for premium users)
+- Token usage (prompt + completion, per document)
+- Generation cost in USD
+- Generation duration in milliseconds
+- Success/failure rates
+- Error types and stages
+- Provider selection distribution
 
 ---
 
@@ -519,144 +445,90 @@ Set up alerts for cost thresholds:
 
 ### Common Issues
 
-**Issue:** Generator timeout (120s exceeded)
-**Solution:** Check Puppeteer memory usage, verify 1Gi allocation, optimize template rendering
+**1. "Rate limit exceeded"**
+- Wait 15 minutes or use editor account
+- Check rate limit status in Firestore
 
-**Issue:** Hallucinated content in generated resumes
-**Solution:** Verify temperature=0, check prompt instructions, review AI provider prompts
+**2. "GCS upload failed"**
+- Verify bucket exists and function has write permissions
+- Check GCS bucket policies
+- Ensure environment variables are set correctly
 
-**Issue:** PDF generation fails
-**Solution:** Check Puppeteer logs, verify template syntax, ensure logo/avatar URLs accessible
+**3. "Mock data not loading"**
+- Ensure `OPENAI_MOCK_MODE=true` or `GEMINI_MOCK_MODE=true` in `.env`
+- Restart emulators after changing env vars
 
-**Issue:** Provider selection not persisting
-**Solution:** Check browser localStorage, verify localStorage key matches code
+**4. "Signed URL expired"**
+- URLs expire after 1 hour (viewers) or 7 days (editors)
+- Re-generate the document to get new URL
+- Check `urlExpiresIn` field in response
 
-**Issue:** Cost calculation incorrect
-**Solution:** Verify token counts from provider response, check pricing constants
+**5. "Firestore permission denied"**
+- Verify Firebase Auth token is valid
+- Check if user has correct role (editor vs viewer)
+- Verify Firestore security rules
 
 ### Debug Mode
 
-Enable verbose logging:
+Enable detailed logging:
 
 ```bash
-# In Cloud Functions
-firebase functions:config:set debug.enabled=true
+# Functions
+DEBUG=generator:* npm run serve
 
-# Locally
-OPENAI_MOCK_MODE=true npm run emulators
+# Web
+GATSBY_LOG_LEVEL=verbose npm run develop
 ```
 
 ---
 
-## Security Considerations
+## What's Next?
 
-### API Key Management
+### Optional Enhancements
 
-- ✅ All API keys stored in Secret Manager
-- ✅ Never commit API keys to git
-- ✅ Function service account has minimal permissions
-- ✅ Rate limiting prevents abuse (10 req/15min)
+These are **not required** for production but could be added later:
 
-### Data Privacy
+1. **Settings Editor UI** - Web interface for editors to update default personal info
+   - Backend CRUD endpoints already exist (`/generator/defaults`)
+   - Can currently manage via direct API calls
 
-- ✅ User data stored in Firestore (not sent to AI providers beyond generation)
-- ✅ Generated PDFs can be stored in GCS with signed URLs (Phase 2.2)
-- ✅ No PII logged in function logs
+2. **Document History UI** - Web interface for editors to view past generations
+   - Backend queries already work (see SCHEMA.md)
+   - Can currently query Firestore directly
 
-### Input Validation
+3. **Enhanced Rate Limiting** - Use user.uid instead of sessionId for authenticated users
+   - Current implementation works fine
+   - Would provide better cross-device tracking
 
-- ✅ All inputs validated with Zod schemas
-- ✅ Job description max length enforced
-- ✅ Provider selection validated against enum
-- ✅ Generate type validated against enum
+4. **Additional Templates** - More resume styles beyond "modern"
+   - Current "modern" template covers most use cases
+   - Would require PDF template design work
+
+5. **Batch Generation** - Generate multiple customized resumes at once
+   - Useful for job seekers applying to many positions
 
 ---
 
 ## Contributing
 
-### Adding a New AI Provider
+This is a personal project, but feedback is welcome!
 
-1. **Create Provider Service** (`services/your-provider.service.ts`)
+### Project Structure
 
-   ```typescript
-   import { AIProvider } from "../types/generator.types"
+- `functions/` - Cloud Functions (TypeScript)
+- `web/` - Gatsby site (TypeScript + React)
+- `docs/` - Documentation
+- `scripts/` - Utility scripts (seeding, role management)
 
-   export class YourProvider implements AIProvider {
-     async generateResume(/* params */) {
-       /* ... */
-     }
-     async generateCoverLetter(/* params */) {
-       /* ... */
-     }
-     calculateCost(/* params */) {
-       /* ... */
-     }
-   }
-   ```
+### Code Style
 
-2. **Update Factory** (`ai-provider.factory.ts`)
-
-   ```typescript
-   case 'your-provider':
-     return new YourProvider(apiKey);
-   ```
-
-3. **Update Types** (`types/generator.types.ts`)
-
-   ```typescript
-   type AIProviderType = "openai" | "gemini" | "your-provider"
-   ```
-
-4. **Add Tests** (`services/__tests__/your-provider.service.test.ts`)
-   - Test generateResume
-   - Test generateCoverLetter
-   - Test calculateCost
-   - Test error handling
-
-5. **Update UI** (`web/src/pages/resume-builder.tsx`)
-
-   ```tsx
-   <option value="your-provider">Your Provider (model-name)</option>
-   ```
+- TypeScript strict mode enabled
+- ESLint + Prettier configured
+- Run `make lint` before committing
+- Run `make test` to verify all tests pass
 
 ---
 
-## References
+## License
 
-- **[Firestore Schema](./SCHEMA.md)** - Complete database structure
-- **[OpenAI API Docs](https://platform.openai.com/docs)** - OpenAI integration
-- **[Gemini API Docs](https://ai.google.dev/docs)** - Gemini integration
-- **[Puppeteer Docs](https://pptr.dev/)** - PDF generation
-- **[Firebase Functions](https://firebase.google.com/docs/functions)** - Cloud deployment
-
----
-
-## Success Criteria
-
-### Phase 2.0a Success Criteria ✅
-
-All criteria met:
-
-- [x] Can generate resume with both Gemini and OpenAI
-- [x] UI clearly shows which provider is selected
-- [x] Cost accurately reflects provider used
-- [x] Provider preference persists across sessions
-- [x] Default to Gemini (cheaper option)
-- [x] All tests passing (211 tests)
-- [x] Type-safe end-to-end
-- [x] Zero lint errors
-
-### Overall Project Success Criteria
-
-- [ ] Production deployment with both providers
-- [ ] User-facing documentation published
-- [ ] Cost monitoring and alerts configured
-- [ ] Phase 2.1-2.6 features implemented
-- [ ] User feedback collected and incorporated
-- [ ] Performance metrics tracking enabled
-
----
-
-**Ready for testing and deployment!** 🚀
-
-For questions or issues, check the troubleshooting section above or review the Firestore schema documentation.
+Private project - All rights reserved.

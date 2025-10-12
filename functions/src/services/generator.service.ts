@@ -100,7 +100,6 @@ export class GeneratorService {
       if (data.avatar !== undefined) updates.avatar = data.avatar || null
       if (data.logo !== undefined) updates.logo = data.logo || null
       if (data.accentColor !== undefined) updates.accentColor = data.accentColor
-      if (data.defaultStyle !== undefined) updates.defaultStyle = data.defaultStyle
 
       await docRef.update(updates)
 
@@ -169,7 +168,6 @@ export class GeneratorService {
           avatar: defaults.avatar,
           logo: defaults.logo,
           accentColor: defaults.accentColor,
-          defaultStyle: defaults.defaultStyle,
         },
         job,
         preferences,
@@ -293,9 +291,6 @@ export class GeneratorService {
         result,
         files: files || {},
         metrics,
-        tracking: {
-          downloads: 0,
-        },
       }
 
       await this.db

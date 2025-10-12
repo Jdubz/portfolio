@@ -48,8 +48,7 @@ describe("GeneratorService", () => {
           name: "John Doe",
           email: "john@example.com",
           accentColor: "#3B82F6",
-          defaultStyle: "modern",
-          createdAt: { seconds: 1234567890 },
+            createdAt: { seconds: 1234567890 },
           updatedAt: { seconds: 1234567890 },
         }),
       })
@@ -91,7 +90,6 @@ describe("GeneratorService", () => {
         name: "John Doe",
         email: "john@example.com",
         accentColor: "#3B82F6",
-        defaultStyle: "modern",
         createdAt: { seconds: 1234567890 } as any,
         updatedAt: { seconds: 1234567890 } as any,
       }
@@ -124,7 +122,6 @@ describe("GeneratorService", () => {
         name: "John Doe",
         email: "john@example.com",
         accentColor: "#3B82F6",
-        defaultStyle: "modern",
         createdAt: { seconds: 1234567890 } as any,
         updatedAt: { seconds: 1234567890 } as any,
       }
@@ -157,7 +154,6 @@ describe("GeneratorService", () => {
         name: "John Doe",
         email: "john@example.com",
         accentColor: "#3B82F6",
-        defaultStyle: "modern",
         createdAt: { seconds: 1234567890 } as any,
         updatedAt: { seconds: 1234567890 } as any,
       }

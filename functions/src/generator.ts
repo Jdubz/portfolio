@@ -13,6 +13,7 @@ import { ExperienceService } from "./services/experience.service"
 import { BlurbService } from "./services/blurb.service"
 import { createAIProvider } from "./services/ai-provider.factory"
 import { PDFService } from "./services/pdf.service"
+import { StorageService } from "./services/storage.service"
 import { verifyAuthenticatedEditor, checkOptionalAuth, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import { generatorRateLimiter, generatorEditorRateLimiter } from "./middleware/rate-limit.middleware"
 import type { GenerationType, GeneratorResponse } from "./types/generator.types"
@@ -27,6 +28,7 @@ const generatorService = new GeneratorService(logger)
 const experienceService = new ExperienceService(logger)
 const blurbService = new BlurbService(logger)
 const pdfService = new PDFService(logger)
+const storageService = new StorageService(undefined, logger) // Use environment-aware bucket selection
 
 // Validation schemas
 const generateRequestSchema = Joi.object({
@@ -308,7 +310,6 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           },
           experienceEntries: entries,
           experienceBlurbs: blurbs,
-          style: preferences?.style || defaults.defaultStyle,
           emphasize: preferences?.emphasize,
         })
 
@@ -320,12 +321,8 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           generateType === "both" ? 50 : 70
         )
 
-        // Generate PDF
-        resumePDF = await pdfService.generateResumePDF(
-          resumeResult.content,
-          preferences?.style || defaults.defaultStyle,
-          defaults.accentColor
-        )
+        // Generate PDF (always use "modern" style)
+        resumePDF = await pdfService.generateResumePDF(resumeResult.content, "modern", defaults.accentColor)
 
         logger.info("Resume generated", {
           tokenUsage: resumeResult.tokenUsage,
@@ -387,6 +384,42 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         })
       }
 
+      // Step 5: Upload PDFs to GCS
+      type UploadResult = Awaited<ReturnType<typeof storageService.uploadPDF>>
+      let resumeUploadResult: UploadResult | undefined
+      let coverLetterUploadResult: UploadResult | undefined
+      let resumeSignedUrl: string | undefined
+      let coverLetterSignedUrl: string | undefined
+
+      // Check if user is an editor (for signed URL expiry)
+      const isEditor = await checkOptionalAuth(req as AuthenticatedRequest, logger)
+      const expiresInHours = isEditor ? 168 : 1 // 7 days (168 hours) for editors, 1 hour for viewers
+
+      // Generate filename-safe strings
+      const companySafe = job.company.replace(/[^a-z0-9]/gi, "_").toLowerCase()
+      const roleSafe = job.role.replace(/[^a-z0-9]/gi, "_").toLowerCase()
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
+
+      if (resumePDF) {
+        const filename = `${companySafe}_${roleSafe}_resume_${timestamp}.pdf`
+        resumeUploadResult = await storageService.uploadPDF(resumePDF, filename, "resume")
+
+        // Generate signed URL
+        resumeSignedUrl = await storageService.generateSignedUrl(resumeUploadResult.gcsPath, { expiresInHours })
+
+        logger.info("Resume uploaded to GCS", { gcsPath: resumeUploadResult.gcsPath, expiresInHours })
+      }
+
+      if (coverLetterPDF) {
+        const filename = `${companySafe}_${roleSafe}_cover_letter_${timestamp}.pdf`
+        coverLetterUploadResult = await storageService.uploadPDF(coverLetterPDF, filename, "cover-letter")
+
+        // Generate signed URL
+        coverLetterSignedUrl = await storageService.generateSignedUrl(coverLetterUploadResult.gcsPath, { expiresInHours })
+
+        logger.info("Cover letter uploaded to GCS", { gcsPath: coverLetterUploadResult.gcsPath, expiresInHours })
+      }
+
       // Progress: Finalizing
       await generatorService.updateProgress(generationRequestId, "finalizing", "Finalizing documents...", 95)
 
@@ -433,6 +466,29 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         tokenUsage.coverLetterCompletion = coverLetterResult.tokenUsage.completionTokens
       }
 
+      // Build files object for GCS storage information
+      const files: GeneratorResponse["files"] = {}
+
+      if (resumeUploadResult && resumeSignedUrl) {
+        files.resume = {
+          gcsPath: resumeUploadResult.gcsPath,
+          signedUrl: resumeSignedUrl,
+          signedUrlExpiry: new Date(Date.now() + expiresInHours * 60 * 60 * 1000) as any, // Will be converted to Firestore Timestamp
+          size: resumeUploadResult.size,
+          storageClass: resumeUploadResult.storageClass,
+        }
+      }
+
+      if (coverLetterUploadResult && coverLetterSignedUrl) {
+        files.coverLetter = {
+          gcsPath: coverLetterUploadResult.gcsPath,
+          signedUrl: coverLetterSignedUrl,
+          signedUrlExpiry: new Date(Date.now() + expiresInHours * 60 * 60 * 1000) as any, // Will be converted to Firestore Timestamp
+          size: coverLetterUploadResult.size,
+          storageClass: coverLetterUploadResult.storageClass,
+        }
+      }
+
       await generatorService.createResponse(
         generationRequestId,
         result,
@@ -441,7 +497,8 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           tokenUsage,
           costUsd,
           model: resumeResult?.model || coverLetterResult?.model || aiProvider.model,
-        }
+        },
+        files
       )
 
       // Update request status to completed
@@ -458,8 +515,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       // Progress: Complete
       await generatorService.updateProgress(generationRequestId, "finalizing", "Complete!", 100)
 
-      // Step 7: Return PDFs directly (Phase 1 MVP - no GCS yet)
-      // For now, return base64 encoded PDFs
+      // Step 6: Return signed URLs for GCS downloads
       res.status(200).json({
         success: true,
         data: {
@@ -477,9 +533,11 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
             model: resumeResult?.model || coverLetterResult?.model || aiProvider.model,
             durationMs,
           },
-          // Return PDFs as base64 for Phase 1 MVP
-          resume: resumePDF ? resumePDF.toString("base64") : undefined,
-          coverLetter: coverLetterPDF ? coverLetterPDF.toString("base64") : undefined,
+          // Return signed URLs for downloads (Phase 2.2)
+          resumeUrl: resumeSignedUrl,
+          coverLetterUrl: coverLetterSignedUrl,
+          // Include expiry information
+          urlExpiresIn: isEditor ? "7 days" : "1 hour",
         },
         requestId, // HTTP request ID for tracking
       })

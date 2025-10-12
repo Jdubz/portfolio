@@ -4,28 +4,41 @@ import { Link, type HeadFC } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { logger } from "../utils/logger"
 import { generatorClient } from "../api/generator-client"
+import { useResumeForm } from "../contexts/ResumeFormContext"
+import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
 import type { GenerationType, GenerationMetadata, AIProviderType } from "../types/generator"
 
 /**
  * Resume Builder MVP Page
  *
- * Simple UI to test the AI Resume Generator
- * Uses default settings only (no editing in MVP)
+ * Uses ResumeFormContext to maintain form state during navigation.
+ * Form persists within session but resets on page refresh.
  */
 const ResumeBuilderPage: React.FC = () => {
+  // Auth state
+  const { user, isEditor, loading: authLoading } = useAuth()
+  const [signingIn, setSigningIn] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
+
+  // Get form state from context
+  const {
+    formState,
+    setGenerateType,
+    setAIProvider,
+    setRole,
+    setCompany,
+    setCompanyWebsite,
+    setJobDescriptionUrl,
+    setJobDescriptionText,
+    setEmphasize,
+    clearForm,
+    isFormEmpty,
+  } = useResumeForm()
+
+  // UI state (not persisted in context)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-
-  // Form state
-  const [generateType, setGenerateType] = useState<GenerationType>("both")
-  const [aiProvider, setAIProvider] = useState<AIProviderType>("gemini")
-  const [role, setRole] = useState("")
-  const [company, setCompany] = useState("")
-  const [companyWebsite, setCompanyWebsite] = useState("")
-  const [jobDescriptionUrl, setJobDescriptionUrl] = useState("")
-  const [jobDescriptionText, setJobDescriptionText] = useState("")
-  const [emphasize, setEmphasize] = useState("")
 
   // Load AI provider preference from localStorage on mount
   useEffect(() => {
@@ -33,7 +46,7 @@ const ResumeBuilderPage: React.FC = () => {
     if (savedProvider === "openai" || savedProvider === "gemini") {
       setAIProvider(savedProvider)
     }
-  }, [])
+  }, [setAIProvider])
 
   // Save AI provider preference to localStorage when it changes
   const handleProviderChange = (provider: AIProviderType) => {
@@ -42,9 +55,10 @@ const ResumeBuilderPage: React.FC = () => {
     logger.info("AI provider changed", { provider })
   }
 
-  // Generated files
-  const [resumePDF, setResumePDF] = useState<string | null>(null)
-  const [coverLetterPDF, setCoverLetterPDF] = useState<string | null>(null)
+  // Generated files (Phase 2.2: now using URLs instead of base64)
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null)
+  const [coverLetterUrl, setCoverLetterUrl] = useState<string | null>(null)
+  const [urlExpiresIn, setUrlExpiresIn] = useState<string | null>(null)
   const [metadata, setMetadata] = useState<GenerationMetadata | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,24 +66,25 @@ const ResumeBuilderPage: React.FC = () => {
     setGenerating(true)
     setError(null)
     setSuccess(false)
-    setResumePDF(null)
-    setCoverLetterPDF(null)
+    setResumeUrl(null)
+    setCoverLetterUrl(null)
+    setUrlExpiresIn(null)
     setMetadata(null)
 
     try {
-      // Prepare request payload
+      // Prepare request payload using formState
       const payload = {
-        generateType,
-        provider: aiProvider,
+        generateType: formState.generateType,
+        provider: formState.aiProvider,
         job: {
-          role: role.trim(),
-          company: company.trim(),
-          companyWebsite: companyWebsite.trim() || undefined,
-          jobDescriptionUrl: jobDescriptionUrl.trim() || undefined,
-          jobDescriptionText: jobDescriptionText.trim() || undefined,
+          role: formState.role.trim(),
+          company: formState.company.trim(),
+          companyWebsite: formState.companyWebsite.trim() || undefined,
+          jobDescriptionUrl: formState.jobDescriptionUrl.trim() || undefined,
+          jobDescriptionText: formState.jobDescriptionText.trim() || undefined,
         },
         preferences: {
-          emphasize: emphasize
+          emphasize: formState.emphasize
             .split(",")
             .map((s) => s.trim())
             .filter((s) => s.length > 0),
@@ -83,13 +98,16 @@ const ResumeBuilderPage: React.FC = () => {
 
       logger.info("Generation successful", data as unknown as Record<string, unknown>)
 
-      // Store the base64 PDFs
+      // Store the signed URLs (Phase 2.2)
       const responseData = data
-      if (responseData?.resume) {
-        setResumePDF(responseData.resume)
+      if (responseData?.resumeUrl) {
+        setResumeUrl(responseData.resumeUrl)
       }
-      if (responseData?.coverLetter) {
-        setCoverLetterPDF(responseData.coverLetter)
+      if (responseData?.coverLetterUrl) {
+        setCoverLetterUrl(responseData.coverLetterUrl)
+      }
+      if (responseData?.urlExpiresIn) {
+        setUrlExpiresIn(responseData.urlExpiresIn)
       }
 
       if (responseData?.metadata) {
@@ -105,33 +123,47 @@ const ResumeBuilderPage: React.FC = () => {
     }
   }
 
-  const downloadPDF = (base64: string, filename: string) => {
+  const downloadFromUrl = (url: string, filename: string) => {
     try {
-      // Convert base64 to blob
-      // eslint-disable-next-line no-undef
-      const byteCharacters = atob(base64)
-      const byteNumbers = new Array(byteCharacters.length)
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i)
-      }
-      const byteArray = new Uint8Array(byteNumbers)
-      const blob = new Blob([byteArray], { type: "application/pdf" })
-
-      // Create download link
-      const url = URL.createObjectURL(blob)
+      // Create download link for signed URL (Phase 2.2)
       const link = document.createElement("a")
       link.href = url
       link.download = filename
+      link.target = "_blank" // Open in new tab as fallback
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      URL.revokeObjectURL(url)
 
-      logger.info("PDF downloaded", { filename })
+      logger.info("PDF download initiated", { filename })
     } catch (err) {
       logger.error("Failed to download PDF", err as Error)
       setError("Failed to download PDF")
     }
+  }
+
+  // Auth handlers
+  const handleSignIn = () => {
+    setSigningIn(true)
+    setAuthError(null)
+    void signInWithGoogle()
+      .then(() => {
+        // Success handled by auth state listener
+      })
+      .catch((error) => {
+        setAuthError(error instanceof Error ? error.message : "Sign-in failed")
+      })
+      .finally(() => {
+        setSigningIn(false)
+      })
+  }
+
+  const handleSignOut = () => {
+    void signOut().catch((error) => {
+      logger.error("Failed to sign out", error as Error, {
+        page: "resume-builder",
+        action: "handleSignOut",
+      })
+    })
   }
 
   return (
@@ -161,12 +193,56 @@ const ResumeBuilderPage: React.FC = () => {
 
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Heading as="h1" sx={{ fontSize: [4, 5, 6], mb: 2 }}>
-          AI Resume Generator (MVP)
-        </Heading>
-        <Text sx={{ color: "text", opacity: 0.8 }}>
-          Generate tailored resumes and cover letters using AI. This is a test interface for Phase 1.
-        </Text>
+        <Flex sx={{ justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 3 }}>
+          <Box>
+            <Heading as="h1" sx={{ fontSize: [4, 5, 6], mb: 2 }}>
+              AI Resume Generator
+            </Heading>
+            <Text sx={{ color: "text", opacity: 0.8 }}>Generate tailored resumes and cover letters using AI</Text>
+          </Box>
+
+          {/* Auth Button */}
+          <Box sx={{ flexShrink: 0 }}>
+            {authLoading ? (
+              <Spinner size={24} />
+            ) : user ? (
+              <Flex sx={{ alignItems: "center", gap: 2, flexDirection: ["column", "row"] }}>
+                <Text sx={{ fontSize: 1, color: "text", opacity: 0.8, textAlign: ["center", "left"] }}>
+                  {user.email}
+                  {isEditor && (
+                    <Text as="span" sx={{ ml: 2, color: "primary", fontWeight: "bold" }}>
+                      (Editor)
+                    </Text>
+                  )}
+                </Text>
+                <Button onClick={handleSignOut} variant="secondary" sx={{ fontSize: 1, px: 3, py: 2 }}>
+                  Sign Out
+                </Button>
+              </Flex>
+            ) : (
+              <Button onClick={handleSignIn} disabled={signingIn} variant="primary" sx={{ fontSize: 1, px: 3, py: 2 }}>
+                {signingIn ? "Signing In..." : "Sign In with Google"}
+              </Button>
+            )}
+          </Box>
+        </Flex>
+
+        {/* Auth Error */}
+        {authError && (
+          <Alert variant="error" sx={{ mt: 3 }}>
+            {authError}
+          </Alert>
+        )}
+
+        {/* Editor Benefits */}
+        {!authLoading && !user && (
+          <Box sx={{ mt: 3, p: 3, bg: "muted", borderRadius: "4px" }}>
+            <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
+              <strong>Sign in for editor features:</strong> Higher rate limits (20 vs 10 requests/15min), 7-day download
+              links, document history, and personal info defaults.
+            </Text>
+          </Box>
+        )}
       </Box>
 
       {/* Error Alert */}
@@ -203,7 +279,7 @@ const ResumeBuilderPage: React.FC = () => {
           <Label htmlFor="generateType">What would you like to generate?</Label>
           <Select
             id="generateType"
-            value={generateType}
+            value={formState.generateType}
             onChange={(e) => setGenerateType(e.target.value as GenerationType)}
             disabled={generating}
             required
@@ -219,7 +295,7 @@ const ResumeBuilderPage: React.FC = () => {
           <Label htmlFor="aiProvider">AI Provider</Label>
           <Select
             id="aiProvider"
-            value={aiProvider}
+            value={formState.aiProvider}
             onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
             disabled={generating}
             required
@@ -228,7 +304,7 @@ const ResumeBuilderPage: React.FC = () => {
             <option value="openai">OpenAI GPT-4o ($0.015/generation)</option>
           </Select>
           <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>
-            {aiProvider === "gemini"
+            {formState.aiProvider === "gemini"
               ? "✨ Gemini 2.0 Flash: Fast, accurate, and cost-effective"
               : "🚀 GPT-4o: Premium quality, higher cost"}
           </Text>
@@ -243,7 +319,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="role"
             type="text"
             placeholder="e.g., Senior Full-Stack Engineer"
-            value={role}
+            value={formState.role}
             onChange={(e) => setRole(e.target.value)}
             disabled={generating}
             required
@@ -259,7 +335,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="company"
             type="text"
             placeholder="e.g., Google"
-            value={company}
+            value={formState.company}
             onChange={(e) => setCompany(e.target.value)}
             disabled={generating}
             required
@@ -273,7 +349,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="companyWebsite"
             type="url"
             placeholder="https://example.com"
-            value={companyWebsite}
+            value={formState.companyWebsite}
             onChange={(e) => setCompanyWebsite(e.target.value)}
             disabled={generating}
           />
@@ -286,7 +362,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="jobDescriptionUrl"
             type="url"
             placeholder="https://example.com/jobs/123"
-            value={jobDescriptionUrl}
+            value={formState.jobDescriptionUrl}
             onChange={(e) => setJobDescriptionUrl(e.target.value)}
             disabled={generating}
           />
@@ -302,7 +378,7 @@ const ResumeBuilderPage: React.FC = () => {
             id="jobDescriptionText"
             placeholder="Paste the job description here..."
             rows={6}
-            value={jobDescriptionText}
+            value={formState.jobDescriptionText}
             onChange={(e) => setJobDescriptionText(e.target.value)}
             disabled={generating}
           />
@@ -315,29 +391,44 @@ const ResumeBuilderPage: React.FC = () => {
             id="emphasize"
             type="text"
             placeholder="TypeScript, React, Node.js, AWS"
-            value={emphasize}
+            value={formState.emphasize}
             onChange={(e) => setEmphasize(e.target.value)}
             disabled={generating}
           />
           <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>Comma-separated list of keywords</Text>
         </Box>
 
-        {/* Submit Button */}
-        <Button type="submit" disabled={generating} sx={{ width: "100%" }}>
-          {generating ? (
-            <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
-              <Spinner size={20} sx={{ mr: 2 }} />
-              Generating... (this may take 30-60 seconds)
-            </Flex>
-          ) : (
-            "Generate Documents"
-          )}
-        </Button>
+        {/* Action Buttons */}
+        <Flex sx={{ gap: 2 }}>
+          <Button type="submit" disabled={generating} sx={{ flex: 1 }}>
+            {generating ? (
+              <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
+                <Spinner size={20} sx={{ mr: 2 }} />
+                Generating... (this may take 30-60 seconds)
+              </Flex>
+            ) : (
+              "Generate Documents"
+            )}
+          </Button>
+
+          <Button
+            type="button"
+            onClick={() => {
+              clearForm()
+              logger.info("Form cleared")
+            }}
+            disabled={generating || isFormEmpty()}
+            variant="secondary"
+            sx={{ flexShrink: 0 }}
+          >
+            Clear Form
+          </Button>
+        </Flex>
       </Box>
 
       {/* Results */}
       {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing */}
-      {(resumePDF || coverLetterPDF) && (
+      {(resumeUrl || coverLetterUrl) && (
         <Box
           sx={{
             bg: "background",
@@ -366,28 +457,37 @@ const ResumeBuilderPage: React.FC = () => {
                 <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) ?? "N/A"}
                 <br />
                 <strong>Duration:</strong> {(metadata.durationMs / 1000).toFixed(2)}s
+                {urlExpiresIn && (
+                  <>
+                    <br />
+                    <strong>Download Link Expires:</strong> {urlExpiresIn}
+                  </>
+                )}
               </Text>
             </Box>
           )}
 
           {/* Download Buttons */}
           <Flex sx={{ gap: 2, flexWrap: "wrap" }}>
-            {resumePDF && (
+            {resumeUrl && (
               <Button
                 onClick={() =>
-                  downloadPDF(resumePDF, `${company.replace(/\s+/g, "_")}_${role.replace(/\s+/g, "_")}_Resume.pdf`)
+                  downloadFromUrl(
+                    resumeUrl,
+                    `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_Resume.pdf`
+                  )
                 }
                 variant="secondary"
               >
                 📄 Download Resume
               </Button>
             )}
-            {coverLetterPDF && (
+            {coverLetterUrl && (
               <Button
                 onClick={() =>
-                  downloadPDF(
-                    coverLetterPDF,
-                    `${company.replace(/\s+/g, "_")}_${role.replace(/\s+/g, "_")}_CoverLetter.pdf`
+                  downloadFromUrl(
+                    coverLetterUrl,
+                    `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_CoverLetter.pdf`
                   )
                 }
                 variant="secondary"
@@ -402,9 +502,9 @@ const ResumeBuilderPage: React.FC = () => {
       {/* Footer Note */}
       <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
         <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
-          <strong>Note:</strong> This is a Phase 1 MVP test interface. The generator uses your default personal settings
-          from Firestore and pulls experience data from the experience page. Generated PDFs are returned directly (not
-          stored in GCS yet).
+          <strong>Note:</strong> Generated documents are stored in Google Cloud Storage and automatically moved to
+          Coldline storage after 90 days for cost optimization. Download links expire after{" "}
+          {urlExpiresIn ?? "1 hour (viewers) or 7 days (authenticated editors)"}.
         </Text>
       </Box>
     </Box>

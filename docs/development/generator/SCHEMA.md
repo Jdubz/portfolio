@@ -267,6 +267,7 @@ interface GeneratorResponse {
       signedUrl?: string // Temporary signed URL
       signedUrlExpiry?: Timestamp // When signed URL expires
       size?: number // File size in bytes
+      storageClass?: string // "STANDARD" | "COLDLINE" (updated by lifecycle policy)
     }
 
     // Cover letter file (if generateType includes "coverLetter")
@@ -275,6 +276,7 @@ interface GeneratorResponse {
       signedUrl?: string // Temporary signed URL
       signedUrlExpiry?: Timestamp // When signed URL expires
       size?: number // File size in bytes
+      storageClass?: string // "STANDARD" | "COLDLINE" (updated by lifecycle policy)
     }
   }
 
@@ -298,20 +300,9 @@ interface GeneratorResponse {
     model: string // "gpt-4o-2024-08-06"
   }
 
-  // Download Tracking
-  tracking: {
-    downloads: number // Total download count
-    lastDownloadedAt?: Timestamp
-    downloadHistory?: Array<{
-      timestamp: Timestamp
-      documentType: "resume" | "coverLetter"
-      downloadedBy?: string // Email if editor
-    }>
-  }
-
   // Timestamps
   createdAt: Timestamp
-  updatedAt?: Timestamp // Updated when downloaded or re-generated URLs
+  updatedAt?: Timestamp // Updated when URLs are re-generated
 }
 ```
 
@@ -364,20 +355,6 @@ interface GeneratorResponse {
     "costUsd": 0.034,
     "model": "gpt-4o-2024-08-06"
   },
-  "tracking": {
-    "downloads": 2,
-    "lastDownloadedAt": "2025-10-10T12:30:00Z",
-    "downloadHistory": [
-      {
-        "timestamp": "2025-10-10T12:10:00Z",
-        "documentType": "resume"
-      },
-      {
-        "timestamp": "2025-10-10T12:30:00Z",
-        "documentType": "coverLetter"
-      }
-    ]
-  },
   "createdAt": "2025-10-10T12:05:00Z"
 }
 ```
@@ -405,9 +382,6 @@ interface GeneratorResponse {
   "metrics": {
     "durationMs": 1234,
     "model": "gpt-4o-2024-08-06"
-  },
-  "tracking": {
-    "downloads": 0
   },
   "createdAt": "2025-10-10T14:00:00Z"
 }
@@ -863,9 +837,6 @@ async function createGenerationResponse(
     result,
     files,
     metrics,
-    tracking: {
-      downloads: 0,
-    },
     createdAt: FieldValue.serverTimestamp(),
   }
 
@@ -890,5 +861,26 @@ async function createGenerationResponse(
 1. Add GCS bucket setup
 2. Upload PDFs to GCS after generation
 3. Add `files` field to response documents with GCS paths
-4. Generate signed URLs
-5. Implement download tracking in response documents
+4. Generate signed URLs (1 hour for viewers, 7 days for editors)
+
+### Phase 3 (Storage Lifecycle Management)
+
+1. **GCS Lifecycle Policies:**
+   - Transition files to COLDLINE storage class after 90 days
+   - Applied to production and staging buckets
+   - Reduces storage costs for older documents
+
+2. **Storage Class Tracking:**
+   - Response documents include `storageClass` field in `files.resume` and `files.coverLetter`
+   - Initially set to "STANDARD" when uploaded
+   - Updated to "COLDLINE" after lifecycle transition (requires background sync)
+
+3. **UI Awareness:**
+   - Document history UI should display storage class badge
+   - Cold storage files may have slightly slower initial access (first-byte latency)
+   - Signed URLs work the same regardless of storage class
+
+4. **Background Sync (TODO):**
+   - Periodic Cloud Function to sync GCS metadata → Firestore
+   - Updates `storageClass` field when files transition
+   - Optional: Update `size` if compression applied

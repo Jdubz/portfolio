@@ -190,6 +190,10 @@
       "port": 8080,
       "host": "0.0.0.0"
     },
+    "storage": {
+      "port": 9199,
+      "host": "0.0.0.0"
+    },
     "hosting": {
       "port": 5000,
       "host": "0.0.0.0"
@@ -203,6 +207,12 @@
       "port": 4000,
       "host": "0.0.0.0"
     },
-    "singleProjectMode": true
+    "singleProjectMode": true,
+    "hub": {
+      "port": 4400
+    }
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

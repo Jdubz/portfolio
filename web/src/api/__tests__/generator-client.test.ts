@@ -146,7 +146,6 @@ describe("GeneratorClient API Contract", () => {
         github: "https://github.com/johndoe",
         linkedin: "https://linkedin.com/in/johndoe",
         accentColor: "#3B82F6",
-        defaultStyle: "modern",
         createdAt: "2024-01-01T00:00:00.000Z",
         updatedAt: "2024-01-01T00:00:00.000Z",
       }
@@ -167,7 +166,7 @@ describe("GeneratorClient API Contract", () => {
 
       expect(result).toEqual(mockDefaults)
       expect(result.name).toBe("John Doe")
-      expect(result.defaultStyle).toBe("modern")
+      expect(result.accentColor).toBe("#3B82F6")
     })
   })
 
@@ -179,7 +178,6 @@ describe("GeneratorClient API Contract", () => {
         name: "Jane Doe",
         email: "jane@example.com",
         accentColor: "#EF4444",
-        defaultStyle: "executive",
         createdAt: "2024-01-01T00:00:00.000Z",
         updatedAt: "2024-01-02T00:00:00.000Z",
         updatedBy: "user@example.com",
@@ -202,7 +200,6 @@ describe("GeneratorClient API Contract", () => {
       const result = await client.updateDefaults({
         name: "Jane Doe",
         accentColor: "#EF4444",
-        defaultStyle: "executive",
       })
 
       expect(result).toEqual(mockUpdated)
