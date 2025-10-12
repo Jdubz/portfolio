@@ -235,3 +235,87 @@ export function verifyAuthenticatedEditor(logger?: SimpleLogger) {
     }
   }
 }
+
+/**
+ * Optional auth check - verifies token if present but doesn't reject if missing
+ *
+ * Usage:
+ *   const isAuth = await checkOptionalAuth(req, logger)
+ *   if (isAuth) {
+ *     // User is authenticated, apply higher rate limits
+ *   } else {
+ *     // User is not authenticated, apply lower rate limits
+ *   }
+ *
+ * Returns true if authenticated, false otherwise
+ * Sets req.user with { uid, email, email_verified } if authenticated
+ */
+export async function checkOptionalAuth(req: AuthenticatedRequest, logger?: SimpleLogger): Promise<boolean> {
+  const log = logger || {
+    info: (message: string, data?: unknown) => console.log(`[INFO] ${message}`, data || ""),
+    warning: (message: string, data?: unknown) => console.warn(`[WARN] ${message}`, data || ""),
+    error: (message: string, data?: unknown) => console.error(`[ERROR] ${message}`, data || ""),
+  }
+
+  try {
+    // Extract Authorization header
+    const authHeader = req.headers.authorization
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      // No auth header, treat as unauthenticated (not an error)
+      return false
+    }
+
+    // Extract token
+    const idToken = authHeader.split("Bearer ")[1]
+
+    if (!idToken) {
+      // Empty token, treat as unauthenticated
+      return false
+    }
+
+    // Verify token with Firebase Admin SDK
+    let decodedToken: auth.DecodedIdToken
+    try {
+      decodedToken = await auth().verifyIdToken(idToken)
+    } catch (tokenError) {
+      // Token verification failed, treat as unauthenticated (not an error)
+      log.info("Optional auth check: token verification failed", {
+        error: tokenError instanceof Error ? tokenError.message : String(tokenError),
+      })
+      return false
+    }
+
+    // Extract user info
+    const { uid, email, email_verified } = decodedToken
+
+    if (!email || !email_verified) {
+      // Missing email or email not verified, treat as unauthenticated
+      return false
+    }
+
+    // Check if user has editor role via custom claims
+    if (!hasEditorRole(decodedToken)) {
+      // Not an editor, treat as unauthenticated
+      return false
+    }
+
+    // Attach user info to request
+    req.user = {
+      uid,
+      email,
+      email_verified,
+    }
+
+    log.info("Optional auth check: user authenticated", {
+      email,
+      uid,
+    })
+
+    return true
+  } catch (error) {
+    // Unexpected error, treat as unauthenticated (don't reject the request)
+    log.warning("Unexpected error in optional auth check", { error })
+    return false
+  }
+}
