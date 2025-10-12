@@ -4,6 +4,7 @@ import Joi from "joi"
 import { ExperienceService } from "./services/experience.service"
 import { BlurbService } from "./services/blurb.service"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
+import { experienceRateLimiter } from "./middleware/rate-limit.middleware"
 import { logger } from "./utils/logger"
 import { generateRequestId } from "./utils/request-id"
 import { corsHandler } from "./config/cors"
@@ -112,6 +113,16 @@ const handleExperienceRequest = async (req: Request, res: Response): Promise<voi
             })
             resolve()
             return
+          }
+
+          // Apply rate limiting for public GET requests (not health check)
+          if (req.method === "GET" && path !== "/health") {
+            await new Promise<void>((resolveRateLimit, rejectRateLimit) => {
+              experienceRateLimiter(req, res, (err) => {
+                if (err) rejectRateLimit(err)
+                else resolveRateLimit()
+              })
+            })
           }
 
           // Route: GET /experience/all - List all entries and blurbs (public, optimized)

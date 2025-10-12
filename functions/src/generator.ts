@@ -7,6 +7,7 @@ import { BlurbService } from "./services/blurb.service"
 import { createAIProvider } from "./services/ai-provider.factory"
 import { PDFService } from "./services/pdf.service"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
+import { generatorRateLimiter, generatorEditorRateLimiter } from "./middleware/rate-limit.middleware"
 import type { GenerationType, GeneratorResponse } from "./types/generator.types"
 import { logger } from "./utils/logger"
 import { generateRequestId } from "./utils/request-id"
@@ -86,8 +87,34 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
             return
           }
 
-          // Route: POST /generator/generate - Generate documents (public)
+          // Route: POST /generator/generate - Generate documents (public, rate limited)
           if (req.method === "POST" && path === "/generator/generate") {
+            // Check if user is authenticated (optional auth check, doesn't reject)
+            let isAuthenticated = false
+            try {
+              await new Promise<void>((resolveAuth) => {
+                verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
+                  if (err) resolveAuth() // Auth failed, treat as unauthenticated
+                  else {
+                    isAuthenticated = true
+                    resolveAuth()
+                  }
+                })
+              })
+            } catch {
+              // Auth check failed, user is not authenticated
+              isAuthenticated = false
+            }
+
+            // Apply appropriate rate limiting
+            const rateLimiter = isAuthenticated ? generatorEditorRateLimiter : generatorRateLimiter
+            await new Promise<void>((resolveRateLimit, rejectRateLimit) => {
+              rateLimiter(req, res, (err) => {
+                if (err) rejectRateLimit(err)
+                else resolveRateLimit()
+              })
+            })
+
             await handleGenerate(req, res, requestId)
             resolve()
             return
