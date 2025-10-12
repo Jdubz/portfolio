@@ -83,7 +83,7 @@ jobs:
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
             memory: 1Gi
             max_instances: 10
-            secrets: "OPENAI_API_KEY=openai-api-key:latest"
+            secrets: "OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
 
     steps:
       - name: Checkout repository
@@ -209,7 +209,7 @@ jobs:
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
             memory: 1Gi
             max_instances: 10
-            secrets: "OPENAI_API_KEY=openai-api-key:latest"
+            secrets: "OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
 
     steps:
       - name: Checkout repository
