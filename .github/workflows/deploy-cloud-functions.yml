@@ -7,21 +7,118 @@ on:
       - staging
     paths:
       - "functions/**"
+      - ".github/workflows/deploy-cloud-functions.yml"
   pull_request:
     branches:
       - main
       - staging
     paths:
       - "functions/**"
+      - ".github/workflows/deploy-cloud-functions.yml"
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: deploy-functions-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   GCP_PROJECT_ID: static-sites-257923
   FUNCTION_REGION: us-central1
 
 jobs:
-  test:
-    name: Test Functions
+  # Detect which functions changed
+  detect-changes:
+    name: Detect Changed Functions
     runs-on: ubuntu-latest
+    outputs:
+      contact-form: ${{ steps.changes.outputs.contact-form }}
+      experience: ${{ steps.changes.outputs.experience }}
+      generator: ${{ steps.changes.outputs.generator }}
+      any-changed: ${{ steps.changes.outputs.any-changed }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed files
+        id: changes
+        run: |
+          # For PRs, compare against base branch
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            # For pushes, compare against previous commit
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.sha }}"
+          fi
+
+          echo "Comparing $BASE_SHA...$HEAD_SHA"
+
+          # Get changed files
+          CHANGED_FILES=$(git diff --name-only $BASE_SHA $HEAD_SHA || echo "functions/")
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Check if shared code or specific function changed
+          CONTACT_FORM_CHANGED=false
+          EXPERIENCE_CHANGED=false
+          GENERATOR_CHANGED=false
+          ANY_CHANGED=false
+
+          # Check for shared code changes (affects all functions)
+          if echo "$CHANGED_FILES" | grep -qE "^functions/(src/(config|middleware|utils|types)|package\.json|tsconfig\.json)"; then
+            echo "Shared code changed - all functions need redeployment"
+            CONTACT_FORM_CHANGED=true
+            EXPERIENCE_CHANGED=true
+            GENERATOR_CHANGED=true
+            ANY_CHANGED=true
+          fi
+
+          # Check function-specific changes
+          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(index\.ts|services/contact)"; then
+            CONTACT_FORM_CHANGED=true
+            ANY_CHANGED=true
+          fi
+
+          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(experience\.ts|services/experience)"; then
+            EXPERIENCE_CHANGED=true
+            ANY_CHANGED=true
+          fi
+
+          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(generator\.ts|services/(generator|openai|gemini|ai-provider|pdf|blurb))"; then
+            GENERATOR_CHANGED=true
+            ANY_CHANGED=true
+          fi
+
+          # Check workflow changes (redeploy all)
+          if echo "$CHANGED_FILES" | grep -qE "^\.github/workflows/deploy-cloud-functions\.yml"; then
+            echo "Workflow changed - all functions need redeployment"
+            CONTACT_FORM_CHANGED=true
+            EXPERIENCE_CHANGED=true
+            GENERATOR_CHANGED=true
+            ANY_CHANGED=true
+          fi
+
+          echo "contact-form=$CONTACT_FORM_CHANGED" >> $GITHUB_OUTPUT
+          echo "experience=$EXPERIENCE_CHANGED" >> $GITHUB_OUTPUT
+          echo "generator=$GENERATOR_CHANGED" >> $GITHUB_OUTPUT
+          echo "any-changed=$ANY_CHANGED" >> $GITHUB_OUTPUT
+
+          echo "Results:"
+          echo "  contact-form: $CONTACT_FORM_CHANGED"
+          echo "  experience: $EXPERIENCE_CHANGED"
+          echo "  generator: $GENERATOR_CHANGED"
+          echo "  any-changed: $ANY_CHANGED"
+
+  # Build and test (runs once, cached)
+  build-and-test:
+    name: Build & Test Functions
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any-changed == 'true'
 
     steps:
       - name: Checkout repository
@@ -33,6 +130,16 @@ jobs:
           node-version: 20
           cache: "npm"
           cache-dependency-path: package-lock.json
+
+      - name: Cache TypeScript build
+        uses: actions/cache@v4
+        with:
+          path: |
+            functions/dist
+            functions/node_modules/.cache
+          key: functions-build-${{ runner.os }}-${{ hashFiles('functions/src/**/*.ts', 'functions/tsconfig.json', 'functions/package-lock.json') }}
+          restore-keys: |
+            functions-build-${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci
@@ -49,11 +156,25 @@ jobs:
         run: npm run build
         working-directory: functions
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: functions-build
+          path: |
+            functions/dist/
+            functions/package.json
+            functions/package-lock.json
+          retention-days: 1
+
+  # Deploy to staging
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    needs: [detect-changes, build-and-test]
+    if: |
+      github.ref == 'refs/heads/staging' &&
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs.any-changed == 'true'
     permissions:
       contents: read
       id-token: write
@@ -63,7 +184,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 3  # Deploy functions in parallel
       matrix:
         function:
           - name: contact-form
@@ -72,59 +193,76 @@ jobs:
             memory: 256Mi
             max_instances: 10
             secrets: MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest
+            changed: ${{ needs.detect-changes.outputs.contact-form }}
           - name: manageExperience
             entry_point: manageExperience
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
             memory: 256Mi
             max_instances: 10
             secrets: ""
+            changed: ${{ needs.detect-changes.outputs.experience }}
           - name: manageGenerator
             entry_point: manageGenerator
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
             memory: 1Gi
             max_instances: 10
             secrets: "OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
+            changed: ${{ needs.detect-changes.outputs.generator }}
 
     steps:
+      - name: Check if deployment needed
+        id: should-deploy
+        run: |
+          if [ "${{ matrix.function.changed }}" = "true" ]; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "✅ ${{ matrix.function.name }} changed - will deploy"
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+            echo "⏭️  ${{ matrix.function.name }} unchanged - skipping"
+          fi
+
       - name: Checkout repository
+        if: steps.should-deploy.outputs.deploy == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node.js 20
+        if: steps.should-deploy.outputs.deploy == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
-          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build function
-        run: npm run build
-        working-directory: functions
+      - name: Download build artifacts
+        if: steps.should-deploy.outputs.deploy == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: functions-build
+          path: functions-build/
 
       - name: Authenticate to Google Cloud
+        if: steps.should-deploy.outputs.deploy == 'true'
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
           service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
 
       - name: Setup Cloud SDK
+        if: steps.should-deploy.outputs.deploy == 'true'
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
       - name: Create deployment package
+        if: steps.should-deploy.outputs.deploy == 'true'
         run: |
-          cd functions
-          mkdir -p deploy
-          cp -r dist/* deploy/
-          jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' package.json > deploy/package.json
-          cp package-lock.json deploy/ 2>/dev/null || true
-          echo "Deployment package created for ${{ matrix.function.name }}"
-          ls -la deploy/
+          mkdir -p functions/deploy
+          cp -r functions-build/dist/* functions/deploy/
+          jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' functions-build/package.json > functions/deploy/package.json
+          cp functions-build/package-lock.json functions/deploy/ 2>/dev/null || true
+          echo "✅ Deployment package created for ${{ matrix.function.name }}"
+          ls -la functions/deploy/
 
       - name: Deploy ${{ matrix.function.name }} to Staging
+        if: steps.should-deploy.outputs.deploy == 'true'
         run: |
           DEPLOY_CMD="gcloud functions deploy ${{ matrix.function.name }}-staging \
             --gen2 \
@@ -148,38 +286,31 @@ jobs:
 
           DEPLOY_CMD="$DEPLOY_CMD --quiet"
 
-          # Retry logic for transient 409 errors
-          MAX_RETRIES=3
-          RETRY_DELAY=30
-          for i in $(seq 1 $MAX_RETRIES); do
-            echo "Deployment attempt $i of $MAX_RETRIES"
-            if eval $DEPLOY_CMD; then
-              echo "✅ Deployment successful"
-              break
-            else
-              EXIT_CODE=$?
-              if [ $i -lt $MAX_RETRIES ]; then
-                echo "⚠️  Deployment failed with exit code $EXIT_CODE, retrying in ${RETRY_DELAY}s..."
-                sleep $RETRY_DELAY
-              else
-                echo "❌ Deployment failed after $MAX_RETRIES attempts"
-                exit $EXIT_CODE
-              fi
-            fi
-          done
+          echo "🚀 Deploying ${{ matrix.function.name }}-staging..."
+          if eval $DEPLOY_CMD; then
+            echo "✅ Deployment successful"
+          else
+            echo "❌ Deployment failed"
+            exit 1
+          fi
 
-      - name: Verify ${{ matrix.function.name }} deployment
+      - name: Verify deployment
+        if: steps.should-deploy.outputs.deploy == 'true'
         run: |
           echo "✅ ${{ matrix.function.name }}-staging deployed successfully"
           gcloud functions describe ${{ matrix.function.name }}-staging \
             --region=${{ env.FUNCTION_REGION }} \
             --format="value(name,state,serviceConfig.uri)"
 
+  # Deploy to production
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [detect-changes, build-and-test]
+    if: |
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs.any-changed == 'true'
     permissions:
       contents: read
       id-token: write
@@ -189,7 +320,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 3  # Deploy functions in parallel
       matrix:
         function:
           - name: contact-form
@@ -198,59 +329,76 @@ jobs:
             memory: 512Mi
             max_instances: 50
             secrets: MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest
+            changed: ${{ needs.detect-changes.outputs.contact-form }}
           - name: manageExperience
             entry_point: manageExperience
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
             memory: 256Mi
             max_instances: 10
             secrets: ""
+            changed: ${{ needs.detect-changes.outputs.experience }}
           - name: manageGenerator
             entry_point: manageGenerator
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
             memory: 1Gi
             max_instances: 10
             secrets: "OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
+            changed: ${{ needs.detect-changes.outputs.generator }}
 
     steps:
+      - name: Check if deployment needed
+        id: should-deploy
+        run: |
+          if [ "${{ matrix.function.changed }}" = "true" ]; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "✅ ${{ matrix.function.name }} changed - will deploy"
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+            echo "⏭️  ${{ matrix.function.name }} unchanged - skipping"
+          fi
+
       - name: Checkout repository
+        if: steps.should-deploy.outputs.deploy == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node.js 20
+        if: steps.should-deploy.outputs.deploy == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
-          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build function
-        run: npm run build
-        working-directory: functions
+      - name: Download build artifacts
+        if: steps.should-deploy.outputs.deploy == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: functions-build
+          path: functions-build/
 
       - name: Authenticate to Google Cloud
+        if: steps.should-deploy.outputs.deploy == 'true'
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
           service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
 
       - name: Setup Cloud SDK
+        if: steps.should-deploy.outputs.deploy == 'true'
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
       - name: Create deployment package
+        if: steps.should-deploy.outputs.deploy == 'true'
         run: |
-          cd functions
-          mkdir -p deploy
-          cp -r dist/* deploy/
-          jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' package.json > deploy/package.json
-          cp package-lock.json deploy/ 2>/dev/null || true
-          echo "Deployment package created for ${{ matrix.function.name }}"
-          ls -la deploy/
+          mkdir -p functions/deploy
+          cp -r functions-build/dist/* functions/deploy/
+          jq 'del(.scripts.build) | del(.scripts["gcp-build"]) | del(.scripts.dev) | del(.devDependencies) | .main = "index.js"' functions-build/package.json > functions/deploy/package.json
+          cp functions-build/package-lock.json functions/deploy/ 2>/dev/null || true
+          echo "✅ Deployment package created for ${{ matrix.function.name }}"
+          ls -la functions/deploy/
 
       - name: Deploy ${{ matrix.function.name }} to Production
+        if: steps.should-deploy.outputs.deploy == 'true'
         run: |
           DEPLOY_CMD="gcloud functions deploy ${{ matrix.function.name }} \
             --gen2 \
@@ -274,27 +422,16 @@ jobs:
 
           DEPLOY_CMD="$DEPLOY_CMD --quiet"
 
-          # Retry logic for transient 409 errors
-          MAX_RETRIES=3
-          RETRY_DELAY=30
-          for i in $(seq 1 $MAX_RETRIES); do
-            echo "Deployment attempt $i of $MAX_RETRIES"
-            if eval $DEPLOY_CMD; then
-              echo "✅ Deployment successful"
-              break
-            else
-              EXIT_CODE=$?
-              if [ $i -lt $MAX_RETRIES ]; then
-                echo "⚠️  Deployment failed with exit code $EXIT_CODE, retrying in ${RETRY_DELAY}s..."
-                sleep $RETRY_DELAY
-              else
-                echo "❌ Deployment failed after $MAX_RETRIES attempts"
-                exit $EXIT_CODE
-              fi
-            fi
-          done
+          echo "🚀 Deploying ${{ matrix.function.name }}..."
+          if eval $DEPLOY_CMD; then
+            echo "✅ Deployment successful"
+          else
+            echo "❌ Deployment failed"
+            exit 1
+          fi
 
-      - name: Verify ${{ matrix.function.name }} deployment
+      - name: Verify deployment
+        if: steps.should-deploy.outputs.deploy == 'true'
         run: |
           echo "✅ ${{ matrix.function.name }} deployed successfully to production"
           gcloud functions describe ${{ matrix.function.name }} \
