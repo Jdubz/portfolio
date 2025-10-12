@@ -8,12 +8,14 @@
 ### Phase 1-3 Refactoring (Oct 2025)
 
 **Phase 1: Core Infrastructure**
+
 - ✅ Centralized API configuration (`web/src/config/api.ts`)
 - ✅ Standardized logging with structured context
 - ✅ Shared markdown rendering components
 - ✅ FormLabel component for consistent styling
 
 **Phase 2: Form Component Library**
+
 - ✅ FormField component (unified input/textarea)
 - ✅ FormActions component (action buttons)
 - ✅ FormError component (error display)
@@ -22,6 +24,7 @@
 - ✅ Validation utilities with type-safe factory
 
 **Phase 3: API Client Architecture**
+
 - ✅ ApiClient base class (HTTP methods + error handling)
 - ✅ ExperienceClient (experience CRUD)
 - ✅ BlurbClient (blurb CRUD)
@@ -40,6 +43,7 @@
 Build AI-powered resume generator using existing experience data.
 
 **Phase 1 Complete** (Oct 2025):
+
 - ✅ Resume generation Cloud Function with OpenAI integration
 - ✅ PDF export with Puppeteer (logo + avatar support)
 - ✅ Firestore request/response tracking with request/response separation
@@ -54,6 +58,7 @@ Build AI-powered resume generator using existing experience data.
 **Phase 2: Feature Completion** (2-3 weeks):
 
 **Phase 2.1: Cover Letter Integration** (1-2 days)
+
 - [ ] Expose `generateType` parameter in API ("resume" | "coverLetter" | "both")
 - [ ] Add UI checkbox for "Generate cover letter"
 - [ ] Return both PDFs in single API response
@@ -62,6 +67,7 @@ Build AI-powered resume generator using existing experience data.
 - **Note:** Cover letter service already implemented, just needs UI integration
 
 **Phase 2.2: GCS Storage & Document History** (2-3 days)
+
 - [ ] Create GCS bucket `joshwentworth-resumes` with 90-day lifecycle
 - [ ] Upload PDFs to GCS instead of base64 response
 - [ ] Generate signed URLs for downloads (1hr viewers, 7 days editors)
@@ -70,6 +76,7 @@ Build AI-powered resume generator using existing experience data.
 - [ ] Download from signed URLs with tracking
 
 **Phase 2.3: Authentication & Editor Features** (3-4 days)
+
 - [ ] Add Firebase Auth (same pattern as experience page)
 - [ ] Conditional UI based on auth state (viewer vs editor)
 - [ ] Editor tabs: Generate | History | Settings
@@ -78,6 +85,7 @@ Build AI-powered resume generator using existing experience data.
 - [ ] Show all generations in history table with filters
 
 **Phase 2.4: Prompt Management** (2-3 days)
+
 - [ ] Create default prompt blurbs in Firestore (4 blurbs)
 - [ ] Implement variable substitution in prompts
 - [ ] Add "Prompts" tab to editor view
@@ -86,6 +94,7 @@ Build AI-powered resume generator using existing experience data.
 - [ ] Fetch prompts dynamically instead of hardcoded strings
 
 **Phase 2.5: Additional Templates** (2-3 days)
+
 - [ ] Create `resume-traditional.hbs` template
 - [ ] Create `resume-technical.hbs` template
 - [ ] Create `resume-executive.hbs` template
@@ -94,6 +103,7 @@ Build AI-powered resume generator using existing experience data.
 - [ ] Optional: Template preview images
 
 **Phase 2.6: Code Quality** (1 day)
+
 - [ ] Extract Chrome detection to `findLocalChrome()` helper (pdf.service.ts)
 - [ ] Extract job description builder to `buildJobDescription()` helper (generator.ts)
 - [ ] Document service account configuration (experience.ts)
@@ -103,8 +113,8 @@ Build AI-powered resume generator using existing experience data.
 **Priority Order**: 2.1 (cover letter) → 2.3 (auth) → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (quality)
 
 **Documentation**: See [generator/](./generator/) for complete details:
-- [README.md](./generator/README.md) - Current status, architecture, getting started
-- [PHASE_2_PLAN.md](./generator/PHASE_2_PLAN.md) - Detailed Phase 2 tasks and timeline
+
+- [README.md](./generator/README.md) - Current status, architecture, roadmap, and getting started
 - [SCHEMA.md](./generator/SCHEMA.md) - Firestore database schema reference
 
 ### 2. Content Upload Improvements
@@ -112,6 +122,7 @@ Build AI-powered resume generator using existing experience data.
 **Status**: Partial (resume upload exists)
 
 Enhance content upload experience:
+
 - ✅ Resume PDF upload (completed)
 - ⬜ Show success message instead of page refresh
 - ⬜ Upload progress indicators
@@ -125,6 +136,7 @@ Enhance content upload experience:
 **Status**: Not started
 
 Add React error boundaries for graceful error handling:
+
 - Catch component rendering errors
 - Display user-friendly error messages
 - Log errors to monitoring service
@@ -144,6 +156,7 @@ Current: Firebase Analytics with custom events
 Needed: Better tracking and insights
 
 **Improvements**:
+
 - Track form completion rates
 - Monitor API error rates
 - Track user journey through experience page
@@ -156,12 +169,14 @@ Needed: Better tracking and insights
 **Status**: Deferred from Phase 3
 
 Consolidate Firebase initialization across:
+
 - useAuth hook
 - ContactForm component
 - firebase-analytics util
 - firebase-app-check util
 
 **Benefits**:
+
 - Single source of truth
 - Easier to maintain
 - Better error handling
@@ -173,6 +188,7 @@ Consolidate Firebase initialization across:
 **Status**: Basic loading states exist
 
 Add skeleton screens and better loading UX:
+
 - Skeleton components for experience cards
 - Progressive content loading
 - Optimistic UI updates
@@ -235,6 +251,7 @@ Add skeleton screens and better loading UX:
 ### ❌ Additional Hooks Refactoring (Phase 4)
 
 Originally planned as Phase 4, but deemed unnecessary:
+
 - The current architecture is clean and maintainable
 - Further abstraction would provide diminishing returns
 - Better to focus on new features (AI Resume Generator)
@@ -242,6 +259,7 @@ Originally planned as Phase 4, but deemed unnecessary:
 ### ❌ Unified API Response Types
 
 Originally planned, but current approach is sufficient:
+
 - Each client has type-safe responses
 - Error handling is centralized in ApiClient
 - Current pattern is clear and works well

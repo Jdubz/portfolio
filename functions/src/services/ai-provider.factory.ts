@@ -64,10 +64,7 @@ async function getApiKey(secretName: string, logger?: SimpleLogger): Promise<str
 /**
  * Create an AI provider instance
  */
-export async function createAIProvider(
-  providerType: AIProviderType,
-  logger?: SimpleLogger
-): Promise<AIProvider> {
+export async function createAIProvider(providerType: AIProviderType, logger?: SimpleLogger): Promise<AIProvider> {
   logger?.info(`Creating AI provider: ${providerType}`)
 
   switch (providerType) {
@@ -77,24 +74,34 @@ export async function createAIProvider(
     }
 
     case "gemini": {
-      // For Gemini, use GOOGLE_API_KEY environment variable (set by Firebase/Cloud Functions)
-      // Get a free key from: https://makersuite.google.com/app/apikey
-      // Or set in Secret Manager as "gemini-api-key" for production
+      // For Gemini, support multiple configuration sources:
+      // 1. Mock mode for local development (GEMINI_MOCK_MODE=true)
+      // 2. Environment variable (GOOGLE_API_KEY) - set by Firebase/Cloud Functions or .env
+      // 3. Secret Manager (gemini-api-key) - for production deployment
+      //
+      // Get a free API key from: https://makersuite.google.com/app/apikey
 
-      // Check environment variable first (Firebase AI Logic sets this automatically)
+      // Check if mock mode is enabled
+      if (process.env.GEMINI_MOCK_MODE === "true") {
+        logger?.info("Using Gemini mock mode (no API key required)")
+        // Use a dummy API key in mock mode (GeminiProvider checks GEMINI_MOCK_MODE internally)
+        return new GeminiProvider("mock-api-key", logger)
+      }
+
+      // Check environment variable first (Firebase AI Logic sets this automatically in production)
       if (process.env.GOOGLE_API_KEY) {
         logger?.info("Using GOOGLE_API_KEY environment variable for Gemini")
         return new GeminiProvider(process.env.GOOGLE_API_KEY, logger)
       }
 
-      // Try Secret Manager (for production deployment)
+      // Try Secret Manager (for production deployment with explicit secret)
       try {
         const apiKey = await getApiKey("gemini-api-key", logger)
         return new GeminiProvider(apiKey, logger)
       } catch (error) {
         logger?.error("No Gemini API key found in environment or Secret Manager", { error })
         throw new Error(
-          "No API key available for Gemini. Set GOOGLE_API_KEY environment variable or add gemini-api-key to Secret Manager."
+          "No API key available for Gemini. Set GEMINI_MOCK_MODE=true for local dev, GOOGLE_API_KEY environment variable, or add gemini-api-key to Secret Manager."
         )
       }
     }
