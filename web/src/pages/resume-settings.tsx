@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Box, Heading, Text, Label, Input, Button, Flex, Alert, Spinner } from "theme-ui"
 import { useAuth } from "../hooks/useAuth"
 import { generatorClient } from "../api/generator-client"
-import type { GeneratorDefaults, UpdateDefaultsData } from "../types/generator"
+import type { UpdateDefaultsData } from "../types/generator"
 import { logger } from "../utils/logger"
 import { navigate } from "gatsby"
 
@@ -15,7 +15,7 @@ import { navigate } from "gatsby"
  * Auth: Editor only
  */
 const ResumeSettingsPage: React.FC = () => {
-  const { user, isEditor, loading: authLoading } = useAuth()
+  const { isEditor, loading: authLoading } = useAuth()
 
   // Form state
   const [formData, setFormData] = useState<UpdateDefaultsData>({
@@ -38,7 +38,9 @@ const ResumeSettingsPage: React.FC = () => {
 
   // Load current defaults
   useEffect(() => {
-    if (authLoading) return
+    if (authLoading) {
+      return
+    }
 
     // Redirect if not editor
     if (!isEditor) {
@@ -54,14 +56,14 @@ const ResumeSettingsPage: React.FC = () => {
         const defaults = await generatorClient.getDefaults()
 
         setFormData({
-          name: defaults.name || "",
-          email: defaults.email || "",
-          phone: defaults.phone || "",
-          location: defaults.location || "",
-          website: defaults.website || "",
-          github: defaults.github || "",
-          linkedin: defaults.linkedin || "",
-          accentColor: defaults.accentColor || "#3B82F6",
+          name: defaults.name ?? "",
+          email: defaults.email ?? "",
+          phone: defaults.phone ?? "",
+          location: defaults.location ?? "",
+          website: defaults.website ?? "",
+          github: defaults.github ?? "",
+          linkedin: defaults.linkedin ?? "",
+          accentColor: defaults.accentColor ?? "#3B82F6",
         })
 
         setLoading(false)
@@ -149,11 +151,7 @@ const ResumeSettingsPage: React.FC = () => {
 
       {/* Back Link */}
       <Box sx={{ mb: 4 }}>
-        <Button
-          variant="secondary"
-          onClick={() => void navigate("/resume-builder")}
-          sx={{ fontSize: 1, px: 3, py: 2 }}
-        >
+        <Button variant="secondary" onClick={() => void navigate("/resume-builder")} sx={{ fontSize: 1, px: 3, py: 2 }}>
           ← Back to Resume Builder
         </Button>
       </Box>
@@ -193,7 +191,10 @@ const ResumeSettingsPage: React.FC = () => {
 
         <Box sx={{ mb: 3 }}>
           <Label htmlFor="name">
-            Name <Text as="span" sx={{ color: "red" }}>*</Text>
+            Name{" "}
+            <Text as="span" sx={{ color: "red" }}>
+              *
+            </Text>
           </Label>
           <Input
             id="name"
@@ -208,7 +209,10 @@ const ResumeSettingsPage: React.FC = () => {
 
         <Box sx={{ mb: 3 }}>
           <Label htmlFor="email">
-            Email <Text as="span" sx={{ color: "red" }}>*</Text>
+            Email{" "}
+            <Text as="span" sx={{ color: "red" }}>
+              *
+            </Text>
           </Label>
           <Input
             id="email"
@@ -329,12 +333,7 @@ const ResumeSettingsPage: React.FC = () => {
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={saving || !hasChanges}
-            sx={{ px: 4, py: 2 }}
-          >
+          <Button type="submit" variant="primary" disabled={saving || !hasChanges} sx={{ px: 4, py: 2 }}>
             {saving ? "Saving..." : hasChanges ? "Save Changes" : "Saved"}
           </Button>
         </Flex>
@@ -345,7 +344,10 @@ const ResumeSettingsPage: React.FC = () => {
         <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
           <strong>Note:</strong> These settings are shared across all resumes and cover letters you generate. Update
           them whenever your contact information changes. Required fields are marked with{" "}
-          <Text as="span" sx={{ color: "red" }}>*</Text>.
+          <Text as="span" sx={{ color: "red" }}>
+            *
+          </Text>
+          .
         </Text>
       </Box>
     </Box>

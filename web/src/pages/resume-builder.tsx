@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Flex, Select } from "theme-ui"
-import { Link, type HeadFC } from "gatsby"
+import { Link, navigate, type HeadFC } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { logger } from "../utils/logger"
 import { generatorClient } from "../api/generator-client"
@@ -215,6 +215,15 @@ const ResumeBuilderPage: React.FC = () => {
                     </Text>
                   )}
                 </Text>
+                {isEditor && (
+                  <Button
+                    onClick={() => void navigate("/resume-settings")}
+                    variant="secondary"
+                    sx={{ fontSize: 1, px: 3, py: 2 }}
+                  >
+                    Settings
+                  </Button>
+                )}
                 <Button onClick={handleSignOut} variant="secondary" sx={{ fontSize: 1, px: 3, py: 2 }}>
                   Sign Out
                 </Button>
