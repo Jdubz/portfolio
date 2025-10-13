@@ -165,16 +165,14 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ steps, o
 
                 {/* Show error if failed */}
                 {step.status === "failed" && step.error && (
-                  <Text sx={{ fontSize: 1, color: "error", mt: 1 }}>
-                    Error: {step.error.message}
-                  </Text>
+                  <Text sx={{ fontSize: 1, color: "error", mt: 1 }}>Error: {step.error.message}</Text>
                 )}
 
                 {/* Early download buttons - show as soon as URL is available */}
                 {step.result?.resumeUrl && (
                   <Button
                     variant="secondary"
-                    onClick={() => handleDownload(step.result!.resumeUrl!, step.id)}
+                    onClick={() => handleDownload(step.result.resumeUrl as string, step.id)}
                     sx={{ mt: 2, fontSize: 1, py: 1, px: 3 }}
                   >
                     📄 Download Resume
@@ -184,7 +182,7 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ steps, o
                 {step.result?.coverLetterUrl && (
                   <Button
                     variant="secondary"
-                    onClick={() => handleDownload(step.result!.coverLetterUrl!, step.id)}
+                    onClick={() => handleDownload(step.result.coverLetterUrl as string, step.id)}
                     sx={{ mt: 2, ml: step.result?.resumeUrl ? 2 : 0, fontSize: 1, py: 1, px: 3 }}
                   >
                     📄 Download Cover Letter
