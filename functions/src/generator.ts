@@ -34,10 +34,7 @@ import {
   createInitialSteps,
   startStep,
   completeStep,
-  failStep,
-  skipStep,
 } from "./utils/generation-steps"
-import type { GenerationStep } from "./types/generator.types"
 import { verifyAuthenticatedEditor, checkOptionalAuth, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import { generatorRateLimiter, generatorEditorRateLimiter } from "./middleware/rate-limit.middleware"
 import type { GenerationType, GeneratorResponse } from "./types/generator.types"
