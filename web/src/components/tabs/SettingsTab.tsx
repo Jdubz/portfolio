@@ -1,22 +1,14 @@
 import React, { useState, useEffect } from "react"
 import { Box, Heading, Text, Label, Input, Button, Flex, Alert, Spinner } from "theme-ui"
-import { useAuth } from "../hooks/useAuth"
-import { generatorClient } from "../api/generator-client"
-import type { UpdateDefaultsData } from "../types/generator"
-import { logger } from "../utils/logger"
-import { navigate } from "gatsby"
+import { generatorClient } from "../../api/generator-client"
+import type { UpdateDefaultsData } from "../../types/generator"
+import { logger } from "../../utils/logger"
 
-/**
- * Resume Generator Settings Page
- *
- * Allows editors to manage their default personal information
- * that gets pre-filled when generating resumes/cover letters.
- *
- * Auth: Editor only
- */
-const ResumeSettingsPage: React.FC = () => {
-  const { isEditor, loading: authLoading } = useAuth()
+interface SettingsTabProps {
+  isEditor: boolean
+}
 
+export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
   // Form state
   const [formData, setFormData] = useState<UpdateDefaultsData>({
     name: "",
@@ -38,13 +30,8 @@ const ResumeSettingsPage: React.FC = () => {
 
   // Load current defaults
   useEffect(() => {
-    if (authLoading) {
-      return
-    }
-
-    // Redirect if not editor
     if (!isEditor) {
-      void navigate("/resume-builder")
+      setLoading(false)
       return
     }
 
@@ -69,7 +56,7 @@ const ResumeSettingsPage: React.FC = () => {
         setLoading(false)
       } catch (err) {
         logger.error("Failed to load defaults", err as Error, {
-          page: "resume-settings",
+          component: "SettingsTab",
           action: "loadDefaults",
         })
         setError(err instanceof Error ? err.message : "Failed to load settings")
@@ -78,7 +65,7 @@ const ResumeSettingsPage: React.FC = () => {
     }
 
     void loadDefaults()
-  }, [authLoading, isEditor])
+  }, [isEditor])
 
   // Handle input change
   const handleChange = (field: keyof UpdateDefaultsData, value: string) => {
@@ -108,12 +95,12 @@ const ResumeSettingsPage: React.FC = () => {
       setHasChanges(false)
 
       logger.info("Settings saved successfully", {
-        page: "resume-settings",
+        component: "SettingsTab",
         action: "saveSettings",
       })
     } catch (err) {
       logger.error("Failed to save settings", err as Error, {
-        page: "resume-settings",
+        component: "SettingsTab",
         action: "saveSettings",
       })
       setError(err instanceof Error ? err.message : "Failed to save settings")
@@ -121,10 +108,21 @@ const ResumeSettingsPage: React.FC = () => {
     }
   }
 
-  // Auth check
-  if (authLoading || loading) {
+  // Show editor-only message
+  if (!isEditor) {
     return (
-      <Box sx={{ maxWidth: "800px", mx: "auto", p: 4 }}>
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Text sx={{ fontSize: 2, color: "text", opacity: 0.7 }}>
+          Settings are only available for editors. Sign in as an editor to manage your default personal information.
+        </Text>
+      </Box>
+    )
+  }
+
+  // Auth check
+  if (loading) {
+    return (
+      <Box>
         <Flex sx={{ justifyContent: "center", alignItems: "center", minHeight: "400px" }}>
           <Spinner size={48} />
         </Flex>
@@ -132,28 +130,14 @@ const ResumeSettingsPage: React.FC = () => {
     )
   }
 
-  if (!isEditor) {
-    return null // Will redirect via useEffect
-  }
-
   return (
-    <Box sx={{ maxWidth: "800px", mx: "auto", p: 4, mb: 5 }}>
+    <Box>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Heading as="h1" sx={{ fontSize: 5, mb: 2, color: "primary" }}>
-          Resume Settings
-        </Heading>
         <Text sx={{ color: "text", opacity: 0.8 }}>
           Manage your default personal information. These values will be pre-filled when generating resumes and cover
           letters.
         </Text>
-      </Box>
-
-      {/* Back Link */}
-      <Box sx={{ mb: 4 }}>
-        <Button variant="secondary" onClick={() => void navigate("/resume-builder")} sx={{ fontSize: 1, px: 3, py: 2 }}>
-          ← Back to Resume Builder
-        </Button>
       </Box>
 
       {/* Error Alert */}
@@ -324,15 +308,6 @@ const ResumeSettingsPage: React.FC = () => {
 
         {/* Actions */}
         <Flex sx={{ gap: 3, justifyContent: "flex-end", mt: 4 }}>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => void navigate("/resume-builder")}
-            disabled={saving}
-            sx={{ px: 4, py: 2 }}
-          >
-            Cancel
-          </Button>
           <Button type="submit" variant="primary" disabled={saving || !hasChanges} sx={{ px: 4, py: 2 }}>
             {saving ? "Saving..." : hasChanges ? "Save Changes" : "Saved"}
           </Button>
@@ -353,5 +328,3 @@ const ResumeSettingsPage: React.FC = () => {
     </Box>
   )
 }
-
-export default ResumeSettingsPage
