@@ -6,6 +6,7 @@
 
 import { ApiClient } from "./client"
 import { API_CONFIG, isLocalhost } from "../config/api"
+import { getIdToken } from "../utils/auth"
 import type {
   GenerateRequest,
   GenerateResponse,
@@ -70,6 +71,40 @@ export class GeneratorClient extends ApiClient {
     const query = limit ? `?limit=${limit}` : ""
     const response = await this.get<{ requests: GenerationRequest[] }>(`/generator/requests${query}`, true)
     return response.requests
+  }
+
+  /**
+   * Upload avatar or logo image
+   * Auth required - editor only
+   */
+  async uploadImage(file: File, imageType: "avatar" | "logo"): Promise<{ url: string; gcsPath: string; size: number }> {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("imageType", imageType)
+
+    // Get auth token
+    const token = await getIdToken()
+    if (!token) {
+      throw new Error("Authentication required for image upload")
+    }
+
+    const response = await fetch(`${this.baseUrl}/generator/upload-image`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = (await response.json()) as { message?: string }
+      throw new Error(error.message ?? "Failed to upload image")
+    }
+
+    const result = (await response.json()) as {
+      data: { url: string; gcsPath: string; size: number }
+    }
+    return result.data
   }
 }
 

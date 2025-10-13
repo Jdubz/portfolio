@@ -124,6 +124,64 @@ export class StorageService {
   }
 
   /**
+   * Upload an image buffer to GCS (avatar or logo)
+   */
+  async uploadImage(
+    buffer: Buffer,
+    filename: string,
+    imageType: "avatar" | "logo",
+    contentType: string
+  ): Promise<UploadResult> {
+    try {
+      // Validate content type
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/svg+xml"]
+      if (!allowedTypes.includes(contentType)) {
+        throw new Error(`Invalid image type: ${contentType}. Allowed: ${allowedTypes.join(", ")}`)
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024 // 5MB
+      if (buffer.length > maxSize) {
+        throw new Error(`Image too large: ${buffer.length} bytes. Maximum: ${maxSize} bytes (5MB)`)
+      }
+
+      const gcsPath = `images/${imageType}s/${filename}`
+
+      const logContext = {
+        gcsPath,
+        size: buffer.length,
+        contentType,
+        bucket: this.bucketName,
+        emulator: this.useEmulator,
+      }
+
+      this.logger.info("Uploading image", logContext)
+
+      const bucket = this.storage.bucket(this.bucketName)
+      const file = bucket.file(gcsPath)
+
+      await file.save(buffer, {
+        metadata: {
+          contentType,
+          cacheControl: "public, max-age=31536000", // 1 year cache
+        },
+      })
+
+      this.logger.info("Image uploaded successfully", logContext)
+
+      return {
+        gcsPath,
+        filename,
+        size: buffer.length,
+        storageClass: "STANDARD",
+      }
+    } catch (error) {
+      this.logger.error("Failed to upload image", { error })
+      throw new Error(`Image upload failed: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
+  /**
    * Generate a signed URL for downloading a PDF
    * @param gcsPath - Full GCS path (e.g., "resumes/YYYY-MM-DD/filename.pdf")
    * @param options - Expiration options (1 hour for viewers, 7 days for editors)

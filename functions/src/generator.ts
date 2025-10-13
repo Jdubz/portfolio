@@ -8,6 +8,8 @@
 import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
 import Joi from "joi"
+import busboy from "busboy"
+import type { Readable } from "stream"
 import { GeneratorService } from "./services/generator.service"
 import { ExperienceService } from "./services/experience.service"
 import { BlurbService } from "./services/blurb.service"
@@ -140,6 +142,13 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
           // Route: PUT /generator/defaults - Update defaults (auth required)
           if (req.method === "PUT" && path === "/generator/defaults") {
             await handleUpdateDefaults(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: POST /generator/upload-image - Upload avatar/logo (auth required)
+          if (req.method === "POST" && path === "/generator/upload-image") {
+            await handleUploadImage(req as AuthenticatedRequest, res, requestId)
             resolve()
             return
           }
@@ -765,6 +774,106 @@ async function handleListRequests(req: AuthenticatedRequest, res: Response, requ
       error: "FIRESTORE_ERROR",
       errorCode: err.code,
       message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * POST /generator/upload-image - Upload avatar or logo image (auth required)
+ */
+async function handleUploadImage(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Parse multipart/form-data
+    const bb = busboy({ headers: req.headers })
+
+    let imageType: "avatar" | "logo" | null = null
+    let fileBuffer: Buffer | null = null
+    let filename: string | null = null
+    let contentType: string | null = null
+
+    bb.on("field", (fieldname: string, val: string) => {
+      if (fieldname === "imageType" && (val === "avatar" || val === "logo")) {
+        imageType = val
+      }
+    })
+
+    bb.on("file", (fieldname: string, file: Readable, info: { filename: string; mimeType: string }) => {
+      const chunks: Buffer[] = []
+      file.on("data", (chunk: Buffer) => {
+        chunks.push(chunk)
+      })
+      file.on("end", () => {
+        fileBuffer = Buffer.concat(chunks)
+        filename = info.filename
+        contentType = info.mimeType
+      })
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      bb.on("finish", () => resolve())
+      bb.on("error", (err: Error) => reject(err))
+      req.pipe(bb)
+    })
+
+    // Validate inputs
+    if (!imageType || !fileBuffer || !filename || !contentType) {
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: "Missing required fields: imageType, file",
+        requestId,
+      })
+      return
+    }
+
+    const userEmail = req.user!.email
+
+    logger.info("Uploading image", {
+      requestId,
+      userEmail,
+      imageType,
+      filename,
+      contentType,
+      size: fileBuffer.length,
+    })
+
+    // Generate unique filename
+    const timestamp = Date.now()
+    const ext = filename.split(".").pop() || "jpg"
+    const uniqueFilename = `${imageType}-${timestamp}.${ext}`
+
+    // Upload to GCS
+    const uploadResult = await storageService.uploadImage(fileBuffer, uniqueFilename, imageType, contentType)
+
+    // Generate signed URL for immediate use
+    const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 24 * 365 }) // 1 year
+
+    // Update defaults with new image URL
+    const updateData = imageType === "avatar" ? { avatar: signedUrl } : { logo: signedUrl }
+    await generatorService.updateDefaults(updateData, userEmail)
+
+    res.status(200).json({
+      success: true,
+      data: {
+        imageType,
+        url: signedUrl,
+        gcsPath: uploadResult.gcsPath,
+        size: uploadResult.size,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to upload image", { error, requestId })
+
+    const err = ERROR_CODES.INTERNAL_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "IMAGE_UPLOAD_FAILED",
+      errorCode: err.code,
+      message: error instanceof Error ? error.message : "Failed to upload image",
       requestId,
     })
   }

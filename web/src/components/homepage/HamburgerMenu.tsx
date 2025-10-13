@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
