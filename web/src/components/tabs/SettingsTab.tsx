@@ -406,22 +406,55 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             }}
             style={{ display: "none" }}
           />
-          <Flex sx={{ gap: 3, alignItems: "center" }}>
-            {formData.avatar && (
-              <Box sx={{ width: "80px", height: "80px", borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+          <Flex sx={{ gap: 2, alignItems: "center" }}>
+            {/* Avatar Display with Placeholder */}
+            <Box
+              sx={{
+                position: "relative",
+                width: "80px",
+                height: "80px",
+                borderRadius: "50%",
+                overflow: "hidden",
+                flexShrink: 0,
+                bg: formData.avatar ? "transparent" : "muted",
+                border: "1px solid",
+                borderColor: "divider",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {formData.avatar ? (
                 <Image src={formData.avatar} alt="Avatar" sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              </Box>
-            )}
-            <Flex sx={{ gap: 2, flexDirection: "column", flex: 1 }}>
+              ) : (
+                <Text sx={{ fontSize: 0, color: "textMuted", textAlign: "center" }}>No avatar</Text>
+              )}
+            </Box>
+
+            {/* Upload Icon Button */}
+            {isEditor && (
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => avatarInputRef.current?.click()}
-                disabled={!isEditor || uploadingAvatar || saving}
-                sx={{ px: 3, py: 2 }}
+                disabled={uploadingAvatar || saving}
+                sx={{
+                  width: "40px",
+                  height: "40px",
+                  p: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+                title={formData.avatar ? "Change avatar" : "Upload avatar"}
               >
-                {uploadingAvatar ? "Uploading..." : formData.avatar ? "Change Avatar" : "Upload Avatar"}
+                {uploadingAvatar ? "..." : "📤"}
               </Button>
+            )}
+
+            {/* Description */}
+            <Flex sx={{ flexDirection: "column", flex: 1 }}>
               <Text sx={{ fontSize: 1, opacity: 0.7 }}>
                 Recommended: Square image, at least 400x400px. Max 5MB. Formats: JPG, PNG, WebP, SVG
               </Text>
@@ -446,40 +479,54 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             }}
             style={{ display: "none" }}
           />
-          <Flex sx={{ gap: 3, alignItems: "center" }}>
-            {formData.logo && (
-              <Box
-                sx={{
-                  width: "120px",
-                  height: "80px",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: "4px",
-                  overflow: "hidden",
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bg: "background",
-                }}
-              >
-                <Image
-                  src={formData.logo}
-                  alt="Logo"
-                  sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-                />
-              </Box>
-            )}
-            <Flex sx={{ gap: 2, flexDirection: "column", flex: 1 }}>
+          <Flex sx={{ gap: 2, alignItems: "center" }}>
+            {/* Logo Display with Placeholder */}
+            <Box
+              sx={{
+                width: "120px",
+                height: "80px",
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: "4px",
+                overflow: "hidden",
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bg: formData.logo ? "background" : "muted",
+              }}
+            >
+              {formData.logo ? (
+                <Image src={formData.logo} alt="Logo" sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+              ) : (
+                <Text sx={{ fontSize: 0, color: "textMuted", textAlign: "center" }}>No logo</Text>
+              )}
+            </Box>
+
+            {/* Upload Icon Button */}
+            {isEditor && (
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => logoInputRef.current?.click()}
-                disabled={!isEditor || uploadingLogo || saving}
-                sx={{ px: 3, py: 2 }}
+                disabled={uploadingLogo || saving}
+                sx={{
+                  width: "40px",
+                  height: "40px",
+                  p: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+                title={formData.logo ? "Change logo" : "Upload logo"}
               >
-                {uploadingLogo ? "Uploading..." : formData.logo ? "Change Logo" : "Upload Logo"}
+                {uploadingLogo ? "..." : "📤"}
               </Button>
+            )}
+
+            {/* Description */}
+            <Flex sx={{ flexDirection: "column", flex: 1 }}>
               <Text sx={{ fontSize: 1, opacity: 0.7 }}>
                 Recommended: Horizontal logo, transparent background. Max 5MB. Formats: JPG, PNG, WebP, SVG
               </Text>

@@ -127,7 +127,7 @@ const ResumeBuilderPage: React.FC = () => {
     },
     {
       id: "settings",
-      label: "Settings",
+      label: "Personal Info",
       content: <SettingsTab isEditor={isEditor} />,
     },
     // Only show history tab to editors

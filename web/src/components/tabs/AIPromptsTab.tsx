@@ -274,14 +274,14 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
         </Alert>
       )}
 
-      {/* Prompt Type Selector */}
+      {/* Prompt Type Selector - Always enabled for selection */}
       <Box sx={{ mb: 4 }}>
         <Label htmlFor="prompt-type">Document Type</Label>
         <Select
           id="prompt-type"
           value={selectedPrompt}
           onChange={(e) => setSelectedPrompt(e.target.value as "resume" | "coverLetter")}
-          disabled={!isEditor || saving}
+          disabled={saving}
         >
           <option value="resume">Resume</option>
           <option value="coverLetter">Cover Letter</option>

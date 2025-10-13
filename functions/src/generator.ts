@@ -808,26 +808,9 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
     let filename: string | null = null
     let contentType: string | null = null
 
-    bb.on("field", (fieldname: string, val: string) => {
-      if (fieldname === "imageType" && (val === "avatar" || val === "logo")) {
-        imageType = val
-      }
-    })
-
-    bb.on("file", (fieldname: string, file: Readable, info: { filename: string; mimeType: string }) => {
-      const chunks: Buffer[] = []
-      file.on("data", (chunk: Buffer) => {
-        chunks.push(chunk)
-      })
-      file.on("end", () => {
-        fileBuffer = Buffer.concat(chunks)
-        filename = info.filename
-        contentType = info.mimeType
-      })
-    })
-
     await new Promise<void>((resolve, reject) => {
       let finished = false
+      const filePromises: Promise<void>[] = []
 
       const cleanup = () => {
         req.removeListener("error", onReqError)
@@ -836,11 +819,45 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
         bb.removeListener("error", onBbError)
       }
 
+      bb.on("field", (fieldname: string, val: string) => {
+        if (fieldname === "imageType" && (val === "avatar" || val === "logo")) {
+          imageType = val
+        }
+      })
+
+      bb.on("file", (fieldname: string, file: Readable, info: { filename: string; mimeType: string }) => {
+        const chunks: Buffer[] = []
+
+        // Create promise for this file that resolves when file stream ends
+        const filePromise = new Promise<void>((resolveFile, rejectFile) => {
+          file.on("data", (chunk: Buffer) => {
+            chunks.push(chunk)
+          })
+
+          file.on("end", () => {
+            fileBuffer = Buffer.concat(chunks)
+            filename = info.filename
+            contentType = info.mimeType
+            resolveFile()
+          })
+
+          file.on("error", (err: Error) => {
+            rejectFile(err)
+          })
+        })
+
+        filePromises.push(filePromise)
+      })
+
       const onFinish = () => {
         if (!finished) {
           finished = true
           cleanup()
-          resolve()
+
+          // Wait for all file streams to complete before resolving
+          Promise.all(filePromises)
+            .then(() => resolve())
+            .catch((err) => reject(err))
         }
       }
 
