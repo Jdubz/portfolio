@@ -1,14 +1,19 @@
 import React, { useState } from "react"
-import { Box, Button, Flex } from "theme-ui"
+import { Box, Button, Flex, useColorMode } from "theme-ui"
 import { Link } from "gatsby"
 
 /**
  * Hamburger Menu Component
  *
- * Provides navigation to all pages in the portfolio
+ * Navigation menu with:
+ * - Experience (Work Experience tab)
+ * - Builder (Document Builder tab)
+ * - Contact
+ * - Dark mode toggle
  */
 const HamburgerMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const [colorMode, setColorMode] = useColorMode()
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)
@@ -16,6 +21,10 @@ const HamburgerMenu: React.FC = () => {
 
   const closeMenu = () => {
     setIsOpen(false)
+  }
+
+  const toggleDarkMode = () => {
+    setColorMode(colorMode === "dark" ? "light" : "dark")
   }
 
   return (
@@ -139,35 +148,7 @@ const HamburgerMenu: React.FC = () => {
               },
             }}
           >
-            {/* Home - Scroll to top */}
-            <Button
-              onClick={() => {
-                window.scrollTo({ top: 0, behavior: "smooth" })
-                closeMenu()
-              }}
-              sx={{
-                width: "100%",
-                py: 3,
-                px: 4,
-                bg: "transparent",
-                color: "rgb(226, 232, 240)", // Light slate text
-                fontSize: 2,
-                fontWeight: "body",
-                textAlign: "left",
-                border: "none",
-                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
-                  color: "rgb(56, 189, 248)",
-                },
-              }}
-            >
-              Home
-            </Button>
-
-            {/* Resume Builder */}
+            {/* Experience */}
             <Box
               sx={{
                 width: "100%",
@@ -182,7 +163,7 @@ const HamburgerMenu: React.FC = () => {
               }}
             >
               <Link
-                to="/resume-builder"
+                to="/resume-builder?tab=work-experience"
                 onClick={closeMenu}
                 style={{
                   display: "block",
@@ -194,9 +175,106 @@ const HamburgerMenu: React.FC = () => {
                   transition: "color 0.2s ease",
                 }}
               >
-                Resume Builder
+                Experience
               </Link>
             </Box>
+
+            {/* Builder */}
+            <Box
+              sx={{
+                width: "100%",
+                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
+                  "& a": {
+                    color: "rgb(56, 189, 248)",
+                  },
+                },
+              }}
+            >
+              <Link
+                to="/resume-builder?tab=document-builder"
+                onClick={closeMenu}
+                style={{
+                  display: "block",
+                  padding: "1rem 1.5rem",
+                  color: "rgb(226, 232, 240)", // Light slate text
+                  fontSize: "1rem",
+                  fontWeight: 400,
+                  textDecoration: "none",
+                  transition: "color 0.2s ease",
+                }}
+              >
+                Builder
+              </Link>
+            </Box>
+
+            {/* Contact */}
+            <Box
+              sx={{
+                width: "100%",
+                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
+                  "& a": {
+                    color: "rgb(56, 189, 248)",
+                  },
+                },
+              }}
+            >
+              <Link
+                to="/contact"
+                onClick={closeMenu}
+                style={{
+                  display: "block",
+                  padding: "1rem 1.5rem",
+                  color: "rgb(226, 232, 240)", // Light slate text
+                  fontSize: "1rem",
+                  fontWeight: 400,
+                  textDecoration: "none",
+                  transition: "color 0.2s ease",
+                }}
+              >
+                Contact
+              </Link>
+            </Box>
+
+            {/* Dark Mode Toggle */}
+            <Button
+              onClick={toggleDarkMode}
+              sx={{
+                width: "100%",
+                py: 3,
+                px: 4,
+                bg: "transparent",
+                color: "rgb(226, 232, 240)", // Light slate text
+                fontSize: 2,
+                fontWeight: "body",
+                textAlign: "left",
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                "&:hover": {
+                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
+                  color: "rgb(56, 189, 248)",
+                },
+              }}
+            >
+              <span>{colorMode === "dark" ? "Light Mode" : "Dark Mode"}</span>
+              <Box
+                sx={{
+                  width: "20px",
+                  height: "20px",
+                }}
+              >
+                {colorMode === "dark" ? "☀️" : "🌙"}
+              </Box>
+            </Button>
           </Flex>
         </>
       )}
