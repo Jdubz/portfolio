@@ -824,7 +824,7 @@ async function handleListRequests(req: AuthenticatedRequest, res: Response, requ
 /**
  * POST /generator/upload-image - Upload avatar or logo image (auth required)
  */
-async function handleUploadImage(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+async function handleUploadImage(req: AuthenticatedRequest & { rawBody?: Buffer }, res: Response, requestId: string): Promise<void> {
   try {
     // Parse multipart/form-data
     const bb = busboy({ headers: req.headers })
@@ -839,8 +839,6 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
       const filePromises: Promise<void>[] = []
 
       const cleanup = () => {
-        req.removeListener("error", onReqError)
-        req.removeListener("close", onReqClose)
         bb.removeListener("close", onClose)
         bb.removeListener("error", onBbError)
       }
@@ -896,28 +894,18 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
         }
       }
 
-      const onReqError = (err: Error) => {
-        if (!finished) {
-          finished = true
-          cleanup()
-          reject(new Error(`Request error: ${err.message}`))
-        }
-      }
-
-      const onReqClose = () => {
-        if (!finished) {
-          finished = true
-          cleanup()
-          reject(new Error("Request stream closed prematurely"))
-        }
-      }
-
       bb.on("close", onClose)
       bb.on("error", onBbError)
-      req.on("error", onReqError)
-      req.on("close", onReqClose)
 
-      req.pipe(bb)
+      // Firebase Functions v2 buffers the request body into req.rawBody
+      // We need to feed this buffer to busboy instead of piping the request stream
+      const rawBody = req.rawBody
+      if (rawBody) {
+        bb.end(rawBody)
+      } else {
+        // Fallback: stream directly from request (shouldn't happen with Firebase Functions v2)
+        req.pipe(bb)
+      }
     })
 
     // Validate inputs
