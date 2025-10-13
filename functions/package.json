@@ -20,8 +20,10 @@
     "logs:staging": "gcloud functions logs read handleContactForm-staging --region=us-central1 --limit=50"
   },
   "dependencies": {
+    "@genkit-ai/ai": "^1.21.0",
     "@genkit-ai/core": "^1.21.0",
     "@genkit-ai/google-genai": "^1.21.0",
+    "@genkit-ai/googleai": "^1.21.0",
     "@google-cloud/firestore": "^7.11.6",
     "@google-cloud/functions-framework": "^3.4.6",
     "@google-cloud/logging": "^11.0.0",
@@ -38,12 +40,14 @@
     "firebase-functions": "^6.4.0",
     "form-data": "^4.0.4",
     "genkit": "^1.21.0",
+    "genkitx-openai": "^0.25.0",
     "handlebars": "^4.7.8",
     "joi": "^17.13.3",
     "mailgun.js": "^12.1.0",
     "openai": "^6.3.0",
     "puppeteer-core": "^24.24.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

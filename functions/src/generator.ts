@@ -825,7 +825,7 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
       const cleanup = () => {
         req.removeListener("error", onReqError)
         req.removeListener("close", onReqClose)
-        bb.removeListener("finish", onFinish)
+        bb.removeListener("close", onClose)
         bb.removeListener("error", onBbError)
       }
 
@@ -859,7 +859,8 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
         filePromises.push(filePromise)
       })
 
-      const onFinish = () => {
+      // Use 'close' instead of 'finish' - it fires after all streams are done
+      const onClose = () => {
         if (!finished) {
           finished = true
           cleanup()
@@ -895,7 +896,7 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
         }
       }
 
-      bb.on("finish", onFinish)
+      bb.on("close", onClose)
       bb.on("error", onBbError)
       req.on("error", onReqError)
       req.on("close", onReqClose)

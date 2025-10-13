@@ -123,7 +123,12 @@ export function completeStep(
   stepId: string,
   result?: GenerationStep["result"]
 ): GenerationStep[] {
-  return updateStep(steps, stepId, { status: "completed", result })
+  // Filter out undefined result to avoid Firestore errors
+  const updates: { status: "completed"; result?: GenerationStep["result"] } = { status: "completed" }
+  if (result !== undefined) {
+    updates.result = result
+  }
+  return updateStep(steps, stepId, updates)
 }
 
 /**
