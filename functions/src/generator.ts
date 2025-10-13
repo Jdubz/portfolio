@@ -540,7 +540,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       )
 
       // Update request status to completed
-      await generatorService.updateRequestStatus(generationRequestId, "completed")
+      await generatorService.updateStatus(generationRequestId, "completed")
 
       logger.info("Generation completed successfully", {
         requestId,
@@ -549,9 +549,6 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         totalTokens,
         costUsd,
       })
-
-      // Progress: Complete
-      await generatorService.updateProgress(generationRequestId, "finalizing", "Complete!", 100)
 
       // Step 6: Return signed URLs for GCS downloads
       res.status(200).json({
@@ -581,7 +578,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       })
     } catch (generationError) {
       // Generation failed - update status and create error response
-      await generatorService.updateRequestStatus(generationRequestId, "failed")
+      await generatorService.updateStatus(generationRequestId, "failed")
 
       await generatorService.createResponse(
         generationRequestId,
@@ -701,7 +698,7 @@ async function handleGetRequest(req: Request, res: Response, requestId: string):
       data: {
         id: request.id,
         status: request.status,
-        progress: request.progress,
+        steps: request.steps,
         createdAt: request.createdAt,
       },
       requestId,
