@@ -167,41 +167,11 @@ const HamburgerMenu: React.FC = () => {
               Home
             </Button>
 
-            {/* Experience Page */}
-            <Box
-              sx={{
-                width: "100%",
-                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
-                  "& a": {
-                    color: "rgb(56, 189, 248)",
-                  },
-                },
-              }}
-            >
-              <Link
-                to="/experience"
-                onClick={closeMenu}
-                style={{
-                  display: "block",
-                  padding: "1rem 1.5rem",
-                  color: "rgb(226, 232, 240)", // Light slate text
-                  fontSize: "1rem",
-                  fontWeight: 400,
-                  textDecoration: "none",
-                  transition: "color 0.2s ease",
-                }}
-              >
-                Experience
-              </Link>
-            </Box>
-
             {/* Resume Builder */}
             <Box
               sx={{
                 width: "100%",
+                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
                 transition: "all 0.2s ease",
                 "&:hover": {
                   bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover

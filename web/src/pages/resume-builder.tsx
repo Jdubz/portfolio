@@ -1,6 +1,6 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Box, Heading, Text, Button, Flex, Spinner } from "theme-ui"
-import { Link, type HeadFC } from "gatsby"
+import { Link, type HeadFC, navigate } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
 import { Tabs, type Tab } from "../components/Tabs"
@@ -13,17 +13,63 @@ import { logger } from "../utils/logger"
 /**
  * Unified Resume Builder Page with Tabs
  *
- * Tabs:
- * 1. Work Experience - View/manage professional experience portfolio
- * 2. Document Builder - Generate AI-powered resumes and cover letters
- * 3. AI Prompts - Customize AI prompts (coming soon)
- * 4. Settings - Manage default personal information (editors only)
+ * Tabs with URL routing support:
+ * - /resume-builder?tab=work-experience
+ * - /resume-builder?tab=document-builder (default)
+ * - /resume-builder?tab=ai-prompts
+ * - /resume-builder?tab=settings
+ *
+ * Legacy routes (redirects):
+ * - /experience → /resume-builder?tab=work-experience
+ * - /resume-settings → /resume-builder?tab=settings
  */
 const ResumeBuilderPage: React.FC = () => {
   const { user, isEditor, loading: authLoading } = useAuth()
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<string>("document-builder")
+
+  // Get initial tab from URL query param
+  const getInitialTab = (): string => {
+    if (typeof window === "undefined") {
+      return "document-builder"
+    }
+    const params = new URLSearchParams(window.location.search)
+    const tabParam = params.get("tab")
+    const validTabs = ["work-experience", "document-builder", "ai-prompts", "settings"]
+    return tabParam && validTabs.includes(tabParam) ? tabParam : "document-builder"
+  }
+
+  const [activeTab, setActiveTab] = useState<string>(getInitialTab())
+
+  // Sync URL with active tab
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+
+    const currentParams = new URLSearchParams(window.location.search)
+    const currentTab = currentParams.get("tab")
+
+    if (currentTab !== activeTab) {
+      const newUrl = activeTab === "document-builder" ? "/resume-builder" : `/resume-builder?tab=${activeTab}`
+      void navigate(newUrl, { replace: true })
+    }
+  }, [activeTab])
+
+  // Listen for browser back/forward navigation
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+
+    const handlePopState = () => {
+      const newTab = getInitialTab()
+      setActiveTab(newTab)
+    }
+
+    window.addEventListener("popstate", handlePopState)
+    return () => window.removeEventListener("popstate", handlePopState)
+  }, [])
 
   const handleSignIn = () => {
     setSigningIn(true)
