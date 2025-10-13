@@ -24,7 +24,8 @@ const HamburgerMenu: React.FC = () => {
   }
 
   const toggleDarkMode = () => {
-    setColorMode(colorMode === "dark" ? "light" : "dark")
+    const nextMode = colorMode === "dark" ? "light" : "dark"
+    setColorMode(nextMode)
   }
 
   return (
@@ -46,9 +47,10 @@ const HamburgerMenu: React.FC = () => {
           height: "48px",
           padding: 0,
           border: "1px solid",
-          borderColor: "rgba(56, 189, 248, 0.3)", // Sky blue border
-          background: "rgba(15, 23, 42, 0.85)", // Dark slate background
+          borderColor: "primary",
+          bg: "background",
           backdropFilter: "blur(10px)",
+          opacity: 0.95,
           borderRadius: "12px",
           cursor: "pointer",
           display: "flex",
@@ -57,15 +59,14 @@ const HamburgerMenu: React.FC = () => {
           justifyContent: "center",
           gap: "6px",
           transition: "all 0.3s ease",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+          boxShadow: "lg",
           "&:hover": {
-            background: "rgba(30, 41, 59, 0.9)", // Lighter slate on hover
-            borderColor: "rgba(56, 189, 248, 0.5)",
-            boxShadow: "0 6px 16px rgba(56, 189, 248, 0.2)",
+            borderColor: "primaryHover",
+            opacity: 1,
           },
           "&:focus-visible": {
             outline: "2px solid",
-            outlineColor: "rgb(56, 189, 248)", // Sky blue focus
+            outlineColor: "primary",
             outlineOffset: "2px",
           },
         }}
@@ -75,7 +76,7 @@ const HamburgerMenu: React.FC = () => {
           sx={{
             width: "24px",
             height: "2px",
-            bg: "rgb(56, 189, 248)", // Sky blue lines
+            bg: "primary",
             borderRadius: "2px",
             transition: "all 0.3s ease",
             transform: isOpen ? "rotate(45deg) translateY(8px)" : "none",
@@ -85,7 +86,7 @@ const HamburgerMenu: React.FC = () => {
           sx={{
             width: "24px",
             height: "2px",
-            bg: "rgb(56, 189, 248)", // Sky blue lines
+            bg: "primary",
             borderRadius: "2px",
             transition: "all 0.3s ease",
             opacity: isOpen ? 0 : 1,
@@ -95,7 +96,7 @@ const HamburgerMenu: React.FC = () => {
           sx={{
             width: "24px",
             height: "2px",
-            bg: "rgb(56, 189, 248)", // Sky blue lines
+            bg: "primary",
             borderRadius: "2px",
             transition: "all 0.3s ease",
             transform: isOpen ? "rotate(-45deg) translateY(-8px)" : "none",
@@ -127,11 +128,13 @@ const HamburgerMenu: React.FC = () => {
               top: "56px",
               right: 0,
               minWidth: "200px",
-              bg: "rgba(15, 23, 42, 0.95)", // Dark slate background
+              bg: "background",
               backdropFilter: "blur(20px)",
               borderRadius: "12px",
-              border: "1px solid rgba(56, 189, 248, 0.3)", // Sky blue border
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+              border: "1px solid",
+              borderColor: "primary",
+              boxShadow: "xl",
+              opacity: 0.98,
               flexDirection: "column",
               overflow: "hidden",
               zIndex: 999,
@@ -152,12 +155,13 @@ const HamburgerMenu: React.FC = () => {
             <Box
               sx={{
                 width: "100%",
-                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
+                borderBottom: "1px solid",
+                borderColor: "divider",
                 transition: "all 0.2s ease",
                 "&:hover": {
-                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
+                  bg: "divider",
                   "& a": {
-                    color: "rgb(56, 189, 248)",
+                    color: "primary",
                   },
                 },
               }}
@@ -168,7 +172,7 @@ const HamburgerMenu: React.FC = () => {
                 style={{
                   display: "block",
                   padding: "1rem 1.5rem",
-                  color: "rgb(226, 232, 240)", // Light slate text
+                  color: "text",
                   fontSize: "1rem",
                   fontWeight: 400,
                   textDecoration: "none",
@@ -183,12 +187,13 @@ const HamburgerMenu: React.FC = () => {
             <Box
               sx={{
                 width: "100%",
-                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
+                borderBottom: "1px solid",
+                borderColor: "divider",
                 transition: "all 0.2s ease",
                 "&:hover": {
-                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
+                  bg: "divider",
                   "& a": {
-                    color: "rgb(56, 189, 248)",
+                    color: "primary",
                   },
                 },
               }}
@@ -199,7 +204,7 @@ const HamburgerMenu: React.FC = () => {
                 style={{
                   display: "block",
                   padding: "1rem 1.5rem",
-                  color: "rgb(226, 232, 240)", // Light slate text
+                  color: "text",
                   fontSize: "1rem",
                   fontWeight: 400,
                   textDecoration: "none",
@@ -214,12 +219,13 @@ const HamburgerMenu: React.FC = () => {
             <Box
               sx={{
                 width: "100%",
-                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
+                borderBottom: "1px solid",
+                borderColor: "divider",
                 transition: "all 0.2s ease",
                 "&:hover": {
-                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
+                  bg: "divider",
                   "& a": {
-                    color: "rgb(56, 189, 248)",
+                    color: "primary",
                   },
                 },
               }}
@@ -230,7 +236,7 @@ const HamburgerMenu: React.FC = () => {
                 style={{
                   display: "block",
                   padding: "1rem 1.5rem",
-                  color: "rgb(226, 232, 240)", // Light slate text
+                  color: "text",
                   fontSize: "1rem",
                   fontWeight: 400,
                   textDecoration: "none",
@@ -249,7 +255,7 @@ const HamburgerMenu: React.FC = () => {
                 py: 3,
                 px: 4,
                 bg: "transparent",
-                color: "rgb(226, 232, 240)", // Light slate text
+                color: "text",
                 fontSize: 2,
                 fontWeight: "body",
                 textAlign: "left",
@@ -260,8 +266,8 @@ const HamburgerMenu: React.FC = () => {
                 alignItems: "center",
                 justifyContent: "space-between",
                 "&:hover": {
-                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
-                  color: "rgb(56, 189, 248)",
+                  bg: "divider",
+                  color: "primary",
                 },
               }}
             >
