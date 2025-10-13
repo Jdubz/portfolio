@@ -171,8 +171,8 @@ export const DocumentHistoryTab: React.FC<DocumentHistoryTabProps> = () => {
       {/* Info Box */}
       <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
         <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
-          <strong>Note:</strong> This feature is currently under development. Full document history with download links
-          will be available soon.
+          <strong>Note:</strong> Document history is tracked in Firestore. The UI for viewing past generations with
+          download links is coming soon. For now, editors can query the Firestore console directly.
         </Text>
       </Box>
     </Box>
