@@ -33,7 +33,7 @@ const HamburgerMenu: React.FC = () => {
       sx={{
         position: "fixed",
         top: 3,
-        right: 3,
+        right: 4,
         zIndex: 1000,
       }}
     >
@@ -48,9 +48,8 @@ const HamburgerMenu: React.FC = () => {
           padding: 0,
           border: "1px solid",
           borderColor: "primary",
-          bg: "background",
+          bg: "dark",
           backdropFilter: "blur(10px)",
-          opacity: 0.95,
           borderRadius: "12px",
           cursor: "pointer",
           display: "flex",
@@ -62,7 +61,7 @@ const HamburgerMenu: React.FC = () => {
           boxShadow: "lg",
           "&:hover": {
             borderColor: "primaryHover",
-            opacity: 1,
+            bg: "wave",
           },
           "&:focus-visible": {
             outline: "2px solid",
@@ -128,13 +127,12 @@ const HamburgerMenu: React.FC = () => {
               top: "56px",
               right: 0,
               minWidth: "200px",
-              bg: "background",
+              bg: "dark",
               backdropFilter: "blur(20px)",
               borderRadius: "12px",
               border: "1px solid",
               borderColor: "primary",
               boxShadow: "xl",
-              opacity: 0.98,
               flexDirection: "column",
               overflow: "hidden",
               zIndex: 999,
@@ -172,7 +170,7 @@ const HamburgerMenu: React.FC = () => {
                 style={{
                   display: "block",
                   padding: "1rem 1.5rem",
-                  color: "text",
+                  color: "white",
                   fontSize: "1rem",
                   fontWeight: 400,
                   textDecoration: "none",
@@ -204,7 +202,7 @@ const HamburgerMenu: React.FC = () => {
                 style={{
                   display: "block",
                   padding: "1rem 1.5rem",
-                  color: "text",
+                  color: "white",
                   fontSize: "1rem",
                   fontWeight: 400,
                   textDecoration: "none",
@@ -236,7 +234,7 @@ const HamburgerMenu: React.FC = () => {
                 style={{
                   display: "block",
                   padding: "1rem 1.5rem",
-                  color: "text",
+                  color: "white",
                   fontSize: "1rem",
                   fontWeight: 400,
                   textDecoration: "none",
