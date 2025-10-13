@@ -159,13 +159,13 @@ export interface AIProvider {
 }
 
 // =============================================================================
-// Generator Defaults (Default Settings Document)
+// Personal Info (Personal Information Document)
 // =============================================================================
 
-export interface GeneratorDefaults {
+export interface PersonalInfo {
   // Document identification
-  id: "default"
-  type: "defaults"
+  id: "personal-info"
+  type: "personal-info"
 
   // Personal Information (name and email required, others optional)
   name: string
@@ -201,7 +201,7 @@ export interface GeneratorDefaults {
   updatedBy?: string // Email of last editor
 }
 
-export interface UpdateGeneratorDefaultsData {
+export interface UpdatePersonalInfoData {
   name?: string
   email?: string
   phone?: string
@@ -223,6 +223,12 @@ export interface UpdateGeneratorDefaultsData {
     }
   }
 }
+
+// Deprecated type aliases for backward compatibility during migration
+/** @deprecated Use PersonalInfo instead */
+export type GeneratorDefaults = PersonalInfo
+/** @deprecated Use UpdatePersonalInfoData instead */
+export type UpdateGeneratorDefaultsData = UpdatePersonalInfoData
 
 // =============================================================================
 // Generation Progress Steps
@@ -268,8 +274,8 @@ export interface GeneratorRequest {
   // AI Provider Selection
   provider: AIProviderType // Which AI service to use (openai or gemini)
 
-  // Snapshot of defaults at request time
-  defaults: {
+  // Snapshot of personal info at request time
+  personalInfo: {
     name: string
     email: string
     phone?: string
@@ -307,6 +313,20 @@ export interface GeneratorRequest {
 
   // Step-by-step Progress Tracking
   steps?: GenerationStep[]
+
+  // Intermediate Results (stored after each step for retry capability)
+  intermediateResults?: {
+    // AI-generated content (from generate_resume / generate_cover_letter steps)
+    resumeContent?: ResumeContent
+    coverLetterContent?: CoverLetterContent
+
+    // Token usage tracking
+    resumeTokenUsage?: TokenUsage
+    coverLetterTokenUsage?: TokenUsage
+
+    // Model used for generation
+    model?: string
+  }
 
   // Access Control
   access: {

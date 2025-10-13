@@ -71,9 +71,9 @@ export interface AIPrompts {
   }
 }
 
-export interface GeneratorDefaults {
+export interface PersonalInfo {
   id: string
-  type: "defaults"
+  type: "personal-info"
   name?: string
   email?: string
   phone?: string
@@ -91,7 +91,7 @@ export interface GeneratorDefaults {
   updatedBy?: string
 }
 
-export interface UpdateDefaultsData {
+export interface UpdatePersonalInfoData {
   name?: string
   email?: string
   phone?: string
@@ -104,6 +104,12 @@ export interface UpdateDefaultsData {
   accentColor?: string
   aiPrompts?: AIPrompts
 }
+
+// Deprecated type aliases for backward compatibility
+/** @deprecated Use PersonalInfo instead */
+export type GeneratorDefaults = PersonalInfo
+/** @deprecated Use UpdatePersonalInfoData instead */
+export type UpdateDefaultsData = UpdatePersonalInfoData
 
 export type GenerationStepStatus = "pending" | "in_progress" | "completed" | "failed" | "skipped"
 

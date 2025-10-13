@@ -136,8 +136,8 @@ describe("GeneratorClient API Contract", () => {
   describe("getDefaults() - API Response Contract", () => {
     it("should correctly parse defaults response", async () => {
       const mockDefaults: GeneratorDefaults = {
-        id: "default",
-        type: "defaults",
+        id: "personal-info",
+        type: "personal-info",
         name: "John Doe",
         email: "john@example.com",
         phone: "555-1234",
@@ -173,8 +173,8 @@ describe("GeneratorClient API Contract", () => {
   describe("updateDefaults() - API Response Contract", () => {
     it("should correctly parse update response with auth", async () => {
       const mockUpdated: GeneratorDefaults = {
-        id: "default",
-        type: "defaults",
+        id: "personal-info",
+        type: "personal-info",
         name: "Jane Doe",
         email: "jane@example.com",
         accentColor: "#EF4444",

@@ -1,10 +1,33 @@
 import React from "react"
-import { Box, Flex, Text, Button, Spinner } from "theme-ui"
+import { Box, Flex, Text, Spinner } from "theme-ui"
 import type { GenerationStep } from "../types/generator"
 
 interface GenerationProgressProps {
   steps: GenerationStep[]
-  onDownload?: (url: string, filename: string) => void
+}
+
+/**
+ * Get meaningful completion message for each step
+ */
+const getCompletionMessage = (step: GenerationStep): string => {
+  const duration = step.duration ? ` (${(step.duration / 1000).toFixed(1)}s)` : ""
+
+  switch (step.id) {
+    case "fetch_data":
+      return `Successfully loaded your experience data${duration}`
+    case "generate_resume":
+      return `AI generated tailored resume content${duration}`
+    case "generate_cover_letter":
+      return `AI generated personalized cover letter${duration}`
+    case "create_resume_pdf":
+      return `Resume PDF created and ready${duration}`
+    case "create_cover_letter_pdf":
+      return `Cover letter PDF created and ready${duration}`
+    case "upload_documents":
+      return `Documents uploaded to cloud storage${duration}`
+    default:
+      return `Completed${duration}`
+  }
 }
 
 /**
@@ -19,7 +42,7 @@ interface GenerationProgressProps {
  * Enables early download: PDFs can be downloaded as soon as their step completes,
  * even if other steps are still in progress.
  */
-export const GenerationProgress: React.FC<GenerationProgressProps> = ({ steps, onDownload }) => {
+export const GenerationProgress: React.FC<GenerationProgressProps> = ({ steps }) => {
   const getStepIcon = (status: GenerationStep["status"]) => {
     switch (status) {
       case "pending":
@@ -105,17 +128,6 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ steps, o
     }
   }
 
-  const handleDownload = (url: string, stepId: string) => {
-    const filename = stepId.includes("resume") ? "resume.pdf" : "cover_letter.pdf"
-
-    if (onDownload) {
-      onDownload(url, filename)
-    } else {
-      // Default behavior: open in new tab
-      window.open(url, "_blank")
-    }
-  }
-
   return (
     <Box
       sx={{
@@ -133,7 +145,7 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ steps, o
               {/* Icon */}
               <Box sx={{ pt: "2px" }}>{getStepIcon(step.status)}</Box>
 
-              {/* Step Info */}
+              {/* Step Info - Show only one message at a time */}
               <Box sx={{ flex: 1 }}>
                 <Text
                   sx={{
@@ -143,51 +155,13 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ steps, o
                     opacity: step.status === "skipped" ? 0.5 : 1,
                   }}
                 >
-                  {step.name}
+                  {/* Before: step name | During: action description | After: completion message */}
+                  {step.status === "pending" && step.name}
+                  {step.status === "in_progress" && step.description}
+                  {step.status === "completed" && getCompletionMessage(step)}
+                  {step.status === "failed" && `Error: ${step.error?.message ?? "Failed"}`}
+                  {step.status === "skipped" && `${step.name} (skipped)`}
                 </Text>
-                <Text
-                  sx={{
-                    fontSize: 1,
-                    color: "textMuted",
-                    opacity: step.status === "skipped" ? 0.5 : 0.8,
-                    mt: 1,
-                  }}
-                >
-                  {step.description}
-                </Text>
-
-                {/* Show duration if completed */}
-                {step.status === "completed" && step.duration && (
-                  <Text sx={{ fontSize: 0, color: "success", mt: 1, opacity: 0.7 }}>
-                    ✓ Completed in {(step.duration / 1000).toFixed(1)}s
-                  </Text>
-                )}
-
-                {/* Show error if failed */}
-                {step.status === "failed" && step.error && (
-                  <Text sx={{ fontSize: 1, color: "error", mt: 1 }}>Error: {step.error.message}</Text>
-                )}
-
-                {/* Early download buttons - show as soon as URL is available */}
-                {step.result?.resumeUrl && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => step.result && handleDownload(step.result.resumeUrl as string, step.id)}
-                    sx={{ mt: 2, fontSize: 1, py: 1, px: 3 }}
-                  >
-                    📄 Download Resume
-                  </Button>
-                )}
-
-                {step.result?.coverLetterUrl && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => step.result && handleDownload(step.result.coverLetterUrl as string, step.id)}
-                    sx={{ mt: 2, ml: step.result?.resumeUrl ? 2 : 0, fontSize: 1, py: 1, px: 3 }}
-                  >
-                    📄 Download Cover Letter
-                  </Button>
-                )}
               </Box>
             </Flex>
           </Box>

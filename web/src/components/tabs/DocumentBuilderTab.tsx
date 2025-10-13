@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from "react"
 import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Flex, Select } from "theme-ui"
+import { doc, onSnapshot } from "firebase/firestore"
 import { logger } from "../../utils/logger"
 import { generatorClient } from "../../api/generator-client"
 import { useResumeForm } from "../../contexts/ResumeFormContext"
-import type { GenerationType, GenerationMetadata, AIProviderType } from "../../types/generator"
+import { getFirestoreInstance } from "../../utils/firestore"
+import { GenerationProgress } from "../GenerationProgress"
+import type {
+  GenerationType,
+  GenerationMetadata,
+  AIProviderType,
+  GenerationRequest,
+  GenerationStep,
+} from "../../types/generator"
 
 interface DocumentBuilderTabProps {
   isEditor: boolean
@@ -30,6 +39,11 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
+  // Generation progress tracking
+  const [generationRequestId, setGenerationRequestId] = useState<string | null>(null)
+  const [generationStatus, setGenerationStatus] = useState<GenerationRequest["status"] | null>(null)
+  const [generationSteps, setGenerationSteps] = useState<GenerationStep[]>([])
+
   // Load AI provider preference from localStorage on mount
   useEffect(() => {
     const savedProvider = localStorage.getItem("aiProvider") as AIProviderType | null
@@ -44,6 +58,61 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
     localStorage.setItem("aiProvider", provider)
     logger.info("AI provider changed", { provider })
   }
+
+  // Firestore listener for real-time progress updates
+  useEffect(() => {
+    if (!generationRequestId) {
+      return
+    }
+
+    logger.info("Setting up Firestore listener for generation progress", { generationRequestId })
+
+    try {
+      const db = getFirestoreInstance()
+      const requestRef = doc(db, "generator", generationRequestId)
+
+      const unsubscribe = onSnapshot(
+        requestRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const request = snapshot.data() as GenerationRequest
+            setGenerationStatus(request.status)
+            setGenerationSteps(request.steps ?? [])
+
+            logger.info("Generation progress updated", {
+              generationRequestId,
+              status: request.status,
+              stepsCount: request.steps?.length ?? 0,
+            })
+
+            // Check if generation is complete
+            if (request.status === "completed") {
+              setGenerating(false)
+              setSuccess(true)
+              logger.info("Generation completed", { generationRequestId })
+            } else if (request.status === "failed") {
+              setGenerating(false)
+              setError("Generation failed. Please try again.")
+              logger.error("Generation failed", new Error("Generation status: failed"), { generationRequestId })
+            }
+          } else {
+            logger.warn("Generation request document not found", { generationRequestId })
+          }
+        },
+        (err) => {
+          logger.error("Firestore listener error", err, { generationRequestId })
+          // Don't stop generation on listener errors - they might be transient
+        }
+      )
+
+      return () => {
+        logger.info("Cleaning up Firestore listener", { generationRequestId })
+        unsubscribe()
+      }
+    } catch (err) {
+      logger.error("Failed to set up Firestore listener", err as Error, { generationRequestId })
+    }
+  }, [generationRequestId])
 
   // Generated files (Phase 2.2: now using URLs instead of base64)
   const [resumeUrl, setResumeUrl] = useState<string | null>(null)
@@ -60,6 +129,63 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
     setCoverLetterUrl(null)
     setUrlExpiresIn(null)
     setMetadata(null)
+    setGenerationRequestId(null)
+    setGenerationStatus("pending")
+
+    // Initialize steps immediately based on generateType
+    const initialSteps: GenerationStep[] = [
+      {
+        id: "fetch_data",
+        name: "Fetch Experience Data",
+        description: "Loading your experience entries and professional blurbs",
+        status: "pending",
+      },
+    ]
+
+    if (formState.generateType === "resume" || formState.generateType === "both") {
+      initialSteps.push({
+        id: "generate_resume",
+        name: "Generate Resume Content",
+        description: "Creating tailored resume content with AI",
+        status: "pending",
+      })
+    }
+
+    if (formState.generateType === "coverLetter" || formState.generateType === "both") {
+      initialSteps.push({
+        id: "generate_cover_letter",
+        name: "Generate Cover Letter",
+        description: "Writing personalized cover letter with AI",
+        status: "pending",
+      })
+    }
+
+    if (formState.generateType === "resume" || formState.generateType === "both") {
+      initialSteps.push({
+        id: "create_resume_pdf",
+        name: "Create Resume PDF",
+        description: "Rendering your resume as a professional PDF",
+        status: "pending",
+      })
+    }
+
+    if (formState.generateType === "coverLetter" || formState.generateType === "both") {
+      initialSteps.push({
+        id: "create_cover_letter_pdf",
+        name: "Create Cover Letter PDF",
+        description: "Rendering your cover letter as a PDF",
+        status: "pending",
+      })
+    }
+
+    initialSteps.push({
+      id: "upload_documents",
+      name: "Upload Documents",
+      description: "Securely uploading PDFs to cloud storage",
+      status: "pending",
+    })
+
+    setGenerationSteps(initialSteps)
 
     try {
       // Prepare request payload using formState
@@ -88,29 +214,35 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
 
       logger.info("Generation successful", data as unknown as Record<string, unknown>)
 
-      // Store the signed URLs (Phase 2.2)
-      const responseData = data
-      if (responseData?.resumeUrl) {
-        setResumeUrl(responseData.resumeUrl)
-      }
-      if (responseData?.coverLetterUrl) {
-        setCoverLetterUrl(responseData.coverLetterUrl)
-      }
-      if (responseData?.urlExpiresIn) {
-        setUrlExpiresIn(responseData.urlExpiresIn)
+      // Extract generation request ID for Firestore listener
+      // API client automatically unwraps response.data, so we use data directly
+      if (data?.requestId) {
+        setGenerationRequestId(data.requestId)
+        logger.info("Set generation request ID for tracking", { generationId: data.requestId })
       }
 
-      if (responseData?.metadata) {
-        setMetadata(responseData.metadata)
+      // Store the signed URLs (Phase 2.2)
+      if (data?.resumeUrl) {
+        setResumeUrl(data.resumeUrl)
+      }
+      if (data?.coverLetterUrl) {
+        setCoverLetterUrl(data.coverLetterUrl)
+      }
+      if (data?.urlExpiresIn) {
+        setUrlExpiresIn(data.urlExpiresIn)
+      }
+
+      if (data?.metadata) {
+        setMetadata(data.metadata)
       }
       setSuccess(true)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
       setError(errorMessage)
       logger.error("Generation failed", err as Error)
-    } finally {
-      setGenerating(false)
+      setGenerating(false) // Stop generating on error
     }
+    // Note: Don't set setGenerating(false) here - let the Firestore listener handle it when status becomes 'completed' or 'failed'
   }
 
   const downloadFromUrl = (url: string, filename: string) => {
@@ -324,76 +456,64 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         </Flex>
       </Box>
 
-      {/* Results */}
-      {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing */}
-      {(resumeUrl || coverLetterUrl) && (
-        <Box
-          sx={{
-            bg: "background",
-            p: 4,
-            borderRadius: "8px",
-            border: "1px solid",
-            borderColor: "muted",
-          }}
-        >
+      {/* Generation Progress - Show checklist persistently during and after generation */}
+      {generationSteps.length > 0 && (
+        <Box sx={{ mt: 4 }}>
           <Heading as="h2" sx={{ fontSize: 3, mb: 3 }}>
-            Generated Documents
+            {generationStatus === "completed" ? "Generation Complete" : "Generation Progress"}
           </Heading>
+          <GenerationProgress steps={generationSteps} />
 
-          {/* Metadata */}
-          {metadata && (
-            <Box sx={{ mb: 3, p: 3, bg: "muted", borderRadius: "4px" }}>
-              <Text sx={{ fontSize: 1, fontFamily: "monospace" }}>
-                <strong>Company:</strong> {metadata.company}
-                <br />
-                <strong>Role:</strong> {metadata.role}
-                <br />
-                <strong>Model:</strong> {metadata.model}
-                <br />
-                <strong>Tokens:</strong> {metadata.tokenUsage?.total ?? "N/A"}
-                <br />
-                <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) ?? "N/A"}
-                <br />
-                <strong>Duration:</strong> {(metadata.durationMs / 1000).toFixed(2)}s
-                {urlExpiresIn && (
-                  <>
-                    <br />
-                    <strong>Download Link Expires:</strong> {urlExpiresIn}
-                  </>
+          {/* Download buttons below checklist */}
+          {(resumeUrl ?? coverLetterUrl) && (
+            <Box sx={{ mt: 3 }}>
+              <Flex sx={{ gap: 2, flexWrap: "wrap" }}>
+                {resumeUrl && (
+                  <Button
+                    onClick={() =>
+                      downloadFromUrl(
+                        resumeUrl,
+                        `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_Resume.pdf`
+                      )
+                    }
+                    variant="primary"
+                  >
+                    📄 Download Resume
+                  </Button>
                 )}
-              </Text>
+                {coverLetterUrl && (
+                  <Button
+                    onClick={() =>
+                      downloadFromUrl(
+                        coverLetterUrl,
+                        `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_CoverLetter.pdf`
+                      )
+                    }
+                    variant="primary"
+                  >
+                    📝 Download Cover Letter
+                  </Button>
+                )}
+              </Flex>
             </Box>
           )}
+        </Box>
+      )}
 
-          {/* Download Buttons */}
-          <Flex sx={{ gap: 2, flexWrap: "wrap" }}>
-            {resumeUrl && (
-              <Button
-                onClick={() =>
-                  downloadFromUrl(
-                    resumeUrl,
-                    `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_Resume.pdf`
-                  )
-                }
-                variant="secondary"
-              >
-                📄 Download Resume
-              </Button>
+      {/* Metadata section (optional, shown below checklist) */}
+      {metadata && generationSteps.length > 0 && (
+        <Box sx={{ mt: 3, p: 3, bg: "muted", borderRadius: "4px" }}>
+          <Text sx={{ fontSize: 1, fontFamily: "monospace" }}>
+            <strong>Model:</strong> {metadata.model} | <strong>Tokens:</strong> {metadata.tokenUsage?.total ?? "N/A"} |{" "}
+            <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) ?? "N/A"} | <strong>Duration:</strong>{" "}
+            {(metadata.durationMs / 1000).toFixed(2)}s
+            {urlExpiresIn && (
+              <>
+                {" "}
+                | <strong>Link expires:</strong> {urlExpiresIn}
+              </>
             )}
-            {coverLetterUrl && (
-              <Button
-                onClick={() =>
-                  downloadFromUrl(
-                    coverLetterUrl,
-                    `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_CoverLetter.pdf`
-                  )
-                }
-                variant="secondary"
-              >
-                📝 Download Cover Letter
-              </Button>
-            )}
-          </Flex>
+          </Text>
         </Box>
       )}
 
