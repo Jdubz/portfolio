@@ -13,13 +13,14 @@ import { logger } from "./logger"
 
 // Firebase configuration
 // Note: These are public API keys and safe to commit
+// IMPORTANT: Use environment variables to match custom authDomain in staging/production
 const firebaseConfig = {
-  apiKey: "AIzaSyAxzl0u55AkWKTKLjGJRX1pxtApS8yC39c",
-  authDomain: "static-sites-257923.firebaseapp.com",
-  projectId: "static-sites-257923",
-  storageBucket: "static-sites-257923.firebasestorage.app",
-  messagingSenderId: "789847666726",
-  appId: "1:789847666726:web:2128b2081a8c38ba5f76e7",
+  apiKey: process.env.GATSBY_FIREBASE_API_KEY ?? "AIzaSyAxzl0u55AkWKTKLjGJRX1pxtApS8yC39c",
+  authDomain: process.env.GATSBY_FIREBASE_AUTH_DOMAIN ?? "static-sites-257923.firebaseapp.com",
+  projectId: process.env.GATSBY_FIREBASE_PROJECT_ID ?? "static-sites-257923",
+  storageBucket: process.env.GATSBY_FIREBASE_STORAGE_BUCKET ?? "static-sites-257923.firebasestorage.app",
+  messagingSenderId: process.env.GATSBY_FIREBASE_MESSAGING_SENDER_ID ?? "789847666726",
+  appId: process.env.GATSBY_FIREBASE_APP_ID ?? "1:789847666726:web:2128b2081a8c38ba5f76e7",
   measurementId: "G-DV9P4HR219",
 }
 
