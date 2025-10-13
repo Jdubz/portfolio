@@ -74,8 +74,10 @@ export class GeminiProvider implements AIProvider {
         return this.generateMockResume(options)
       }
 
-      const systemPrompt = this.buildResumeSystemPrompt()
-      const userPrompt = this.buildResumeUserPrompt(options)
+      const systemPrompt = options.customPrompts?.systemPrompt || this.buildResumeSystemPrompt()
+      const userPrompt = options.customPrompts?.userPromptTemplate
+        ? this.interpolateUserPrompt(options.customPrompts.userPromptTemplate, options)
+        : this.buildResumeUserPrompt(options)
 
       this.logger.info("Generating resume with Gemini", {
         model: this.model,
@@ -136,8 +138,10 @@ export class GeminiProvider implements AIProvider {
         return this.generateMockCoverLetter(options)
       }
 
-      const systemPrompt = this.buildCoverLetterSystemPrompt()
-      const userPrompt = this.buildCoverLetterUserPrompt(options)
+      const systemPrompt = options.customPrompts?.systemPrompt || this.buildCoverLetterSystemPrompt()
+      const userPrompt = options.customPrompts?.userPromptTemplate
+        ? this.interpolateCoverLetterPrompt(options.customPrompts.userPromptTemplate, options)
+        : this.buildCoverLetterUserPrompt(options)
 
       this.logger.info("Generating cover letter with Gemini", {
         model: this.model,
@@ -507,5 +511,81 @@ Generate a compelling cover letter that showcases the candidate's qualifications
       tokenUsage: mockTokenUsage,
       model: `${this.model} (MOCK)`,
     }
+  }
+
+  /**
+   * Interpolate user prompt template with actual values
+   * Used when custom prompts are provided from Firestore
+   */
+  private interpolateUserPrompt(template: string, options: GenerateResumeOptions): string {
+    // If template doesn't use variables, just return as-is
+    if (!template.includes("{{")) {
+      return this.buildResumeUserPrompt(options)
+    }
+
+    // Format experience data
+    const experienceData = options.experienceEntries
+      .map((entry, index) => {
+        const blurb = options.experienceBlurbs.find((b) => b.name === entry.id)
+        return `
+EXPERIENCE ENTRY #${index + 1} (USE ONLY THIS DATA - DO NOT ADD ANYTHING):
+Company/Title: ${entry.title}
+${entry.role ? `Role: ${entry.role}` : "NO ROLE PROVIDED"}
+${entry.location ? `Location: ${entry.location}` : "NO LOCATION PROVIDED"}
+Start Date: ${entry.startDate}
+End Date: ${entry.endDate || "Present"}
+${entry.body ? `Description: ${entry.body}` : "NO DESCRIPTION PROVIDED"}
+${blurb ? `Accomplishments:\n${blurb.content}` : "NO ACCOMPLISHMENTS PROVIDED"}
+${entry.notes ? `Additional Context: ${entry.notes}` : "NO ADDITIONAL CONTEXT PROVIDED"}
+
+END OF ENTRY #${index + 1} - USE NOTHING BEYOND THIS POINT FOR THIS ENTRY
+`.trim()
+      })
+      .join("\n\n" + "=".repeat(80) + "\n\n")
+
+    // Replace template variables
+    return template
+      .replace(/\{\{personalInfo\.name\}\}/g, options.personalInfo.name)
+      .replace(/\{\{personalInfo\.email\}\}/g, options.personalInfo.email)
+      .replace(/\{\{personalInfo\.phone\}\}/g, options.personalInfo.phone || "")
+      .replace(/\{\{personalInfo\.location\}\}/g, options.personalInfo.location || "")
+      .replace(/\{\{personalInfo\.website\}\}/g, options.personalInfo.website || "")
+      .replace(/\{\{personalInfo\.linkedin\}\}/g, options.personalInfo.linkedin || "")
+      .replace(/\{\{personalInfo\.github\}\}/g, options.personalInfo.github || "")
+      .replace(/\{\{job\.role\}\}/g, options.job.role)
+      .replace(/\{\{job\.company\}\}/g, options.job.company)
+      .replace(/\{\{job\.companyWebsite\}\}/g, options.job.companyWebsite || "")
+      .replace(/\{\{job\.jobDescription\}\}/g, options.job.jobDescription || "")
+      .replace(/\{\{experienceData\}\}/g, experienceData)
+      .replace(/\{\{emphasize\}\}/g, options.emphasize?.join(", ") || "")
+  }
+
+  /**
+   * Interpolate cover letter prompt template with actual values
+   */
+  private interpolateCoverLetterPrompt(template: string, options: GenerateCoverLetterOptions): string {
+    // If template doesn't use variables, just return as-is
+    if (!template.includes("{{")) {
+      return this.buildCoverLetterUserPrompt(options)
+    }
+
+    // Format experience data (simplified for cover letter)
+    const experienceData = options.experienceEntries
+      .map((entry) => {
+        const blurb = options.experienceBlurbs.find((b) => b.name === entry.id)
+        return `${entry.title}${entry.role ? ` - ${entry.role}` : ""} (${entry.startDate} - ${entry.endDate || "Present"})
+${blurb ? blurb.content : entry.body || ""}`
+      })
+      .join("\n\n")
+
+    // Replace template variables
+    return template
+      .replace(/\{\{personalInfo\.name\}\}/g, options.personalInfo.name)
+      .replace(/\{\{personalInfo\.email\}\}/g, options.personalInfo.email)
+      .replace(/\{\{job\.role\}\}/g, options.job.role)
+      .replace(/\{\{job\.company\}\}/g, options.job.company)
+      .replace(/\{\{job\.companyWebsite\}\}/g, options.job.companyWebsite || "")
+      .replace(/\{\{job\.jobDescription\}\}/g, options.job.jobDescription || "")
+      .replace(/\{\{experienceData\}\}/g, experienceData)
   }
 }

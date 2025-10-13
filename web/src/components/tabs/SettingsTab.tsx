@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Label, Input, Button, Flex, Alert, Spinner } from "theme-ui"
+import React, { useState, useEffect, useRef } from "react"
+import { Box, Heading, Text, Label, Input, Button, Flex, Alert, Spinner, Image } from "theme-ui"
 import { generatorClient } from "../../api/generator-client"
 import type { UpdateDefaultsData } from "../../types/generator"
 import { logger } from "../../utils/logger"
@@ -19,6 +19,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
     github: "",
     linkedin: "",
     accentColor: "#3B82F6",
+    avatar: "",
+    logo: "",
   })
 
   // UI state
@@ -27,14 +29,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
 
-  // Load current defaults
+  // Refs for file inputs
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+
+  // Load current defaults (visible to everyone, editable only for editors)
   useEffect(() => {
-    if (!isEditor) {
-      setLoading(false)
-      return
-    }
-
     const loadDefaults = async () => {
       try {
         setLoading(true)
@@ -51,6 +54,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
           github: defaults.github ?? "",
           linkedin: defaults.linkedin ?? "",
           accentColor: defaults.accentColor ?? "#3B82F6",
+          avatar: defaults.avatar ?? "",
+          logo: defaults.logo ?? "",
         })
 
         setLoading(false)
@@ -65,7 +70,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
     }
 
     void loadDefaults()
-  }, [isEditor])
+  }, [])
 
   // Handle input change
   const handleChange = (field: keyof UpdateDefaultsData, value: string) => {
@@ -108,18 +113,95 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
     }
   }
 
-  // Show editor-only message
-  if (!isEditor) {
-    return (
-      <Box sx={{ p: 4, textAlign: "center" }}>
-        <Text sx={{ fontSize: 2, color: "text", opacity: 0.7 }}>
-          Settings are only available for editors. Sign in as an editor to manage your default personal information.
-        </Text>
-      </Box>
-    )
+  // Handle avatar upload
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file")
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be smaller than 5MB")
+      return
+    }
+
+    try {
+      setUploadingAvatar(true)
+      setError(null)
+
+      const result = await generatorClient.uploadImage(file, "avatar")
+
+      setFormData((prev) => ({ ...prev, avatar: result.url }))
+      setSuccess(true)
+      setUploadingAvatar(false)
+
+      logger.info("Avatar uploaded successfully", {
+        component: "SettingsTab",
+        action: "uploadAvatar",
+        size: result.size,
+      })
+    } catch (err) {
+      logger.error("Failed to upload avatar", err as Error, {
+        component: "SettingsTab",
+        action: "uploadAvatar",
+      })
+      setError(err instanceof Error ? err.message : "Failed to upload avatar")
+      setUploadingAvatar(false)
+    }
   }
 
-  // Auth check
+  // Handle logo upload
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file")
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be smaller than 5MB")
+      return
+    }
+
+    try {
+      setUploadingLogo(true)
+      setError(null)
+
+      const result = await generatorClient.uploadImage(file, "logo")
+
+      setFormData((prev) => ({ ...prev, logo: result.url }))
+      setSuccess(true)
+      setUploadingLogo(false)
+
+      logger.info("Logo uploaded successfully", {
+        component: "SettingsTab",
+        action: "uploadLogo",
+        size: result.size,
+      })
+    } catch (err) {
+      logger.error("Failed to upload logo", err as Error, {
+        component: "SettingsTab",
+        action: "uploadLogo",
+      })
+      setError(err instanceof Error ? err.message : "Failed to upload logo")
+      setUploadingLogo(false)
+    }
+  }
+
+  // Loading state
   if (loading) {
     return (
       <Box>
@@ -130,14 +212,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
     )
   }
 
+  const headerText = isEditor
+    ? "Manage your default personal information. These values will be pre-filled when generating resumes and cover letters."
+    : "View the default personal information used for resume and cover letter generation. Sign in as an editor to modify these settings."
+
   return (
     <Box>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Text sx={{ color: "text", opacity: 0.8 }}>
-          Manage your default personal information. These values will be pre-filled when generating resumes and cover
-          letters.
-        </Text>
+        <Text sx={{ color: "text", opacity: 0.8 }}>{headerText}</Text>
       </Box>
 
       {/* Error Alert */}
@@ -186,7 +269,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             value={formData.name}
             onChange={(e) => handleChange("name", e.target.value)}
             required
-            disabled={saving}
+            disabled={!isEditor || saving}
             placeholder="John Doe"
           />
         </Box>
@@ -204,7 +287,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             value={formData.email}
             onChange={(e) => handleChange("email", e.target.value)}
             required
-            disabled={saving}
+            disabled={!isEditor || saving}
             placeholder="john@example.com"
           />
         </Box>
@@ -216,7 +299,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             type="tel"
             value={formData.phone}
             onChange={(e) => handleChange("phone", e.target.value)}
-            disabled={saving}
+            disabled={!isEditor || saving}
             placeholder="555-1234"
           />
         </Box>
@@ -228,7 +311,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             type="text"
             value={formData.location}
             onChange={(e) => handleChange("location", e.target.value)}
-            disabled={saving}
+            disabled={!isEditor || saving}
             placeholder="Portland, OR"
           />
         </Box>
@@ -245,7 +328,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             type="url"
             value={formData.website}
             onChange={(e) => handleChange("website", e.target.value)}
-            disabled={saving}
+            disabled={!isEditor || saving}
             placeholder="https://yourwebsite.com"
           />
         </Box>
@@ -257,7 +340,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             type="url"
             value={formData.github}
             onChange={(e) => handleChange("github", e.target.value)}
-            disabled={saving}
+            disabled={!isEditor || saving}
             placeholder="https://github.com/username"
           />
         </Box>
@@ -269,7 +352,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             type="url"
             value={formData.linkedin}
             onChange={(e) => handleChange("linkedin", e.target.value)}
-            disabled={saving}
+            disabled={!isEditor || saving}
             placeholder="https://linkedin.com/in/username"
           />
         </Box>
@@ -292,26 +375,126 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
               type="color"
               value={formData.accentColor}
               onChange={(e) => handleChange("accentColor", e.target.value)}
-              disabled={saving}
+              disabled={!isEditor || saving}
               sx={{ width: "80px", height: "40px", cursor: "pointer" }}
             />
             <Input
               type="text"
               value={formData.accentColor}
               onChange={(e) => handleChange("accentColor", e.target.value)}
-              disabled={saving}
+              disabled={!isEditor || saving}
               placeholder="#3B82F6"
               sx={{ flex: 1 }}
             />
           </Flex>
         </Box>
 
-        {/* Actions */}
-        <Flex sx={{ gap: 3, justifyContent: "flex-end", mt: 4 }}>
-          <Button type="submit" variant="primary" disabled={saving || !hasChanges} sx={{ px: 4, py: 2 }}>
-            {saving ? "Saving..." : hasChanges ? "Save Changes" : "Saved"}
-          </Button>
-        </Flex>
+        {/* Avatar */}
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="avatar">
+            Avatar
+            <Text as="span" sx={{ ml: 2, fontSize: 1, opacity: 0.7 }}>
+              (profile photo for resumes)
+            </Text>
+          </Label>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              void handleAvatarUpload(e)
+            }}
+            style={{ display: "none" }}
+          />
+          <Flex sx={{ gap: 3, alignItems: "center" }}>
+            {formData.avatar && (
+              <Box sx={{ width: "80px", height: "80px", borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+                <Image src={formData.avatar} alt="Avatar" sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </Box>
+            )}
+            <Flex sx={{ gap: 2, flexDirection: "column", flex: 1 }}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={!isEditor || uploadingAvatar || saving}
+                sx={{ px: 3, py: 2 }}
+              >
+                {uploadingAvatar ? "Uploading..." : formData.avatar ? "Change Avatar" : "Upload Avatar"}
+              </Button>
+              <Text sx={{ fontSize: 1, opacity: 0.7 }}>
+                Recommended: Square image, at least 400x400px. Max 5MB. Formats: JPG, PNG, WebP, SVG
+              </Text>
+            </Flex>
+          </Flex>
+        </Box>
+
+        {/* Logo */}
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="logo">
+            Logo
+            <Text as="span" sx={{ ml: 2, fontSize: 1, opacity: 0.7 }}>
+              (personal brand logo for headers)
+            </Text>
+          </Label>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              void handleLogoUpload(e)
+            }}
+            style={{ display: "none" }}
+          />
+          <Flex sx={{ gap: 3, alignItems: "center" }}>
+            {formData.logo && (
+              <Box
+                sx={{
+                  width: "120px",
+                  height: "80px",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: "4px",
+                  overflow: "hidden",
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bg: "background",
+                }}
+              >
+                <Image
+                  src={formData.logo}
+                  alt="Logo"
+                  sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                />
+              </Box>
+            )}
+            <Flex sx={{ gap: 2, flexDirection: "column", flex: 1 }}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={!isEditor || uploadingLogo || saving}
+                sx={{ px: 3, py: 2 }}
+              >
+                {uploadingLogo ? "Uploading..." : formData.logo ? "Change Logo" : "Upload Logo"}
+              </Button>
+              <Text sx={{ fontSize: 1, opacity: 0.7 }}>
+                Recommended: Horizontal logo, transparent background. Max 5MB. Formats: JPG, PNG, WebP, SVG
+              </Text>
+            </Flex>
+          </Flex>
+        </Box>
+
+        {/* Actions - Editor Only */}
+        {isEditor && (
+          <Flex sx={{ gap: 3, justifyContent: "flex-end", mt: 4 }}>
+            <Button type="submit" variant="primary" disabled={saving || !hasChanges} sx={{ px: 4, py: 2 }}>
+              {saving ? "Saving..." : hasChanges ? "Save Changes" : "Saved"}
+            </Button>
+          </Flex>
+        )}
       </Box>
 
       {/* Info Box */}

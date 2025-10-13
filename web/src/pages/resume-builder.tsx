@@ -8,6 +8,7 @@ import { WorkExperienceTab } from "../components/tabs/WorkExperienceTab"
 import { DocumentBuilderTab } from "../components/tabs/DocumentBuilderTab"
 import { AIPromptsTab } from "../components/tabs/AIPromptsTab"
 import { SettingsTab } from "../components/tabs/SettingsTab"
+import { DocumentHistoryTab } from "../components/tabs/DocumentHistoryTab"
 import { logger } from "../utils/logger"
 
 /**
@@ -18,6 +19,7 @@ import { logger } from "../utils/logger"
  * - /resume-builder?tab=document-builder (default)
  * - /resume-builder?tab=ai-prompts
  * - /resume-builder?tab=settings
+ * - /resume-builder?tab=history (editor-only)
  *
  * Legacy routes (redirects):
  * - /experience → /resume-builder?tab=work-experience
@@ -35,7 +37,7 @@ const ResumeBuilderPage: React.FC = () => {
     }
     const params = new URLSearchParams(window.location.search)
     const tabParam = params.get("tab")
-    const validTabs = ["work-experience", "document-builder", "ai-prompts", "settings"]
+    const validTabs = ["work-experience", "document-builder", "ai-prompts", "settings", "history"]
     return tabParam && validTabs.includes(tabParam) ? tabParam : "document-builder"
   }
 
@@ -71,6 +73,17 @@ const ResumeBuilderPage: React.FC = () => {
     return () => window.removeEventListener("popstate", handlePopState)
   }, [])
 
+  // Redirect non-editors away from history tab
+  useEffect(() => {
+    if (!authLoading && activeTab === "history" && !isEditor) {
+      logger.info("Non-editor attempted to access history tab, redirecting to document-builder", {
+        page: "resume-builder",
+        user: user?.email ?? "anonymous",
+      })
+      void navigate("/resume-builder?tab=document-builder", { replace: true })
+    }
+  }, [authLoading, activeTab, isEditor, user])
+
   const handleSignIn = () => {
     setSigningIn(true)
     setAuthError(null)
@@ -95,6 +108,7 @@ const ResumeBuilderPage: React.FC = () => {
     })
   }
 
+  // Build tabs array (conditionally include history for editors only)
   const tabs: Tab[] = [
     {
       id: "work-experience",
@@ -116,6 +130,16 @@ const ResumeBuilderPage: React.FC = () => {
       label: "Settings",
       content: <SettingsTab isEditor={isEditor} />,
     },
+    // Only show history tab to editors
+    ...(isEditor
+      ? [
+          {
+            id: "history",
+            label: "Document History",
+            content: <DocumentHistoryTab isEditor={isEditor} />,
+          },
+        ]
+      : []),
   ]
 
   return (

@@ -94,6 +94,9 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 
+# Firebase exports (temporary export directories)
+firebase-export-*/
+
 # Windows
 nul
 
@@ -140,6 +143,10 @@ test-results/
 *.swp
 *.swo
 *~
+
+# Backup files
+*.old
+*.bak
 
 # Terraform
 terraform.tfstate*

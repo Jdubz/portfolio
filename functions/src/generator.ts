@@ -3,11 +3,27 @@
  *
  * Supports both OpenAI and Gemini AI providers with optional authentication
  * for tiered rate limiting.
+ *
+ * Features:
+ * - Multi-provider AI (OpenAI GPT-4o, Google Gemini 2.0 Flash)
+ * - PDF generation with custom branding
+ * - GCS storage with signed URLs
+ * - Firestore tracking and document history
+ * - Rate limiting (10 viewer / 20 editor requests per 15min)
+ * - Custom AI prompt management
+ * - Avatar/logo upload with image validation
+ *
+ * Documentation:
+ * - Overview: docs/development/generator/README.md
+ * - Schema: docs/development/generator/SCHEMA.md
+ * - Common Mistakes: docs/development/COMMON_MISTAKES.md
  */
 
 import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
 import Joi from "joi"
+import busboy from "busboy"
+import type { Readable } from "stream"
 import { GeneratorService } from "./services/generator.service"
 import { ExperienceService } from "./services/experience.service"
 import { BlurbService } from "./services/blurb.service"
@@ -140,6 +156,13 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
           // Route: PUT /generator/defaults - Update defaults (auth required)
           if (req.method === "PUT" && path === "/generator/defaults") {
             await handleUpdateDefaults(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: POST /generator/upload-image - Upload avatar/logo (auth required)
+          if (req.method === "POST" && path === "/generator/upload-image") {
+            await handleUploadImage(req as AuthenticatedRequest, res, requestId)
             resolve()
             return
           }
@@ -311,6 +334,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           experienceEntries: entries,
           experienceBlurbs: blurbs,
           emphasize: preferences?.emphasize,
+          customPrompts: defaults.aiPrompts?.resume,
         })
 
         // Progress: Creating PDF
@@ -360,6 +384,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           },
           experienceEntries: entries,
           experienceBlurbs: blurbs,
+          customPrompts: defaults.aiPrompts?.coverLetter,
         })
 
         // Progress: Creating PDF
@@ -765,6 +790,156 @@ async function handleListRequests(req: AuthenticatedRequest, res: Response, requ
       error: "FIRESTORE_ERROR",
       errorCode: err.code,
       message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * POST /generator/upload-image - Upload avatar or logo image (auth required)
+ */
+async function handleUploadImage(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Parse multipart/form-data
+    const bb = busboy({ headers: req.headers })
+
+    let imageType: "avatar" | "logo" | null = null
+    let fileBuffer: Buffer | null = null
+    let filename: string | null = null
+    let contentType: string | null = null
+
+    bb.on("field", (fieldname: string, val: string) => {
+      if (fieldname === "imageType" && (val === "avatar" || val === "logo")) {
+        imageType = val
+      }
+    })
+
+    bb.on("file", (fieldname: string, file: Readable, info: { filename: string; mimeType: string }) => {
+      const chunks: Buffer[] = []
+      file.on("data", (chunk: Buffer) => {
+        chunks.push(chunk)
+      })
+      file.on("end", () => {
+        fileBuffer = Buffer.concat(chunks)
+        filename = info.filename
+        contentType = info.mimeType
+      })
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      let finished = false
+
+      const cleanup = () => {
+        req.removeListener("error", onReqError)
+        req.removeListener("close", onReqClose)
+        bb.removeListener("finish", onFinish)
+        bb.removeListener("error", onBbError)
+      }
+
+      const onFinish = () => {
+        if (!finished) {
+          finished = true
+          cleanup()
+          resolve()
+        }
+      }
+
+      const onBbError = (err: Error) => {
+        if (!finished) {
+          finished = true
+          cleanup()
+          reject(err)
+        }
+      }
+
+      const onReqError = (err: Error) => {
+        if (!finished) {
+          finished = true
+          cleanup()
+          reject(new Error(`Request error: ${err.message}`))
+        }
+      }
+
+      const onReqClose = () => {
+        if (!finished) {
+          finished = true
+          cleanup()
+          reject(new Error("Request stream closed prematurely"))
+        }
+      }
+
+      bb.on("finish", onFinish)
+      bb.on("error", onBbError)
+      req.on("error", onReqError)
+      req.on("close", onReqClose)
+
+      req.pipe(bb)
+    })
+
+    // Validate inputs
+    if (!imageType || !fileBuffer || !filename || !contentType) {
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: "Missing required fields: imageType, file",
+        requestId,
+      })
+      return
+    }
+
+    const userEmail = req.user!.email
+
+    // TypeScript needs help understanding these are not null after validation
+    const validFileBuffer = fileBuffer as Buffer
+    const validFilename = filename as string
+    const validContentType = contentType as string
+    const validImageType = imageType as "avatar" | "logo"
+
+    logger.info("Uploading image", {
+      requestId,
+      userEmail,
+      imageType: validImageType,
+      filename: validFilename,
+      contentType: validContentType,
+      size: validFileBuffer.length,
+    })
+
+    // Generate unique filename
+    const timestamp = Date.now()
+    const ext = validFilename.split(".").pop() || "jpg"
+    const uniqueFilename = `${validImageType}-${timestamp}.${ext}`
+
+    // Upload to GCS
+    const uploadResult = await storageService.uploadImage(validFileBuffer, uniqueFilename, validImageType, validContentType)
+
+    // Generate signed URL for immediate use
+    const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 24 * 365 }) // 1 year
+
+    // Update defaults with new image URL
+    const updateData = validImageType === "avatar" ? { avatar: signedUrl } : { logo: signedUrl }
+    await generatorService.updateDefaults(updateData, userEmail)
+
+    res.status(200).json({
+      success: true,
+      data: {
+        imageType: validImageType,
+        url: signedUrl,
+        gcsPath: uploadResult.gcsPath,
+        size: uploadResult.size,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to upload image", { error, requestId })
+
+    const err = ERROR_CODES.INTERNAL_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "IMAGE_UPLOAD_FAILED",
+      errorCode: err.code,
+      message: error instanceof Error ? error.message : "Failed to upload image",
       requestId,
     })
   }
