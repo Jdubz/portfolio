@@ -3,7 +3,7 @@
  */
 
 import { GeneratorService } from "../generator.service"
-import type { GeneratorDefaults, GenerationType } from "../../types/generator.types"
+import type { PersonalInfo, GenerationType } from "../../types/generator.types"
 import type { ExperienceEntry } from "../experience.service"
 import type { BlurbEntry } from "../blurb.service"
 
@@ -42,9 +42,9 @@ describe("GeneratorService", () => {
     it("should return defaults when document exists", async () => {
       mockDb.get.mockResolvedValue({
         exists: true,
-        id: "default",
+        id: "personal-info",
         data: () => ({
-          type: "defaults",
+          type: "personal-info",
           name: "John Doe",
           email: "john@example.com",
           accentColor: "#3B82F6",
@@ -84,9 +84,9 @@ describe("GeneratorService", () => {
         role: "Senior Engineer",
         company: "Google",
       }
-      const defaults: GeneratorDefaults = {
-        id: "default",
-        type: "defaults",
+      const personalInfo: PersonalInfo = {
+        id: "personal-info",
+        type: "personal-info",
         name: "John Doe",
         email: "john@example.com",
         accentColor: "#3B82F6",
@@ -100,7 +100,7 @@ describe("GeneratorService", () => {
 
       mockDb.set.mockResolvedValue({})
 
-      const requestId = await service.createRequest(generateType, job, defaults, experienceData)
+      const requestId = await service.createRequest(generateType, job, personalInfo, experienceData)
 
       expect(requestId).toMatch(/^resume-generator-request-\d+-[a-z0-9]+$/)
       expect(mockDb.set).toHaveBeenCalledWith(
@@ -116,9 +116,9 @@ describe("GeneratorService", () => {
     it("should set isPublic correctly for viewers", async () => {
       const generateType: GenerationType = "resume"
       const job = { role: "Engineer", company: "Google" }
-      const defaults: GeneratorDefaults = {
-        id: "default",
-        type: "defaults",
+      const personalInfo: PersonalInfo = {
+        id: "personal-info",
+        type: "personal-info",
         name: "John Doe",
         email: "john@example.com",
         accentColor: "#3B82F6",
@@ -133,7 +133,7 @@ describe("GeneratorService", () => {
       mockDb.set.mockResolvedValue({})
 
       // Viewer (no editor email)
-      await service.createRequest(generateType, job, defaults, experienceData, undefined, "session123")
+      await service.createRequest(generateType, job, personalInfo, experienceData, undefined, "session123")
 
       expect(mockDb.set).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -148,9 +148,9 @@ describe("GeneratorService", () => {
     it("should set isPublic correctly for editors", async () => {
       const generateType: GenerationType = "resume"
       const job = { role: "Engineer", company: "Google" }
-      const defaults: GeneratorDefaults = {
-        id: "default",
-        type: "defaults",
+      const personalInfo: PersonalInfo = {
+        id: "personal-info",
+        type: "personal-info",
         name: "John Doe",
         email: "john@example.com",
         accentColor: "#3B82F6",
@@ -168,7 +168,7 @@ describe("GeneratorService", () => {
       await service.createRequest(
         generateType,
         job,
-        defaults,
+        personalInfo,
         experienceData,
         undefined,
         undefined,

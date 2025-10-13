@@ -1,8 +1,8 @@
 import { Firestore, Timestamp, FieldValue } from "@google-cloud/firestore"
 import { DATABASE_ID, GENERATOR_COLLECTION } from "../config/database"
 import type {
-  GeneratorDefaults,
-  UpdateGeneratorDefaultsData,
+  PersonalInfo,
+  UpdatePersonalInfoData,
   GeneratorRequest,
   GeneratorResponse,
   GenerationType,
@@ -13,6 +13,7 @@ import type { ExperienceEntry } from "./experience.service"
 import type { BlurbEntry } from "./blurb.service"
 
 const COLLECTION_NAME = GENERATOR_COLLECTION
+const PERSONAL_INFO_DOC_ID = "personal-info"
 
 type SimpleLogger = {
   info: (message: string, data?: unknown) => void
@@ -47,41 +48,41 @@ export class GeneratorService {
   }
 
   /**
-   * Get the default settings document
+   * Get the personal info document
    */
-  async getDefaults(): Promise<GeneratorDefaults | null> {
+  async getPersonalInfo(): Promise<PersonalInfo | null> {
     try {
-      const docRef = this.db.collection(this.collectionName).doc("default")
+      const docRef = this.db.collection(this.collectionName).doc(PERSONAL_INFO_DOC_ID)
       const doc = await docRef.get()
 
       if (!doc.exists) {
-        this.logger.info("Generator defaults not found")
+        this.logger.info("Personal info not found")
         return null
       }
 
-      const defaults = {
+      const personalInfo = {
         id: doc.id,
-        ...(doc.data() as Omit<GeneratorDefaults, "id">),
-      } as GeneratorDefaults
+        ...(doc.data() as Omit<PersonalInfo, "id">),
+      } as PersonalInfo
 
-      this.logger.info("Retrieved generator defaults")
-      return defaults
+      this.logger.info("Retrieved personal info")
+      return personalInfo
     } catch (error) {
-      this.logger.error("Failed to get generator defaults", { error })
+      this.logger.error("Failed to get personal info", { error })
       throw error
     }
   }
 
   /**
-   * Update the default settings document (editor only)
+   * Update the personal info document (editor only)
    */
-  async updateDefaults(data: UpdateGeneratorDefaultsData, userEmail: string): Promise<GeneratorDefaults> {
+  async updatePersonalInfo(data: UpdatePersonalInfoData, userEmail: string): Promise<PersonalInfo> {
     try {
-      const docRef = this.db.collection(this.collectionName).doc("default")
+      const docRef = this.db.collection(this.collectionName).doc(PERSONAL_INFO_DOC_ID)
       const doc = await docRef.get()
 
       if (!doc.exists) {
-        throw new Error("Generator defaults not found")
+        throw new Error("Personal info not found")
       }
 
       // Build updates object
@@ -107,21 +108,31 @@ export class GeneratorService {
 
       // Fetch updated document
       const updatedDoc = await docRef.get()
-      const updatedDefaults: GeneratorDefaults = {
+      const updatedPersonalInfo: PersonalInfo = {
         id: updatedDoc.id,
-        ...(updatedDoc.data() as Omit<GeneratorDefaults, "id">),
-      } as GeneratorDefaults
+        ...(updatedDoc.data() as Omit<PersonalInfo, "id">),
+      } as PersonalInfo
 
-      this.logger.info("Updated generator defaults", {
+      this.logger.info("Updated personal info", {
         updatedBy: userEmail,
         fieldsUpdated: Object.keys(updates).filter((k) => k !== "updatedAt" && k !== "updatedBy"),
       })
 
-      return updatedDefaults
+      return updatedPersonalInfo
     } catch (error) {
-      this.logger.error("Failed to update generator defaults", { error, userEmail })
+      this.logger.error("Failed to update personal info", { error, userEmail })
       throw error
     }
+  }
+
+  /** @deprecated Use getPersonalInfo() instead */
+  async getDefaults() {
+    return this.getPersonalInfo()
+  }
+
+  /** @deprecated Use updatePersonalInfo() instead */
+  async updateDefaults(data: UpdatePersonalInfoData, userEmail: string) {
+    return this.updatePersonalInfo(data, userEmail)
   }
 
   /**
@@ -136,7 +147,7 @@ export class GeneratorService {
       jobDescriptionUrl?: string
       jobDescriptionText?: string
     },
-    defaults: GeneratorDefaults,
+    personalInfo: PersonalInfo,
     experienceData: {
       entries: ExperienceEntry[]
       blurbs: BlurbEntry[]
@@ -159,17 +170,17 @@ export class GeneratorService {
         type: "request",
         generateType,
         provider: provider || "gemini", // Default to Gemini (92% cheaper)
-        defaults: {
-          name: defaults.name,
-          email: defaults.email,
-          phone: defaults.phone,
-          location: defaults.location,
-          website: defaults.website,
-          github: defaults.github,
-          linkedin: defaults.linkedin,
-          avatar: defaults.avatar,
-          logo: defaults.logo,
-          accentColor: defaults.accentColor,
+        personalInfo: {
+          name: personalInfo.name,
+          email: personalInfo.email,
+          phone: personalInfo.phone,
+          location: personalInfo.location,
+          website: personalInfo.website,
+          github: personalInfo.github,
+          linkedin: personalInfo.linkedin,
+          avatar: personalInfo.avatar,
+          logo: personalInfo.logo,
+          accentColor: personalInfo.accentColor,
         },
         job,
         preferences,
@@ -402,6 +413,12 @@ export class GeneratorService {
         requestId,
         steps: steps.map((s) => ({ id: s.id, status: s.status })),
       })
+
+      // Add a small delay to allow Firestore listeners to catch up
+      // This ensures the frontend sees intermediate progress states
+      // In production, this could be removed if we switch to async processing
+      // eslint-disable-next-line no-undef
+      await new Promise((resolve) => setTimeout(resolve, 300))
     } catch (error) {
       this.logger.error("Failed to update generation steps", { error, requestId })
       throw error
@@ -423,6 +440,50 @@ export class GeneratorService {
       this.logger.info("Updated generation status", { requestId, status })
     } catch (error) {
       this.logger.error("Failed to update generation status", { error, requestId })
+      throw error
+    }
+  }
+
+  /**
+   * Update intermediate results in a generation request
+   * This allows storing AI-generated content and token usage for retry capability
+   */
+  async updateIntermediateResults(
+    requestId: string,
+    results: Partial<NonNullable<GeneratorRequest["intermediateResults"]>>
+  ): Promise<void> {
+    try {
+      const docRef = this.db.collection(this.collectionName).doc(requestId)
+
+      const updates: Record<string, unknown> = {
+        updatedAt: FieldValue.serverTimestamp(),
+      }
+
+      // Build nested updates for each field
+      if (results?.resumeContent !== undefined) {
+        updates["intermediateResults.resumeContent"] = results.resumeContent
+      }
+      if (results?.coverLetterContent !== undefined) {
+        updates["intermediateResults.coverLetterContent"] = results.coverLetterContent
+      }
+      if (results?.resumeTokenUsage !== undefined) {
+        updates["intermediateResults.resumeTokenUsage"] = results.resumeTokenUsage
+      }
+      if (results?.coverLetterTokenUsage !== undefined) {
+        updates["intermediateResults.coverLetterTokenUsage"] = results.coverLetterTokenUsage
+      }
+      if (results?.model !== undefined) {
+        updates["intermediateResults.model"] = results.model
+      }
+
+      await docRef.update(updates)
+
+      this.logger.info("Updated intermediate results", {
+        requestId,
+        fields: Object.keys(results || {}),
+      })
+    } catch (error) {
+      this.logger.error("Failed to update intermediate results", { error, requestId })
       throw error
     }
   }

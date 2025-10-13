@@ -10,8 +10,8 @@ import { getIdToken } from "../utils/auth"
 import type {
   GenerateRequest,
   GenerateResponse,
-  GeneratorDefaults,
-  UpdateDefaultsData,
+  PersonalInfo,
+  UpdatePersonalInfoData,
   GenerationRequest,
 } from "../types/generator"
 
@@ -40,19 +40,29 @@ export class GeneratorClient extends ApiClient {
   }
 
   /**
-   * Get default generator settings
+   * Get personal info
    * Public endpoint - no auth required
    */
-  async getDefaults(): Promise<GeneratorDefaults> {
-    return this.get<GeneratorDefaults>("/generator/defaults", false)
+  async getPersonalInfo(): Promise<PersonalInfo> {
+    return this.get<PersonalInfo>("/generator/personal-info", false)
   }
 
   /**
-   * Update default generator settings
+   * Update personal info
    * Auth required - editor only
    */
-  async updateDefaults(data: UpdateDefaultsData): Promise<GeneratorDefaults> {
-    return this.put<GeneratorDefaults>("/generator/defaults", data, true)
+  async updatePersonalInfo(data: UpdatePersonalInfoData): Promise<PersonalInfo> {
+    return this.put<PersonalInfo>("/generator/personal-info", data, true)
+  }
+
+  /** @deprecated Use getPersonalInfo() instead */
+  async getDefaults(): Promise<PersonalInfo> {
+    return this.getPersonalInfo()
+  }
+
+  /** @deprecated Use updatePersonalInfo() instead */
+  async updateDefaults(data: UpdatePersonalInfoData): Promise<PersonalInfo> {
+    return this.updatePersonalInfo(data)
   }
 
   /**

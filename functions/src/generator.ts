@@ -68,7 +68,7 @@ const generateRequestSchema = Joi.object({
   }).optional(),
 })
 
-const updateDefaultsSchema = Joi.object({
+const updatePersonalInfoSchema = Joi.object({
   name: Joi.string().trim().min(1).max(100).optional(),
   email: Joi.string().email().optional(),
   phone: Joi.string().trim().max(50).optional().allow(""),
@@ -136,9 +136,16 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
             return
           }
 
-          // Route: GET /generator/defaults - Get default settings (public)
+          // Route: GET /generator/personal-info - Get personal info (public)
+          if (req.method === "GET" && path === "/generator/personal-info") {
+            await handleGetPersonalInfo(req, res, requestId)
+            resolve()
+            return
+          }
+
+          // Legacy route for backward compatibility
           if (req.method === "GET" && path === "/generator/defaults") {
-            await handleGetDefaults(req, res, requestId)
+            await handleGetPersonalInfo(req, res, requestId)
             resolve()
             return
           }
@@ -158,9 +165,16 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
             })
           })
 
-          // Route: PUT /generator/defaults - Update defaults (auth required)
+          // Route: PUT /generator/personal-info - Update personal info (auth required)
+          if (req.method === "PUT" && path === "/generator/personal-info") {
+            await handleUpdatePersonalInfo(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Legacy route for backward compatibility
           if (req.method === "PUT" && path === "/generator/defaults") {
-            await handleUpdateDefaults(req as AuthenticatedRequest, res, requestId)
+            await handleUpdatePersonalInfo(req as AuthenticatedRequest, res, requestId)
             resolve()
             return
           }
@@ -248,10 +262,10 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       company: job.company,
     })
 
-    // Step 1: Fetch defaults
-    const defaults = await generatorService.getDefaults()
-    if (!defaults) {
-      throw new Error("Generator defaults not found. Please seed the defaults document.")
+    // Step 1: Fetch personal info
+    const personalInfo = await generatorService.getPersonalInfo()
+    if (!personalInfo) {
+      throw new Error("Personal info not found. Please seed the personal-info document.")
     }
 
     // Step 2: Fetch experience data
@@ -266,7 +280,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
     const generationRequestId = await generatorService.createRequest(
       generateType,
       job,
-      defaults,
+      personalInfo,
       {
         entries,
         blurbs,
@@ -321,13 +335,13 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
 
         resumeResult = await aiProvider.generateResume({
           personalInfo: {
-            name: defaults.name,
-            email: defaults.email,
-            phone: defaults.phone,
-            location: defaults.location,
-            website: defaults.website,
-            github: defaults.github,
-            linkedin: defaults.linkedin,
+            name: personalInfo.name,
+            email: personalInfo.email,
+            phone: personalInfo.phone,
+            location: personalInfo.location,
+            website: personalInfo.website,
+            github: personalInfo.github,
+            linkedin: personalInfo.linkedin,
           },
           job: {
             role: job.role,
@@ -338,7 +352,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           experienceEntries: entries,
           experienceBlurbs: blurbs,
           emphasize: preferences?.emphasize,
-          customPrompts: defaults.aiPrompts?.resume,
+          customPrompts: personalInfo.aiPrompts?.resume,
         })
 
         // Complete generate_resume step
@@ -350,7 +364,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         await generatorService.updateSteps(generationRequestId, steps)
 
         // Generate PDF (always use "modern" style)
-        resumePDF = await pdfService.generateResumePDF(resumeResult.content, "modern", defaults.accentColor)
+        resumePDF = await pdfService.generateResumePDF(resumeResult.content, "modern", personalInfo.accentColor)
 
         logger.info("Resume generated", {
           tokenUsage: resumeResult.tokenUsage,
@@ -373,8 +387,8 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
 
         coverLetterResult = await aiProvider.generateCoverLetter({
           personalInfo: {
-            name: defaults.name,
-            email: defaults.email,
+            name: personalInfo.name,
+            email: personalInfo.email,
           },
           job: {
             role: job.role,
@@ -384,7 +398,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           },
           experienceEntries: entries,
           experienceBlurbs: blurbs,
-          customPrompts: defaults.aiPrompts?.coverLetter,
+          customPrompts: personalInfo.aiPrompts?.coverLetter,
         })
 
         // Complete generate_cover_letter step
@@ -398,9 +412,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         // Generate PDF
         coverLetterPDF = await pdfService.generateCoverLetterPDF(
           coverLetterResult.content,
-          defaults.name,
-          defaults.email,
-          defaults.accentColor
+          personalInfo.name,
+          personalInfo.email,
+          personalInfo.accentColor
         )
 
         logger.info("Cover letter generated", {
@@ -511,6 +525,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         files.resume = {
           gcsPath: resumeUploadResult.gcsPath,
           signedUrl: resumeSignedUrl,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           signedUrlExpiry: new Date(Date.now() + expiresInHours * 60 * 60 * 1000) as any, // Will be converted to Firestore Timestamp
           size: resumeUploadResult.size,
           storageClass: resumeUploadResult.storageClass,
@@ -521,6 +536,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         files.coverLetter = {
           gcsPath: coverLetterUploadResult.gcsPath,
           signedUrl: coverLetterSignedUrl,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           signedUrlExpiry: new Date(Date.now() + expiresInHours * 60 * 60 * 1000) as any, // Will be converted to Firestore Timestamp
           size: coverLetterUploadResult.size,
           storageClass: coverLetterUploadResult.storageClass,
@@ -617,21 +633,21 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
 }
 
 /**
- * GET /generator/defaults - Get default settings
+ * GET /generator/personal-info - Get personal info
  */
-async function handleGetDefaults(req: Request, res: Response, requestId: string): Promise<void> {
+async function handleGetPersonalInfo(req: Request, res: Response, requestId: string): Promise<void> {
   try {
-    logger.info("Getting generator defaults", { requestId })
+    logger.info("Getting personal info", { requestId })
 
-    const defaults = await generatorService.getDefaults()
+    const personalInfo = await generatorService.getPersonalInfo()
 
-    if (!defaults) {
+    if (!personalInfo) {
       const err = ERROR_CODES.NOT_FOUND
       res.status(err.status).json({
         success: false,
         error: "NOT_FOUND",
         errorCode: err.code,
-        message: "Generator defaults not found",
+        message: "Personal info not found",
         requestId,
       })
       return
@@ -639,11 +655,11 @@ async function handleGetDefaults(req: Request, res: Response, requestId: string)
 
     res.status(200).json({
       success: true,
-      data: defaults,
+      data: personalInfo,
       requestId,
     })
   } catch (error) {
-    logger.error("Failed to get defaults", { error, requestId })
+    logger.error("Failed to get personal info", { error, requestId })
 
     const err = ERROR_CODES.FIRESTORE_ERROR
     res.status(err.status).json({
@@ -718,15 +734,15 @@ async function handleGetRequest(req: Request, res: Response, requestId: string):
 }
 
 /**
- * PUT /generator/defaults - Update defaults (auth required)
+ * PUT /generator/personal-info - Update personal info (auth required)
  */
-async function handleUpdateDefaults(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+async function handleUpdatePersonalInfo(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
   try {
     // Validate request body
-    const { error, value } = updateDefaultsSchema.validate(req.body)
+    const { error, value } = updatePersonalInfoSchema.validate(req.body)
 
     if (error) {
-      logger.warning("Validation failed for update defaults", {
+      logger.warning("Validation failed for update personal info", {
         error: error.details,
         requestId,
       })
@@ -745,21 +761,21 @@ async function handleUpdateDefaults(req: AuthenticatedRequest, res: Response, re
 
     const userEmail = req.user!.email
 
-    logger.info("Updating generator defaults", {
+    logger.info("Updating personal info", {
       requestId,
       userEmail,
       fieldsToUpdate: Object.keys(value),
     })
 
-    const defaults = await generatorService.updateDefaults(value, userEmail)
+    const personalInfo = await generatorService.updatePersonalInfo(value, userEmail)
 
     res.status(200).json({
       success: true,
-      data: defaults,
+      data: personalInfo,
       requestId,
     })
   } catch (error) {
-    logger.error("Failed to update defaults", { error, requestId })
+    logger.error("Failed to update personal info", { error, requestId })
 
     const err = ERROR_CODES.FIRESTORE_ERROR
     res.status(err.status).json({
@@ -945,9 +961,9 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
     // Generate signed URL for immediate use
     const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 24 * 365 }) // 1 year
 
-    // Update defaults with new image URL
+    // Update personal info with new image URL
     const updateData = validImageType === "avatar" ? { avatar: signedUrl } : { logo: signedUrl }
-    await generatorService.updateDefaults(updateData, userEmail)
+    await generatorService.updatePersonalInfo(updateData, userEmail)
 
     res.status(200).json({
       success: true,
