@@ -27,8 +27,21 @@ export interface SignedUrlOptions {
  * Get environment-aware bucket name
  */
 function getEnvironmentBucketName(): string {
-  const isLocal = process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV === "development"
-  const isStaging = process.env.ENVIRONMENT === "staging"
+  const functionsEmulator = process.env.FUNCTIONS_EMULATOR
+  const nodeEnv = process.env.NODE_ENV
+  const environment = process.env.ENVIRONMENT
+
+  // Only use local bucket if explicitly running in emulator
+  const isLocal = functionsEmulator === "true"
+  const isStaging = environment === "staging"
+
+  console.log("[StorageService] Environment detection:", {
+    functionsEmulator,
+    nodeEnv,
+    environment,
+    isLocal,
+    isStaging,
+  })
 
   if (isLocal) {
     return "joshwentworth-resumes-local" // Mock bucket for local dev
@@ -47,7 +60,8 @@ export class StorageService {
 
   constructor(bucketName?: string, logger?: SimpleLogger) {
     this.bucketName = bucketName || getEnvironmentBucketName()
-    this.useEmulator = process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV === "development"
+    // Only use emulator if FUNCTIONS_EMULATOR is explicitly set to "true"
+    this.useEmulator = process.env.FUNCTIONS_EMULATOR === "true"
 
     this.logger = logger || {
       info: (message: string, data?: unknown) => console.log(`[INFO] ${message}`, data || ""),
@@ -68,10 +82,14 @@ export class StorageService {
         note: "PDFs will be stored in emulator (temporary, cleared on restart)",
       })
     } else {
-      this.storage = new Storage()
-      this.logger.info("StorageService initialized", {
+      // Explicitly set project ID for Cloud Functions
+      this.storage = new Storage({
+        projectId: "static-sites-257923",
+      })
+      this.logger.info("StorageService initialized for Cloud Functions", {
         bucket: this.bucketName,
         environment: process.env.ENVIRONMENT || "production",
+        projectId: "static-sites-257923",
       })
     }
   }
