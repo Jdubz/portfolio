@@ -3,7 +3,17 @@
 
 import * as React from "react"
 import { ResumeFormProvider } from "./src/contexts/ResumeFormContext"
+import { AuthProvider } from "./src/contexts/AuthContext"
+import { InitializeColorMode } from "theme-ui"
 
 export const wrapRootElement = ({ element }) => {
-  return <ResumeFormProvider>{element}</ResumeFormProvider>
+  return (
+    <AuthProvider>
+      <ResumeFormProvider>{element}</ResumeFormProvider>
+    </AuthProvider>
+  )
+}
+
+export const onRenderBody = ({ setPreBodyComponents }) => {
+  setPreBodyComponents([<InitializeColorMode key="theme-ui-color-mode" />])
 }

@@ -1,14 +1,23 @@
+// @ts-nocheck
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import React, { useState } from "react"
-import { Box, Button, Flex } from "theme-ui"
+import { Box, Button, Flex, useColorMode, jsx } from "theme-ui"
 import { Link } from "gatsby"
 
 /**
  * Hamburger Menu Component
  *
- * Provides navigation to all pages in the portfolio
+ * Navigation menu with:
+ * - Experience (Work Experience tab)
+ * - Builder (Document Builder tab)
+ * - Contact
+ * - Dark mode toggle
  */
 const HamburgerMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const [colorMode, setColorMode] = useColorMode()
+  const isDark = colorMode === `dark`
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)
@@ -18,12 +27,18 @@ const HamburgerMenu: React.FC = () => {
     setIsOpen(false)
   }
 
+  const toggleColorMode = () => {
+    const next = isDark ? `light` : `dark`
+    setColorMode(next)
+    document.documentElement.classList.value = `theme-ui-${next}`
+  }
+
   return (
     <Box
       sx={{
         position: "fixed",
         top: 3,
-        right: 3,
+        right: 4,
         zIndex: 1000,
       }}
     >
@@ -37,8 +52,8 @@ const HamburgerMenu: React.FC = () => {
           height: "48px",
           padding: 0,
           border: "1px solid",
-          borderColor: "rgba(56, 189, 248, 0.3)", // Sky blue border
-          background: "rgba(15, 23, 42, 0.85)", // Dark slate background
+          borderColor: "divider",
+          bg: "background",
           backdropFilter: "blur(10px)",
           borderRadius: "12px",
           cursor: "pointer",
@@ -48,15 +63,14 @@ const HamburgerMenu: React.FC = () => {
           justifyContent: "center",
           gap: "6px",
           transition: "all 0.3s ease",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+          boxShadow: "lg",
           "&:hover": {
-            background: "rgba(30, 41, 59, 0.9)", // Lighter slate on hover
-            borderColor: "rgba(56, 189, 248, 0.5)",
-            boxShadow: "0 6px 16px rgba(56, 189, 248, 0.2)",
+            borderColor: "primary",
+            bg: "background",
           },
           "&:focus-visible": {
             outline: "2px solid",
-            outlineColor: "rgb(56, 189, 248)", // Sky blue focus
+            outlineColor: "primary",
             outlineOffset: "2px",
           },
         }}
@@ -66,7 +80,7 @@ const HamburgerMenu: React.FC = () => {
           sx={{
             width: "24px",
             height: "2px",
-            bg: "rgb(56, 189, 248)", // Sky blue lines
+            bg: "primary",
             borderRadius: "2px",
             transition: "all 0.3s ease",
             transform: isOpen ? "rotate(45deg) translateY(8px)" : "none",
@@ -76,7 +90,7 @@ const HamburgerMenu: React.FC = () => {
           sx={{
             width: "24px",
             height: "2px",
-            bg: "rgb(56, 189, 248)", // Sky blue lines
+            bg: "primary",
             borderRadius: "2px",
             transition: "all 0.3s ease",
             opacity: isOpen ? 0 : 1,
@@ -86,7 +100,7 @@ const HamburgerMenu: React.FC = () => {
           sx={{
             width: "24px",
             height: "2px",
-            bg: "rgb(56, 189, 248)", // Sky blue lines
+            bg: "primary",
             borderRadius: "2px",
             transition: "all 0.3s ease",
             transform: isOpen ? "rotate(-45deg) translateY(-8px)" : "none",
@@ -118,11 +132,12 @@ const HamburgerMenu: React.FC = () => {
               top: "56px",
               right: 0,
               minWidth: "200px",
-              bg: "rgba(15, 23, 42, 0.95)", // Dark slate background
+              bg: "background",
               backdropFilter: "blur(20px)",
               borderRadius: "12px",
-              border: "1px solid rgba(56, 189, 248, 0.3)", // Sky blue border
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+              border: "1px solid",
+              borderColor: "divider",
+              boxShadow: "xl",
               flexDirection: "column",
               overflow: "hidden",
               zIndex: 999,
@@ -139,57 +154,31 @@ const HamburgerMenu: React.FC = () => {
               },
             }}
           >
-            {/* Home - Scroll to top */}
-            <Button
-              onClick={() => {
-                window.scrollTo({ top: 0, behavior: "smooth" })
-                closeMenu()
-              }}
-              sx={{
-                width: "100%",
-                py: 3,
-                px: 4,
-                bg: "transparent",
-                color: "rgb(226, 232, 240)", // Light slate text
-                fontSize: 2,
-                fontWeight: "body",
-                textAlign: "left",
-                border: "none",
-                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
-                  color: "rgb(56, 189, 248)",
-                },
-              }}
-            >
-              Home
-            </Button>
-
-            {/* Experience Page */}
+            {/* Experience */}
             <Box
               sx={{
                 width: "100%",
-                borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
+                borderBottom: "1px solid",
+                borderColor: "divider",
                 transition: "all 0.2s ease",
                 "&:hover": {
-                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
+                  bg: "divider",
                   "& a": {
-                    color: "rgb(56, 189, 248)",
+                    color: "primary",
                   },
                 },
               }}
             >
               <Link
-                to="/experience"
+                to="/resume-builder?tab=work-experience"
                 onClick={closeMenu}
-                style={{
+                sx={{
                   display: "block",
-                  padding: "1rem 1.5rem",
-                  color: "rgb(226, 232, 240)", // Light slate text
-                  fontSize: "1rem",
-                  fontWeight: 400,
+                  py: 3,
+                  px: 4,
+                  color: "text",
+                  fontSize: 2,
+                  fontWeight: "body",
                   textDecoration: "none",
                   transition: "color 0.2s ease",
                 }}
@@ -198,34 +187,141 @@ const HamburgerMenu: React.FC = () => {
               </Link>
             </Box>
 
-            {/* Resume Builder */}
+            {/* Builder */}
             <Box
               sx={{
                 width: "100%",
+                borderBottom: "1px solid",
+                borderColor: "divider",
                 transition: "all 0.2s ease",
                 "&:hover": {
-                  bg: "rgba(56, 189, 248, 0.1)", // Sky blue hover
+                  bg: "divider",
                   "& a": {
-                    color: "rgb(56, 189, 248)",
+                    color: "primary",
                   },
                 },
               }}
             >
               <Link
-                to="/resume-builder"
+                to="/resume-builder?tab=document-builder"
                 onClick={closeMenu}
-                style={{
+                sx={{
                   display: "block",
-                  padding: "1rem 1.5rem",
-                  color: "rgb(226, 232, 240)", // Light slate text
-                  fontSize: "1rem",
-                  fontWeight: 400,
+                  py: 3,
+                  px: 4,
+                  color: "text",
+                  fontSize: 2,
+                  fontWeight: "body",
                   textDecoration: "none",
                   transition: "color 0.2s ease",
                 }}
               >
-                Resume Builder
+                Builder
               </Link>
+            </Box>
+
+            {/* Contact */}
+            <Box
+              sx={{
+                width: "100%",
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  bg: "divider",
+                  "& a": {
+                    color: "primary",
+                  },
+                },
+              }}
+            >
+              <Link
+                to="/contact"
+                onClick={closeMenu}
+                sx={{
+                  display: "block",
+                  py: 3,
+                  px: 4,
+                  color: "text",
+                  fontSize: 2,
+                  fontWeight: "body",
+                  textDecoration: "none",
+                  transition: "color 0.2s ease",
+                }}
+              >
+                Contact
+              </Link>
+            </Box>
+
+            {/* Dark Mode Toggle */}
+            <Box
+              sx={{
+                width: "100%",
+                py: 3,
+                px: 4,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  bg: "divider",
+                },
+              }}
+              onClick={toggleColorMode}
+            >
+              <span
+                sx={{
+                  color: "text",
+                  fontSize: 2,
+                  fontWeight: "body",
+                }}
+              >
+                Dark Mode
+              </span>
+              <label
+                sx={{
+                  position: "relative",
+                  display: "inline-block",
+                  width: "48px",
+                  height: "24px",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isDark}
+                  onChange={toggleColorMode}
+                  sx={{
+                    opacity: 0,
+                    width: 0,
+                    height: 0,
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    bg: isDark ? "primary" : "divider",
+                    borderRadius: "24px",
+                    transition: "background-color 0.3s ease",
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      height: "18px",
+                      width: "18px",
+                      left: isDark ? "26px" : "3px",
+                      bottom: "3px",
+                      bg: "white",
+                      borderRadius: "50%",
+                      transition: "left 0.3s ease",
+                    },
+                  }}
+                />
+              </label>
             </Box>
           </Flex>
         </>
