@@ -223,8 +223,10 @@ export class StorageService {
 
       // Emulator doesn't support signed URLs, return direct URL
       if (this.useEmulator) {
+        // Use localhost instead of 127.0.0.1 to avoid CORS issues with web app
         const emulatorHost = process.env.FIREBASE_STORAGE_EMULATOR_HOST || "127.0.0.1:9199"
-        const directUrl = `http://${emulatorHost}/v0/b/${this.bucketName}/o/${encodeURIComponent(gcsPath)}?alt=media`
+        const browserFriendlyHost = emulatorHost.replace("127.0.0.1", "localhost")
+        const directUrl = `http://${browserFriendlyHost}/v0/b/${this.bucketName}/o/${encodeURIComponent(gcsPath)}?alt=media`
         this.logger.info("Generated emulator direct URL", { directUrl })
         return directUrl
       }
