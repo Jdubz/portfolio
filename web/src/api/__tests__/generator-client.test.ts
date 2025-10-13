@@ -7,13 +7,13 @@
 
 import { GeneratorClient } from "../generator-client"
 import type { GeneratorDefaults, GenerationRequest } from "../../types/generator"
-import { getIdToken } from "../../hooks/useAuth"
+import { getIdToken } from "../../utils/auth"
 
 // Mock fetch globally
 global.fetch = jest.fn()
 
-// Mock getIdToken from useAuth hook
-jest.mock("../../hooks/useAuth", () => ({
+// Mock getIdToken from auth utils
+jest.mock("../../utils/auth", () => ({
   getIdToken: jest.fn(),
 }))
 

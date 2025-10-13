@@ -6,7 +6,7 @@
  */
 
 import { getApiUrl } from "../config/api"
-import { getIdToken } from "../hooks/useAuth"
+import { getIdToken } from "../utils/auth"
 import { logger } from "../utils/logger"
 
 export interface ApiResponse<T = unknown> {
