@@ -53,6 +53,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const auth = getAuth()
 
+        // Connect to emulators in development
+        if (process.env.GATSBY_USE_FIREBASE_EMULATORS === "true") {
+          const { connectAuthEmulator, signOut } = await import("firebase/auth")
+          const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? "localhost"
+          try {
+            connectAuthEmulator(auth, `http://${emulatorHost}:9099`, { disableWarnings: true })
+          } catch {
+            // Emulator already connected, ignore
+          }
+
+          // Proactively clear any stale auth tokens when connecting to emulator
+          // This prevents 400 errors from token validation after emulator restarts
+          const currentUser = auth.currentUser
+          if (currentUser) {
+            try {
+              // Try to validate the token first
+              await currentUser.getIdToken(false)
+            } catch {
+              // Token is invalid (emulator restarted), sign out silently
+              logger.info("Clearing stale auth token from previous emulator session", {
+                email: currentUser.email,
+              })
+              try {
+                await signOut(auth)
+              } catch {
+                // Ignore sign out errors
+              }
+            }
+          }
+        }
+
         // Subscribe to auth state changes
         unsubscribe = onAuthStateChanged(
           auth,
@@ -77,16 +108,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     email: user.email,
                     isEditor,
                   })
-                } catch (error) {
-                  logger.error("Failed to get ID token", error as Error, {
-                    context: "AuthContext",
-                    action: "onAuthStateChanged",
-                  })
+                } catch (tokenError) {
+                  // Handle token errors (e.g., emulator restart with stale tokens)
+                  // This is common in development when emulators restart
+                  const errorMessage = tokenError instanceof Error ? tokenError.message : "Token error"
+                  const isStaleToken =
+                    errorMessage.includes("TOKEN_EXPIRED") ||
+                    errorMessage.includes("INVALID_ID_TOKEN") ||
+                    errorMessage.includes("auth/invalid-user-token") ||
+                    errorMessage.includes("400")
+
+                  if (isStaleToken) {
+                    // Stale token is expected after emulator restarts - just info level
+                    logger.info("Stale auth token detected, clearing session", {
+                      email: user.email,
+                      reason: "Emulator restart or token expiration",
+                    })
+                  } else {
+                    // Unexpected token error - log as error
+                    logger.error("Failed to get ID token", tokenError as Error, {
+                      context: "AuthContext",
+                      action: "onAuthStateChanged",
+                    })
+                  }
+
+                  // Sign out to clear stale session
+                  try {
+                    const { signOut: firebaseSignOut } = await import("firebase/auth")
+                    await firebaseSignOut(auth)
+                  } catch {
+                    // Ignore sign out errors - session is already invalid
+                  }
+
                   setAuthState({
-                    user,
+                    user: null,
                     isEditor: false,
                     loading: false,
-                    error: "Failed to verify user permissions",
+                    error: null,
                   })
                 }
               } else {
@@ -103,10 +161,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             })()
           },
           (error) => {
-            logger.error("Auth state change error", error, {
-              context: "AuthContext",
-              action: "onAuthStateChanged",
-            })
+            // Auth state errors can happen during emulator restarts
+            const errorMessage = error.message || String(error)
+            const isEmulatorIssue =
+              errorMessage.includes("network") ||
+              errorMessage.includes("fetch") ||
+              errorMessage.includes("400") ||
+              process.env.GATSBY_USE_FIREBASE_EMULATORS === "true"
+
+            if (isEmulatorIssue) {
+              logger.info("Auth state change interrupted", {
+                context: "AuthContext",
+                error: errorMessage,
+                reason: "Likely emulator restart or network issue",
+              })
+            } else {
+              logger.error("Auth state change error", error, {
+                context: "AuthContext",
+                action: "onAuthStateChanged",
+              })
+            }
+
             setAuthState({
               user: null,
               isEditor: false,
