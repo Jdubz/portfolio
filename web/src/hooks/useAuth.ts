@@ -28,21 +28,23 @@ export const useAuth = (): AuthState => {
 
     const initAuth = async () => {
       try {
+        // Initialize App Check FIRST if not already initialized (required for Firebase Auth)
+        // This must happen before any Firebase service initialization
+        const { initializeFirebaseAppCheck } = await import("../utils/firebase-app-check")
+        initializeFirebaseAppCheck()
+
         // Lazy load Firebase Auth
         const { getAuth, onAuthStateChanged } = await import("firebase/auth")
-        const { initializeApp, getApps } = await import("firebase/app")
+        const { getApps } = await import("firebase/app")
 
-        // Initialize Firebase if not already initialized
-        if (getApps().length === 0) {
-          const firebaseConfig = {
-            apiKey: process.env.GATSBY_FIREBASE_API_KEY,
-            authDomain: process.env.GATSBY_FIREBASE_AUTH_DOMAIN,
-            projectId: process.env.GATSBY_FIREBASE_PROJECT_ID,
-            storageBucket: process.env.GATSBY_FIREBASE_STORAGE_BUCKET,
-            messagingSenderId: process.env.GATSBY_FIREBASE_MESSAGING_SENDER_ID,
-            appId: process.env.GATSBY_FIREBASE_APP_ID,
-          }
-          initializeApp(firebaseConfig)
+        // Get Firebase app (should be initialized by App Check)
+        const apps = getApps()
+        if (apps.length === 0) {
+          logger.error("Firebase app not initialized by App Check", new Error("No Firebase apps"), {
+            hook: "useAuth",
+            action: "initAuth",
+          })
+          throw new Error("Firebase not initialized")
         }
 
         const auth = getAuth()
