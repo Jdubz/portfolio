@@ -265,7 +265,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             disabled={generating}
           />
           <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>
-            AI will fetch and analyze the job description from this URL
+            OpenAI will fetch and analyze the job description from this URL (not available with Gemini)
           </Text>
         </Box>
 
