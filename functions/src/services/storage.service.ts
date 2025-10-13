@@ -27,8 +27,7 @@ export interface SignedUrlOptions {
  * Get environment-aware bucket name
  */
 function getEnvironmentBucketName(): string {
-  const isLocal =
-    process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV === "development" || !process.env.GCP_PROJECT
+  const isLocal = process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV === "development"
   const isStaging = process.env.ENVIRONMENT === "staging"
 
   if (isLocal) {
@@ -48,8 +47,7 @@ export class StorageService {
 
   constructor(bucketName?: string, logger?: SimpleLogger) {
     this.bucketName = bucketName || getEnvironmentBucketName()
-    this.useEmulator =
-      process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV === "development" || !process.env.GCP_PROJECT
+    this.useEmulator = process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV === "development"
 
     this.logger = logger || {
       info: (message: string, data?: unknown) => console.log(`[INFO] ${message}`, data || ""),
