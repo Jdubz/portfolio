@@ -1,0 +1,37 @@
+# Development Dockerfile for Portfolio Monorepo
+FROM node:20-alpine
+
+# Install necessary tools
+RUN apk add --no-cache \
+    git \
+    python3 \
+    make \
+    g++ \
+    bash
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY web/package*.json ./web/
+COPY functions/package*.json ./functions/
+
+# Install dependencies
+RUN npm ci
+
+# Copy the rest of the application
+COPY . .
+
+# Expose ports
+# 8000 - Gatsby development server
+# 9000 - Gatsby serve (production preview)
+# 5000 - Firebase hosting emulator
+# 5001 - Firebase functions emulator
+# 4000 - Firebase emulator UI
+# 9005 - Firebase Auth emulator
+# 8080 - Firebase Firestore emulator
+EXPOSE 8000 9000 5000 5001 4000 9005 8080
+
+# Default command
+CMD ["npm", "run", "dev:web"]

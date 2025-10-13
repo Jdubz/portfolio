@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: portfolio-web
+    volumes:
+      # Mount source code for hot reloading
+      - ./web:/app/web
+      - ./functions:/app/functions
+      - ./scripts:/app/scripts
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      # Use named volumes for node_modules to avoid Windows filesystem issues
+      - web-node-modules:/app/web/node_modules
+      - functions-node-modules:/app/functions/node_modules
+      - root-node-modules:/app/node_modules
+      # Cache directories
+      - gatsby-cache:/app/web/.cache
+      - gatsby-public:/app/web/public
+    ports:
+      - "8000:8000"  # Gatsby dev server
+      - "9000:9000"  # Gatsby serve
+    environment:
+      - NODE_ENV=development
+      - GATSBY_WEBPACK_PUBLICPATH=/
+    command: npm run dev:web
+    stdin_open: true
+    tty: true
+
+  firebase-emulator:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: portfolio-firebase
+    volumes:
+      - ./firebase.json:/app/firebase.json
+      - ./firestore.rules:/app/firestore.rules
+      - ./firestore.indexes.json:/app/firestore.indexes.json
+      - ./functions:/app/functions
+      - ./emulator-data:/app/emulator-data
+      - functions-node-modules:/app/functions/node_modules
+    ports:
+      - "5000:5000"  # Firebase hosting
+      - "5001:5001"  # Firebase functions
+      - "4000:4000"  # Emulator UI
+      - "9005:9005"  # Auth emulator
+      - "8080:8080"  # Firestore emulator
+    environment:
+      - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9005
+    command: npm run firebase:serve
+    stdin_open: true
+    tty: true
+
+volumes:
+  web-node-modules:
+  functions-node-modules:
+  root-node-modules:
+  gatsby-cache:
+  gatsby-public:

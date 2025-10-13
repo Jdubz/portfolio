@@ -1,0 +1,75 @@
+# Node modules
+node_modules
+**/node_modules
+web/node_modules
+functions/node_modules
+
+# Build artifacts
+web/public
+web/.cache
+.cache
+functions/lib
+functions/dist
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files (will be handled via docker-compose)
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+.DS_Store
+
+# Firebase
+.firebase
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Test artifacts
+coverage
+.nyc_output
+playwright-report
+test-results
+web/playwright-report
+web/test-results
+
+# Lighthouse reports
+lighthouse-report.*
+.lighthouseci
+
+# Screenshots
+screenshots/images
+
+# Windows
+nul
+*.swp
+*.swo
+*~
+
+# Emulator data (will be mounted as volume)
+emulator-data
+
+# Docker files (no need to copy into image)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Claude Code
+.claude/settings.local.json
+
+# Terraform
+.terraform
+*.tfstate*
+*.tfvars

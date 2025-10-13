@@ -86,6 +86,10 @@ npm run firebase:serve
 make firebase-serve
 ```
 
+#### Docker Development (Optional)
+
+For developers experiencing native module issues on Windows or preferring containerized workflows, see [DOCKER.md](./DOCKER.md) for the optional Docker-based development setup.
+
 ### Building
 
 ```bash
