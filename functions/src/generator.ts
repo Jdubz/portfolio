@@ -30,6 +30,14 @@ import { BlurbService } from "./services/blurb.service"
 import { createAIProvider } from "./services/ai-provider.factory"
 import { PDFService } from "./services/pdf.service"
 import { StorageService } from "./services/storage.service"
+import {
+  createInitialSteps,
+  startStep,
+  completeStep,
+  failStep,
+  skipStep,
+} from "./utils/generation-steps"
+import type { GenerationStep } from "./types/generator.types"
 import { verifyAuthenticatedEditor, checkOptionalAuth, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import { generatorRateLimiter, generatorEditorRateLimiter } from "./middleware/rate-limit.middleware"
 import type { GenerationType, GeneratorResponse } from "./types/generator.types"
@@ -257,7 +265,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       blurbsCount: blurbs.length,
     })
 
-    // Step 3: Create request document
+    // Step 3: Create request document with initial steps
     const generationRequestId = await generatorService.createRequest(
       generateType,
       job,
@@ -272,11 +280,13 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       provider // AI provider selection (openai or gemini, defaults to gemini)
     )
 
-    // Update status to processing
-    await generatorService.updateRequestStatus(generationRequestId, "processing")
+    // Initialize step tracking
+    let steps = createInitialSteps(generateType)
+    await generatorService.updateSteps(generationRequestId, steps)
+    await generatorService.updateStatus(generationRequestId, "processing")
 
-    // Progress: Initializing
-    await generatorService.updateProgress(generationRequestId, "initializing", "Initializing AI service...", 10)
+    // Step 1: Start fetch_data
+    steps = startStep(steps, "fetch_data")
 
     // Step 4: Initialize AI provider (OpenAI or Gemini)
     const aiProvider = await createAIProvider(provider || "gemini", logger)
@@ -287,8 +297,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       requestId,
     })
 
-    // Progress: Data fetched
-    await generatorService.updateProgress(generationRequestId, "fetching_data", "Experience data loaded", 20)
+    // Complete fetch_data step
+    steps = completeStep(steps, "fetch_data")
+    await generatorService.updateSteps(generationRequestId, steps)
 
     // Step 5: Generate documents based on type
     let resumeResult: Awaited<ReturnType<typeof aiProvider.generateResume>> | undefined
@@ -305,13 +316,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
 
       // Generate resume if requested
       if (generateType === "resume" || generateType === "both") {
-        // Progress: Generating resume
-        await generatorService.updateProgress(
-          generationRequestId,
-          "generating_resume",
-          "Generating tailored resume content...",
-          generateType === "both" ? 30 : 40
-        )
+        // Start generate_resume step
+        steps = startStep(steps, "generate_resume")
+        await generatorService.updateSteps(generationRequestId, steps)
 
         logger.info("Generating resume", { requestId })
 
@@ -337,13 +344,13 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           customPrompts: defaults.aiPrompts?.resume,
         })
 
-        // Progress: Creating PDF
-        await generatorService.updateProgress(
-          generationRequestId,
-          "creating_pdf",
-          "Creating PDF document...",
-          generateType === "both" ? 50 : 70
-        )
+        // Complete generate_resume step
+        steps = completeStep(steps, "generate_resume")
+        await generatorService.updateSteps(generationRequestId, steps)
+
+        // Start create_resume_pdf step
+        steps = startStep(steps, "create_resume_pdf")
+        await generatorService.updateSteps(generationRequestId, steps)
 
         // Generate PDF (always use "modern" style)
         resumePDF = await pdfService.generateResumePDF(resumeResult.content, "modern", defaults.accentColor)
@@ -356,13 +363,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
 
       // Generate cover letter if requested
       if (generateType === "coverLetter" || generateType === "both") {
-        // Progress: Generating cover letter
-        await generatorService.updateProgress(
-          generationRequestId,
-          "generating_cover_letter",
-          "Writing cover letter...",
-          generateType === "both" ? 60 : 40
-        )
+        // Start generate_cover_letter step
+        steps = startStep(steps, "generate_cover_letter")
+        await generatorService.updateSteps(generationRequestId, steps)
 
         logger.info("Generating cover letter", { requestId })
 
@@ -387,13 +390,13 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           customPrompts: defaults.aiPrompts?.coverLetter,
         })
 
-        // Progress: Creating PDF
-        await generatorService.updateProgress(
-          generationRequestId,
-          "creating_pdf",
-          "Creating PDF document...",
-          generateType === "both" ? 80 : 70
-        )
+        // Complete generate_cover_letter step
+        steps = completeStep(steps, "generate_cover_letter")
+        await generatorService.updateSteps(generationRequestId, steps)
+
+        // Start create_cover_letter_pdf step
+        steps = startStep(steps, "create_cover_letter_pdf")
+        await generatorService.updateSteps(generationRequestId, steps)
 
         // Generate PDF
         coverLetterPDF = await pdfService.generateCoverLetterPDF(
@@ -425,6 +428,10 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       const roleSafe = job.role.replace(/[^a-z0-9]/gi, "_").toLowerCase()
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
 
+      // Start upload_documents step
+      steps = startStep(steps, "upload_documents")
+      await generatorService.updateSteps(generationRequestId, steps)
+
       if (resumePDF) {
         const filename = `${companySafe}_${roleSafe}_resume_${timestamp}.pdf`
         resumeUploadResult = await storageService.uploadPDF(resumePDF, filename, "resume")
@@ -433,6 +440,10 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         resumeSignedUrl = await storageService.generateSignedUrl(resumeUploadResult.gcsPath, { expiresInHours })
 
         logger.info("Resume uploaded to GCS", { gcsPath: resumeUploadResult.gcsPath, expiresInHours })
+
+        // Complete create_resume_pdf step with download URL (enables early download!)
+        steps = completeStep(steps, "create_resume_pdf", { resumeUrl: resumeSignedUrl })
+        await generatorService.updateSteps(generationRequestId, steps)
       }
 
       if (coverLetterPDF) {
@@ -443,10 +454,15 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         coverLetterSignedUrl = await storageService.generateSignedUrl(coverLetterUploadResult.gcsPath, { expiresInHours })
 
         logger.info("Cover letter uploaded to GCS", { gcsPath: coverLetterUploadResult.gcsPath, expiresInHours })
+
+        // Complete create_cover_letter_pdf step with download URL (enables early download!)
+        steps = completeStep(steps, "create_cover_letter_pdf", { coverLetterUrl: coverLetterSignedUrl })
+        await generatorService.updateSteps(generationRequestId, steps)
       }
 
-      // Progress: Finalizing
-      await generatorService.updateProgress(generationRequestId, "finalizing", "Finalizing documents...", 95)
+      // Complete upload_documents step
+      steps = completeStep(steps, "upload_documents")
+      await generatorService.updateSteps(generationRequestId, steps)
 
       // Calculate total metrics
       const durationMs = Date.now() - startTime
