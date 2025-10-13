@@ -497,7 +497,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
               }}
             >
               {formData.logo ? (
-                <Image src={formData.logo} alt="Logo" sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                <Image
+                  src={formData.logo}
+                  alt="Logo"
+                  sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                />
               ) : (
                 <Text sx={{ fontSize: 0, color: "textMuted", textAlign: "center" }}>No logo</Text>
               )}
