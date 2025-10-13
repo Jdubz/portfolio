@@ -833,34 +833,40 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
 
     const userEmail = req.user!.email
 
+    // TypeScript needs help understanding these are not null after validation
+    const validFileBuffer = fileBuffer as Buffer
+    const validFilename = filename as string
+    const validContentType = contentType as string
+    const validImageType = imageType as "avatar" | "logo"
+
     logger.info("Uploading image", {
       requestId,
       userEmail,
-      imageType,
-      filename,
-      contentType,
-      size: fileBuffer.length,
+      imageType: validImageType,
+      filename: validFilename,
+      contentType: validContentType,
+      size: validFileBuffer.length,
     })
 
     // Generate unique filename
     const timestamp = Date.now()
-    const ext = filename.split(".").pop() || "jpg"
-    const uniqueFilename = `${imageType}-${timestamp}.${ext}`
+    const ext = validFilename.split(".").pop() || "jpg"
+    const uniqueFilename = `${validImageType}-${timestamp}.${ext}`
 
     // Upload to GCS
-    const uploadResult = await storageService.uploadImage(fileBuffer, uniqueFilename, imageType, contentType)
+    const uploadResult = await storageService.uploadImage(validFileBuffer, uniqueFilename, validImageType, validContentType)
 
     // Generate signed URL for immediate use
     const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 24 * 365 }) // 1 year
 
     // Update defaults with new image URL
-    const updateData = imageType === "avatar" ? { avatar: signedUrl } : { logo: signedUrl }
+    const updateData = validImageType === "avatar" ? { avatar: signedUrl } : { logo: signedUrl }
     await generatorService.updateDefaults(updateData, userEmail)
 
     res.status(200).json({
       success: true,
       data: {
-        imageType,
+        imageType: validImageType,
         url: signedUrl,
         gcsPath: uploadResult.gcsPath,
         size: uploadResult.size,
