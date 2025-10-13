@@ -27,12 +27,15 @@ AI-powered resume and cover letter generator with multi-provider support (OpenAI
   - Provider selection UI with real-time cost comparison
   - Mock mode for local development (both providers)
   - Resume + Cover Letter generation
+  - **Custom AI prompts** - Editors can customize system and user prompts via Firestore
+  - Prompt template variables (e.g., `{{job.role}}`, `{{experienceData}}`)
 
 - ✅ **PDF Export**
   - Modern template with Puppeteer + Handlebars
-  - Logo and avatar support
+  - Logo and avatar support with GCS upload
   - Accent color customization
   - Professional formatting
+  - **Image upload** - Avatar and logo upload with validation (5MB max, image types only)
 
 - ✅ **Cloud Storage (GCS)**
   - Environment-aware bucket selection (local/staging/production)
@@ -40,6 +43,7 @@ AI-powered resume and cover letter generator with multi-provider support (OpenAI
   - Signed URLs (1 hour for viewers, 7 days for editors)
   - Lifecycle management (90-day COLDLINE transition)
   - Storage class tracking in Firestore
+  - Image storage for avatars and logos
 
 - ✅ **Authentication & Authorization**
   - Optional Firebase Auth (Google sign-in)
@@ -52,14 +56,25 @@ AI-powered resume and cover letter generator with multi-provider support (OpenAI
   - Experience data snapshots for reproducibility
   - Token usage and cost metrics
   - Composite indexes for production queries
-  - Document history for editors
+  - **Document history** - Editors can view all past generations
+  - **Settings management** - Centralized default personal info (name, email, contacts, avatar, logo)
+
+- ✅ **User Interface**
+  - Tabbed interface with URL routing
+  - Work Experience management
+  - Document Builder (resume/cover letter generation)
+  - AI Prompts editor (customize generation prompts)
+  - Settings page (personal info, avatar, logo)
+  - Document History (editor-only)
+  - Provider-based role visibility (editors see more features)
 
 - ✅ **Developer Experience**
   - Type-safe end-to-end (TypeScript)
-  - Comprehensive test coverage (211+ tests)
+  - Comprehensive test coverage (169+ tests)
   - Local emulator support with data persistence
   - Environment-aware configuration
   - Detailed logging and error handling
+  - **Common mistakes documentation** - Prevent repeated issues
 
 ### Cost Comparison
 

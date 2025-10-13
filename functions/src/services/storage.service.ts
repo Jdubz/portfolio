@@ -4,9 +4,17 @@
  * Handles GCS uploads and signed URL generation for generated documents.
  *
  * Environment-aware bucket selection:
- * - Local/Development: Uses mock mode, skips actual GCS uploads
+ * - Local/Development: Uses Firebase Storage Emulator (127.0.0.1:9199)
  * - Staging: joshwentworth-resumes-staging
  * - Production: joshwentworth-resumes
+ *
+ * **IMPORTANT:** Only use `FUNCTIONS_EMULATOR === "true"` for emulator detection.
+ * Never use `NODE_ENV` or check for absence of `GCP_PROJECT`.
+ * See: docs/development/COMMON_MISTAKES.md#environment-detection-issues
+ *
+ * Documentation:
+ * - Setup Guide: docs/development/generator/GCS_ENVIRONMENT_SETUP.md
+ * - Common Mistakes: docs/development/COMMON_MISTAKES.md
  */
 
 import { Storage } from "@google-cloud/storage"

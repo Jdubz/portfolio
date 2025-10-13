@@ -3,6 +3,20 @@
  *
  * Supports both OpenAI and Gemini AI providers with optional authentication
  * for tiered rate limiting.
+ *
+ * Features:
+ * - Multi-provider AI (OpenAI GPT-4o, Google Gemini 2.0 Flash)
+ * - PDF generation with custom branding
+ * - GCS storage with signed URLs
+ * - Firestore tracking and document history
+ * - Rate limiting (10 viewer / 20 editor requests per 15min)
+ * - Custom AI prompt management
+ * - Avatar/logo upload with image validation
+ *
+ * Documentation:
+ * - Overview: docs/development/generator/README.md
+ * - Schema: docs/development/generator/SCHEMA.md
+ * - Common Mistakes: docs/development/COMMON_MISTAKES.md
  */
 
 import { https } from "firebase-functions/v2"
