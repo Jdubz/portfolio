@@ -7,13 +7,13 @@
 
 import { ExperienceClient } from "../experience-client"
 import type { ExperienceEntry } from "../../types/experience"
-import { getIdToken } from "../../hooks/useAuth"
+import { getIdToken } from "../../utils/auth"
 
 // Mock fetch globally
 global.fetch = jest.fn()
 
-// Mock getIdToken from useAuth hook
-jest.mock("../../hooks/useAuth", () => ({
+// Mock getIdToken from auth utils
+jest.mock("../../utils/auth", () => ({
   getIdToken: jest.fn(),
 }))
 
