@@ -145,13 +145,7 @@ export const DocumentHistoryTab: React.FC<DocumentHistoryTabProps> = () => {
                 )}
               </Box>
 
-              {request.progress && (
-                <Box sx={{ mb: 3 }}>
-                  <Text sx={{ fontSize: 1, color: "text", opacity: 0.7 }}>
-                    {request.progress.message} ({request.progress.percentage}%)
-                  </Text>
-                </Box>
-              )}
+              {/* Progress display removed - now using steps */}
 
               {request.error && (
                 <Alert variant="error" sx={{ mb: 3, fontSize: 1 }}>
