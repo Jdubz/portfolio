@@ -59,13 +59,6 @@ jobs:
           echo "📊 Compressed file sizes:"
           ls -lh screenshots/images/*.png
 
-      - name: Upload screenshots as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: component-screenshots-${{ github.event.pull_request.number }}
-          path: screenshots/images/*.png
-          retention-days: 7  # Optimized from 30 days to 1 week
-
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
         with:
