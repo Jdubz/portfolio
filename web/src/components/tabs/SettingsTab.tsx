@@ -456,7 +456,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
             {/* Description */}
             <Flex sx={{ flexDirection: "column", flex: 1 }}>
               <Text sx={{ fontSize: 1, opacity: 0.7 }}>
-                Recommended: Square image, at least 400x400px. Max 5MB. Formats: JPG, PNG, WebP, SVG
+                Recommended: Square image, 512x512px for optimal quality (minimum 400x400px). Max 5MB. Formats: JPG,
+                PNG, WebP, SVG
               </Text>
             </Flex>
           </Flex>

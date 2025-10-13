@@ -347,8 +347,10 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
             }}
           />
           <Text sx={{ fontSize: 0, mt: 2, opacity: 0.7 }}>
-            Available variables: {"{{personalInfo.name}}"}, {"{{personalInfo.email}}"}, {"{{job.role}}"},
-            {"{{job.company}}"}, {"{{experienceData}}"}, etc.
+            Available variables: {"{{personalInfo.name}}"}, {"{{personalInfo.email}}"}, {"{{personalInfo.phone}}"},
+            {"{{personalInfo.location}}"}, {"{{personalInfo.website}}"}, {"{{personalInfo.github}}"},
+            {"{{personalInfo.linkedin}}"}, {"{{job.role}}"}, {"{{job.company}}"}, {"{{job.companyWebsite}}"},
+            {"{{job.jobDescription}}"}, {"{{experienceData}}"} (JSON array of all experience entries and blurbs)
           </Text>
         </Box>
 
