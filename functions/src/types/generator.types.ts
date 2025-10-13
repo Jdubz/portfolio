@@ -86,6 +86,10 @@ export interface GenerateResumeOptions {
   experienceEntries: ExperienceEntry[]
   experienceBlurbs: BlurbEntry[]
   emphasize?: string[]
+  customPrompts?: {
+    systemPrompt?: string
+    userPromptTemplate?: string
+  }
 }
 
 /**
@@ -104,6 +108,10 @@ export interface GenerateCoverLetterOptions {
   }
   experienceEntries: ExperienceEntry[]
   experienceBlurbs: BlurbEntry[]
+  customPrompts?: {
+    systemPrompt?: string
+    userPromptTemplate?: string
+  }
 }
 
 /**
@@ -175,6 +183,18 @@ export interface GeneratorDefaults {
   logo?: string // URL or GCS path to personal logo
   accentColor: string // Hex color for resume styling (always "modern" style)
 
+  // AI Prompts
+  aiPrompts?: {
+    resume: {
+      systemPrompt: string
+      userPromptTemplate: string
+    }
+    coverLetter: {
+      systemPrompt: string
+      userPromptTemplate: string
+    }
+  }
+
   // Metadata
   createdAt: Timestamp
   updatedAt: Timestamp
@@ -192,6 +212,16 @@ export interface UpdateGeneratorDefaultsData {
   avatar?: string
   logo?: string
   accentColor?: string
+  aiPrompts?: {
+    resume?: {
+      systemPrompt?: string
+      userPromptTemplate?: string
+    }
+    coverLetter?: {
+      systemPrompt?: string
+      userPromptTemplate?: string
+    }
+  }
 }
 
 // =============================================================================

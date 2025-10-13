@@ -60,6 +60,17 @@ export interface FileMetadata {
   storageClass?: StorageClass
 }
 
+export interface AIPrompts {
+  resume?: {
+    systemPrompt?: string
+    userPromptTemplate?: string
+  }
+  coverLetter?: {
+    systemPrompt?: string
+    userPromptTemplate?: string
+  }
+}
+
 export interface GeneratorDefaults {
   id: string
   type: "defaults"
@@ -73,6 +84,7 @@ export interface GeneratorDefaults {
   avatar?: string
   logo?: string
   accentColor?: string
+  aiPrompts?: AIPrompts
   createdAt: string
   updatedAt: string
   createdBy?: string
@@ -90,6 +102,7 @@ export interface UpdateDefaultsData {
   avatar?: string
   logo?: string
   accentColor?: string
+  aiPrompts?: AIPrompts
 }
 
 export interface GenerationProgress {

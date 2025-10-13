@@ -100,6 +100,7 @@ export class GeneratorService {
       if (data.avatar !== undefined) updates.avatar = data.avatar || null
       if (data.logo !== undefined) updates.logo = data.logo || null
       if (data.accentColor !== undefined) updates.accentColor = data.accentColor
+      if (data.aiPrompts !== undefined) updates.aiPrompts = data.aiPrompts || null
 
       await docRef.update(updates)
 

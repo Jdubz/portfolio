@@ -320,6 +320,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           experienceEntries: entries,
           experienceBlurbs: blurbs,
           emphasize: preferences?.emphasize,
+          customPrompts: defaults.aiPrompts?.resume,
         })
 
         // Progress: Creating PDF
@@ -369,6 +370,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           },
           experienceEntries: entries,
           experienceBlurbs: blurbs,
+          customPrompts: defaults.aiPrompts?.coverLetter,
         })
 
         // Progress: Creating PDF
