@@ -251,7 +251,7 @@ describe("GeneratorService", () => {
       const requestId = "resume-generator-request-123-abc"
       mockDb.update.mockResolvedValue({})
 
-      await service.updateRequestStatus(requestId, "processing")
+      await service.updateStatus(requestId, "processing")
 
       expect(mockDb.update).toHaveBeenCalledWith(
         expect.objectContaining({

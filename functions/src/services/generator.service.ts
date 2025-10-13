@@ -7,6 +7,7 @@ import type {
   GeneratorResponse,
   GenerationType,
   AIProviderType,
+  GenerationStep,
 } from "../types/generator.types"
 import type { ExperienceEntry } from "./experience.service"
 import type { BlurbEntry } from "./blurb.service"
@@ -233,45 +234,6 @@ export class GeneratorService {
   /**
    * Update request status
    */
-  async updateRequestStatus(requestId: string, status: GeneratorRequest["status"]): Promise<void> {
-    try {
-      await this.db.collection(this.collectionName).doc(requestId).update({
-        status,
-        updatedAt: FieldValue.serverTimestamp(),
-      })
-
-      this.logger.info("Updated request status", { requestId, status })
-    } catch (error) {
-      this.logger.error("Failed to update request status", { error, requestId, status })
-      throw error
-    }
-  }
-
-  /**
-   * Update request progress
-   */
-  async updateProgress(
-    requestId: string,
-    stage: NonNullable<GeneratorRequest["progress"]>["stage"],
-    message: string,
-    percentage: number
-  ): Promise<void> {
-    try {
-      await this.db.collection(this.collectionName).doc(requestId).update({
-        progress: {
-          stage,
-          message,
-          percentage,
-          updatedAt: FieldValue.serverTimestamp(),
-        },
-      })
-
-      this.logger.info("Updated progress", { requestId, stage, message, percentage })
-    } catch (error) {
-      this.logger.error("Failed to update progress", { error, requestId })
-      // Don't throw - progress updates are non-critical
-    }
-  }
 
   /**
    * Create a generation response document
@@ -419,6 +381,48 @@ export class GeneratorService {
       return requests
     } catch (error) {
       this.logger.error("Failed to list generation requests", { error })
+      throw error
+    }
+  }
+
+  /**
+   * Update the steps array in a generation request
+   * This enables real-time progress tracking on the frontend
+   */
+  async updateSteps(requestId: string, steps: GenerationStep[]): Promise<void> {
+    try {
+      const docRef = this.db.collection(this.collectionName).doc(requestId)
+
+      await docRef.update({
+        steps,
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+
+      this.logger.info("Updated generation steps", {
+        requestId,
+        steps: steps.map((s) => ({ id: s.id, status: s.status })),
+      })
+    } catch (error) {
+      this.logger.error("Failed to update generation steps", { error, requestId })
+      throw error
+    }
+  }
+
+  /**
+   * Update the status of a generation request
+   */
+  async updateStatus(requestId: string, status: GeneratorRequest["status"]): Promise<void> {
+    try {
+      const docRef = this.db.collection(this.collectionName).doc(requestId)
+
+      await docRef.update({
+        status,
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+
+      this.logger.info("Updated generation status", { requestId, status })
+    } catch (error) {
+      this.logger.error("Failed to update generation status", { error, requestId })
       throw error
     }
   }

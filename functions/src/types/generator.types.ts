@@ -225,6 +225,35 @@ export interface UpdateGeneratorDefaultsData {
 }
 
 // =============================================================================
+// Generation Progress Steps
+// =============================================================================
+
+export type GenerationStepStatus = "pending" | "in_progress" | "completed" | "failed" | "skipped"
+
+export interface GenerationStep {
+  id: string // Unique step identifier
+  name: string // Display name for the step
+  description: string // Detailed description
+  status: GenerationStepStatus
+  startedAt?: Timestamp
+  completedAt?: Timestamp
+  duration?: number // milliseconds
+
+  // Optional result data (e.g., PDF URL when that step completes)
+  result?: {
+    resumeUrl?: string
+    coverLetterUrl?: string
+    [key: string]: unknown
+  }
+
+  // Error info if failed
+  error?: {
+    message: string
+    code?: string
+  }
+}
+
+// =============================================================================
 // Generator Request (Generation Request Document)
 // =============================================================================
 
@@ -276,13 +305,8 @@ export interface GeneratorRequest {
   // Request Status
   status: "pending" | "processing" | "completed" | "failed"
 
-  // Progress Information
-  progress?: {
-    stage: "initializing" | "fetching_data" | "generating_resume" | "generating_cover_letter" | "creating_pdf" | "finalizing"
-    message: string
-    percentage: number // 0-100
-    updatedAt: Timestamp
-  }
+  // Step-by-step Progress Tracking
+  steps?: GenerationStep[]
 
   // Access Control
   access: {

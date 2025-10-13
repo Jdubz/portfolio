@@ -105,17 +105,29 @@ export interface UpdateDefaultsData {
   aiPrompts?: AIPrompts
 }
 
-export interface GenerationProgress {
-  stage:
-    | "initializing"
-    | "fetching_data"
-    | "generating_resume"
-    | "generating_cover_letter"
-    | "creating_pdf"
-    | "finalizing"
-  message: string
-  percentage: number
-  updatedAt: string
+export type GenerationStepStatus = "pending" | "in_progress" | "completed" | "failed" | "skipped"
+
+export interface GenerationStep {
+  id: string
+  name: string
+  description: string
+  status: GenerationStepStatus
+  startedAt?: string
+  completedAt?: string
+  duration?: number
+
+  // Optional result data (e.g., PDF URL when that step completes)
+  result?: {
+    resumeUrl?: string
+    coverLetterUrl?: string
+    [key: string]: unknown
+  }
+
+  // Error info if failed
+  error?: {
+    message: string
+    code?: string
+  }
 }
 
 export interface GenerationRequest {
@@ -125,7 +137,7 @@ export interface GenerationRequest {
   job: JobDetails
   preferences?: GenerationPreferences
   status: "pending" | "processing" | "completed" | "failed"
-  progress?: GenerationProgress
+  steps?: GenerationStep[]
   createdAt: string
   updatedAt: string
   completedAt?: string
