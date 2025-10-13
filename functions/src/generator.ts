@@ -827,8 +827,52 @@ async function handleUploadImage(req: AuthenticatedRequest, res: Response, reque
     })
 
     await new Promise<void>((resolve, reject) => {
-      bb.on("finish", () => resolve())
-      bb.on("error", (err: Error) => reject(err))
+      let finished = false
+
+      const cleanup = () => {
+        req.removeListener("error", onReqError)
+        req.removeListener("close", onReqClose)
+        bb.removeListener("finish", onFinish)
+        bb.removeListener("error", onBbError)
+      }
+
+      const onFinish = () => {
+        if (!finished) {
+          finished = true
+          cleanup()
+          resolve()
+        }
+      }
+
+      const onBbError = (err: Error) => {
+        if (!finished) {
+          finished = true
+          cleanup()
+          reject(err)
+        }
+      }
+
+      const onReqError = (err: Error) => {
+        if (!finished) {
+          finished = true
+          cleanup()
+          reject(new Error(`Request error: ${err.message}`))
+        }
+      }
+
+      const onReqClose = () => {
+        if (!finished) {
+          finished = true
+          cleanup()
+          reject(new Error("Request stream closed prematurely"))
+        }
+      }
+
+      bb.on("finish", onFinish)
+      bb.on("error", onBbError)
+      req.on("error", onReqError)
+      req.on("close", onReqClose)
+
       req.pipe(bb)
     })
 

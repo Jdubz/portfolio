@@ -1,9 +1,6 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-/** @jsx jsx */
-/** @jsxFrag React.Fragment */
+/** @jsxImportSource theme-ui */
 import React, { useState } from "react"
-import { Box, Button, Flex, useColorMode, jsx } from "theme-ui"
+import { Box, Button, Flex, useColorMode } from "theme-ui"
 import { Link } from "gatsby"
 
 /**

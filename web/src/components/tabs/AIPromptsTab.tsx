@@ -311,7 +311,7 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
           <Label htmlFor="system-prompt">
             System Prompt
             <Text as="span" sx={{ ml: 2, fontSize: 1, opacity: 0.7 }}>
-              (Defines the AI&apos;s role and behavior)
+              (Defines the AI's role and behavior)
             </Text>
           </Label>
           <Textarea

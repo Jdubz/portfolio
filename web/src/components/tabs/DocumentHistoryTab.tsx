@@ -7,7 +7,7 @@ interface DocumentHistoryTabProps {
   isEditor: boolean
 }
 
-export const DocumentHistoryTab: React.FC<DocumentHistoryTabProps> = () => {
+export const DocumentHistoryTab: React.FC<DocumentHistoryTabProps> = ({ isEditor }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [requests] = useState<GenerationRequest[]>([])

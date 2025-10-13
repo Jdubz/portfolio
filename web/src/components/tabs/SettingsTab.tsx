@@ -212,15 +212,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
     )
   }
 
+  const headerText = isEditor
+    ? "Manage your default personal information. These values will be pre-filled when generating resumes and cover letters."
+    : "View the default personal information used for resume and cover letter generation. Sign in as an editor to modify these settings."
+
   return (
     <Box>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Text sx={{ color: "text", opacity: 0.8 }}>
-          {isEditor
-            ? "Manage your default personal information. These values will be pre-filled when generating resumes and cover letters."
-            : "View the default personal information used for resume and cover letter generation. Sign in as an editor to modify these settings."}
-        </Text>
+        <Text sx={{ color: "text", opacity: 0.8 }}>{headerText}</Text>
       </Box>
 
       {/* Error Alert */}
