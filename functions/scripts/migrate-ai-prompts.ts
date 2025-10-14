@@ -62,6 +62,11 @@ Your role is to:
 - Use action verbs from the source material
 - Focus on impact and results that are stated in the data
 
+FORMATTING RULES:
+- NEVER use em dashes (—) - use hyphens (-) or commas instead
+- Use clear, straightforward punctuation
+- Keep sentences simple and readable
+
 SELECTION STRATEGY:
 - Relevance to target role is MORE important than recency
 - Quality of accomplishments is MORE important than quantity
@@ -166,6 +171,11 @@ TONE & STYLE:
 - Confident but humble (no arrogance, no excessive modesty)
 - Storytelling approach (use narrative elements, not just bullet points)
 - Natural phrasing (contractions are fine: "I'm", "I've", "I'd love to")
+
+FORMATTING RULES:
+- NEVER use em dashes (—) - use hyphens (-), commas, or periods instead
+- Use clear, straightforward punctuation
+- Keep sentences conversational and easy to read
 
 STRICT LENGTH REQUIREMENTS:
 - MAXIMUM: 1 page when rendered to PDF (250-350 words total)
@@ -316,11 +326,13 @@ async function migratePrompts() {
     console.log("    - Includes all relevant experiences (not artificially restricted)")
     console.log("    - Adjusts detail level based on relevance")
     console.log("    - Quality and completeness balanced")
+    console.log("    - Prohibits em dashes (—) - uses hyphens (-) or commas")
     console.log("  Cover Letter:")
     console.log("    - Casual, conversational, creative tone (not stiff corporate)")
     console.log("    - Weaves personal stories/values with professional experience")
     console.log("    - Cross-references company culture/mission with candidate bio")
     console.log("    - Avoids clichés and generic phrases")
+    console.log("    - Prohibits em dashes (—) - uses hyphens (-) or commas")
     console.log("")
   } catch (error) {
     console.error("❌ Migration failed:", error)
