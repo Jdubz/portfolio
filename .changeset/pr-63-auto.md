@@ -1,5 +1,6 @@
 ---
-"josh-wentworth-portfolio": minor\n"contact-form-function": minor
+"josh-wentworth-portfolio": minor
+"contact-form-function": minor
 ---
 
 Staging -> main

@@ -106,29 +106,23 @@ jobs:
           PR_BODY="${{ github.event.pull_request.body }}"
           PR_NUMBER="${{ github.event.pull_request.number }}"
 
-          # Determine packages line
-          PACKAGES=""
+          # Create changeset content with proper YAML formatting
+          echo "---" > ".changeset/pr-$PR_NUMBER-auto.md"
+
+          # Add packages line by line (proper YAML, not string concatenation)
           if [ "${{ steps.analyze.outputs.has_web }}" == "true" ]; then
-            PACKAGES="\"josh-wentworth-portfolio\": ${{ steps.analyze.outputs.change_type }}"
+            echo "\"josh-wentworth-portfolio\": ${{ steps.analyze.outputs.change_type }}" >> ".changeset/pr-$PR_NUMBER-auto.md"
           fi
           if [ "${{ steps.analyze.outputs.has_functions }}" == "true" ]; then
-            if [ -n "$PACKAGES" ]; then
-              PACKAGES="${PACKAGES}\n\"contact-form-function\": ${{ steps.analyze.outputs.change_type }}"
-            else
-              PACKAGES="\"contact-form-function\": ${{ steps.analyze.outputs.change_type }}"
-            fi
+            echo "\"contact-form-function\": ${{ steps.analyze.outputs.change_type }}" >> ".changeset/pr-$PR_NUMBER-auto.md"
           fi
 
-          # Create changeset content
-          cat > ".changeset/pr-$PR_NUMBER-auto.md" << EOF
-          ---
-          $PACKAGES
-          ---
-
-          $PR_TITLE
-
-          Auto-generated changeset for PR #$PR_NUMBER
-          EOF
+          # Close frontmatter and add description
+          echo "---" >> ".changeset/pr-$PR_NUMBER-auto.md"
+          echo "" >> ".changeset/pr-$PR_NUMBER-auto.md"
+          echo "$PR_TITLE" >> ".changeset/pr-$PR_NUMBER-auto.md"
+          echo "" >> ".changeset/pr-$PR_NUMBER-auto.md"
+          echo "Auto-generated changeset for PR #$PR_NUMBER" >> ".changeset/pr-$PR_NUMBER-auto.md"
 
           echo "changeset_file=.changeset/pr-$PR_NUMBER-auto.md" >> $GITHUB_OUTPUT
 
