@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, type ReactNode } from "react"
+import React, { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 import type { GenerationType, AIProviderType } from "../types/generator"
 
 /**
@@ -82,45 +82,45 @@ interface ResumeFormProviderProps {
 export const ResumeFormProvider: React.FC<ResumeFormProviderProps> = ({ children }) => {
   const [formState, setFormState] = useState<ResumeFormState>(DEFAULT_FORM_STATE)
 
-  // Update functions
-  const setGenerateType = (type: GenerationType) => {
+  // Update functions (memoized to prevent infinite loops in useEffect dependencies)
+  const setGenerateType = useCallback((type: GenerationType) => {
     setFormState((prev) => ({ ...prev, generateType: type }))
-  }
+  }, [])
 
-  const setAIProvider = (provider: AIProviderType) => {
+  const setAIProvider = useCallback((provider: AIProviderType) => {
     setFormState((prev) => ({ ...prev, aiProvider: provider }))
-  }
+  }, [])
 
-  const setRole = (role: string) => {
+  const setRole = useCallback((role: string) => {
     setFormState((prev) => ({ ...prev, role }))
-  }
+  }, [])
 
-  const setCompany = (company: string) => {
+  const setCompany = useCallback((company: string) => {
     setFormState((prev) => ({ ...prev, company }))
-  }
+  }, [])
 
-  const setCompanyWebsite = (website: string) => {
+  const setCompanyWebsite = useCallback((website: string) => {
     setFormState((prev) => ({ ...prev, companyWebsite: website }))
-  }
+  }, [])
 
-  const setJobDescriptionUrl = (url: string) => {
+  const setJobDescriptionUrl = useCallback((url: string) => {
     setFormState((prev) => ({ ...prev, jobDescriptionUrl: url }))
-  }
+  }, [])
 
-  const setJobDescriptionText = (text: string) => {
+  const setJobDescriptionText = useCallback((text: string) => {
     setFormState((prev) => ({ ...prev, jobDescriptionText: text }))
-  }
+  }, [])
 
-  const setEmphasize = (emphasize: string) => {
+  const setEmphasize = useCallback((emphasize: string) => {
     setFormState((prev) => ({ ...prev, emphasize }))
-  }
+  }, [])
 
-  // Utility functions
-  const clearForm = () => {
+  // Utility functions (memoized to prevent infinite loops in useEffect dependencies)
+  const clearForm = useCallback(() => {
     setFormState(DEFAULT_FORM_STATE)
-  }
+  }, [])
 
-  const isFormEmpty = () => {
+  const isFormEmpty = useCallback(() => {
     return (
       formState.role.trim() === "" &&
       formState.company.trim() === "" &&
@@ -129,7 +129,7 @@ export const ResumeFormProvider: React.FC<ResumeFormProviderProps> = ({ children
       formState.jobDescriptionText.trim() === "" &&
       formState.emphasize.trim() === ""
     )
-  }
+  }, [formState])
 
   const value: ResumeFormContextValue = {
     formState,
