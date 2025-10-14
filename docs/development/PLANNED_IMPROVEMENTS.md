@@ -38,118 +38,43 @@
 
 ### 1. AI Resume Generator Feature
 
-**Status**: Phase 1 Complete ✅ | Phase 2 Detailed Plan Ready
+**Status**: ✅ Production-Ready (October 2025)
 
-Build AI-powered resume generator using existing experience data.
+AI-powered resume and cover letter generator using existing experience data, multi-provider AI, and professional PDF export.
 
-**Phase 1 Complete** (Oct 2025):
+**Core Features Complete** (Oct 2025):
 
-- ✅ Resume generation Cloud Function with OpenAI integration
-- ✅ PDF export with Puppeteer (logo + avatar support)
-- ✅ Firestore request/response tracking with request/response separation
-- ✅ Mock mode for local development (OPENAI_MOCK_MODE=true)
-- ✅ Basic web UI with job details form and PDF download
-- ✅ Token usage and cost tracking
-- ✅ Rate limiting (10 requests per 15 min)
-- ✅ Comprehensive API client with 28 passing tests
-- ✅ Local Chrome detection for faster development
+- ✅ Multi-provider AI (OpenAI GPT-4o, Google Gemini 2.0 Flash)
+- ✅ Resume and cover letter generation with customizable prompts
+- ✅ PDF export with Puppeteer (logo + avatar support, modern template)
+- ✅ GCS storage with signed URLs and lifecycle management (90-day COLDLINE transition)
+- ✅ Multi-step generation API with real-time progress updates
+- ✅ Progressive UI with step-by-step checklist
+- ✅ Early PDF downloads (download as soon as ready, not at end)
+- ✅ Firebase Authentication integration (viewer vs editor roles)
+- ✅ Tabbed interface: Work Experience | Document Builder | AI Prompts | Personal Info | Document History
+- ✅ Document history table with filters (editor-only)
+- ✅ Personal info management with image uploads (avatar and logo)
+- ✅ Custom AI prompts editor (editors can customize via Firestore blurbs)
+- ✅ Rate limiting (10 requests/15min viewers, 20/15min editors)
+- ✅ Cost tracking and provider comparison UI
+- ✅ Mock modes for both AI providers (local development)
 - ✅ Type-safe end-to-end (TypeScript + Joi validation)
+- ✅ Comprehensive test coverage (211+ tests)
 
-**Phase 2: Feature Completion** (2-3 weeks):
+**Outstanding Optional Enhancements** (see [generator/PLAN.md](./generator/PLAN.md)):
 
-**Phase 2.1: Cover Letter Integration** ✅ COMPLETE (1-2 days)
-
-- ✅ Expose `generateType` parameter in API ("resume" | "coverLetter" | "both")
-- ✅ Add UI checkbox for "Generate cover letter"
-- ✅ Return both PDFs in single API response
-- ✅ Display both download buttons
-- ✅ Show separate metrics for each document
-- ✅ Implement document length constraints (resume: 2 pages max, cover letter: 1 page max)
-- ✅ Update AI prompts to enforce page limits (OpenAI + Gemini)
-- ℹ️ Validation/truncation logic not needed - AI prompt constraints are sufficient
-- **Note:** Cover letter service already implemented, UI was already integrated in Phase 1
-
-**Phase 2.2: GCS Storage & Document History** (2-3 days)
-
-- [x] Create GCS buckets with environment-aware selection (local/staging/prod)
-- [x] Implement lifecycle policy (Coldline after 90 days, never deleted)
-- [x] Upload PDFs to GCS with mock mode for local development
-- [x] Generate signed URLs for downloads (1hr viewers, 7 days editors)
-- [x] Update web UI to download from signed URLs
-- [x] Update Firestore schema to store GCS paths and metadata
-- [ ] Add `GET /generator/requests` endpoint for document history
-- [ ] Create document history table UI (editors only)
-- [ ] Implement download tracking in Firestore
-
-**Phase 2.3: Authentication & Editor Features** (3-4 days)
-
-- [ ] Add Firebase Auth (same pattern as experience page)
-- [ ] Conditional UI based on auth state (viewer vs editor)
-- [ ] Editor tabs: Generate | History | Settings
-- [ ] `PUT /generator/defaults` route for editing personal info
-- [ ] Higher rate limits for authenticated editors (20 vs 10)
-- [ ] Show all generations in history table with filters
-
-**Phase 2.4: Prompt Management** (2-3 days)
-
-- [ ] Create default prompt blurbs in Firestore (4 blurbs)
-- [ ] Implement variable substitution in prompts
-- [ ] Add "Prompts" tab to editor view
-- [ ] Reuse BlurbEditor component from experience page
-- [ ] Display available variables documentation
-- [ ] Fetch prompts dynamically instead of hardcoded strings
-
-**Phase 2.5: Additional Templates** (2-3 days)
-
-- [ ] Create `resume-traditional.hbs` template
-- [ ] Create `resume-technical.hbs` template
-- [ ] Create `resume-executive.hbs` template
-- [ ] Add style selector dropdown in UI
-- [ ] Update PDFService to load templates dynamically
-- [ ] Add footer with "Generated using custom AI implementation" link to resume builder
-- [ ] Optional: Template preview images
-
-**Phase 2.6: Client Timestamp & Attribution** (1 day)
-
-- [ ] Use client timestamp instead of server timestamp in resume generation
-- [ ] Add metadata field to track client-provided generation time
-- [ ] Update all PDF templates to include attribution footer
-- [ ] Attribution text: "This document was generated using a [custom AI implementation](link to resume builder)"
-- [ ] Ensure attribution is visible but unobtrusive in all template styles
-
-**Phase 2.7: Code Quality** (1 day)
-
-- [ ] Extract Chrome detection to `findLocalChrome()` helper (pdf.service.ts)
-- [ ] Extract job description builder to `buildJobDescription()` helper (generator.ts)
-- [ ] Document service account configuration (experience.ts)
-
-**Phase 2.8: Form State Management** ✅ COMPLETE (1 day)
-
-- ✅ Created React Context provider for resume form state
-- ✅ Form state persists during page navigation (within session)
-- ✅ Migrated all form fields to context (job info, preferences, generation options)
-- ✅ Added "Clear Form" button to reset state
-- ✅ NO localStorage persistence (only AI provider preference)
-- ✅ Form state resets on browser refresh (acceptable)
-- ✅ Type-safe context with TypeScript
-- ✅ Clean separation: UI state vs form state
-
-**Benefits Achieved**:
-
-- State persists during navigation within the same session
-- Centralized form state management with `useResumeForm()` hook
-- Foundation for multi-step form flow
-- Clean separation of concerns
-
-**Total Estimated Effort Phase 2**: 14-19 days (~3 weeks)
-**Completed**: 3 days (Phase 2.1 + Phase 2.8) ✅
-**Remaining**: 11-16 days
-
-**Priority Order**: ~~2.1 (cover letter)~~ ✅ → ~~2.8 (form context)~~ ✅ → **2.3 (auth) NEXT** → 2.2 (storage) → 2.4 (prompts) → 2.5 (templates) → 2.6 (timestamp/attribution) → 2.7 (quality)
+- Frontend terminology migration ("defaults" → "personalInfo") - 2-3 hours
+- URL refresh endpoint (regenerate signed URLs without re-generation) - 3-4 hours
+- Analytics dashboard - 10-15 hours
+- Resume template library (save/reuse job descriptions) - 6-8 hours
+- Additional PDF templates (traditional, technical, executive) - 20-30 hours
+- LinkedIn integration - 20-25 hours
 
 **Documentation**: See [generator/](./generator/) for complete details:
 
-- [README.md](./generator/README.md) - Current status, architecture, roadmap, and getting started
+- [PLAN.md](./generator/PLAN.md) - Future enhancement opportunities with priorities
+- [README.md](./generator/README.md) - Architecture overview and getting started
 - [SCHEMA.md](./generator/SCHEMA.md) - Firestore database schema reference
 
 ### 2. Content Upload Improvements

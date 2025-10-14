@@ -6,26 +6,40 @@ This directory contains all documentation for the Josh Wentworth Portfolio proje
 
 ```
 docs/
-├── development/        # Current architecture, audits, and future plans
-├── brand/             # Brand assets and guidelines
-└── CHANGELOG.md       # Version history
+├── development/
+│   ├── generator/          # AI Resume Generator documentation
+│   ├── setup/              # Setup and configuration guides
+│   ├── ARCHITECTURE.md     # System architecture
+│   └── PLANNED_IMPROVEMENTS.md  # Future roadmap
+├── brand/                  # Brand assets and guidelines
+└── CHANGELOG.md            # Version history
 ```
 
 ## 📚 Documentation Index
 
-### Architecture & Development
+### Architecture
 
 - **[ARCHITECTURE.md](./development/ARCHITECTURE.md)**
   Comprehensive architecture documentation covering project structure, API clients, state management, form components, Firebase setup, and development workflow.
 
-- **[CODEBASE_AUDIT_2025-10-10.md](./development/CODEBASE_AUDIT_2025-10-10.md)**
-  Recent codebase audit documenting Phase 1-3 refactoring (configuration consolidation, form components library, unified API architecture).
+### Setup & Configuration
+
+- **[Firebase Configuration](./development/setup/)**
+  Setup guides for Firebase services, authentication, and deployment configuration.
+
+### Plans & Roadmap
 
 - **[PLANNED_IMPROVEMENTS.md](./development/PLANNED_IMPROVEMENTS.md)**
-  Future roadmap including high-priority improvements and planned features.
+  Future roadmap for the entire project including high-priority improvements and planned features.
 
-- **[AI Resume Generator Plan](./development/ai-resume-generator-plan.md)**
-  Detailed implementation plan for AI-powered resume and cover letter generator feature (next major addition).
+- **[AI Resume Generator Plan](./development/generator/PLAN.md)**
+  Future enhancement opportunities for the AI-powered resume generator (production-ready, optional improvements only).
+
+- **[Generator README](./development/generator/README.md)**
+  Complete AI Resume Generator documentation including architecture, getting started, and feature overview.
+
+- **[Generator Schema](./development/generator/SCHEMA.md)**
+  Firestore database schema reference for the generator feature.
 
 ### Brand Assets
 
@@ -49,13 +63,14 @@ docs/
 
 1. Read [ARCHITECTURE.md](./development/ARCHITECTURE.md) to understand the codebase structure
 2. Check [PLANNED_IMPROVEMENTS.md](./development/PLANNED_IMPROVEMENTS.md) for the current roadmap
-3. Review [CODEBASE_AUDIT_2025-10-10.md](./development/CODEBASE_AUDIT_2025-10-10.md) for recent changes
+3. For generator feature: see [generator/README.md](./development/generator/README.md)
 
 ### Making Changes
 
 1. Review [ARCHITECTURE.md](./development/ARCHITECTURE.md) for architectural patterns
 2. Check [PLANNED_IMPROVEMENTS.md](./development/PLANNED_IMPROVEMENTS.md) for planned work
-3. Update [CHANGELOG.md](./CHANGELOG.md) with your changes
+3. For generator enhancements: see [generator/PLAN.md](./development/generator/PLAN.md)
+4. Update [CHANGELOG.md](./CHANGELOG.md) with your changes
 
 ### Project Information
 
@@ -90,4 +105,4 @@ When adding or updating documentation:
 
 ---
 
-**Last Updated:** 2025-10-10
+**Last Updated:** 2025-10-13
