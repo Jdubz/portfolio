@@ -37,7 +37,7 @@ import {
 } from "./utils/generation-steps"
 import { verifyAuthenticatedEditor, checkOptionalAuth, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import { generatorRateLimiter, generatorEditorRateLimiter } from "./middleware/rate-limit.middleware"
-import type { GenerationType, GeneratorResponse } from "./types/generator.types"
+import type { GenerationType, GeneratorResponse, GeneratorRequest } from "./types/generator.types"
 import { logger } from "./utils/logger"
 import { generateRequestId } from "./utils/request-id"
 import { corsHandler } from "./config/cors"
@@ -132,6 +132,32 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
             })
 
             await handleGenerate(req, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: POST /generator/start - Initialize generation (public, rate limited)
+          if (req.method === "POST" && path === "/generator/start") {
+            // Check if user is authenticated (optional, doesn't reject if not)
+            const isAuthenticated = await checkOptionalAuth(req as AuthenticatedRequest, logger)
+
+            // Apply appropriate rate limiting based on auth status
+            const rateLimiter = isAuthenticated ? generatorEditorRateLimiter : generatorRateLimiter
+            await new Promise<void>((resolveRateLimit, rejectRateLimit) => {
+              rateLimiter(req, res, (err) => {
+                if (err) rejectRateLimit(err)
+                else resolveRateLimit()
+              })
+            })
+
+            await handleStartGeneration(req, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: POST /generator/step/:requestId - Execute next step (public, no additional rate limit)
+          if (req.method === "POST" && path.startsWith("/generator/step/")) {
+            await handleExecuteStep(req, res, requestId)
             resolve()
             return
           }
@@ -630,6 +656,574 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       requestId,
     })
   }
+}
+
+/**
+ * POST /generator/start - Initialize generation request
+ */
+async function handleStartGeneration(req: Request, res: Response, requestId: string): Promise<void> {
+  try {
+    // Validate request body (same schema as /generate)
+    const { error, value } = generateRequestSchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for start generation", {
+        error: error.details,
+        requestId,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    const generateType: GenerationType = value.generateType
+    const job = value.job
+    const preferences = value.preferences
+    const provider = value.provider
+
+    logger.info("Starting generation request", {
+      requestId,
+      generateType,
+      role: job.role,
+      company: job.company,
+      provider,
+    })
+
+    // Fetch personal info
+    const personalInfo = await generatorService.getPersonalInfo()
+    if (!personalInfo) {
+      throw new Error("Personal info not found. Please seed the personal-info document.")
+    }
+
+    // Fetch experience data
+    const [entries, blurbs] = await Promise.all([experienceService.listEntries(), blurbService.listBlurbs()])
+
+    logger.info("Fetched experience data", {
+      entriesCount: entries.length,
+      blurbsCount: blurbs.length,
+    })
+
+    // Create request document with initial steps
+    const generationRequestId = await generatorService.createRequest(
+      generateType,
+      job,
+      personalInfo,
+      {
+        entries,
+        blurbs,
+      },
+      preferences,
+      requestId, // Use HTTP request ID as viewer session ID
+      undefined, // editorEmail (undefined for now)
+      provider
+    )
+
+    // Initialize steps
+    const steps = createInitialSteps(generateType)
+    await generatorService.updateSteps(generationRequestId, steps)
+    await generatorService.updateStatus(generationRequestId, "pending")
+
+    // Find first pending step
+    const nextStep = steps.find((s) => s.status === "pending")
+
+    logger.info("Generation request initialized", {
+      requestId,
+      generationRequestId,
+      nextStep: nextStep?.id,
+    })
+
+    res.status(200).json({
+      success: true,
+      data: {
+        requestId: generationRequestId,
+        status: "pending",
+        nextStep: nextStep?.id,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to start generation", { error, requestId })
+
+    const err = ERROR_CODES.INTERNAL_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "INTERNAL_ERROR",
+      errorCode: err.code,
+      message: error instanceof Error ? error.message : "Failed to start generation",
+      requestId,
+    })
+  }
+}
+
+/**
+ * POST /generator/step/:requestId - Execute next pending step
+ */
+async function handleExecuteStep(req: Request, res: Response, requestId: string): Promise<void> {
+  try {
+    // Extract generation request ID from path
+    const path = req.path || req.url
+    const generationRequestId = path.split("/").pop()
+
+    if (!generationRequestId) {
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: "Request ID is required",
+        requestId,
+      })
+      return
+    }
+
+    logger.info("Executing next step", { requestId, generationRequestId })
+
+    // Get request document
+    const request = await generatorService.getRequest(generationRequestId)
+    if (!request) {
+      const err = ERROR_CODES.NOT_FOUND
+      res.status(err.status).json({
+        success: false,
+        error: "NOT_FOUND",
+        errorCode: err.code,
+        message: "Generation request not found",
+        requestId,
+      })
+      return
+    }
+
+    // Find next pending step
+    const nextStep = request.steps?.find((s) => s.status === "pending")
+    if (!nextStep) {
+      // All steps complete
+      res.status(200).json({
+        success: true,
+        data: {
+          status: "completed",
+          message: "All steps complete",
+        },
+        requestId,
+      })
+      return
+    }
+
+    logger.info("Executing step", {
+      requestId,
+      generationRequestId,
+      stepId: nextStep.id,
+    })
+
+    // Update request status to processing if it was pending
+    if (request.status === "pending") {
+      await generatorService.updateStatus(generationRequestId, "processing")
+    }
+
+    // Execute the step (this may throw if step fails)
+    try {
+      await executeStepById(request, nextStep.id, requestId)
+    } catch (stepError) {
+      // Step failed - mark request as failed and abort pipeline
+      await generatorService.updateStatus(generationRequestId, "failed")
+
+      logger.error("Step execution failed", {
+        requestId,
+        generationRequestId,
+        stepId: nextStep.id,
+        error: stepError,
+      })
+
+      const err = ERROR_CODES.INTERNAL_ERROR
+      res.status(err.status).json({
+        success: false,
+        error: "STEP_EXECUTION_FAILED",
+        errorCode: err.code,
+        message: stepError instanceof Error ? stepError.message : "Step execution failed",
+        data: {
+          failedStep: nextStep.id,
+          requestId: generationRequestId,
+        },
+        requestId,
+      })
+      return
+    }
+
+    // Get updated request to find next step
+    const updatedRequest = await generatorService.getRequest(generationRequestId)
+    const nextPendingStep = updatedRequest?.steps?.find((s) => s.status === "pending")
+
+    // If no more pending steps, mark request as completed
+    if (!nextPendingStep) {
+      await generatorService.updateStatus(generationRequestId, "completed")
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        stepCompleted: nextStep.id,
+        nextStep: nextPendingStep?.id,
+        status: nextPendingStep ? "processing" : "completed",
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to execute step", { error, requestId })
+
+    const err = ERROR_CODES.INTERNAL_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "INTERNAL_ERROR",
+      errorCode: err.code,
+      message: error instanceof Error ? error.message : "Failed to execute step",
+      requestId,
+    })
+  }
+}
+
+/**
+ * Execute a specific step by ID
+ */
+async function executeStepById(request: GeneratorRequest, stepId: string, requestId: string): Promise<void> {
+  switch (stepId) {
+    case "fetch_data":
+      await executeFetchData(request, requestId)
+      break
+    case "generate_resume":
+      await executeGenerateResume(request, requestId)
+      break
+    case "generate_cover_letter":
+      await executeGenerateCoverLetter(request, requestId)
+      break
+    case "create_resume_pdf":
+      await executeCreateResumePDF(request, requestId)
+      break
+    case "create_cover_letter_pdf":
+      await executeCreateCoverLetterPDF(request, requestId)
+      break
+    case "upload_documents":
+      await executeUploadDocuments(request, requestId)
+      break
+    default:
+      throw new Error(`Unknown step ID: ${stepId}`)
+  }
+}
+
+/**
+ * Step: fetch_data - Data already fetched during /start, just complete the step
+ */
+async function executeFetchData(request: GeneratorRequest, requestId: string): Promise<void> {
+  // Update step to in_progress
+  let steps = startStep(request.steps!, "fetch_data")
+  await generatorService.updateSteps(request.id, steps)
+
+  // Data was already fetched during /start, so just mark complete
+  steps = completeStep(steps, "fetch_data")
+  await generatorService.updateSteps(request.id, steps)
+
+  logger.info("Step completed: fetch_data", { requestId, generationRequestId: request.id })
+}
+
+/**
+ * Step: generate_resume - AI generates resume content
+ */
+async function executeGenerateResume(request: GeneratorRequest, requestId: string): Promise<void> {
+  // Update step to in_progress
+  let steps = startStep(request.steps!, "generate_resume")
+  await generatorService.updateSteps(request.id, steps)
+
+  // Fetch full personal info (includes aiPrompts which aren't in the snapshot)
+  const personalInfo = await generatorService.getPersonalInfo()
+  if (!personalInfo) {
+    throw new Error("Personal info not found")
+  }
+
+  // Initialize AI provider
+  const aiProvider = await createAIProvider(request.provider || "gemini", logger)
+
+  // Prepare job description
+  const jobDescription =
+    request.job.jobDescriptionText || request.job.jobDescriptionUrl
+      ? `${request.job.jobDescriptionText || ""}\n${
+          request.job.jobDescriptionUrl ? `Job URL: ${request.job.jobDescriptionUrl}` : ""
+        }`.trim()
+      : undefined
+
+  // Generate resume content
+  const result = await aiProvider.generateResume({
+    personalInfo: {
+      name: request.personalInfo.name,
+      email: request.personalInfo.email,
+      phone: request.personalInfo.phone,
+      location: request.personalInfo.location,
+      website: request.personalInfo.website,
+      github: request.personalInfo.github,
+      linkedin: request.personalInfo.linkedin,
+    },
+    job: {
+      role: request.job.role,
+      company: request.job.company,
+      companyWebsite: request.job.companyWebsite,
+      jobDescription,
+    },
+    experienceEntries: request.experienceData.entries,
+    experienceBlurbs: request.experienceData.blurbs,
+    emphasize: request.preferences?.emphasize,
+    customPrompts: personalInfo.aiPrompts?.resume,
+  })
+
+  // Save intermediate results to Firestore
+  await generatorService.updateIntermediateResults(request.id, {
+    resumeContent: result.content,
+    resumeTokenUsage: result.tokenUsage,
+    model: result.model,
+  })
+
+  // Complete step
+  steps = completeStep(steps, "generate_resume")
+  await generatorService.updateSteps(request.id, steps)
+
+  logger.info("Step completed: generate_resume", {
+    requestId,
+    generationRequestId: request.id,
+    tokenUsage: result.tokenUsage,
+  })
+}
+
+/**
+ * Step: generate_cover_letter - AI generates cover letter content
+ */
+async function executeGenerateCoverLetter(request: GeneratorRequest, requestId: string): Promise<void> {
+  // Update step to in_progress
+  let steps = startStep(request.steps!, "generate_cover_letter")
+  await generatorService.updateSteps(request.id, steps)
+
+  // Fetch full personal info (includes aiPrompts which aren't in the snapshot)
+  const personalInfo = await generatorService.getPersonalInfo()
+  if (!personalInfo) {
+    throw new Error("Personal info not found")
+  }
+
+  // Initialize AI provider
+  const aiProvider = await createAIProvider(request.provider || "gemini", logger)
+
+  // Prepare job description
+  const jobDescription =
+    request.job.jobDescriptionText || request.job.jobDescriptionUrl
+      ? `${request.job.jobDescriptionText || ""}\n${
+          request.job.jobDescriptionUrl ? `Job URL: ${request.job.jobDescriptionUrl}` : ""
+        }`.trim()
+      : undefined
+
+  // Generate cover letter content
+  const result = await aiProvider.generateCoverLetter({
+    personalInfo: {
+      name: request.personalInfo.name,
+      email: request.personalInfo.email,
+    },
+    job: {
+      role: request.job.role,
+      company: request.job.company,
+      companyWebsite: request.job.companyWebsite,
+      jobDescription,
+    },
+    experienceEntries: request.experienceData.entries,
+    experienceBlurbs: request.experienceData.blurbs,
+    customPrompts: personalInfo.aiPrompts?.coverLetter,
+  })
+
+  // Save intermediate results to Firestore
+  await generatorService.updateIntermediateResults(request.id, {
+    coverLetterContent: result.content,
+    coverLetterTokenUsage: result.tokenUsage,
+    model: result.model,
+  })
+
+  // Complete step
+  steps = completeStep(steps, "generate_cover_letter")
+  await generatorService.updateSteps(request.id, steps)
+
+  logger.info("Step completed: generate_cover_letter", {
+    requestId,
+    generationRequestId: request.id,
+    tokenUsage: result.tokenUsage,
+  })
+}
+
+/**
+ * Step: create_resume_pdf - Generate PDF and upload to GCS
+ */
+async function executeCreateResumePDF(request: GeneratorRequest, requestId: string): Promise<void> {
+  // Update step to in_progress
+  let steps = startStep(request.steps!, "create_resume_pdf")
+  await generatorService.updateSteps(request.id, steps)
+
+  // Load resume content from intermediateResults
+  const resumeContent = request.intermediateResults?.resumeContent
+  if (!resumeContent) {
+    throw new Error("Resume content not found in intermediate results")
+  }
+
+  // Generate PDF
+  const pdf = await pdfService.generateResumePDF(resumeContent, "modern", request.personalInfo.accentColor)
+
+  logger.info("Resume PDF generated", {
+    requestId,
+    generationRequestId: request.id,
+    pdfSize: pdf.length,
+  })
+
+  // Upload to GCS immediately
+  const companySafe = request.job.company.replace(/[^a-z0-9]/gi, "_").toLowerCase()
+  const roleSafe = request.job.role.replace(/[^a-z0-9]/gi, "_").toLowerCase()
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
+  const filename = `${companySafe}_${roleSafe}_resume_${timestamp}.pdf`
+
+  const uploadResult = await storageService.uploadPDF(pdf, filename, "resume")
+  const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 168 })
+
+  logger.info("Resume uploaded to GCS", {
+    requestId,
+    generationRequestId: request.id,
+    gcsPath: uploadResult.gcsPath,
+  })
+
+  // Complete step with URL
+  steps = completeStep(steps, "create_resume_pdf", { resumeUrl: signedUrl })
+  await generatorService.updateSteps(request.id, steps)
+}
+
+/**
+ * Step: create_cover_letter_pdf - Generate PDF and upload to GCS
+ */
+async function executeCreateCoverLetterPDF(request: GeneratorRequest, requestId: string): Promise<void> {
+  // Update step to in_progress
+  let steps = startStep(request.steps!, "create_cover_letter_pdf")
+  await generatorService.updateSteps(request.id, steps)
+
+  // Load cover letter content from intermediateResults
+  const coverLetterContent = request.intermediateResults?.coverLetterContent
+  if (!coverLetterContent) {
+    throw new Error("Cover letter content not found in intermediate results")
+  }
+
+  // Generate PDF
+  const pdf = await pdfService.generateCoverLetterPDF(
+    coverLetterContent,
+    request.personalInfo.name,
+    request.personalInfo.email,
+    request.personalInfo.accentColor
+  )
+
+  logger.info("Cover letter PDF generated", {
+    requestId,
+    generationRequestId: request.id,
+    pdfSize: pdf.length,
+  })
+
+  // Upload to GCS immediately
+  const companySafe = request.job.company.replace(/[^a-z0-9]/gi, "_").toLowerCase()
+  const roleSafe = request.job.role.replace(/[^a-z0-9]/gi, "_").toLowerCase()
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
+  const filename = `${companySafe}_${roleSafe}_cover_letter_${timestamp}.pdf`
+
+  const uploadResult = await storageService.uploadPDF(pdf, filename, "cover-letter")
+  const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 168 })
+
+  logger.info("Cover letter uploaded to GCS", {
+    requestId,
+    generationRequestId: request.id,
+    gcsPath: uploadResult.gcsPath,
+  })
+
+  // Complete step with URL
+  steps = completeStep(steps, "create_cover_letter_pdf", { coverLetterUrl: signedUrl })
+  await generatorService.updateSteps(request.id, steps)
+}
+
+/**
+ * Step: upload_documents - Finalize and create response document
+ */
+async function executeUploadDocuments(request: GeneratorRequest, requestId: string): Promise<void> {
+  // Update step to in_progress
+  let steps = startStep(request.steps!, "upload_documents")
+  await generatorService.updateSteps(request.id, steps)
+
+  // Calculate metrics
+  const resumeTokenUsage = request.intermediateResults?.resumeTokenUsage
+  const coverLetterTokenUsage = request.intermediateResults?.coverLetterTokenUsage
+  const totalTokens = (resumeTokenUsage?.totalTokens || 0) + (coverLetterTokenUsage?.totalTokens || 0)
+
+  // Calculate cost (need to recreate AI provider for cost calculation)
+  const aiProvider = await createAIProvider(request.provider || "gemini", logger)
+  const costUsd =
+    (resumeTokenUsage ? aiProvider.calculateCost(resumeTokenUsage) : 0) +
+    (coverLetterTokenUsage ? aiProvider.calculateCost(coverLetterTokenUsage) : 0)
+
+  // Build result object
+  const result: GeneratorResponse["result"] = {
+    success: true,
+  }
+
+  if (request.intermediateResults?.resumeContent) {
+    result.resume = request.intermediateResults.resumeContent
+  }
+
+  if (request.intermediateResults?.coverLetterContent) {
+    result.coverLetter = request.intermediateResults.coverLetterContent
+  }
+
+  // Build token usage object
+  const tokenUsage: {
+    resumePrompt?: number
+    resumeCompletion?: number
+    coverLetterPrompt?: number
+    coverLetterCompletion?: number
+    total: number
+  } = {
+    total: totalTokens,
+  }
+
+  if (resumeTokenUsage) {
+    tokenUsage.resumePrompt = resumeTokenUsage.promptTokens
+    tokenUsage.resumeCompletion = resumeTokenUsage.completionTokens
+  }
+
+  if (coverLetterTokenUsage) {
+    tokenUsage.coverLetterPrompt = coverLetterTokenUsage.promptTokens
+    tokenUsage.coverLetterCompletion = coverLetterTokenUsage.completionTokens
+  }
+
+  // Create response document
+  const durationMs = Date.now() - request.createdAt.toMillis()
+  await generatorService.createResponse(
+    request.id,
+    result,
+    {
+      durationMs,
+      tokenUsage,
+      costUsd,
+      model: request.intermediateResults?.model || "unknown",
+    }
+  )
+
+  // Complete step
+  steps = completeStep(steps, "upload_documents")
+  await generatorService.updateSteps(request.id, steps)
+
+  logger.info("Step completed: upload_documents", {
+    requestId,
+    generationRequestId: request.id,
+    durationMs,
+    totalTokens,
+    costUsd,
+  })
 }
 
 /**

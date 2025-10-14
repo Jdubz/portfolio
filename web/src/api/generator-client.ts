@@ -32,11 +32,44 @@ export class GeneratorClient extends ApiClient {
     }
   }
   /**
-   * Generate resume and/or cover letter
+   * Generate resume and/or cover letter (monolithic - single request)
    * Public endpoint - no auth required
    */
   async generate(request: GenerateRequest): Promise<GenerateResponse> {
     return this.post<GenerateResponse>("/generator/generate", request, false)
+  }
+
+  /**
+   * Start a multi-step generation request
+   * Returns a request ID and the first step to execute
+   * Public endpoint - no auth required
+   */
+  async startGeneration(request: GenerateRequest): Promise<{
+    requestId: string
+    status: string
+    nextStep?: string
+  }> {
+    return this.post<{
+      requestId: string
+      status: string
+      nextStep?: string
+    }>("/generator/start", request, false)
+  }
+
+  /**
+   * Execute the next pending step for a generation request
+   * Public endpoint - no auth required
+   */
+  async executeStep(requestId: string): Promise<{
+    stepCompleted: string
+    nextStep?: string
+    status: string
+  }> {
+    return this.post<{
+      stepCompleted: string
+      nextStep?: string
+      status: string
+    }>(`/generator/step/${requestId}`, {}, false)
   }
 
   /**

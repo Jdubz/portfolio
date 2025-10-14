@@ -85,6 +85,23 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
               stepsCount: request.steps?.length ?? 0,
             })
 
+            // Extract download URLs from completed steps
+            const steps = request.steps ?? []
+            for (const step of steps) {
+              if (step.status === "completed" && step.result) {
+                if (step.result.resumeUrl) {
+                  setResumeUrl((prev) => prev ?? step.result?.resumeUrl ?? null)
+                  setUrlExpiresIn("7 days") // PDFs uploaded in steps use 7-day expiry
+                  logger.info("Resume URL extracted from step", { stepId: step.id })
+                }
+                if (step.result.coverLetterUrl) {
+                  setCoverLetterUrl((prev) => prev ?? step.result?.coverLetterUrl ?? null)
+                  setUrlExpiresIn("7 days")
+                  logger.info("Cover letter URL extracted from step", { stepId: step.id })
+                }
+              }
+            }
+
             // Check if generation is complete
             if (request.status === "completed") {
               setGenerating(false)
@@ -207,35 +224,41 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         },
       }
 
-      logger.info("Submitting generation request", payload)
+      logger.info("Submitting multi-step generation request", payload)
 
-      // Call the generator endpoint using the API client
-      const data = await generatorClient.generate(payload)
+      // Step 1: Initialize generation
+      const startData = await generatorClient.startGeneration(payload)
+      logger.info("Generation initialized", startData)
 
-      logger.info("Generation successful", data as unknown as Record<string, unknown>)
-
-      // Extract generation request ID for Firestore listener
-      // API client automatically unwraps response.data, so we use data directly
-      if (data?.requestId) {
-        setGenerationRequestId(data.requestId)
-        logger.info("Set generation request ID for tracking", { generationId: data.requestId })
+      if (!startData?.requestId) {
+        throw new Error("Failed to initialize generation: no request ID returned")
       }
 
-      // Store the signed URLs (Phase 2.2)
-      if (data?.resumeUrl) {
-        setResumeUrl(data.resumeUrl)
-      }
-      if (data?.coverLetterUrl) {
-        setCoverLetterUrl(data.coverLetterUrl)
-      }
-      if (data?.urlExpiresIn) {
-        setUrlExpiresIn(data.urlExpiresIn)
+      // Set generation request ID for Firestore listener
+      setGenerationRequestId(startData.requestId)
+      logger.info("Set generation request ID for tracking", { generationId: startData.requestId })
+
+      // Step 2: Execute steps one by one until complete or failed
+      let nextStep = startData.nextStep
+      while (nextStep) {
+        logger.info("Executing step", { step: nextStep })
+
+        const stepResult = await generatorClient.executeStep(startData.requestId)
+        logger.info("Step completed", stepResult)
+
+        // Check status
+        if (stepResult.status === "completed") {
+          logger.info("All steps completed")
+          setSuccess(true)
+          break
+        }
+
+        // Move to next step
+        nextStep = stepResult.nextStep
       }
 
-      if (data?.metadata) {
-        setMetadata(data.metadata)
-      }
-      setSuccess(true)
+      // Note: Download URLs and metadata will be updated by the Firestore listener
+      // when it receives the completed step updates with result.resumeUrl / result.coverLetterUrl
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
       setError(errorMessage)
