@@ -8,6 +8,7 @@
 
 import React, { useState } from "react"
 import { Box, Heading, Text, Button } from "theme-ui"
+import ReactJson from "react-json-view"
 import type { GenerationRequest } from "../types/generator"
 
 interface GenerationDetailsModalProps {
@@ -210,20 +211,29 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
               )}
             </Box>
           ) : (
-            // JSON view
+            // JSON view with collapsible nodes
             <Box
-              as="pre"
               sx={{
                 bg: "muted",
                 p: 3,
                 borderRadius: "8px",
                 overflowX: "auto",
-                fontSize: 0,
-                fontFamily: "monospace",
-                lineHeight: 1.6,
               }}
             >
-              {JSON.stringify(request, null, 2)}
+              <ReactJson
+                src={request}
+                theme="monokai"
+                collapsed={1}
+                displayDataTypes={false}
+                displayObjectSize={true}
+                enableClipboard={true}
+                name="generation-request"
+                indentWidth={2}
+                style={{
+                  backgroundColor: "transparent",
+                  fontSize: "13px",
+                }}
+              />
             </Box>
           )}
         </Box>
