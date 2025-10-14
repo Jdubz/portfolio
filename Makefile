@@ -64,9 +64,12 @@ help:
 	@echo "  make test-generator-api    - Test AI resume generator API (local emulator)"
 	@echo ""
 	@echo "AI Resume Generator:"
-	@echo "  make seed-generator-defaults     - Seed generator defaults (local emulator)"
-	@echo "  make seed-generator-staging      - Seed generator defaults (staging database)"
-	@echo "  make seed-generator-prod         - Seed generator defaults (production database)"
+	@echo "  make seed-generator-defaults      - Seed generator defaults (local emulator)"
+	@echo "  make seed-generator-staging       - Seed generator defaults (staging database)"
+	@echo "  make seed-generator-prod          - Seed generator defaults (production database)"
+	@echo "  make migrate-ai-prompts-emulator  - Update AI prompts (local emulator)"
+	@echo "  make migrate-ai-prompts-staging   - Update AI prompts (staging database)"
+	@echo "  make migrate-ai-prompts-prod      - Update AI prompts (production database)"
 	@echo ""
 	@echo "Editor Role Management:"
 	@echo "  make editor-add EMAIL=<email>    - Grant editor role to user"
@@ -362,6 +365,25 @@ seed-generator-prod:
 	@echo "Database: portfolio"
 	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
 	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 FIRESTORE_DATABASE_ID=portfolio npx tsx scripts/seed-generator-defaults.ts
+
+migrate-ai-prompts-emulator:
+	@echo "Migrating AI prompts to local emulator..."
+	@echo "⚠️  Make sure emulators are running first!"
+	@cd functions && FIRESTORE_EMULATOR_HOST="localhost:8080" DATABASE_ID="(default)" npx tsx scripts/migrate-ai-prompts.ts
+
+migrate-ai-prompts-staging:
+	@echo "Migrating AI prompts to STAGING database..."
+	@echo "Database: portfolio-staging"
+	@echo "This will update the prompts with improved length controls"
+	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio-staging npx tsx scripts/migrate-ai-prompts.ts
+
+migrate-ai-prompts-prod:
+	@echo "⚠️  WARNING: Migrating AI prompts to PRODUCTION database!"
+	@echo "Database: portfolio"
+	@echo "This will update the prompts with improved length controls"
+	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
+	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio npx tsx scripts/migrate-ai-prompts.ts
 
 # Health Check Commands
 health-check:
