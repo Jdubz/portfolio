@@ -154,3 +154,6 @@ terraform.tfstate*
 *.tfvars
 .terraformrc
 terraform.rc
+
+# Debugging
+analysis/
