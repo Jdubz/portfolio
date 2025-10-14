@@ -44,6 +44,8 @@ jobs:
 
       - name: Consume changesets and bump versions
         if: steps.check-changesets.outputs.has_changesets == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.CHANGESET_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           echo "Consuming changesets..."
           npx changeset version
