@@ -1,5 +1,25 @@
 # contact-form-function
 
+## 1.16.0
+
+### Minor Changes
+
+- [#63](https://github.com/Jdubz/portfolio/pull/63) [`0af7258`](https://github.com/Jdubz/portfolio/commit/0af7258f9924d70846076c9ffc6595c7eaf2fae5) Thanks [@Jdubz](https://github.com/Jdubz)! - Staging -> main
+
+  Auto-generated changeset for PR #63
+
+### Patch Changes
+
+- [#63](https://github.com/Jdubz/portfolio/pull/63) [`0af7258`](https://github.com/Jdubz/portfolio/commit/0af7258f9924d70846076c9ffc6595c7eaf2fae5) Thanks [@Jdubz](https://github.com/Jdubz)! - Configure version bumps to only run on main branch
+
+  Changed auto version bump workflow to follow industry standard:
+  - Version bumps now only occur when merging to main
+  - Staging keeps changesets for review
+  - Prevents duplicate version bumps
+  - Cleaner release workflow
+
+  This is the standard changesets pattern used across the industry.
+
 ## 1.15.0
 
 ### Minor Changes
