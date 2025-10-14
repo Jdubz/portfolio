@@ -42,6 +42,9 @@ interface ResumeFormContextValue {
   setJobDescriptionText: (text: string) => void
   setEmphasize: (emphasize: string) => void
 
+  // Bulk update function for job match hydration
+  updateFormFields: (fields: Partial<ResumeFormState>) => void
+
   // Utility functions
   clearForm: () => void
   isFormEmpty: () => boolean
@@ -115,6 +118,11 @@ export const ResumeFormProvider: React.FC<ResumeFormProviderProps> = ({ children
     setFormState((prev) => ({ ...prev, emphasize }))
   }, [])
 
+  // Bulk update function (for hydrating form from job match in a single operation)
+  const updateFormFields = useCallback((fields: Partial<ResumeFormState>) => {
+    setFormState((prev) => ({ ...prev, ...fields }))
+  }, [])
+
   // Utility functions (memoized to prevent infinite loops in useEffect dependencies)
   const clearForm = useCallback(() => {
     setFormState(DEFAULT_FORM_STATE)
@@ -141,6 +149,7 @@ export const ResumeFormProvider: React.FC<ResumeFormProviderProps> = ({ children
     setJobDescriptionUrl,
     setJobDescriptionText,
     setEmphasize,
+    updateFormFields,
     clearForm,
     isFormEmpty,
   }

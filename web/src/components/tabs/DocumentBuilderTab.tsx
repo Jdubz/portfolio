@@ -30,6 +30,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
     setJobDescriptionUrl,
     setJobDescriptionText,
     setEmphasize,
+    updateFormFields,
     clearForm,
     isFormEmpty,
   } = useResumeForm()
@@ -57,20 +58,26 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
   // Pre-fill form when a job match is selected
   useEffect(() => {
     if (selectedJobMatch) {
-      setRole(selectedJobMatch.role)
-      setCompany(selectedJobMatch.company)
-      setCompanyWebsite(selectedJobMatch.companyWebsite ?? "")
-      setJobDescriptionUrl(selectedJobMatch.jobDescriptionUrl ?? "")
-      setJobDescriptionText(selectedJobMatch.jobDescriptionText ?? "")
+      // Update all form fields in a single operation to avoid batching issues
+      updateFormFields({
+        role: selectedJobMatch.role,
+        company: selectedJobMatch.company,
+        companyWebsite: selectedJobMatch.companyWebsite ?? "",
+        jobDescriptionUrl: selectedJobMatch.jobDescriptionUrl ?? "",
+        jobDescriptionText: selectedJobMatch.jobDescriptionText ?? "",
+      })
       setJobMatchId(selectedJobMatch.id)
 
       logger.info("Form pre-filled with job match data", {
         jobMatchId: selectedJobMatch.id,
         company: selectedJobMatch.company,
         role: selectedJobMatch.role,
+        companyWebsite: selectedJobMatch.companyWebsite,
+        jobDescriptionUrl: selectedJobMatch.jobDescriptionUrl,
+        jobDescriptionText: selectedJobMatch.jobDescriptionText ? "present" : "empty",
       })
     }
-  }, [selectedJobMatch, setRole, setCompany, setCompanyWebsite, setJobDescriptionUrl, setJobDescriptionText])
+  }, [selectedJobMatch, updateFormFields])
 
   // Save AI provider preference to localStorage when it changes
   const handleProviderChange = (provider: AIProviderType) => {
