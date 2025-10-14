@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging health-check health-check-local health-check-staging health-check-prod test-health-check editor-add editor-remove editor-list editor-check
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging import-staging-to-local health-check health-check-local health-check-staging health-check-prod test-health-check editor-add editor-remove editor-list editor-check
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -83,7 +83,8 @@ help:
 	@echo "  make deploy-function FUNC=<name> - Deploy single Cloud Function with correct build SA"
 	@echo ""
 	@echo "Database:"
-	@echo "  make sync-prod-to-staging  - Copy production data to staging database"
+	@echo "  make sync-prod-to-staging      - Copy production data to staging database"
+	@echo "  make import-staging-to-local   - Copy staging database to local emulator"
 	@echo ""
 	@echo "Health Checks:"
 	@echo "  make health-check          - Check health of all Cloud Functions"
@@ -336,6 +337,15 @@ sync-prod-to-staging:
 	echo "✅ Data import initiated!"; \
 	echo "   Import operation: $$IMPORT_OP"; \
 	echo "   Check status: gcloud firestore operations describe $$IMPORT_OP --project=static-sites-257923"
+
+# Database Export/Import Commands
+import-staging-to-local:
+	@echo "⚠️  Make sure Firebase emulators are running!"
+	@echo "   Start with: make firebase-emulators"
+	@echo ""
+	@read -p "Press Enter to continue or Ctrl+C to cancel..." dummy
+	@echo ""
+	@npx tsx scripts/import-staging-to-local.ts
 
 # AI Resume Generator Commands
 test-generator-api:

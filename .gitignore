@@ -96,6 +96,7 @@ ui-debug.log
 
 # Firebase exports (temporary export directories)
 firebase-export-*/
+firestore-exports/
 
 # Windows
 nul
