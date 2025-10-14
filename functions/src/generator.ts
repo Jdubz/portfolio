@@ -1540,8 +1540,8 @@ async function handleUploadImage(req: AuthenticatedRequest & { rawBody?: Buffer 
     // Upload to GCS
     const uploadResult = await storageService.uploadImage(validFileBuffer, uniqueFilename, validImageType, validContentType)
 
-    // Generate signed URL for immediate use
-    const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 24 * 365 }) // 1 year
+    // Generate signed URL for immediate use (max 7 days)
+    const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 168 }) // 7 days (GCS max)
 
     // Update personal info with new image URL
     const updateData = validImageType === "avatar" ? { avatar: signedUrl } : { logo: signedUrl }
