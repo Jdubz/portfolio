@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button } from "theme-ui"
+import { Box, Heading, Text, Button, Flex } from "theme-ui"
 import type { GenerationRequest, FirestoreTimestamp } from "../types/generator"
 
 // Dynamically import react-json-view to avoid SSR issues
@@ -76,6 +76,36 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
 
   const hasBothDocuments = resumeUrl && coverLetterUrl
 
+  // Download JSON handler
+  const handleDownloadJSON = () => {
+    try {
+      // Create a formatted JSON string
+      const jsonString = JSON.stringify(request, null, 2)
+
+      // Create a blob and download link
+      const blob = new Blob([jsonString], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+
+      // Generate filename from job info and timestamp
+      const companySafe = request.job.company.replace(/[^a-z0-9]/gi, "_")
+      const roleSafe = request.job.role.replace(/[^a-z0-9]/gi, "_")
+      const timestamp = new Date().toISOString().split("T")[0] // YYYY-MM-DD
+      link.download = `${companySafe}_${roleSafe}_generation_${timestamp}.json`
+
+      // Trigger download
+      document.body.appendChild(link)
+      link.click()
+
+      // Cleanup
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Failed to download JSON", error)
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -123,22 +153,37 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
             </Heading>
             <Text sx={{ fontSize: 1, color: "textMuted" }}>Generated on {formatTimestamp(request.createdAt)}</Text>
           </Box>
-          <Button
-            onClick={onClose}
-            variant="close"
-            sx={{
-              border: "none",
-              bg: "transparent",
-              fontSize: 4,
-              cursor: "pointer",
-              color: "textMuted",
-              "&:hover": {
-                color: "text",
-              },
-            }}
-          >
-            ×
-          </Button>
+          <Flex sx={{ gap: 2, alignItems: "center" }}>
+            <Button
+              onClick={handleDownloadJSON}
+              variant="secondary"
+              sx={{
+                px: 3,
+                py: 2,
+                fontSize: 1,
+                cursor: "pointer",
+              }}
+              title="Download complete JSON document"
+            >
+              📥 Download JSON
+            </Button>
+            <Button
+              onClick={onClose}
+              variant="close"
+              sx={{
+                border: "none",
+                bg: "transparent",
+                fontSize: 4,
+                cursor: "pointer",
+                color: "textMuted",
+                "&:hover": {
+                  color: "text",
+                },
+              }}
+            >
+              ×
+            </Button>
+          </Flex>
         </Box>
 
         {/* View mode toggle */}
