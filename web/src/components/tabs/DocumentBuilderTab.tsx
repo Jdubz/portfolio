@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react"
 import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Flex, Select } from "theme-ui"
-import { doc, onSnapshot } from "firebase/firestore"
 import { logger } from "../../utils/logger"
 import { generatorClient } from "../../api/generator-client"
 import { useResumeForm } from "../../contexts/ResumeFormContext"
-import { getFirestoreInstance } from "../../utils/firestore"
 import { GenerationProgress } from "../GenerationProgress"
 import type {
   GenerationType,
@@ -40,7 +38,6 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
   const [success, setSuccess] = useState(false)
 
   // Generation progress tracking
-  const [generationRequestId, setGenerationRequestId] = useState<string | null>(null)
   const [generationStatus, setGenerationStatus] = useState<GenerationRequest["status"] | null>(null)
   const [generationSteps, setGenerationSteps] = useState<GenerationStep[]>([])
 
@@ -59,90 +56,6 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
     logger.info("AI provider changed", { provider })
   }
 
-  // Firestore listener for real-time progress updates
-  useEffect(() => {
-    if (!generationRequestId) {
-      return
-    }
-
-    logger.info("Setting up Firestore listener for generation progress", { generationRequestId })
-
-    try {
-      const db = getFirestoreInstance()
-      const requestRef = doc(db, "generator", generationRequestId)
-
-      const unsubscribe = onSnapshot(
-        requestRef,
-        (snapshot) => {
-          if (snapshot.exists()) {
-            const request = snapshot.data() as GenerationRequest
-
-            logger.info("Generation progress updated", {
-              generationRequestId,
-              status: request.status,
-              stepsCount: request.steps?.length ?? 0,
-            })
-
-            // Extract download URLs from completed steps
-            let extractedResumeUrl: string | null = null
-            let extractedCoverLetterUrl: string | null = null
-            const steps = request.steps ?? []
-
-            for (const step of steps) {
-              if (step.status === "completed" && step.result) {
-                if (step.result.resumeUrl && !extractedResumeUrl) {
-                  extractedResumeUrl = step.result.resumeUrl
-                  logger.info("Resume URL extracted from step", { stepId: step.id })
-                }
-                if (step.result.coverLetterUrl && !extractedCoverLetterUrl) {
-                  extractedCoverLetterUrl = step.result.coverLetterUrl
-                  logger.info("Cover letter URL extracted from step", { stepId: step.id })
-                }
-              }
-            }
-
-            // Batch all state updates together
-            setGenerationStatus(request.status)
-            setGenerationSteps(steps)
-
-            if (extractedResumeUrl) {
-              setResumeUrl((prev) => prev ?? extractedResumeUrl)
-              setUrlExpiresIn("7 days")
-            }
-            if (extractedCoverLetterUrl) {
-              setCoverLetterUrl((prev) => prev ?? extractedCoverLetterUrl)
-              setUrlExpiresIn("7 days")
-            }
-
-            // Check if generation is complete
-            if (request.status === "completed") {
-              setGenerating(false)
-              setSuccess(true)
-              logger.info("Generation completed", { generationRequestId })
-            } else if (request.status === "failed") {
-              setGenerating(false)
-              setError("Generation failed. Please try again.")
-              logger.error("Generation failed", new Error("Generation status: failed"), { generationRequestId })
-            }
-          } else {
-            logger.warn("Generation request document not found", { generationRequestId })
-          }
-        },
-        (err) => {
-          logger.error("Firestore listener error", err, { generationRequestId })
-          // Don't stop generation on listener errors - they might be transient
-        }
-      )
-
-      return () => {
-        logger.info("Cleaning up Firestore listener", { generationRequestId })
-        unsubscribe()
-      }
-    } catch (err) {
-      logger.error("Failed to set up Firestore listener", err as Error, { generationRequestId })
-    }
-  }, [generationRequestId])
-
   // Generated files (Phase 2.2: now using URLs instead of base64)
   const [resumeUrl, setResumeUrl] = useState<string | null>(null)
   const [coverLetterUrl, setCoverLetterUrl] = useState<string | null>(null)
@@ -158,7 +71,6 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
     setCoverLetterUrl(null)
     setUrlExpiresIn(null)
     setMetadata(null)
-    setGenerationRequestId(null)
     setGenerationStatus("pending")
 
     // Initialize steps immediately based on generateType
@@ -246,9 +158,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         throw new Error("Failed to initialize generation: no request ID returned")
       }
 
-      // Set generation request ID for Firestore listener
-      setGenerationRequestId(startData.requestId)
-      logger.info("Set generation request ID for tracking", { generationId: startData.requestId })
+      logger.info("Generation request initialized", { requestId: startData.requestId })
 
       // Step 2: Execute steps one by one until complete or failed
       let nextStep = startData.nextStep
@@ -258,10 +168,35 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         const stepResult = await generatorClient.executeStep(startData.requestId)
         logger.info("Step completed", stepResult)
 
+        // Extract download URLs from step result
+        if (stepResult.resumeUrl) {
+          setResumeUrl(stepResult.resumeUrl)
+          setUrlExpiresIn("7 days")
+          logger.info("Resume URL received from API", { url: stepResult.resumeUrl })
+        }
+        if (stepResult.coverLetterUrl) {
+          setCoverLetterUrl(stepResult.coverLetterUrl)
+          setUrlExpiresIn("7 days")
+          logger.info("Cover letter URL received from API", { url: stepResult.coverLetterUrl })
+        }
+
+        // Update step progress in UI
+        if (stepResult.steps) {
+          setGenerationSteps(stepResult.steps)
+        }
+
         // Check status
         if (stepResult.status === "completed") {
           logger.info("All steps completed")
+          setGenerationStatus("completed")
           setSuccess(true)
+          setGenerating(false)
+          break
+        } else if (stepResult.status === "failed") {
+          logger.error("Generation failed", new Error("Step execution failed"))
+          setGenerationStatus("failed")
+          setError("Generation failed. Please try again.")
+          setGenerating(false)
           break
         }
 
@@ -269,15 +204,19 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         nextStep = stepResult.nextStep
       }
 
-      // Note: Download URLs and metadata will be updated by the Firestore listener
-      // when it receives the completed step updates with result.resumeUrl / result.coverLetterUrl
+      // If loop exits without setting status, generation is complete
+      if (nextStep === undefined) {
+        setGenerationStatus("completed")
+        setSuccess(true)
+        setGenerating(false)
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
       setError(errorMessage)
       logger.error("Generation failed", err as Error)
-      setGenerating(false) // Stop generating on error
+      setGenerating(false)
+      setGenerationStatus("failed")
     }
-    // Note: Don't set setGenerating(false) here - let the Firestore listener handle it when status becomes 'completed' or 'failed'
   }
 
   const downloadFromUrl = (url: string, filename: string) => {

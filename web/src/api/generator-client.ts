@@ -64,11 +64,35 @@ export class GeneratorClient extends ApiClient {
     stepCompleted: string
     nextStep?: string
     status: string
+    resumeUrl?: string
+    coverLetterUrl?: string
+    steps?: Array<{
+      id: string
+      name: string
+      description: string
+      status: "pending" | "in_progress" | "completed" | "failed"
+      result?: {
+        resumeUrl?: string
+        coverLetterUrl?: string
+      }
+    }>
   }> {
     return this.post<{
       stepCompleted: string
       nextStep?: string
       status: string
+      resumeUrl?: string
+      coverLetterUrl?: string
+      steps?: Array<{
+        id: string
+        name: string
+        description: string
+        status: "pending" | "in_progress" | "completed" | "failed"
+        result?: {
+          resumeUrl?: string
+          coverLetterUrl?: string
+        }
+      }>
     }>(`/generator/step/${requestId}`, {}, false)
   }
 

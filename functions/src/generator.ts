@@ -855,7 +855,7 @@ async function handleExecuteStep(req: Request, res: Response, requestId: string)
       return
     }
 
-    // Get updated request to find next step
+    // Get updated request to find next step and extract URLs
     const updatedRequest = await generatorService.getRequest(generationRequestId)
     const nextPendingStep = updatedRequest?.steps?.find((s) => s.status === "pending")
 
@@ -864,13 +864,62 @@ async function handleExecuteStep(req: Request, res: Response, requestId: string)
       await generatorService.updateStatus(generationRequestId, "completed")
     }
 
+    // Extract download URLs from completed steps
+    let resumeUrl: string | undefined
+    let coverLetterUrl: string | undefined
+
+    if (updatedRequest?.steps) {
+      for (const step of updatedRequest.steps) {
+        if (step.status === "completed" && step.result) {
+          if (step.result.resumeUrl) {
+            resumeUrl = step.result.resumeUrl
+          }
+          if (step.result.coverLetterUrl) {
+            coverLetterUrl = step.result.coverLetterUrl
+          }
+        }
+      }
+    }
+
+    // Build response data with URLs and steps
+    const responseData: {
+      stepCompleted: string
+      nextStep?: string
+      status: string
+      resumeUrl?: string
+      coverLetterUrl?: string
+      steps?: Array<{
+        id: string
+        name: string
+        description: string
+        status: string
+        result?: {
+          resumeUrl?: string
+          coverLetterUrl?: string
+        }
+      }>
+    } = {
+      stepCompleted: nextStep.id,
+      nextStep: nextPendingStep?.id,
+      status: nextPendingStep ? "processing" : "completed",
+    }
+
+    // Include URLs if present
+    if (resumeUrl) {
+      responseData.resumeUrl = resumeUrl
+    }
+    if (coverLetterUrl) {
+      responseData.coverLetterUrl = coverLetterUrl
+    }
+
+    // Include steps for UI progress tracking
+    if (updatedRequest?.steps) {
+      responseData.steps = updatedRequest.steps
+    }
+
     res.status(200).json({
       success: true,
-      data: {
-        stepCompleted: nextStep.id,
-        nextStep: nextPendingStep?.id,
-        status: nextPendingStep ? "processing" : "completed",
-      },
+      data: responseData,
       requestId,
     })
   } catch (error) {
