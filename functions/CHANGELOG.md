@@ -1,5 +1,17 @@
 # contact-form-function
 
+## 1.17.0
+
+### Patch Changes
+
+- [#66](https://github.com/Jdubz/portfolio/pull/66) [`352b62d`](https://github.com/Jdubz/portfolio/commit/352b62da45a9b18ae633119883252fd6a6a06d9f) Thanks [@Jdubz](https://github.com/Jdubz)! - Add document generation history with PDF preview and collapsible JSON viewer
+  - New GenerationHistory table component showing past generations
+  - GenerationDetailsModal with PDF preview and JSON viewer
+  - Toggle between resume and cover letter PDFs
+  - Collapsible JSON viewer with copy-to-clipboard
+  - PDFs display inline in browser instead of downloading
+  - Support client date for cover letter generation
+
 ## 1.16.1
 
 ### Patch Changes
