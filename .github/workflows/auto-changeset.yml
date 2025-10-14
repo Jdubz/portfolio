@@ -74,11 +74,17 @@ jobs:
           echo "has_important_changes=true" >> $GITHUB_OUTPUT
 
           # Determine which packages changed
-          has_web=$(echo "$important_files" | grep -E '^web/' && echo "true" || echo "false")
-          has_functions=$(echo "$important_files" | grep -E '^functions/' && echo "true" || echo "false")
+          if echo "$important_files" | grep -qE '^web/'; then
+            echo "has_web=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_web=false" >> $GITHUB_OUTPUT
+          fi
 
-          echo "has_web=$has_web" >> $GITHUB_OUTPUT
-          echo "has_functions=$has_functions" >> $GITHUB_OUTPUT
+          if echo "$important_files" | grep -qE '^functions/'; then
+            echo "has_functions=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_functions=false" >> $GITHUB_OUTPUT
+          fi
 
           # Auto-detect change type based on files
           if echo "$changed_files" | grep -qE 'package\.json|breaking|BREAKING'; then
@@ -146,19 +152,25 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const hasWeb = '${{ steps.analyze.outputs.has_web }}' === 'true';
+            const hasFunctions = '${{ steps.analyze.outputs.has_functions }}' === 'true';
+
+            let packages = '';
+            if (hasWeb && hasFunctions) {
+              packages = 'web + functions';
+            } else if (hasWeb) {
+              packages = 'web only';
+            } else if (hasFunctions) {
+              packages = 'functions only';
+            }
+
             const body = `## 🤖 Auto-Generated Changeset
 
             I've automatically created a changeset for this PR!
 
             **File**: \`${{ steps.generate.outputs.changeset_file }}\`
             **Type**: \`${{ steps.analyze.outputs.change_type }}\`
-            **Packages**: ${
-              '${{ steps.analyze.outputs.has_web }}' === 'true' && '${{ steps.analyze.outputs.has_functions }}' === 'true'
-                ? 'web + functions'
-                : '${{ steps.analyze.outputs.has_web }}' === 'true'
-                ? 'web only'
-                : 'functions only'
-            }
+            **Packages**: ${packages}
 
             If you'd like to customize the changeset description, you can:
             1. Edit the file directly
