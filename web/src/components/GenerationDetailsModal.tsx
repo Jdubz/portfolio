@@ -257,7 +257,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
               {isClient && ReactJson ? (
                 <ReactJson
                   src={request}
-                  theme="monokai"
+                  theme="rjv-default"
                   collapsed={1}
                   displayDataTypes={false}
                   displayObjectSize={true}
@@ -265,8 +265,8 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
                   name="generation-request"
                   indentWidth={2}
                   style={{
-                    backgroundColor: "transparent",
                     fontSize: "13px",
+                    fontFamily: "monospace",
                   }}
                 />
               ) : (
@@ -276,6 +276,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
                     fontSize: 0,
                     fontFamily: "monospace",
                     lineHeight: 1.6,
+                    color: "text",
                   }}
                 >
                   {JSON.stringify(request, null, 2)}
