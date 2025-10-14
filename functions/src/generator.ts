@@ -66,6 +66,7 @@ const generateRequestSchema = Joi.object({
     style: Joi.string().valid("modern", "traditional", "technical", "executive").optional(),
     emphasize: Joi.array().items(Joi.string()).optional(),
   }).optional(),
+  date: Joi.string().optional(), // Client's local date string for cover letter
 })
 
 const updatePersonalInfoSchema = Joi.object({
@@ -280,6 +281,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
     const job = value.job
     const preferences = value.preferences
     const provider = value.provider // AI provider selection (openai or gemini)
+    const clientDate = value.date // Client's local date for cover letter
 
     logger.info("Processing generation request", {
       requestId,
@@ -440,7 +442,8 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           coverLetterResult.content,
           personalInfo.name,
           personalInfo.email,
-          personalInfo.accentColor
+          personalInfo.accentColor,
+          clientDate
         )
 
         logger.info("Cover letter generated", {
@@ -1163,11 +1166,14 @@ async function executeCreateCoverLetterPDF(request: GeneratorRequest, requestId:
   }
 
   // Generate PDF
+  // Note: Step-based generation doesn't have access to client date, so it uses server date
+  // This is acceptable since step-based generation is less common than synchronous generation
   const pdf = await pdfService.generateCoverLetterPDF(
     coverLetterContent,
     request.personalInfo.name,
     request.personalInfo.email,
     request.personalInfo.accentColor
+    // date parameter omitted - will use server date as fallback
   )
 
   logger.info("Cover letter PDF generated", {

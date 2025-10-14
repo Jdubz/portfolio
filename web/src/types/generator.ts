@@ -25,6 +25,7 @@ export interface GenerateRequest {
   job: JobDetails
   preferences?: GenerationPreferences
   provider?: AIProviderType
+  date?: string // Optional date string for cover letter (defaults to server date if not provided)
 }
 
 export interface GenerationMetadata {
