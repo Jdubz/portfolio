@@ -107,7 +107,8 @@ export class PDFService {
     content: CoverLetterContent,
     name: string,
     email: string,
-    accentColor: string = "#3B82F6"
+    accentColor: string = "#3B82F6",
+    date?: string
   ): Promise<Buffer> {
     try {
       this.logger.info("Generating cover letter PDF")
@@ -119,8 +120,8 @@ export class PDFService {
         this.coverLetterTemplate = Handlebars.compile(templateSource)
       }
 
-      // Format current date
-      const date = new Date().toLocaleDateString("en-US", {
+      // Use provided date or format current date as fallback
+      const formattedDate = date || new Date().toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -131,7 +132,7 @@ export class PDFService {
         ...content,
         name,
         email,
-        date,
+        date: formattedDate,
         accentColor,
       })
 
