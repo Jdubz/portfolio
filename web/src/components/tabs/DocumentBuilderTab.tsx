@@ -11,12 +11,14 @@ import type {
   GenerationRequest,
   GenerationStep,
 } from "../../types/generator"
+import type { JobMatch } from "../../types/job-match"
 
 interface DocumentBuilderTabProps {
   isEditor: boolean
+  selectedJobMatch?: JobMatch
 }
 
-export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor }) => {
+export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor, selectedJobMatch }) => {
   // Get form state from context
   const {
     formState,
@@ -37,6 +39,9 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
+  // Job match tracking (for linking generated docs to job applications)
+  const [jobMatchId, setJobMatchId] = useState<string | null>(null)
+
   // Generation progress tracking
   const [generationStatus, setGenerationStatus] = useState<GenerationRequest["status"] | null>(null)
   const [generationSteps, setGenerationSteps] = useState<GenerationStep[]>([])
@@ -48,6 +53,24 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
       setAIProvider(savedProvider)
     }
   }, [setAIProvider])
+
+  // Pre-fill form when a job match is selected
+  useEffect(() => {
+    if (selectedJobMatch) {
+      setRole(selectedJobMatch.role)
+      setCompany(selectedJobMatch.company)
+      setCompanyWebsite(selectedJobMatch.companyWebsite ?? "")
+      setJobDescriptionUrl(selectedJobMatch.jobDescriptionUrl ?? "")
+      setJobDescriptionText(selectedJobMatch.jobDescriptionText ?? "")
+      setJobMatchId(selectedJobMatch.id)
+
+      logger.info("Form pre-filled with job match data", {
+        jobMatchId: selectedJobMatch.id,
+        company: selectedJobMatch.company,
+        role: selectedJobMatch.role,
+      })
+    }
+  }, [selectedJobMatch, setRole, setCompany, setCompanyWebsite, setJobDescriptionUrl, setJobDescriptionText])
 
   // Save AI provider preference to localStorage when it changes
   const handleProviderChange = (provider: AIProviderType) => {
@@ -146,6 +169,8 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             .map((s) => s.trim())
             .filter((s) => s.length > 0),
         },
+        // Include job match ID if present (for tracking generated docs)
+        jobMatchId: jobMatchId ?? undefined,
       }
 
       logger.info("Submitting multi-step generation request", payload)
@@ -197,6 +222,8 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
           setGenerationStatus("completed")
           setSuccess(true)
           setGenerating(false)
+          // Clear job match ID after successful generation
+          setJobMatchId(null)
           break
         } else if (stepResult.status === "failed") {
           logger.error("Generation failed", new Error("Step execution failed"))
@@ -215,6 +242,8 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         setGenerationStatus("completed")
         setSuccess(true)
         setGenerating(false)
+        // Clear job match ID after successful generation
+        setJobMatchId(null)
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
@@ -425,6 +454,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             type="button"
             onClick={() => {
               clearForm()
+              setJobMatchId(null)
               logger.info("Form cleared")
             }}
             disabled={generating || isFormEmpty()}

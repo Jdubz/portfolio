@@ -24,6 +24,7 @@ import type { Request, Response } from "express"
 import Joi from "joi"
 import busboy from "busboy"
 import type { Readable } from "stream"
+import { Firestore } from "@google-cloud/firestore"
 import { GeneratorService } from "./services/generator.service"
 import { ExperienceService } from "./services/experience.service"
 import { BlurbService } from "./services/blurb.service"
@@ -43,6 +44,7 @@ import { generateRequestId } from "./utils/request-id"
 import { corsHandler } from "./config/cors"
 import { GENERATOR_ERROR_CODES as ERROR_CODES } from "./config/error-codes"
 import { PACKAGE_VERSION } from "./config/versions"
+import { DATABASE_ID } from "./config/database"
 
 // Initialize services
 const generatorService = new GeneratorService(logger)
@@ -50,6 +52,38 @@ const experienceService = new ExperienceService(logger)
 const blurbService = new BlurbService(logger)
 const pdfService = new PDFService(logger)
 const storageService = new StorageService(undefined, logger) // Use environment-aware bucket selection
+
+// Initialize Firestore client for job-match updates
+const firestore = new Firestore({
+  databaseId: DATABASE_ID,
+})
+
+/**
+ * Helper function to update job-match record after successful generation
+ */
+async function updateJobMatchAfterGeneration(jobMatchId: string, generationRequestId: string): Promise<void> {
+  try {
+    const jobMatchRef = firestore.collection("job-matches").doc(jobMatchId)
+
+    await jobMatchRef.update({
+      documentGenerated: true,
+      generationId: generationRequestId,
+      updatedAt: new Date().toISOString(),
+    })
+
+    logger.info("Job match updated after successful generation", {
+      jobMatchId,
+      generationId: generationRequestId,
+    })
+  } catch (error) {
+    // Log error but don't fail the generation - the documents were already created successfully
+    logger.error("Failed to update job match after generation", {
+      error,
+      jobMatchId,
+      generationId: generationRequestId,
+    })
+  }
+}
 
 // Validation schemas
 const generateRequestSchema = Joi.object({
@@ -67,6 +101,7 @@ const generateRequestSchema = Joi.object({
     emphasize: Joi.array().items(Joi.string()).optional(),
   }).optional(),
   date: Joi.string().optional(), // Client's local date string for cover letter
+  jobMatchId: Joi.string().optional(), // Reference to job-match document ID
 })
 
 const updatePersonalInfoSchema = Joi.object({
@@ -282,12 +317,14 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
     const preferences = value.preferences
     const provider = value.provider // AI provider selection (openai or gemini)
     const clientDate = value.date // Client's local date for cover letter
+    const jobMatchId = value.jobMatchId // Optional job-match ID for tracking
 
     logger.info("Processing generation request", {
       requestId,
       generateType,
       role: job.role,
       company: job.company,
+      jobMatchId,
     })
 
     // Step 1: Fetch personal info
@@ -316,7 +353,8 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       preferences,
       requestId, // Use HTTP request ID as viewer session ID for now
       undefined, // editorEmail (undefined for now)
-      provider // AI provider selection (openai or gemini, defaults to gemini)
+      provider, // AI provider selection (openai or gemini, defaults to gemini)
+      jobMatchId // Job match ID for tracking
     )
 
     // Initialize step tracking
@@ -587,6 +625,11 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       // Update request status to completed
       await generatorService.updateStatus(generationRequestId, "completed")
 
+      // Update job-match record if jobMatchId was provided
+      if (jobMatchId) {
+        await updateJobMatchAfterGeneration(jobMatchId, generationRequestId)
+      }
+
       logger.info("Generation completed successfully", {
         requestId,
         generationRequestId,
@@ -691,6 +734,7 @@ async function handleStartGeneration(req: Request, res: Response, requestId: str
     const job = value.job
     const preferences = value.preferences
     const provider = value.provider
+    const jobMatchId = value.jobMatchId // Optional job-match ID for tracking
 
     logger.info("Starting generation request", {
       requestId,
@@ -698,6 +742,7 @@ async function handleStartGeneration(req: Request, res: Response, requestId: str
       role: job.role,
       company: job.company,
       provider,
+      jobMatchId,
     })
 
     // Fetch personal info
@@ -726,7 +771,8 @@ async function handleStartGeneration(req: Request, res: Response, requestId: str
       preferences,
       requestId, // Use HTTP request ID as viewer session ID
       undefined, // editorEmail (undefined for now)
-      provider
+      provider,
+      jobMatchId // Job match ID for tracking
     )
 
     // Initialize steps
@@ -865,6 +911,11 @@ async function handleExecuteStep(req: Request, res: Response, requestId: string)
     // If no more pending steps, mark request as completed
     if (!nextPendingStep) {
       await generatorService.updateStatus(generationRequestId, "completed")
+
+      // Update job-match record if jobMatchId was provided
+      if (updatedRequest?.jobMatchId) {
+        await updateJobMatchAfterGeneration(updatedRequest.jobMatchId, generationRequestId)
+      }
     }
 
     // Extract download URLs from completed steps

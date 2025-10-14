@@ -297,6 +297,9 @@ export interface GeneratorRequest {
     jobDescriptionText?: string
   }
 
+  // Job Match Reference (for tracking which job-match this generation is for)
+  jobMatchId?: string
+
   // Generation Preferences
   preferences?: {
     emphasize?: string[] // Keywords to emphasize

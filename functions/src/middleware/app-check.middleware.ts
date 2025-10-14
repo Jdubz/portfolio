@@ -10,14 +10,24 @@ import * as admin from "firebase-admin"
  * In development/emulator: Allows requests without tokens for easier testing
  */
 
-// Initialize Firebase Admin SDK if not already initialized
-if (!admin.apps.length) {
-  admin.initializeApp()
-}
-
 const isProduction = process.env.NODE_ENV === "production"
 const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true"
+
+// Configure Firebase Auth Emulator before initializing Admin SDK
+if (isEmulator && !process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+  // Set the Auth emulator host for Firebase Admin SDK
+  process.env.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099"
+  console.log("[Admin SDK] Configured to use Firebase Auth Emulator at localhost:9099")
+}
+
+// Initialize Firebase Admin SDK if not already initialized
+if (!admin.apps.length) {
+  admin.initializeApp()
+  if (isEmulator) {
+    console.log("[Admin SDK] Initialized in emulator mode")
+  }
+}
 
 /**
  * App Check verification middleware

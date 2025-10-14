@@ -9,7 +9,11 @@ import { DocumentBuilderTab } from "../components/tabs/DocumentBuilderTab"
 import { AIPromptsTab } from "../components/tabs/AIPromptsTab"
 import { SettingsTab } from "../components/tabs/SettingsTab"
 import { DocumentHistoryTab } from "../components/tabs/DocumentHistoryTab"
+import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
+import { GenerationDetailsModal } from "../components/GenerationDetailsModal"
 import { logger } from "../utils/logger"
+import type { JobMatch } from "../types/job-match"
+import type { GenerationRequest } from "../types/generator"
 
 /**
  * Unified Resume Builder Page with Tabs
@@ -30,6 +34,11 @@ const ResumeBuilderPage: React.FC = () => {
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
 
+  // Job match and document generation state
+  const [selectedJobMatch, setSelectedJobMatch] = useState<JobMatch | null>(null)
+  const [modalRequest, setModalRequest] = useState<GenerationRequest | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   // Get initial tab from URL query param
   const getInitialTab = (): string => {
     if (typeof window === "undefined") {
@@ -37,7 +46,7 @@ const ResumeBuilderPage: React.FC = () => {
     }
     const params = new URLSearchParams(window.location.search)
     const tabParam = params.get("tab")
-    const validTabs = ["work-experience", "document-builder", "ai-prompts", "settings", "history"]
+    const validTabs = ["work-experience", "document-builder", "ai-prompts", "settings", "history", "job-applications"]
     return tabParam && validTabs.includes(tabParam) ? tabParam : "document-builder"
   }
 
@@ -73,11 +82,12 @@ const ResumeBuilderPage: React.FC = () => {
     return () => window.removeEventListener("popstate", handlePopState)
   }, [])
 
-  // Redirect non-editors away from history tab
+  // Redirect non-editors away from history and job-applications tabs
   useEffect(() => {
-    if (!authLoading && activeTab === "history" && !isEditor) {
-      logger.info("Non-editor attempted to access history tab, redirecting to document-builder", {
+    if (!authLoading && (activeTab === "history" || activeTab === "job-applications") && !isEditor) {
+      logger.info("Non-editor attempted to access editor-only tab, redirecting to document-builder", {
         page: "resume-builder",
+        tab: activeTab,
         user: user?.email ?? "anonymous",
       })
       void navigate("/resume-builder?tab=document-builder", { replace: true })
@@ -108,7 +118,31 @@ const ResumeBuilderPage: React.FC = () => {
     })
   }
 
-  // Build tabs array (conditionally include history for editors only)
+  // Job match handlers
+  const handleSelectJobMatch = (jobMatch: JobMatch) => {
+    setSelectedJobMatch(jobMatch)
+    setActiveTab("document-builder")
+    logger.info("Job match selected for generation", {
+      jobMatchId: jobMatch.id,
+      company: jobMatch.company,
+      role: jobMatch.role,
+    })
+  }
+
+  const handleViewGeneratedDocs = (request: GenerationRequest) => {
+    setModalRequest(request)
+    setIsModalOpen(true)
+    logger.info("Viewing generated documents from job match", {
+      generationId: request.id,
+    })
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setModalRequest(null)
+  }
+
+  // Build tabs array (conditionally include editor-only tabs)
   const tabs: Tab[] = [
     {
       id: "work-experience",
@@ -118,7 +152,7 @@ const ResumeBuilderPage: React.FC = () => {
     {
       id: "document-builder",
       label: "Document Builder",
-      content: <DocumentBuilderTab isEditor={isEditor} />,
+      content: <DocumentBuilderTab isEditor={isEditor} selectedJobMatch={selectedJobMatch ?? undefined} />,
     },
     {
       id: "ai-prompts",
@@ -130,9 +164,19 @@ const ResumeBuilderPage: React.FC = () => {
       label: "Personal Info",
       content: <SettingsTab isEditor={isEditor} />,
     },
-    // Only show history tab to editors
+    // Only show editor-only tabs to editors
     ...(isEditor
       ? [
+          {
+            id: "job-applications",
+            label: "Job Applications",
+            content: (
+              <JobApplicationsTab
+                onSelectJobMatch={handleSelectJobMatch}
+                onViewGeneratedDocs={handleViewGeneratedDocs}
+              />
+            ),
+          },
           {
             id: "history",
             label: "Document History",
@@ -249,6 +293,9 @@ const ResumeBuilderPage: React.FC = () => {
         {/* Tabs */}
         <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
       </Box>
+
+      {/* Generation Details Modal */}
+      {isModalOpen && modalRequest && <GenerationDetailsModal request={modalRequest} onClose={handleCloseModal} />}
     </Box>
   )
 }
