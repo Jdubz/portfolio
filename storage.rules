@@ -22,6 +22,15 @@ service firebase.storage {
       allow write: if false;
     }
 
+    // Images folder (avatars and logos)
+    match /images/{imageType}/{filename} {
+      // Anyone can read (public access for profile images)
+      allow read: if true;
+
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
     // Deny everything else
     match /{allPaths=**} {
       allow read, write: if false;
