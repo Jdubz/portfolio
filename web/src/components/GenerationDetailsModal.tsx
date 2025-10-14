@@ -6,10 +6,12 @@
  * - Embedded PDF preview with toggle between resume/cover letter
  */
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Box, Heading, Text, Button } from "theme-ui"
-import ReactJson from "react-json-view"
 import type { GenerationRequest } from "../types/generator"
+
+// Dynamically import react-json-view to avoid SSR issues
+let ReactJson: typeof import("react-json-view").default | null = null
 
 interface GenerationDetailsModalProps {
   request: GenerationRequest | null
@@ -22,6 +24,17 @@ type DocumentType = "resume" | "coverLetter"
 export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ request, onClose }) => {
   const [viewMode, setViewMode] = useState<ViewMode>("pdf")
   const [documentType, setDocumentType] = useState<DocumentType>("resume")
+  const [isClient, setIsClient] = useState(false)
+
+  // Load react-json-view only on client side
+  useEffect(() => {
+    setIsClient(true)
+    if (typeof window !== "undefined") {
+      void import("react-json-view").then((module) => {
+        ReactJson = module.default
+      })
+    }
+  }, [])
 
   if (!request) {
     return null
@@ -220,20 +233,33 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
                 overflowX: "auto",
               }}
             >
-              <ReactJson
-                src={request}
-                theme="monokai"
-                collapsed={1}
-                displayDataTypes={false}
-                displayObjectSize={true}
-                enableClipboard={true}
-                name="generation-request"
-                indentWidth={2}
-                style={{
-                  backgroundColor: "transparent",
-                  fontSize: "13px",
-                }}
-              />
+              {isClient && ReactJson ? (
+                <ReactJson
+                  src={request}
+                  theme="monokai"
+                  collapsed={1}
+                  displayDataTypes={false}
+                  displayObjectSize={true}
+                  enableClipboard={true}
+                  name="generation-request"
+                  indentWidth={2}
+                  style={{
+                    backgroundColor: "transparent",
+                    fontSize: "13px",
+                  }}
+                />
+              ) : (
+                <Box
+                  as="pre"
+                  sx={{
+                    fontSize: 0,
+                    fontFamily: "monospace",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {JSON.stringify(request, null, 2)}
+                </Box>
+              )}
             </Box>
           )}
         </Box>
