@@ -223,14 +223,8 @@
   "storage": {
     "rules": "storage.rules"
   },
-  "firestore": [
-    {
-      "database": "portfolio",
-      "indexes": "firestore.indexes.json"
-    },
-    {
-      "database": "portfolio-staging",
-      "indexes": "firestore.indexes.json"
-    }
-  ]
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
 }
