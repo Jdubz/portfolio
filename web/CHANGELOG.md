@@ -1,5 +1,16 @@
 # josh-wentworth-portfolio
 
+## 1.14.2
+
+### Patch Changes
+
+- [#58](https://github.com/Jdubz/portfolio/pull/58) [`748806e`](https://github.com/Jdubz/portfolio/commit/748806e72c29a665e025b33218014d60d0b0e29e) Thanks [@Jdubz](https://github.com/Jdubz)! - Fix document generator by removing Firestore listener and returning URLs from API
+  - Removed broken Firestore listener that was causing 400 Bad Request errors by connecting to wrong database
+  - Updated backend `handleExecuteStep` to return download URLs and step progress in API response
+  - Updated frontend to extract URLs and progress directly from API instead of Firestore subscription
+  - Fixed missing download buttons and checklist not updating on staging
+  - API now provides complete real-time updates without needing Firestore subscriptions
+
 ## 1.14.1
 
 ### Patch Changes
