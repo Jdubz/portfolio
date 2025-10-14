@@ -7,7 +7,8 @@
  */
 
 import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button } from "theme-ui"
+import { Box, Heading, Text, Button, Flex } from "theme-ui"
+import JSZip from "jszip"
 import type { GenerationRequest, FirestoreTimestamp } from "../types/generator"
 
 // Dynamically import react-json-view to avoid SSR issues
@@ -55,6 +56,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
   const [viewMode, setViewMode] = useState<ViewMode>("pdf")
   const [documentType, setDocumentType] = useState<DocumentType>("resume")
   const [isClient, setIsClient] = useState(false)
+  const [downloadingZip, setDownloadingZip] = useState(false)
 
   // Load react-json-view only on client side
   useEffect(() => {
@@ -75,6 +77,107 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
   const coverLetterUrl = request.steps?.find((s) => s.result?.coverLetterUrl)?.result?.coverLetterUrl
 
   const hasBothDocuments = resumeUrl && coverLetterUrl
+
+  // Download JSON handler
+  const handleDownloadJSON = () => {
+    try {
+      // Create a formatted JSON string
+      const jsonString = JSON.stringify(request, null, 2)
+
+      // Create a blob and download link
+      const blob = new Blob([jsonString], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+
+      // Generate filename from job info and timestamp
+      const companySafe = request.job.company.replace(/[^a-z0-9]/gi, "_")
+      const roleSafe = request.job.role.replace(/[^a-z0-9]/gi, "_")
+      const timestamp = new Date().toISOString().split("T")[0] // YYYY-MM-DD
+      link.download = `${companySafe}_${roleSafe}_generation_${timestamp}.json`
+
+      // Trigger download
+      document.body.appendChild(link)
+      link.click()
+
+      // Cleanup
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Failed to download JSON", error)
+    }
+  }
+
+  // Download ZIP handler (PDFs + JSON)
+  const handleDownloadZip = async () => {
+    try {
+      setDownloadingZip(true)
+
+      // Create a new zip file
+      const zip = new JSZip()
+
+      // Generate filename prefix
+      const companySafe = request.job.company.replace(/[^a-z0-9]/gi, "_")
+      const roleSafe = request.job.role.replace(/[^a-z0-9]/gi, "_")
+      const timestamp = new Date().toISOString().split("T")[0] // YYYY-MM-DD
+
+      // Add JSON data
+      const jsonString = JSON.stringify(request, null, 2)
+      zip.file("generation.json", jsonString)
+
+      // Fetch and add resume PDF if available
+      if (resumeUrl) {
+        try {
+          const resumeResponse = await fetch(resumeUrl)
+          if (resumeResponse.ok) {
+            const resumeBlob = await resumeResponse.blob()
+            zip.file("resume.pdf", resumeBlob)
+          } else {
+            console.warn("Failed to fetch resume PDF:", resumeResponse.status)
+          }
+        } catch (err) {
+          console.error("Error fetching resume PDF:", err)
+        }
+      }
+
+      // Fetch and add cover letter PDF if available
+      if (coverLetterUrl) {
+        try {
+          const coverLetterResponse = await fetch(coverLetterUrl)
+          if (coverLetterResponse.ok) {
+            const coverLetterBlob = await coverLetterResponse.blob()
+            zip.file("cover_letter.pdf", coverLetterBlob)
+          } else {
+            console.warn("Failed to fetch cover letter PDF:", coverLetterResponse.status)
+          }
+        } catch (err) {
+          console.error("Error fetching cover letter PDF:", err)
+        }
+      }
+
+      // Generate zip file
+      const zipBlob = await zip.generateAsync({ type: "blob" })
+
+      // Create download link
+      const url = URL.createObjectURL(zipBlob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `${companySafe}_${roleSafe}_generation_${timestamp}.zip`
+
+      // Trigger download
+      document.body.appendChild(link)
+      link.click()
+
+      // Cleanup
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      setDownloadingZip(false)
+    } catch (error) {
+      console.error("Failed to download ZIP", error)
+      setDownloadingZip(false)
+    }
+  }
 
   return (
     <Box
@@ -123,22 +226,53 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
             </Heading>
             <Text sx={{ fontSize: 1, color: "textMuted" }}>Generated on {formatTimestamp(request.createdAt)}</Text>
           </Box>
-          <Button
-            onClick={onClose}
-            variant="close"
-            sx={{
-              border: "none",
-              bg: "transparent",
-              fontSize: 4,
-              cursor: "pointer",
-              color: "textMuted",
-              "&:hover": {
-                color: "text",
-              },
-            }}
-          >
-            ×
-          </Button>
+          <Flex sx={{ gap: 2, alignItems: "center" }}>
+            <Button
+              onClick={() => {
+                void handleDownloadZip()
+              }}
+              variant="primary"
+              disabled={downloadingZip || (!resumeUrl && !coverLetterUrl)}
+              sx={{
+                px: 3,
+                py: 2,
+                fontSize: 1,
+                cursor: downloadingZip ? "wait" : "pointer",
+              }}
+              title="Download zip file with PDFs and JSON"
+            >
+              {downloadingZip ? "📦 Packaging..." : "📦 Download ZIP"}
+            </Button>
+            <Button
+              onClick={handleDownloadJSON}
+              variant="secondary"
+              sx={{
+                px: 3,
+                py: 2,
+                fontSize: 1,
+                cursor: "pointer",
+              }}
+              title="Download complete JSON document"
+            >
+              📥 JSON Only
+            </Button>
+            <Button
+              onClick={onClose}
+              variant="close"
+              sx={{
+                border: "none",
+                bg: "transparent",
+                fontSize: 4,
+                cursor: "pointer",
+                color: "textMuted",
+                "&:hover": {
+                  color: "text",
+                },
+              }}
+            >
+              ×
+            </Button>
+          </Flex>
         </Box>
 
         {/* View mode toggle */}

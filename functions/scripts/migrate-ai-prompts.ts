@@ -45,37 +45,43 @@ CRITICAL RULES - THESE ARE ABSOLUTE AND NON-NEGOTIABLE:
 6. You may REFORMAT wording for clarity, but NEVER change factual content
 7. You may REORGANIZE content for better presentation, but NEVER add new information
 
-LENGTH REQUIREMENTS (STRICT):
-- MAXIMUM: 1-2 pages when rendered to PDF (600-750 words total)
-- Include ONLY 3-4 most relevant experience entries (prioritize relevance over completeness)
-- MAXIMUM 4 bullet points per experience entry
-- Professional summary: 2-3 sentences maximum (50-75 words)
-- Prioritize QUALITY over QUANTITY - better to have fewer, stronger highlights
+LENGTH REQUIREMENTS (TARGET):
+- TARGET: 1-2 pages when rendered to PDF (700-900 words total)
+- Aim for 4-6 most relevant experience entries (prioritize relevance over completeness)
+- Target 3-5 bullet points per experience entry (adjust based on importance)
+- Professional summary: 2-3 sentences (50-75 words)
+- Prioritize QUALITY over QUANTITY - impactful content matters more than length
 
 Your role is to:
-- SELECT the 3-4 most relevant experiences for the target role
-- Format and structure ONLY the most relevant experience professionally
-- Emphasize relevance through SELECTION and ORDERING, not fabrication
-- Write CONCISE, impactful bullet points (1-2 lines each maximum)
+- SELECT and ORDER experiences by relevance to the target role
+- Format and structure all relevant experiences professionally
+- Emphasize relevance through SELECTION, ORDERING, and emphasis, not fabrication
+- Write CONCISE, impactful bullet points (1-2 lines each)
 - Improve phrasing and grammar while preserving all factual details
 - Ensure ATS-friendliness through proper formatting
 - Use action verbs from the source material
 - Focus on impact and results that are stated in the data
 
-SELECTION PRIORITY:
+SELECTION STRATEGY:
 - Relevance to target role is MORE important than recency
 - Quality of accomplishments is MORE important than quantity
-- If an experience has weak or generic content, SKIP IT entirely
-- Better to have 3 strong entries than 5 mediocre ones
+- Include all highly relevant experiences (don't artificially limit)
+- For less relevant experiences: be more selective with bullet points
+- Skip entries that are completely irrelevant or have no substantive content
+
+FLEXIBILITY:
+- If user has 8 strong, relevant experiences → include them (adjust bullets per entry)
+- If user has 2-3 experiences → make them comprehensive (more bullets okay)
+- Adjust detail level based on relevance: most relevant gets most detail
+- Better to include substantive content than artificially restrict
 
 What you CANNOT do:
-- Include more than 4 experience entries
-- Include more than 4 bullet points per entry
 - Add accomplishments not stated in the source data
 - Insert metrics or quantification not explicitly provided
 - Infer skills, technologies, or methodologies not mentioned
 - Create education entries if none are provided
-- Write verbose or lengthy descriptions`,
+- Write verbose or unnecessarily lengthy descriptions
+- Include completely irrelevant experiences`,
 
     userPromptTemplate: `Create a modern resume for the "{{job.role}}" position at {{job.company}}.
 
@@ -103,22 +109,26 @@ EXPERIENCE DATA (YOUR ONLY SOURCE OF TRUTH):
 END OF ALL PROVIDED DATA - NO OTHER INFORMATION EXISTS
 
 TASK REQUIREMENTS:
-1. SELECT ONLY 3-4 most relevant experience entries for the {{job.role}} role
-   - If more than 4 entries provided, choose the most relevant based on job description
-   - Relevance matters MORE than recency
-   - Skip entries with weak or generic content
+1. ANALYZE AND SELECT experience entries for the {{job.role}} role
+   - Include all highly relevant experiences (typically 4-6 entries)
+   - Rank by relevance to job requirements
+   - Include moderately relevant experiences with fewer details
+   - Skip only completely irrelevant entries
 
-2. For each selected entry, write MAXIMUM 4 concise bullet points
+2. For each entry, write appropriate bullet points (typically 3-5 per entry)
+   - Most relevant entries: 4-5 bullets highlighting key accomplishments
+   - Moderately relevant entries: 2-3 bullets focusing on transferable skills
    - Each bullet should be 1-2 lines maximum
-   - Focus on strongest accomplishments only
-   - Prioritize quality over quantity
+   - Focus on strongest, most relevant accomplishments
 
 3. Create a concise professional summary (2-3 sentences, 50-75 words)
    - Use ONLY skills and experience present in the selected entries
    - Make it specific to the {{job.role}} role
+   - Highlight most relevant qualifications
 
-4. Extract skills ONLY from technologies explicitly mentioned in selected entries
-   - Keep skills section concise and focused
+4. Extract skills ONLY from technologies explicitly mentioned in entries
+   - Include all relevant technologies (don't artificially limit)
+   - Organize by category if appropriate
 {{#if emphasize}}   - If these keywords appear in the experience data, ensure they are prominent: {{emphasize}}{{/if}}
 
 5. For education: Include ONLY if education information appears in the experience data or notes. Otherwise omit entirely.
@@ -126,19 +136,24 @@ TASK REQUIREMENTS:
 SELECTION STRATEGY:
 - Analyze job description for key requirements
 - Rank experience entries by relevance to those requirements
-- Choose top 3-4 entries that best demonstrate fit
-- If an entry doesn't strongly relate to the role, SKIP IT
+- Include all entries that demonstrate relevant skills or experience
+- Adjust detail level (bullets) based on relevance
+- Skip only entries with no relevant connection to the role
 
-FORBIDDEN ACTIONS (will result in rejection):
-❌ Including more than 4 experience entries
-❌ Including more than 4 bullet points per entry
+FLEXIBILITY GUIDELINES:
+- If user has many relevant experiences → include them all (adjust bullets per entry)
+- If user has few experiences → provide comprehensive details for each
+- Most relevant experience should have most detail
+- Less relevant experiences should be concise but still included if they add value
+
+FORBIDDEN ACTIONS:
 ❌ Adding metrics/numbers not in source data
 ❌ Inventing job responsibilities or projects
 ❌ Creating skills or technologies not mentioned in the data
-❌ Writing verbose or lengthy descriptions
-❌ Including irrelevant experiences just to fill space
+❌ Writing unnecessarily verbose descriptions
+❌ Including experiences with absolutely no relevant connection
 
-TARGET LENGTH: 600-750 words total. Generate a complete, concise, ATS-friendly resume using ONLY the most relevant factual information.`,
+TARGET LENGTH: 700-900 words total. Generate a complete, ATS-friendly resume using ALL relevant factual information.`,
   },
 
   coverLetter: {
@@ -290,16 +305,17 @@ async function migratePrompts() {
     console.log("✅ Successfully migrated AI prompts!")
     console.log("")
     console.log("Updated prompts:")
-    console.log("  - Resume system prompt: Strict length controls (600-750 words)")
-    console.log("  - Resume user prompt: Max 3-4 entries, 4 bullets each")
+    console.log("  - Resume system prompt: Flexible length targets (700-900 words)")
+    console.log("  - Resume user prompt: 4-6 entries with 3-5 bullets each (flexible)")
     console.log("  - Cover letter system prompt: Casual, conversational, creative tone")
     console.log("  - Cover letter user prompt: Personal + professional blend, company culture fit")
     console.log("")
     console.log("Key improvements:")
     console.log("  Resume:")
-    console.log("    - Prioritizes relevance over completeness")
-    console.log("    - Quality over quantity")
-    console.log("    - AI actively SELECTS best experiences")
+    console.log("    - Flexible guidelines instead of hard limits")
+    console.log("    - Includes all relevant experiences (not artificially restricted)")
+    console.log("    - Adjusts detail level based on relevance")
+    console.log("    - Quality and completeness balanced")
     console.log("  Cover Letter:")
     console.log("    - Casual, conversational, creative tone (not stiff corporate)")
     console.log("    - Weaves personal stories/values with professional experience")

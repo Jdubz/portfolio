@@ -147,6 +147,7 @@ export interface GenerationRequest {
   id: string
   type: "request"
   generateType: GenerationType
+  provider?: AIProviderType // AI provider used for generation (OpenAI or Gemini)
   job: JobDetails
   preferences?: GenerationPreferences
   status: "pending" | "processing" | "completed" | "failed"
