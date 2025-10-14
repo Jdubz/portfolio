@@ -1,5 +1,57 @@
 # josh-wentworth-portfolio
 
+## 1.15.0
+
+### Minor Changes
+
+- [#63](https://github.com/Jdubz/portfolio/pull/63) [`435192d`](https://github.com/Jdubz/portfolio/commit/435192dee4f17733694f7840ca1c56849c3beefb) Thanks [@Jdubz](https://github.com/Jdubz)! - Add automatic changeset generation workflow
+
+  New GitHub Actions workflow automatically creates changesets for PRs when important files are modified and no changeset exists yet. This eliminates manual changeset management while still allowing customization.
+
+  Features:
+  - Auto-detects which packages changed (web, functions, or both)
+  - Auto-determines version bump type (patch/minor)
+  - Uses PR title as changeset description
+  - Commits and pushes changeset automatically
+  - Comments on PR with generated changeset info
+  - Skips if changeset already exists or PR has 'skip-changeset' label
+
+  Benefits:
+  - Reduces friction in PR workflow
+  - No more "changeset required" failures
+  - Still allows manual changeset creation/editing when desired
+
+- [#63](https://github.com/Jdubz/portfolio/pull/63) [`4a4a782`](https://github.com/Jdubz/portfolio/commit/4a4a7820ede6636cdb9a7f1ac5341743e627eae2) Thanks [@Jdubz](https://github.com/Jdubz)! - Staging -> main
+
+  Auto-generated changeset for PR #63
+
+## 1.14.3
+
+### Patch Changes
+
+- [#63](https://github.com/Jdubz/portfolio/pull/63) [`f28c19e`](https://github.com/Jdubz/portfolio/commit/f28c19e1b4ac8b708f46ef1bcad976d0d98587d5) Thanks [@Jdubz](https://github.com/Jdubz)! - Production-ready release: generator improvements, database fixes, and documentation cleanup
+
+  **Generator Improvements:**
+  - Remove Firestore listener in favor of API-based progress updates
+  - Fix download URLs and step progress returned directly from API
+  - Resolve 400 Bad Request errors on staging by using correct database
+
+  **Critical Database Fix:**
+  - Fix firestore.service.ts to use environment-aware DATABASE_ID instead of hardcoded "portfolio"
+  - Contact form now correctly routes to portfolio-staging in staging environment
+  - Prevents staging submissions from going to production database
+
+  **Documentation Cleanup:**
+  - Delete 19 obsolete files (audit docs, archive folder, temp refactor docs)
+  - Update generator/PLAN.md to mark Progressive Generation UI as complete
+  - Add Frontend Terminology Migration task (defaults → personalInfo)
+  - Reorganize docs/README.md with cleaner 3-type structure (Architecture, Setup, Plans)
+
+  **Database Migration:**
+  - Complete Firestore migration: generator/default → generator/personal-info
+  - Applied to both staging and production databases
+  - Backend fully supports new terminology with backward-compatible deprecated aliases
+
 ## 1.14.2
 
 ### Patch Changes

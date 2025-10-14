@@ -40,79 +40,98 @@ This document outlines **actual outstanding work** that could enhance the AI Res
 
 ## Outstanding Work
 
-### 1. Progressive Generation - Frontend Integration
+### 1. Progressive Generation UI
 
-**Status:** Backend complete, frontend partially integrated
+**Status:** ✅ Complete (October 2025)
 
-**What's Done:**
+**Implementation Complete:**
 - ✅ Backend step tracking with Firestore updates
+- ✅ Multi-step API endpoints (`POST /generator/start`, `POST /generator/step/:requestId`)
 - ✅ GenerationStep types and utility functions
-- ✅ GenerationProgress component created
-- ✅ Early download support (URLs in step results)
+- ✅ GenerationProgress component integrated in DocumentBuilderTab
+- ✅ Real-time progress updates via API polling (Firestore listener removed)
+- ✅ Early download support (URLs returned in API response)
+- ✅ Step-by-step execution with proper error handling
+- ✅ Download buttons appear as soon as PDFs are ready
+- ✅ End-to-end testing complete
 
-**What's Missing:**
-- ❌ Real-time Firestore listener in DocumentBuilderTab
-- ❌ Integration of GenerationProgress component
-- ❌ End-to-end testing with real document generation
-- ❌ Error state handling in progress UI
-
-**Implementation Plan:**
-
-1. **Add Firestore listener to DocumentBuilderTab:**
-   ```typescript
-   useEffect(() => {
-     if (!requestId) return
-
-     const unsubscribe = onSnapshot(
-       doc(db, "generator", requestId),
-       (snapshot) => {
-         const request = snapshot.data() as GenerationRequest
-         setSteps(request.steps || [])
-         setStatus(request.status)
-       },
-       (error) => {
-         console.error("Error listening to request:", error)
-       }
-     )
-
-     return () => unsubscribe()
-   }, [requestId])
-   ```
-
-2. **Replace loading spinner with GenerationProgress:**
-   ```tsx
-   {isGenerating && requestId ? (
-     <GenerationProgress
-       steps={steps}
-       onDownload={(url, stepId) => {
-         window.open(url, "_blank")
-       }}
-     />
-   ) : (
-     <Button onClick={handleGenerate}>Generate Documents</Button>
-   )}
-   ```
-
-3. **Handle status transitions:**
-   - `pending` → Show initial loading state
-   - `processing` → Show progress checklist
-   - `completed` → Show success message + final download buttons
-   - `failed` → Show error message + retry button
-
-4. **Test end-to-end:**
-   - Generate resume only
-   - Generate cover letter only
-   - Generate both documents
-   - Test with both AI providers
-   - Verify early downloads work
-
-**Complexity:** ~2-3 hours
-
-**Priority:** High - Core feature that's 80% complete
+**Notes:**
+- Originally tracked as incomplete in PLAN.md, but was actually completed during multi-step refactor
+- API returns download URLs and step progress directly, eliminating need for Firestore subscription
+- Each step executes independently, reducing memory usage and enabling better error recovery
 
 ---
 
-### 2. URL Expiry Handling
+### 2. Frontend Terminology Migration: "defaults" → "personalInfo"
+
+**Status:** Backend complete, frontend partially complete
+
+**Context:**
+Backend has been fully migrated to use "personalInfo" terminology instead of "defaults" for better clarity. The frontend still uses old terminology in some places.
+
+**Backend Complete (✅):**
+- ✅ Types renamed: `GeneratorDefaults` → `PersonalInfo`, `UpdateGeneratorDefaultsData` → `UpdatePersonalInfoData`
+- ✅ Service methods renamed: `getDefaults()` → `getPersonalInfo()`, `updateDefaults()` → `updatePersonalInfo()`
+- ✅ Document ID changed: `generator/default` → `generator/personal-info`
+- ✅ Deprecated aliases added for backward compatibility
+
+**Frontend Outstanding (⏳):**
+
+1. **Update frontend types** (`web/src/types/generator.ts`):
+   - Rename `GeneratorDefaults` → `PersonalInfo`
+   - Rename `UpdateDefaultsData` → `UpdatePersonalInfoData`
+   - Update document ID references
+
+2. **Update API client** (`web/src/api/generator-client.ts`):
+   - Already has `getPersonalInfo()` and `updatePersonalInfo()` methods
+   - Remove deprecated aliases: `getDefaults()` and `updateDefaults()`
+   - Update endpoint paths if needed
+
+3. **Update components**:
+   - Search for usages of `getDefaults()` / `updateDefaults()`
+   - Update state variable names from `defaults` to `personalInfo`
+   - Update any comments or documentation
+
+4. **Firestore data migration** (⚠️ CRITICAL):
+   - Migrate document: `generator/default` → `generator/personal-info`
+   - Update document fields: `id: "default"` → `id: "personal-info"`, `type: "defaults"` → `type: "personal-info"`
+   - Must be done for: Emulator, Staging, Production databases
+   - Script exists: `functions/scripts/migrate-personal-info.ts`
+
+**Implementation Plan:**
+
+```bash
+# 1. Migrate Firestore documents
+make migrate-personal-info-emulator    # Local
+make migrate-personal-info-staging     # Staging
+make migrate-personal-info-prod        # Production (after staging testing)
+
+# 2. Update frontend types
+# Edit: web/src/types/generator.ts
+# - Rename GeneratorDefaults → PersonalInfo
+# - Rename UpdateDefaultsData → UpdatePersonalInfoData
+
+# 3. Update API client
+# Edit: web/src/api/generator-client.ts
+# - Remove deprecated method aliases
+
+# 4. Search and update components
+rg "getDefaults|updateDefaults|GeneratorDefaults" web/src/
+# Update each usage found
+
+# 5. Test thoroughly
+npm run test:web
+npm run lint:web
+npm run build:web
+```
+
+**Complexity:** ~2-3 hours
+
+**Priority:** High - Technical debt, backend already migrated
+
+---
+
+### 3. URL Expiry Handling
 
 **Status:** Not implemented
 
@@ -192,7 +211,7 @@ This document outlines **actual outstanding work** that could enhance the AI Res
 
 ---
 
-### 3. Storage Class Tracking Background Sync
+### 4. Storage Class Tracking Background Sync
 
 **Status:** Partially implemented
 
@@ -284,7 +303,7 @@ This document outlines **actual outstanding work** that could enhance the AI Res
 
 ---
 
-### 4. Enhanced Rate Limiting
+### 5. Enhanced Rate Limiting
 
 **Status:** Works well with session IDs
 
@@ -318,7 +337,7 @@ await checkRateLimit(identifier, limit)
 
 ---
 
-### 5. Analytics Dashboard
+### 6. Analytics Dashboard
 
 **Status:** Not implemented (all data tracked, no visualization)
 
@@ -392,7 +411,7 @@ await checkRateLimit(identifier, limit)
 
 ---
 
-### 6. Batch Generation
+### 7. Batch Generation
 
 **Status:** Not implemented
 
@@ -493,7 +512,7 @@ await checkRateLimit(identifier, limit)
 
 ---
 
-### 7. LinkedIn Integration
+### 8. LinkedIn Integration
 
 **Status:** Not implemented
 
@@ -566,7 +585,7 @@ await checkRateLimit(identifier, limit)
 
 ---
 
-### 8. Additional Resume Templates
+### 9. Additional Resume Templates
 
 **Status:** Single "modern" template only
 
@@ -639,7 +658,7 @@ await checkRateLimit(identifier, limit)
 
 ---
 
-### 9. Resume Template Library
+### 10. Resume Template Library
 
 **Status:** Not implemented
 
@@ -743,31 +762,35 @@ When deciding whether to implement a feature, ask:
 
 ## Priorities
 
+### Completed ✅
+1. **Progressive Generation UI** - ✅ Complete (multi-step API with real-time updates)
+
 ### High Priority (Should do)
-1. **Progressive Generation UI** - 2-3 hours, core feature 80% complete
-2. **URL Refresh Endpoint** - 3-4 hours, quality of life improvement
+2. **Frontend Terminology Migration** - 2-3 hours, technical debt cleanup
+3. **URL Refresh Endpoint** - 3-4 hours, quality of life improvement
 
 ### Medium Priority (Nice to have)
-3. **Storage Class Background Sync** - 2-3 hours, informational only
-4. **Analytics Dashboard** - 10-15 hours, useful for monitoring
-5. **Resume Template Library** - 6-8 hours, helps frequent users
+4. **Storage Class Background Sync** - 2-3 hours, informational only
+5. **Analytics Dashboard** - 10-15 hours, useful for monitoring
+6. **Resume Template Library** - 6-8 hours, helps frequent users
 
 ### Low Priority (Skip unless strong demand)
-6. **Enhanced Rate Limiting** - 30 min, marginal benefit
-7. **Batch Generation** - 15-20 hours, rare use case
-8. **Additional Templates** - 20-30 hours, current template sufficient
-9. **LinkedIn Integration** - 20-25 hours, high maintenance
+7. **Enhanced Rate Limiting** - 30 min, marginal benefit
+8. **Batch Generation** - 15-20 hours, rare use case
+9. **Additional Templates** - 20-30 hours, current template sufficient
+10. **LinkedIn Integration** - 20-25 hours, high maintenance
 
 ---
 
 ## Conclusion
 
-The AI Resume Generator is **production-ready** and **feature-complete** for its core use case. The items in this document are **genuine opportunities for enhancement**, not speculative "nice-to-haves."
+The AI Resume Generator is **production-ready** and **feature-complete** for its core use case. The progressive generation UI with multi-step API is now complete, providing real-time progress updates and early PDF downloads.
 
 **Recommended next steps:**
-1. Complete progressive generation UI (high value, nearly done)
-2. Implement URL refresh endpoint (quality of life)
-3. Deploy to production and gather user feedback
-4. Prioritize remaining features based on actual usage patterns
+1. ✅ ~~Complete progressive generation UI~~ - Done!
+2. Complete frontend terminology migration (2-3 hours, technical debt)
+3. Implement URL refresh endpoint (3-4 hours, quality of life)
+4. Deploy to production and gather user feedback
+5. Prioritize remaining features based on actual usage patterns
 
-The system is ready to ship! 🚀
+The system is production-ready! 🚀
