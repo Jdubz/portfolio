@@ -1,5 +1,13 @@
 # josh-wentworth-portfolio
 
+## 1.17.1
+
+### Patch Changes
+
+- [#67](https://github.com/Jdubz/portfolio/pull/67) [`1b1913c`](https://github.com/Jdubz/portfolio/commit/1b1913c73700785d6b6b726b98fddef45ec8f76b) Thanks [@Jdubz](https://github.com/Jdubz)! - fix: handle Firestore Timestamps in document history table
+
+  Fixed "Invalid Date" display in document history tab by properly converting Firestore Timestamp objects to JavaScript dates. The formatDate function now handles both Firestore Timestamp objects ({\_seconds, \_nanoseconds}) and ISO date strings.
+
 ## 1.17.0
 
 ### Minor Changes
