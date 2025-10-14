@@ -58,23 +58,61 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
   // Pre-fill form when a job match is selected
   useEffect(() => {
     if (selectedJobMatch) {
+      // Map job match fields to form fields comprehensively
+      const roleValue = selectedJobMatch.role ?? selectedJobMatch.title ?? ""
+      const companyWebsiteValue = selectedJobMatch.companyWebsite ?? ""
+      const jobDescriptionUrlValue = selectedJobMatch.url ?? selectedJobMatch.jobDescriptionUrl ?? ""
+      const jobDescriptionTextValue = selectedJobMatch.description ?? selectedJobMatch.jobDescriptionText ?? ""
+
+      // Build keywords/emphasize field from multiple sources
+      const keywordsArray: string[] = []
+
+      // Add matched skills
+      if (selectedJobMatch.matchedSkills && selectedJobMatch.matchedSkills.length > 0) {
+        keywordsArray.push(...selectedJobMatch.matchedSkills)
+      }
+
+      // Add key strengths
+      if (selectedJobMatch.keyStrengths && selectedJobMatch.keyStrengths.length > 0) {
+        keywordsArray.push(...selectedJobMatch.keyStrengths)
+      }
+
+      // Add keywords from job match
+      if (selectedJobMatch.keywords && selectedJobMatch.keywords.length > 0) {
+        keywordsArray.push(...selectedJobMatch.keywords)
+      }
+
+      // Add skills to emphasize from customization recommendations
+      if (selectedJobMatch.customizationRecommendations?.skills_to_emphasize) {
+        keywordsArray.push(...selectedJobMatch.customizationRecommendations.skills_to_emphasize)
+      }
+
+      // Deduplicate and join
+      const emphasizeValue = Array.from(new Set(keywordsArray)).join(", ")
+
       // Update all form fields in a single operation to avoid batching issues
       updateFormFields({
-        role: selectedJobMatch.role,
+        role: roleValue,
         company: selectedJobMatch.company,
-        companyWebsite: selectedJobMatch.companyWebsite ?? "",
-        jobDescriptionUrl: selectedJobMatch.jobDescriptionUrl ?? "",
-        jobDescriptionText: selectedJobMatch.jobDescriptionText ?? "",
+        companyWebsite: companyWebsiteValue,
+        jobDescriptionUrl: jobDescriptionUrlValue,
+        jobDescriptionText: jobDescriptionTextValue,
+        emphasize: emphasizeValue,
       })
       setJobMatchId(selectedJobMatch.id)
 
       logger.info("Form pre-filled with job match data", {
         jobMatchId: selectedJobMatch.id,
         company: selectedJobMatch.company,
-        role: selectedJobMatch.role,
-        companyWebsite: selectedJobMatch.companyWebsite,
-        jobDescriptionUrl: selectedJobMatch.jobDescriptionUrl,
-        jobDescriptionText: selectedJobMatch.jobDescriptionText ? "present" : "empty",
+        role: roleValue,
+        title: selectedJobMatch.title,
+        companyWebsite: companyWebsiteValue,
+        jobDescriptionUrl: jobDescriptionUrlValue,
+        jobDescriptionText: jobDescriptionTextValue ? `${jobDescriptionTextValue.length} chars` : "empty",
+        emphasize: emphasizeValue ? `${keywordsArray.length} keywords` : "empty",
+        matchScore: selectedJobMatch.matchScore,
+        matchedSkills: selectedJobMatch.matchedSkills?.length ?? 0,
+        keyStrengths: selectedJobMatch.keyStrengths?.length ?? 0,
       })
     }
   }, [selectedJobMatch, updateFormFields])
@@ -281,6 +319,56 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
 
   return (
     <Box>
+      {/* Job Match Indicator */}
+      {jobMatchId && selectedJobMatch && (
+        <Box
+          sx={{
+            mb: 3,
+            p: 3,
+            bg: "#e6f7ff",
+            borderLeft: "4px solid #1890ff",
+            borderRadius: "4px",
+          }}
+        >
+          <Flex sx={{ alignItems: "flex-start", gap: 2 }}>
+            <Text sx={{ fontSize: 3 }}>📋</Text>
+            <Box sx={{ flex: 1 }}>
+              <Text sx={{ fontSize: 2, fontWeight: "bold", color: "#1890ff", mb: 1 }}>
+                Job Match Loaded: {selectedJobMatch.title ?? selectedJobMatch.role}
+              </Text>
+              <Text sx={{ fontSize: 1, color: "text", mb: 2 }}>
+                Form populated with job match data (ID: {jobMatchId.slice(0, 8)}...)
+              </Text>
+              {selectedJobMatch.matchScore && (
+                <Text sx={{ fontSize: 1, color: "text", mb: 1 }}>
+                  <strong>Match Score:</strong> {selectedJobMatch.matchScore}%
+                </Text>
+              )}
+              {selectedJobMatch.matchedSkills && selectedJobMatch.matchedSkills.length > 0 && (
+                <Text sx={{ fontSize: 1, color: "text", mb: 1 }}>
+                  <strong>Matched Skills:</strong> {selectedJobMatch.matchedSkills.length} skills
+                </Text>
+              )}
+              {selectedJobMatch.keyStrengths && selectedJobMatch.keyStrengths.length > 0 && (
+                <Text sx={{ fontSize: 1, color: "text" }}>
+                  <strong>Key Strengths:</strong> {selectedJobMatch.keyStrengths.join(", ")}
+                </Text>
+              )}
+            </Box>
+            <Button
+              variant="secondary"
+              sx={{ px: 2, py: 1, fontSize: 0 }}
+              onClick={() => {
+                setJobMatchId(null)
+                clearForm()
+              }}
+            >
+              Clear
+            </Button>
+          </Flex>
+        </Box>
+      )}
+
       {/* Editor Benefits */}
       {!isEditor && (
         <Box sx={{ mb: 3, p: 3, bg: "muted", borderRadius: "4px" }}>

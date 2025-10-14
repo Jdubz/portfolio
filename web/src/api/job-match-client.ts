@@ -35,11 +35,68 @@ export class JobMatchClient {
           title: data.title as string | undefined,
           matchScore: data.matchScore as number | undefined,
           companyWebsite: data.companyWebsite as string | undefined,
+          companyInfo: data.companyInfo as string | undefined,
           jobDescriptionUrl: data.jobDescriptionUrl as string | undefined,
           jobDescriptionText: data.jobDescriptionText as string | undefined,
+          url: data.url as string | undefined,
+          description: data.description as string | undefined,
+          location: data.location as string | undefined,
+          salary: data.salary as string | undefined,
+          postedDate: data.postedDate as string | undefined,
+          status: data.status as string | undefined,
+          applicationPriority: data.applicationPriority as string | undefined,
+
+          // AI-generated insights
+          matchedSkills: data.matchedSkills as string[] | undefined,
+          missingSkills: data.missingSkills as string[] | undefined,
+          keyStrengths: data.keyStrengths as string[] | undefined,
+          potentialConcerns: data.potentialConcerns as string[] | undefined,
+          keywords: data.keywords as string[] | undefined,
+          experienceMatch: data.experienceMatch as string | undefined,
+
+          // Customization recommendations
+          customizationRecommendations: data.customizationRecommendations as
+            | {
+                skills_to_emphasize?: string[]
+                resume_focus?: string[]
+                cover_letter_points?: string[]
+              }
+            | undefined,
+
+          // Resume intake data
+          resumeIntakeData: data.resumeIntakeData as
+            | {
+                job_id?: string
+                job_title?: string
+                company?: string
+                target_summary?: string
+                skills_priority?: string[]
+                keywords_to_include?: string[]
+                achievement_angles?: string[]
+                experience_highlights?: Array<{
+                  company: string
+                  title: string
+                  points_to_emphasize: string[]
+                }>
+                projects_to_include?: Array<{
+                  name: string
+                  why_relevant: string
+                  points_to_highlight: string[]
+                }>
+              }
+            | undefined,
+
+          // Document tracking
           documentGenerated: (data.documentGenerated as boolean | undefined) ?? false,
           generationId: data.generationId as string | undefined,
+          documentGeneratedAt: data.documentGeneratedAt as string | null | undefined,
+          documentUrl: data.documentUrl as string | null | undefined,
+
+          // Application tracking
           applied: (data.applied as boolean | undefined) ?? false,
+          appliedAt: data.appliedAt as string | null | undefined,
+
+          // Metadata
           createdAt:
             data.createdAt instanceof Timestamp
               ? data.createdAt.toDate().toISOString()
