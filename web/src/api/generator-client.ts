@@ -6,11 +6,12 @@
 
 import { ApiClient } from "./client"
 import { API_CONFIG, isLocalhost } from "../config/api"
+import { getIdToken } from "../utils/auth"
 import type {
   GenerateRequest,
   GenerateResponse,
-  GeneratorDefaults,
-  UpdateDefaultsData,
+  PersonalInfo,
+  UpdatePersonalInfoData,
   GenerationRequest,
 } from "../types/generator"
 
@@ -31,7 +32,7 @@ export class GeneratorClient extends ApiClient {
     }
   }
   /**
-   * Generate resume and/or cover letter
+   * Generate resume and/or cover letter (monolithic - single request)
    * Public endpoint - no auth required
    */
   async generate(request: GenerateRequest): Promise<GenerateResponse> {
@@ -39,19 +40,86 @@ export class GeneratorClient extends ApiClient {
   }
 
   /**
-   * Get default generator settings
+   * Start a multi-step generation request
+   * Returns a request ID and the first step to execute
    * Public endpoint - no auth required
    */
-  async getDefaults(): Promise<GeneratorDefaults> {
-    return this.get<GeneratorDefaults>("/generator/defaults", false)
+  async startGeneration(request: GenerateRequest): Promise<{
+    requestId: string
+    status: string
+    nextStep?: string
+  }> {
+    return this.post<{
+      requestId: string
+      status: string
+      nextStep?: string
+    }>("/generator/start", request, false)
   }
 
   /**
-   * Update default generator settings
+   * Execute the next pending step for a generation request
+   * Public endpoint - no auth required
+   */
+  async executeStep(requestId: string): Promise<{
+    stepCompleted: string
+    nextStep?: string
+    status: string
+    resumeUrl?: string
+    coverLetterUrl?: string
+    steps?: Array<{
+      id: string
+      name: string
+      description: string
+      status: "pending" | "in_progress" | "completed" | "failed"
+      result?: {
+        resumeUrl?: string
+        coverLetterUrl?: string
+      }
+    }>
+  }> {
+    return this.post<{
+      stepCompleted: string
+      nextStep?: string
+      status: string
+      resumeUrl?: string
+      coverLetterUrl?: string
+      steps?: Array<{
+        id: string
+        name: string
+        description: string
+        status: "pending" | "in_progress" | "completed" | "failed"
+        result?: {
+          resumeUrl?: string
+          coverLetterUrl?: string
+        }
+      }>
+    }>(`/generator/step/${requestId}`, {}, false)
+  }
+
+  /**
+   * Get personal info
+   * Public endpoint - no auth required
+   */
+  async getPersonalInfo(): Promise<PersonalInfo> {
+    return this.get<PersonalInfo>("/generator/personal-info", false)
+  }
+
+  /**
+   * Update personal info
    * Auth required - editor only
    */
-  async updateDefaults(data: UpdateDefaultsData): Promise<GeneratorDefaults> {
-    return this.put<GeneratorDefaults>("/generator/defaults", data, true)
+  async updatePersonalInfo(data: UpdatePersonalInfoData): Promise<PersonalInfo> {
+    return this.put<PersonalInfo>("/generator/personal-info", data, true)
+  }
+
+  /** @deprecated Use getPersonalInfo() instead */
+  async getDefaults(): Promise<PersonalInfo> {
+    return this.getPersonalInfo()
+  }
+
+  /** @deprecated Use updatePersonalInfo() instead */
+  async updateDefaults(data: UpdatePersonalInfoData): Promise<PersonalInfo> {
+    return this.updatePersonalInfo(data)
   }
 
   /**
@@ -70,6 +138,40 @@ export class GeneratorClient extends ApiClient {
     const query = limit ? `?limit=${limit}` : ""
     const response = await this.get<{ requests: GenerationRequest[] }>(`/generator/requests${query}`, true)
     return response.requests
+  }
+
+  /**
+   * Upload avatar or logo image
+   * Auth required - editor only
+   */
+  async uploadImage(file: File, imageType: "avatar" | "logo"): Promise<{ url: string; gcsPath: string; size: number }> {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("imageType", imageType)
+
+    // Get auth token
+    const token = await getIdToken()
+    if (!token) {
+      throw new Error("Authentication required for image upload")
+    }
+
+    const response = await fetch(`${this.baseUrl}/generator/upload-image`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = (await response.json()) as { message?: string }
+      throw new Error(error.message ?? "Failed to upload image")
+    }
+
+    const result = (await response.json()) as {
+      data: { url: string; gcsPath: string; size: number }
+    }
+    return result.data
   }
 }
 

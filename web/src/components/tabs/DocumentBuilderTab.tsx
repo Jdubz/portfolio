@@ -3,7 +3,14 @@ import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Fle
 import { logger } from "../../utils/logger"
 import { generatorClient } from "../../api/generator-client"
 import { useResumeForm } from "../../contexts/ResumeFormContext"
-import type { GenerationType, GenerationMetadata, AIProviderType } from "../../types/generator"
+import { GenerationProgress } from "../GenerationProgress"
+import type {
+  GenerationType,
+  GenerationMetadata,
+  AIProviderType,
+  GenerationRequest,
+  GenerationStep,
+} from "../../types/generator"
 
 interface DocumentBuilderTabProps {
   isEditor: boolean
@@ -29,6 +36,10 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  // Generation progress tracking
+  const [generationStatus, setGenerationStatus] = useState<GenerationRequest["status"] | null>(null)
+  const [generationSteps, setGenerationSteps] = useState<GenerationStep[]>([])
 
   // Load AI provider preference from localStorage on mount
   useEffect(() => {
@@ -60,6 +71,62 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
     setCoverLetterUrl(null)
     setUrlExpiresIn(null)
     setMetadata(null)
+    setGenerationStatus("pending")
+
+    // Initialize steps immediately based on generateType
+    const initialSteps: GenerationStep[] = [
+      {
+        id: "fetch_data",
+        name: "Fetch Experience Data",
+        description: "Loading your experience entries and professional blurbs",
+        status: "pending",
+      },
+    ]
+
+    if (formState.generateType === "resume" || formState.generateType === "both") {
+      initialSteps.push({
+        id: "generate_resume",
+        name: "Generate Resume Content",
+        description: "Creating tailored resume content with AI",
+        status: "pending",
+      })
+    }
+
+    if (formState.generateType === "coverLetter" || formState.generateType === "both") {
+      initialSteps.push({
+        id: "generate_cover_letter",
+        name: "Generate Cover Letter",
+        description: "Writing personalized cover letter with AI",
+        status: "pending",
+      })
+    }
+
+    if (formState.generateType === "resume" || formState.generateType === "both") {
+      initialSteps.push({
+        id: "create_resume_pdf",
+        name: "Create Resume PDF",
+        description: "Rendering your resume as a professional PDF",
+        status: "pending",
+      })
+    }
+
+    if (formState.generateType === "coverLetter" || formState.generateType === "both") {
+      initialSteps.push({
+        id: "create_cover_letter_pdf",
+        name: "Create Cover Letter PDF",
+        description: "Rendering your cover letter as a PDF",
+        status: "pending",
+      })
+    }
+
+    initialSteps.push({
+      id: "upload_documents",
+      name: "Upload Documents",
+      description: "Securely uploading PDFs to cloud storage",
+      status: "pending",
+    })
+
+    setGenerationSteps(initialSteps)
 
     try {
       // Prepare request payload using formState
@@ -81,35 +148,74 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         },
       }
 
-      logger.info("Submitting generation request", payload)
+      logger.info("Submitting multi-step generation request", payload)
 
-      // Call the generator endpoint using the API client
-      const data = await generatorClient.generate(payload)
+      // Step 1: Initialize generation
+      const startData = await generatorClient.startGeneration(payload)
+      logger.info("Generation initialized", startData)
 
-      logger.info("Generation successful", data as unknown as Record<string, unknown>)
-
-      // Store the signed URLs (Phase 2.2)
-      const responseData = data
-      if (responseData?.resumeUrl) {
-        setResumeUrl(responseData.resumeUrl)
-      }
-      if (responseData?.coverLetterUrl) {
-        setCoverLetterUrl(responseData.coverLetterUrl)
-      }
-      if (responseData?.urlExpiresIn) {
-        setUrlExpiresIn(responseData.urlExpiresIn)
+      if (!startData?.requestId) {
+        throw new Error("Failed to initialize generation: no request ID returned")
       }
 
-      if (responseData?.metadata) {
-        setMetadata(responseData.metadata)
+      logger.info("Generation request initialized", { requestId: startData.requestId })
+
+      // Step 2: Execute steps one by one until complete or failed
+      let nextStep = startData.nextStep
+      while (nextStep) {
+        logger.info("Executing step", { step: nextStep })
+
+        const stepResult = await generatorClient.executeStep(startData.requestId)
+        logger.info("Step completed", stepResult)
+
+        // Extract download URLs from step result
+        if (stepResult.resumeUrl) {
+          setResumeUrl(stepResult.resumeUrl)
+          setUrlExpiresIn("7 days")
+          logger.info("Resume URL received from API", { url: stepResult.resumeUrl })
+        }
+        if (stepResult.coverLetterUrl) {
+          setCoverLetterUrl(stepResult.coverLetterUrl)
+          setUrlExpiresIn("7 days")
+          logger.info("Cover letter URL received from API", { url: stepResult.coverLetterUrl })
+        }
+
+        // Update step progress in UI
+        if (stepResult.steps) {
+          setGenerationSteps(stepResult.steps)
+        }
+
+        // Check status
+        if (stepResult.status === "completed") {
+          logger.info("All steps completed")
+          setGenerationStatus("completed")
+          setSuccess(true)
+          setGenerating(false)
+          break
+        } else if (stepResult.status === "failed") {
+          logger.error("Generation failed", new Error("Step execution failed"))
+          setGenerationStatus("failed")
+          setError("Generation failed. Please try again.")
+          setGenerating(false)
+          break
+        }
+
+        // Move to next step
+        nextStep = stepResult.nextStep
       }
-      setSuccess(true)
+
+      // If loop exits without setting status, generation is complete
+      if (nextStep === undefined) {
+        setGenerationStatus("completed")
+        setSuccess(true)
+        setGenerating(false)
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
       setError(errorMessage)
       logger.error("Generation failed", err as Error)
-    } finally {
       setGenerating(false)
+      setGenerationStatus("failed")
     }
   }
 
@@ -265,7 +371,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             disabled={generating}
           />
           <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>
-            OpenAI will fetch and analyze the job description from this URL (not available with Gemini)
+            The AI will fetch and analyze the job description from this URL
           </Text>
         </Box>
 
@@ -324,76 +430,64 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         </Flex>
       </Box>
 
-      {/* Results */}
-      {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing */}
-      {(resumeUrl || coverLetterUrl) && (
-        <Box
-          sx={{
-            bg: "background",
-            p: 4,
-            borderRadius: "8px",
-            border: "1px solid",
-            borderColor: "muted",
-          }}
-        >
+      {/* Generation Progress - Show checklist persistently during and after generation */}
+      {generationSteps.length > 0 && (
+        <Box sx={{ mt: 4 }}>
           <Heading as="h2" sx={{ fontSize: 3, mb: 3 }}>
-            Generated Documents
+            {generationStatus === "completed" ? "Generation Complete" : "Generation Progress"}
           </Heading>
+          <GenerationProgress steps={generationSteps} />
 
-          {/* Metadata */}
-          {metadata && (
-            <Box sx={{ mb: 3, p: 3, bg: "muted", borderRadius: "4px" }}>
-              <Text sx={{ fontSize: 1, fontFamily: "monospace" }}>
-                <strong>Company:</strong> {metadata.company}
-                <br />
-                <strong>Role:</strong> {metadata.role}
-                <br />
-                <strong>Model:</strong> {metadata.model}
-                <br />
-                <strong>Tokens:</strong> {metadata.tokenUsage?.total ?? "N/A"}
-                <br />
-                <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) ?? "N/A"}
-                <br />
-                <strong>Duration:</strong> {(metadata.durationMs / 1000).toFixed(2)}s
-                {urlExpiresIn && (
-                  <>
-                    <br />
-                    <strong>Download Link Expires:</strong> {urlExpiresIn}
-                  </>
+          {/* Download buttons below checklist */}
+          {(resumeUrl ?? coverLetterUrl) && (
+            <Box sx={{ mt: 3 }}>
+              <Flex sx={{ gap: 2, flexWrap: "wrap" }}>
+                {resumeUrl && (
+                  <Button
+                    onClick={() =>
+                      downloadFromUrl(
+                        resumeUrl,
+                        `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_Resume.pdf`
+                      )
+                    }
+                    variant="primary"
+                  >
+                    📄 Download Resume
+                  </Button>
                 )}
-              </Text>
+                {coverLetterUrl && (
+                  <Button
+                    onClick={() =>
+                      downloadFromUrl(
+                        coverLetterUrl,
+                        `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_CoverLetter.pdf`
+                      )
+                    }
+                    variant="primary"
+                  >
+                    📝 Download Cover Letter
+                  </Button>
+                )}
+              </Flex>
             </Box>
           )}
+        </Box>
+      )}
 
-          {/* Download Buttons */}
-          <Flex sx={{ gap: 2, flexWrap: "wrap" }}>
-            {resumeUrl && (
-              <Button
-                onClick={() =>
-                  downloadFromUrl(
-                    resumeUrl,
-                    `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_Resume.pdf`
-                  )
-                }
-                variant="secondary"
-              >
-                📄 Download Resume
-              </Button>
+      {/* Metadata section (optional, shown below checklist) */}
+      {metadata && generationSteps.length > 0 && (
+        <Box sx={{ mt: 3, p: 3, bg: "muted", borderRadius: "4px" }}>
+          <Text sx={{ fontSize: 1, fontFamily: "monospace" }}>
+            <strong>Model:</strong> {metadata.model} | <strong>Tokens:</strong> {metadata.tokenUsage?.total ?? "N/A"} |{" "}
+            <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) ?? "N/A"} | <strong>Duration:</strong>{" "}
+            {(metadata.durationMs / 1000).toFixed(2)}s
+            {urlExpiresIn && (
+              <>
+                {" "}
+                | <strong>Link expires:</strong> {urlExpiresIn}
+              </>
             )}
-            {coverLetterUrl && (
-              <Button
-                onClick={() =>
-                  downloadFromUrl(
-                    coverLetterUrl,
-                    `${formState.company.replace(/\s+/g, "_")}_${formState.role.replace(/\s+/g, "_")}_CoverLetter.pdf`
-                  )
-                }
-                variant="secondary"
-              >
-                📝 Download Cover Letter
-              </Button>
-            )}
-          </Flex>
+          </Text>
         </Box>
       )}
 

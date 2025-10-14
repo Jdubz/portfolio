@@ -41,12 +41,17 @@ portfolio/
 - **Gatsby** - React-based static site generator
 - **Theme UI** - Constraint-based styling system
 - **React Spring** - Smooth parallax animations
+- **Firebase Authentication** - Google sign-in with custom claims
 - **Custom Brand System** - Implementing Josh Wentworth's professional brand guidelines
 
 ### Functions Stack
 - **Cloud Functions Gen 2** - Serverless compute
 - **TypeScript** - Type-safe function development
-- **Nodemailer** - Email service integration
+- **Firestore** - NoSQL database for content and generation tracking
+- **Google Cloud Storage** - PDF document storage with signed URLs
+- **OpenAI GPT-4o** - AI resume/cover letter generation
+- **Google Gemini 2.0 Flash** - Cost-effective AI generation (96% cheaper)
+- **Puppeteer** - PDF generation from HTML templates
 - **Joi** - Request validation
 
 ## 🚀 Quick Start
@@ -178,28 +183,45 @@ make deploy-staging      # Deploy to staging
 make deploy-prod         # Deploy to production
 ```
 
+## ✨ Features
+
+### AI Resume Builder
+Complete AI-powered resume and cover letter generation system:
+- **Multi-Provider AI**: Choose between OpenAI GPT-4o or Google Gemini 2.0 Flash
+- **Cost Optimization**: Gemini is 96% cheaper than OpenAI with excellent quality
+- **Professional PDF Export**: Modern template with custom branding
+- **Cloud Storage**: Automatic GCS upload with signed URLs
+- **Experience Management**: Structured database for work history
+- **AI Prompt Customization**: Editors can customize AI generation prompts
+- **Document History**: Track all generated documents (editor-only)
+- **Settings Management**: Centralized default personal information
+
+See [AI Resume Generator Documentation](./docs/development/generator/README.md) for complete details.
+
+### Portfolio Showcase
+- Responsive design with smooth animations
+- Project case studies with technical details
+- Contact form with email integration
+- Professional branding implementation
+
 ## 📝 Documentation
 
 All documentation has been consolidated in the [`docs/`](./docs/) folder:
 
-### Setup & Configuration
-- [Contact Form Setup](./docs/setup/CONTACT_FORM_SETUP.md) - Complete guide for setting up the contact form function
-- [Contact Function Setup](./docs/setup/CONTACT_FUNCTION_SETUP.md) - Cloud Function deployment guide
-- [Firebase Emulators](./docs/setup/FIREBASE_EMULATORS.md) - Local development with Firebase emulators
+### AI Resume Generator (NEW!)
+- **[Generator Overview](./docs/development/generator/README.md)** - Complete documentation
+- **[Firestore Schema](./docs/development/generator/SCHEMA.md)** - Database structure
+- **[GCS Setup](./docs/development/generator/GCS_ENVIRONMENT_SETUP.md)** - Storage configuration
+- **[Quick Start](./docs/development/generator/QUICKSTART.md)** - Get started in 5 minutes
 
-### Deployment
-- [Deployment Guide](./docs/deployment/DEPLOYMENT.md) - Main deployment documentation
-- [Functions Deployment](./docs/deployment/functions-deployment.md) - Cloud Functions deployment specifics
-- [Versioning Strategy](./docs/deployment/VERSIONING.md) - Semantic versioning and release process
+### Setup & Configuration
+- [Firebase Configuration Checklist](./docs/setup/FIREBASE_CONFIG_CHECKLIST.md) - Complete setup guide
+- [Firebase Emulators](./docs/setup/FIREBASE_EMULATORS.md) - Local development
 
 ### Development
-- [Monorepo Migration](./docs/development/MONOREPO_MIGRATION.md) - History of monorepo migration
+- **[Architecture](./docs/development/ARCHITECTURE.md)** - System design and patterns
+- **[Development Workflow](./docs/DEVELOPMENT_WORKFLOW.md)** - Git workflow and best practices
 - [Known Issues](./docs/development/KNOWN_ISSUES.md) - Current known issues and workarounds
-- [TODO](./docs/development/TODO.md) - Planned features and improvements
-
-### Audit & Security
-- [Code Audit Report](./docs/audit/code-audit.md) - Comprehensive code quality audit
-- [Security Audit](./docs/audit/SECURITY_AUDIT.md) - Security findings and recommendations
 
 ### Brand Assets
 - [Brand Guidelines](./docs/brand/README.md) - Complete brand identity and assets

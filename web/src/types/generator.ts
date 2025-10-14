@@ -60,9 +60,20 @@ export interface FileMetadata {
   storageClass?: StorageClass
 }
 
-export interface GeneratorDefaults {
+export interface AIPrompts {
+  resume?: {
+    systemPrompt?: string
+    userPromptTemplate?: string
+  }
+  coverLetter?: {
+    systemPrompt?: string
+    userPromptTemplate?: string
+  }
+}
+
+export interface PersonalInfo {
   id: string
-  type: "defaults"
+  type: "personal-info"
   name?: string
   email?: string
   phone?: string
@@ -73,13 +84,14 @@ export interface GeneratorDefaults {
   avatar?: string
   logo?: string
   accentColor?: string
+  aiPrompts?: AIPrompts
   createdAt: string
   updatedAt: string
   createdBy?: string
   updatedBy?: string
 }
 
-export interface UpdateDefaultsData {
+export interface UpdatePersonalInfoData {
   name?: string
   email?: string
   phone?: string
@@ -90,19 +102,38 @@ export interface UpdateDefaultsData {
   avatar?: string
   logo?: string
   accentColor?: string
+  aiPrompts?: AIPrompts
 }
 
-export interface GenerationProgress {
-  stage:
-    | "initializing"
-    | "fetching_data"
-    | "generating_resume"
-    | "generating_cover_letter"
-    | "creating_pdf"
-    | "finalizing"
-  message: string
-  percentage: number
-  updatedAt: string
+// Deprecated type aliases for backward compatibility
+/** @deprecated Use PersonalInfo instead */
+export type GeneratorDefaults = PersonalInfo
+/** @deprecated Use UpdatePersonalInfoData instead */
+export type UpdateDefaultsData = UpdatePersonalInfoData
+
+export type GenerationStepStatus = "pending" | "in_progress" | "completed" | "failed" | "skipped"
+
+export interface GenerationStep {
+  id: string
+  name: string
+  description: string
+  status: GenerationStepStatus
+  startedAt?: string
+  completedAt?: string
+  duration?: number
+
+  // Optional result data (e.g., PDF URL when that step completes)
+  result?: {
+    resumeUrl?: string
+    coverLetterUrl?: string
+    [key: string]: unknown
+  }
+
+  // Error info if failed
+  error?: {
+    message: string
+    code?: string
+  }
 }
 
 export interface GenerationRequest {
@@ -112,7 +143,7 @@ export interface GenerationRequest {
   job: JobDetails
   preferences?: GenerationPreferences
   status: "pending" | "processing" | "completed" | "failed"
-  progress?: GenerationProgress
+  steps?: GenerationStep[]
   createdAt: string
   updatedAt: string
   completedAt?: string

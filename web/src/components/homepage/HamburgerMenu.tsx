@@ -1,4 +1,5 @@
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck - Theme UI jsx pragma causes TypeScript errors with classic JSX runtime
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import React, { useState } from "react"

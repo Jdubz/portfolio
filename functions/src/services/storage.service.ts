@@ -4,9 +4,17 @@
  * Handles GCS uploads and signed URL generation for generated documents.
  *
  * Environment-aware bucket selection:
- * - Local/Development: Uses mock mode, skips actual GCS uploads
+ * - Local/Development: Uses Firebase Storage Emulator (127.0.0.1:9199)
  * - Staging: joshwentworth-resumes-staging
  * - Production: joshwentworth-resumes
+ *
+ * **IMPORTANT:** Only use `FUNCTIONS_EMULATOR === "true"` for emulator detection.
+ * Never use `NODE_ENV` or check for absence of `GCP_PROJECT`.
+ * See: docs/development/COMMON_MISTAKES.md#environment-detection-issues
+ *
+ * Documentation:
+ * - Setup Guide: docs/development/generator/GCS_ENVIRONMENT_SETUP.md
+ * - Common Mistakes: docs/development/COMMON_MISTAKES.md
  */
 
 import { Storage } from "@google-cloud/storage"
@@ -27,9 +35,21 @@ export interface SignedUrlOptions {
  * Get environment-aware bucket name
  */
 function getEnvironmentBucketName(): string {
-  const isLocal =
-    process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV === "development" || !process.env.GCP_PROJECT
-  const isStaging = process.env.ENVIRONMENT === "staging"
+  const functionsEmulator = process.env.FUNCTIONS_EMULATOR
+  const nodeEnv = process.env.NODE_ENV
+  const environment = process.env.ENVIRONMENT
+
+  // Only use local bucket if explicitly running in emulator
+  const isLocal = functionsEmulator === "true"
+  const isStaging = environment === "staging"
+
+  console.log("[StorageService] Environment detection:", {
+    functionsEmulator,
+    nodeEnv,
+    environment,
+    isLocal,
+    isStaging,
+  })
 
   if (isLocal) {
     return "joshwentworth-resumes-local" // Mock bucket for local dev
@@ -48,8 +68,8 @@ export class StorageService {
 
   constructor(bucketName?: string, logger?: SimpleLogger) {
     this.bucketName = bucketName || getEnvironmentBucketName()
-    this.useEmulator =
-      process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV === "development" || !process.env.GCP_PROJECT
+    // Only use emulator if FUNCTIONS_EMULATOR is explicitly set to "true"
+    this.useEmulator = process.env.FUNCTIONS_EMULATOR === "true"
 
     this.logger = logger || {
       info: (message: string, data?: unknown) => console.log(`[INFO] ${message}`, data || ""),
@@ -70,10 +90,14 @@ export class StorageService {
         note: "PDFs will be stored in emulator (temporary, cleared on restart)",
       })
     } else {
-      this.storage = new Storage()
-      this.logger.info("StorageService initialized", {
+      // Explicitly set project ID for Cloud Functions
+      this.storage = new Storage({
+        projectId: "static-sites-257923",
+      })
+      this.logger.info("StorageService initialized for Cloud Functions", {
         bucket: this.bucketName,
         environment: process.env.ENVIRONMENT || "production",
+        projectId: "static-sites-257923",
       })
     }
   }
@@ -124,6 +148,64 @@ export class StorageService {
   }
 
   /**
+   * Upload an image buffer to GCS (avatar or logo)
+   */
+  async uploadImage(
+    buffer: Buffer,
+    filename: string,
+    imageType: "avatar" | "logo",
+    contentType: string
+  ): Promise<UploadResult> {
+    try {
+      // Validate content type
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/svg+xml"]
+      if (!allowedTypes.includes(contentType)) {
+        throw new Error(`Invalid image type: ${contentType}. Allowed: ${allowedTypes.join(", ")}`)
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024 // 5MB
+      if (buffer.length > maxSize) {
+        throw new Error(`Image too large: ${buffer.length} bytes. Maximum: ${maxSize} bytes (5MB)`)
+      }
+
+      const gcsPath = `images/${imageType}s/${filename}`
+
+      const logContext = {
+        gcsPath,
+        size: buffer.length,
+        contentType,
+        bucket: this.bucketName,
+        emulator: this.useEmulator,
+      }
+
+      this.logger.info("Uploading image", logContext)
+
+      const bucket = this.storage.bucket(this.bucketName)
+      const file = bucket.file(gcsPath)
+
+      await file.save(buffer, {
+        metadata: {
+          contentType,
+          cacheControl: "public, max-age=31536000", // 1 year cache
+        },
+      })
+
+      this.logger.info("Image uploaded successfully", logContext)
+
+      return {
+        gcsPath,
+        filename,
+        size: buffer.length,
+        storageClass: "STANDARD",
+      }
+    } catch (error) {
+      this.logger.error("Failed to upload image", { error })
+      throw new Error(`Image upload failed: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
+  /**
    * Generate a signed URL for downloading a PDF
    * @param gcsPath - Full GCS path (e.g., "resumes/YYYY-MM-DD/filename.pdf")
    * @param options - Expiration options (1 hour for viewers, 7 days for editors)
@@ -141,8 +223,10 @@ export class StorageService {
 
       // Emulator doesn't support signed URLs, return direct URL
       if (this.useEmulator) {
+        // Use localhost instead of 127.0.0.1 to avoid CORS issues with web app
         const emulatorHost = process.env.FIREBASE_STORAGE_EMULATOR_HOST || "127.0.0.1:9199"
-        const directUrl = `http://${emulatorHost}/v0/b/${this.bucketName}/o/${encodeURIComponent(gcsPath)}?alt=media`
+        const browserFriendlyHost = emulatorHost.replace("127.0.0.1", "localhost")
+        const directUrl = `http://${browserFriendlyHost}/v0/b/${this.bucketName}/o/${encodeURIComponent(gcsPath)}?alt=media`
         this.logger.info("Generated emulator direct URL", { directUrl })
         return directUrl
       }

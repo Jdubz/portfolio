@@ -36,7 +36,9 @@ jest.mock("../services/generator.service", () => ({
   GeneratorService: jest.fn().mockImplementation(() => ({
     generate: mockGenerate,
     getDefaults: mockGetDefaults,
+    getPersonalInfo: mockGetDefaults, // Alias for backward compatibility testing
     updateDefaults: mockUpdateDefaults,
+    updatePersonalInfo: mockUpdateDefaults, // Alias for backward compatibility testing
     getRequest: mockGetRequest,
     listRequests: mockListRequests,
   })),

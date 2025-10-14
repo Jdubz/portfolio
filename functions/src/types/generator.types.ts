@@ -86,6 +86,10 @@ export interface GenerateResumeOptions {
   experienceEntries: ExperienceEntry[]
   experienceBlurbs: BlurbEntry[]
   emphasize?: string[]
+  customPrompts?: {
+    systemPrompt?: string
+    userPromptTemplate?: string
+  }
 }
 
 /**
@@ -104,6 +108,10 @@ export interface GenerateCoverLetterOptions {
   }
   experienceEntries: ExperienceEntry[]
   experienceBlurbs: BlurbEntry[]
+  customPrompts?: {
+    systemPrompt?: string
+    userPromptTemplate?: string
+  }
 }
 
 /**
@@ -151,13 +159,13 @@ export interface AIProvider {
 }
 
 // =============================================================================
-// Generator Defaults (Default Settings Document)
+// Personal Info (Personal Information Document)
 // =============================================================================
 
-export interface GeneratorDefaults {
+export interface PersonalInfo {
   // Document identification
-  id: "default"
-  type: "defaults"
+  id: "personal-info"
+  type: "personal-info"
 
   // Personal Information (name and email required, others optional)
   name: string
@@ -175,13 +183,25 @@ export interface GeneratorDefaults {
   logo?: string // URL or GCS path to personal logo
   accentColor: string // Hex color for resume styling (always "modern" style)
 
+  // AI Prompts
+  aiPrompts?: {
+    resume: {
+      systemPrompt: string
+      userPromptTemplate: string
+    }
+    coverLetter: {
+      systemPrompt: string
+      userPromptTemplate: string
+    }
+  }
+
   // Metadata
   createdAt: Timestamp
   updatedAt: Timestamp
   updatedBy?: string // Email of last editor
 }
 
-export interface UpdateGeneratorDefaultsData {
+export interface UpdatePersonalInfoData {
   name?: string
   email?: string
   phone?: string
@@ -192,6 +212,51 @@ export interface UpdateGeneratorDefaultsData {
   avatar?: string
   logo?: string
   accentColor?: string
+  aiPrompts?: {
+    resume?: {
+      systemPrompt?: string
+      userPromptTemplate?: string
+    }
+    coverLetter?: {
+      systemPrompt?: string
+      userPromptTemplate?: string
+    }
+  }
+}
+
+// Deprecated type aliases for backward compatibility during migration
+/** @deprecated Use PersonalInfo instead */
+export type GeneratorDefaults = PersonalInfo
+/** @deprecated Use UpdatePersonalInfoData instead */
+export type UpdateGeneratorDefaultsData = UpdatePersonalInfoData
+
+// =============================================================================
+// Generation Progress Steps
+// =============================================================================
+
+export type GenerationStepStatus = "pending" | "in_progress" | "completed" | "failed" | "skipped"
+
+export interface GenerationStep {
+  id: string // Unique step identifier
+  name: string // Display name for the step
+  description: string // Detailed description
+  status: GenerationStepStatus
+  startedAt?: Timestamp
+  completedAt?: Timestamp
+  duration?: number // milliseconds
+
+  // Optional result data (e.g., PDF URL when that step completes)
+  result?: {
+    resumeUrl?: string
+    coverLetterUrl?: string
+    [key: string]: unknown
+  }
+
+  // Error info if failed
+  error?: {
+    message: string
+    code?: string
+  }
 }
 
 // =============================================================================
@@ -209,8 +274,8 @@ export interface GeneratorRequest {
   // AI Provider Selection
   provider: AIProviderType // Which AI service to use (openai or gemini)
 
-  // Snapshot of defaults at request time
-  defaults: {
+  // Snapshot of personal info at request time
+  personalInfo: {
     name: string
     email: string
     phone?: string
@@ -246,12 +311,21 @@ export interface GeneratorRequest {
   // Request Status
   status: "pending" | "processing" | "completed" | "failed"
 
-  // Progress Information
-  progress?: {
-    stage: "initializing" | "fetching_data" | "generating_resume" | "generating_cover_letter" | "creating_pdf" | "finalizing"
-    message: string
-    percentage: number // 0-100
-    updatedAt: Timestamp
+  // Step-by-step Progress Tracking
+  steps?: GenerationStep[]
+
+  // Intermediate Results (stored after each step for retry capability)
+  intermediateResults?: {
+    // AI-generated content (from generate_resume / generate_cover_letter steps)
+    resumeContent?: ResumeContent
+    coverLetterContent?: CoverLetterContent
+
+    // Token usage tracking
+    resumeTokenUsage?: TokenUsage
+    coverLetterTokenUsage?: TokenUsage
+
+    // Model used for generation
+    model?: string
   }
 
   // Access Control
