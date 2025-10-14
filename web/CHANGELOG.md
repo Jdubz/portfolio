@@ -1,5 +1,14 @@
 # josh-wentworth-portfolio
 
+## 1.14.1
+
+### Patch Changes
+
+- [#58](https://github.com/Jdubz/portfolio/pull/58) [`2fd0a97`](https://github.com/Jdubz/portfolio/commit/2fd0a97e5dbe62f607d8672db9eb7787abe01fad) Thanks [@Jdubz](https://github.com/Jdubz)! - Fix React hooks error and image upload signed URL expiration
+  - Fixed React error #418 (hook order change) and #423 (update during render) in document builder by batching setState calls
+  - Reduced image upload signed URL expiration from 1 year to 7 days to comply with GCS maximum
+  - Improved Firestore listener performance by extracting values before state updates
+
 ## 1.14.0
 
 ### Minor Changes
