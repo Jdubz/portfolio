@@ -8,6 +8,8 @@ export interface JobMatch {
   id: string
   company: string
   role: string
+  title?: string // Job posting title
+  matchScore?: number // AI-calculated match percentage (0-100)
   companyWebsite?: string
   jobDescriptionUrl?: string
   jobDescriptionText?: string

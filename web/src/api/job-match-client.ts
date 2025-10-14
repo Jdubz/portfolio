@@ -32,6 +32,8 @@ export class JobMatchClient {
           id: doc.id,
           company: (data.company as string | undefined) ?? "",
           role: (data.role as string | undefined) ?? "",
+          title: data.title as string | undefined,
+          matchScore: data.matchScore as number | undefined,
           companyWebsite: data.companyWebsite as string | undefined,
           jobDescriptionUrl: data.jobDescriptionUrl as string | undefined,
           jobDescriptionText: data.jobDescriptionText as string | undefined,

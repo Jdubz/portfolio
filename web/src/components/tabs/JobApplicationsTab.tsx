@@ -193,7 +193,8 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onSelect
           <Box as="thead">
             <Box as="tr">
               <Box as="th">Company</Box>
-              <Box as="th">Role</Box>
+              <Box as="th">Title / Role</Box>
+              <Box as="th">Match</Box>
               <Box as="th">Documents</Box>
               <Box as="th">Applied</Box>
               <Box as="th">Actions</Box>
@@ -206,7 +207,44 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onSelect
                   <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{jobMatch.company}</Text>
                 </Box>
                 <Box as="td">
-                  <Text sx={{ fontSize: 1 }}>{jobMatch.role}</Text>
+                  <Text sx={{ fontSize: 1, fontWeight: jobMatch.title ? "medium" : "normal" }}>
+                    {jobMatch.title || jobMatch.role}
+                  </Text>
+                  {jobMatch.title && jobMatch.title !== jobMatch.role && (
+                    <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>{jobMatch.role}</Text>
+                  )}
+                </Box>
+                <Box as="td">
+                  {jobMatch.matchScore !== undefined ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box
+                        sx={{
+                          width: "60px",
+                          height: "6px",
+                          bg: "muted",
+                          borderRadius: "99px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: `${jobMatch.matchScore}%`,
+                            height: "100%",
+                            bg:
+                              jobMatch.matchScore >= 80
+                                ? "#10b981"
+                                : jobMatch.matchScore >= 60
+                                  ? "#f59e0b"
+                                  : "#ef4444",
+                            transition: "width 0.3s",
+                          }}
+                        />
+                      </Box>
+                      <Text sx={{ fontSize: 1, fontWeight: "medium", minWidth: "40px" }}>{jobMatch.matchScore}%</Text>
+                    </Box>
+                  ) : (
+                    <Text sx={{ fontSize: 1, color: "textMuted" }}>—</Text>
+                  )}
                 </Box>
                 <Box as="td">
                   <Box
