@@ -76,8 +76,6 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         (snapshot) => {
           if (snapshot.exists()) {
             const request = snapshot.data() as GenerationRequest
-            setGenerationStatus(request.status)
-            setGenerationSteps(request.steps ?? [])
 
             logger.info("Generation progress updated", {
               generationRequestId,
@@ -86,20 +84,34 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             })
 
             // Extract download URLs from completed steps
+            let extractedResumeUrl: string | null = null
+            let extractedCoverLetterUrl: string | null = null
             const steps = request.steps ?? []
+
             for (const step of steps) {
               if (step.status === "completed" && step.result) {
-                if (step.result.resumeUrl) {
-                  setResumeUrl((prev) => prev ?? step.result?.resumeUrl ?? null)
-                  setUrlExpiresIn("7 days") // PDFs uploaded in steps use 7-day expiry
+                if (step.result.resumeUrl && !extractedResumeUrl) {
+                  extractedResumeUrl = step.result.resumeUrl
                   logger.info("Resume URL extracted from step", { stepId: step.id })
                 }
-                if (step.result.coverLetterUrl) {
-                  setCoverLetterUrl((prev) => prev ?? step.result?.coverLetterUrl ?? null)
-                  setUrlExpiresIn("7 days")
+                if (step.result.coverLetterUrl && !extractedCoverLetterUrl) {
+                  extractedCoverLetterUrl = step.result.coverLetterUrl
                   logger.info("Cover letter URL extracted from step", { stepId: step.id })
                 }
               }
+            }
+
+            // Batch all state updates together
+            setGenerationStatus(request.status)
+            setGenerationSteps(steps)
+
+            if (extractedResumeUrl) {
+              setResumeUrl((prev) => prev ?? extractedResumeUrl)
+              setUrlExpiresIn("7 days")
+            }
+            if (extractedCoverLetterUrl) {
+              setCoverLetterUrl((prev) => prev ?? extractedCoverLetterUrl)
+              setUrlExpiresIn("7 days")
             }
 
             // Check if generation is complete
