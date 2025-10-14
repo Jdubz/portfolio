@@ -206,13 +206,13 @@ export class StorageService {
   }
 
   /**
-   * Generate a signed URL for downloading a PDF
+   * Generate a signed URL for viewing/downloading a PDF
    * @param gcsPath - Full GCS path (e.g., "resumes/YYYY-MM-DD/filename.pdf")
    * @param options - Expiration options (1 hour for viewers, 7 days for editors)
    */
   async generateSignedUrl(gcsPath: string, options: SignedUrlOptions): Promise<string> {
     try {
-      this.logger.info("Generating download URL", {
+      this.logger.info("Generating signed URL", {
         gcsPath,
         expiresInHours: options.expiresInHours,
         emulator: this.useEmulator,
@@ -231,18 +231,20 @@ export class StorageService {
         return directUrl
       }
 
-      // Production: use signed URLs
+      // Production: use signed URLs with inline disposition for browser viewing
       const [signedUrl] = await file.getSignedUrl({
         version: "v4",
         action: "read",
         expires: Date.now() + options.expiresInHours * 60 * 60 * 1000,
+        responseDisposition: "inline", // Display in browser instead of downloading
+        responseType: "application/pdf",
       })
 
       this.logger.info("Signed URL generated successfully")
 
       return signedUrl
     } catch (error) {
-      this.logger.error("Failed to generate download URL", { error })
+      this.logger.error("Failed to generate signed URL", { error })
       throw new Error(`URL generation failed: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
