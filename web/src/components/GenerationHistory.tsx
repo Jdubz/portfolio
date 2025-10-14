@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from "react"
 import { Box, Heading, Text } from "theme-ui"
-import type { GenerationRequest } from "../types/generator"
+import type { GenerationRequest, FirestoreTimestamp } from "../types/generator"
 import { generatorClient } from "../api/generator-client"
 import { logger } from "../utils/logger"
 
@@ -37,8 +37,28 @@ export const GenerationHistory: React.FC<GenerationHistoryProps> = ({ onViewDeta
     }
   }
 
-  const formatDate = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString("en-US", {
+  const formatDate = (timestamp: string | FirestoreTimestamp | undefined) => {
+    let date: Date
+
+    // Handle Firestore Timestamp object (from backend)
+    if (timestamp && typeof timestamp === "object" && "_seconds" in timestamp) {
+      date = new Date(timestamp._seconds * 1000)
+    }
+    // Handle ISO string
+    else if (timestamp && typeof timestamp === "string") {
+      date = new Date(timestamp)
+    }
+    // Invalid or missing timestamp
+    else {
+      return "Invalid Date"
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return "Invalid Date"
+    }
+
+    return date.toLocaleString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",

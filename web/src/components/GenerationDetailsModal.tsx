@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect } from "react"
 import { Box, Heading, Text, Button } from "theme-ui"
-import type { GenerationRequest } from "../types/generator"
+import type { GenerationRequest, FirestoreTimestamp } from "../types/generator"
 
 // Dynamically import react-json-view to avoid SSR issues
 let ReactJson: typeof import("react-json-view").default | null = null
@@ -20,6 +20,36 @@ interface GenerationDetailsModalProps {
 
 type ViewMode = "json" | "pdf"
 type DocumentType = "resume" | "coverLetter"
+
+const formatTimestamp = (timestamp: string | FirestoreTimestamp): string => {
+  let date: Date
+
+  // Handle Firestore Timestamp object (from backend)
+  if (timestamp && typeof timestamp === "object" && "_seconds" in timestamp) {
+    date = new Date(timestamp._seconds * 1000)
+  }
+  // Handle ISO string
+  else if (timestamp && typeof timestamp === "string") {
+    date = new Date(timestamp)
+  }
+  // Invalid timestamp
+  else {
+    return "Invalid Date"
+  }
+
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return "Invalid Date"
+  }
+
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
 
 export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ request, onClose }) => {
   const [viewMode, setViewMode] = useState<ViewMode>("pdf")
@@ -91,16 +121,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
             <Heading as="h2" sx={{ fontSize: 3, fontWeight: "heading", mb: 1 }}>
               {request.job.role} @ {request.job.company}
             </Heading>
-            <Text sx={{ fontSize: 1, color: "textMuted" }}>
-              Generated on{" "}
-              {new Date(request.createdAt).toLocaleString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
+            <Text sx={{ fontSize: 1, color: "textMuted" }}>Generated on {formatTimestamp(request.createdAt)}</Text>
           </Box>
           <Button
             onClick={onClose}

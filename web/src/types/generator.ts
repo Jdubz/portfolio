@@ -137,6 +137,12 @@ export interface GenerationStep {
   }
 }
 
+// Firestore Timestamp type (when serialized over HTTP)
+export type FirestoreTimestamp = {
+  _seconds: number
+  _nanoseconds: number
+}
+
 export interface GenerationRequest {
   id: string
   type: "request"
@@ -145,8 +151,8 @@ export interface GenerationRequest {
   preferences?: GenerationPreferences
   status: "pending" | "processing" | "completed" | "failed"
   steps?: GenerationStep[]
-  createdAt: string
-  updatedAt: string
-  completedAt?: string
+  createdAt: string | FirestoreTimestamp // Can be ISO string or Firestore Timestamp object
+  updatedAt?: string | FirestoreTimestamp
+  completedAt?: string | FirestoreTimestamp
   error?: string
 }
