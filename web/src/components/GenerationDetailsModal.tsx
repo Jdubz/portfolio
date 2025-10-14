@@ -211,6 +211,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
                   <iframe
                     src={resumeUrl}
                     title="Resume PDF"
+                    allow="fullscreen"
                     style={{
                       width: "100%",
                       height: "600px",
@@ -224,6 +225,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
                   <iframe
                     src={coverLetterUrl}
                     title="Cover Letter PDF"
+                    allow="fullscreen"
                     style={{
                       width: "100%",
                       height: "600px",
