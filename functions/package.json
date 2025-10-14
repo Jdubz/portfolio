@@ -1,6 +1,6 @@
 {
   "name": "contact-form-function",
-  "version": "1.14.3",
+  "version": "1.15.0",
   "description": "GCP Cloud Function for handling portfolio contact form submissions",
   "main": "dist/index.js",
   "scripts": {

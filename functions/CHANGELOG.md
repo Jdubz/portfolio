@@ -1,5 +1,13 @@
 # contact-form-function
 
+## 1.15.0
+
+### Minor Changes
+
+- [#63](https://github.com/Jdubz/portfolio/pull/63) [`4a4a782`](https://github.com/Jdubz/portfolio/commit/4a4a7820ede6636cdb9a7f1ac5341743e627eae2) Thanks [@Jdubz](https://github.com/Jdubz)! - Staging -> main
+
+  Auto-generated changeset for PR #63
+
 ## 1.14.3
 
 ### Patch Changes

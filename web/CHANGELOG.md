@@ -1,5 +1,30 @@
 # josh-wentworth-portfolio
 
+## 1.15.0
+
+### Minor Changes
+
+- [#63](https://github.com/Jdubz/portfolio/pull/63) [`435192d`](https://github.com/Jdubz/portfolio/commit/435192dee4f17733694f7840ca1c56849c3beefb) Thanks [@Jdubz](https://github.com/Jdubz)! - Add automatic changeset generation workflow
+
+  New GitHub Actions workflow automatically creates changesets for PRs when important files are modified and no changeset exists yet. This eliminates manual changeset management while still allowing customization.
+
+  Features:
+  - Auto-detects which packages changed (web, functions, or both)
+  - Auto-determines version bump type (patch/minor)
+  - Uses PR title as changeset description
+  - Commits and pushes changeset automatically
+  - Comments on PR with generated changeset info
+  - Skips if changeset already exists or PR has 'skip-changeset' label
+
+  Benefits:
+  - Reduces friction in PR workflow
+  - No more "changeset required" failures
+  - Still allows manual changeset creation/editing when desired
+
+- [#63](https://github.com/Jdubz/portfolio/pull/63) [`4a4a782`](https://github.com/Jdubz/portfolio/commit/4a4a7820ede6636cdb9a7f1ac5341743e627eae2) Thanks [@Jdubz](https://github.com/Jdubz)! - Staging -> main
+
+  Auto-generated changeset for PR #63
+
 ## 1.14.3
 
 ### Patch Changes
