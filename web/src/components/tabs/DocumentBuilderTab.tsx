@@ -165,6 +165,12 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
       while (nextStep) {
         logger.info("Executing step", { step: nextStep })
 
+        // Optimistically set step to in_progress before calling API
+        // This ensures the user sees the spinner immediately
+        setGenerationSteps((prevSteps) =>
+          prevSteps.map((s) => (s.id === nextStep ? { ...s, status: "in_progress" as const } : s))
+        )
+
         const stepResult = await generatorClient.executeStep(startData.requestId)
         logger.info("Step completed", stepResult)
 

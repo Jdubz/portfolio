@@ -206,8 +206,8 @@ export class StorageService {
   }
 
   /**
-   * Generate a signed URL for viewing/downloading a PDF
-   * @param gcsPath - Full GCS path (e.g., "resumes/YYYY-MM-DD/filename.pdf")
+   * Generate a signed URL for viewing/downloading a file
+   * @param gcsPath - Full GCS path (e.g., "resumes/YYYY-MM-DD/filename.pdf" or "images/avatars/avatar.jpg")
    * @param options - Expiration options (1 hour for viewers, 7 days for editors)
    */
   async generateSignedUrl(gcsPath: string, options: SignedUrlOptions): Promise<string> {
@@ -231,16 +231,32 @@ export class StorageService {
         return directUrl
       }
 
+      // Detect content type from file path
+      const isImage = gcsPath.startsWith("images/")
+      const contentType = isImage ? undefined : "application/pdf"
+
       // Production: use signed URLs with inline disposition for browser viewing
-      const [signedUrl] = await file.getSignedUrl({
+      const signedUrlConfig: {
+        version: "v4"
+        action: "read"
+        expires: number
+        responseDisposition: string
+        responseType?: string
+      } = {
         version: "v4",
         action: "read",
         expires: Date.now() + options.expiresInHours * 60 * 60 * 1000,
         responseDisposition: "inline", // Display in browser instead of downloading
-        responseType: "application/pdf",
-      })
+      }
 
-      this.logger.info("Signed URL generated successfully")
+      // Only set responseType for PDFs; let images use their stored content type
+      if (contentType) {
+        signedUrlConfig.responseType = contentType
+      }
+
+      const [signedUrl] = await file.getSignedUrl(signedUrlConfig)
+
+      this.logger.info("Signed URL generated successfully", { isImage, contentType })
 
       return signedUrl
     } catch (error) {
