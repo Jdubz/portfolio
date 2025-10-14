@@ -1,4 +1,5 @@
 import { Firestore } from "@google-cloud/firestore"
+import { DATABASE_ID } from "../config/database"
 
 type SimpleLogger = {
   info: (message: string, data?: unknown) => void
@@ -53,9 +54,9 @@ export class FirestoreService {
   private collectionName = "contact-submissions"
 
   constructor(logger?: SimpleLogger) {
-    // Initialize Firestore with the named database "portfolio"
+    // Initialize Firestore with environment-aware database ID
     this.db = new Firestore({
-      databaseId: "portfolio",
+      databaseId: DATABASE_ID,
     })
 
     const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
