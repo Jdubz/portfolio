@@ -29,7 +29,8 @@ export function getFirestoreInstance(): ReturnType<typeof getFirestore> {
   }
 
   const app = apps[0]
-  firestoreInstance = getFirestore(app)
+  const databaseId = process.env.FIRESTORE_DATABASE_ID ?? "(default)"
+  firestoreInstance = getFirestore(app, databaseId)
 
   // Connect to emulator in development (once)
   if (process.env.GATSBY_USE_FIREBASE_EMULATORS === "true" && !emulatorConnected) {

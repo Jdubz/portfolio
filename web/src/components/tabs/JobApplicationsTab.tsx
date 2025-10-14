@@ -208,7 +208,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onSelect
                 </Box>
                 <Box as="td">
                   <Text sx={{ fontSize: 1, fontWeight: jobMatch.title ? "medium" : "normal" }}>
-                    {jobMatch.title || jobMatch.role}
+                    {jobMatch.title ?? jobMatch.role}
                   </Text>
                   {jobMatch.title && jobMatch.title !== jobMatch.role && (
                     <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>{jobMatch.role}</Text>
@@ -231,11 +231,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onSelect
                             width: `${jobMatch.matchScore}%`,
                             height: "100%",
                             bg:
-                              jobMatch.matchScore >= 80
-                                ? "#10b981"
-                                : jobMatch.matchScore >= 60
-                                  ? "#f59e0b"
-                                  : "#ef4444",
+                              jobMatch.matchScore >= 80 ? "#10b981" : jobMatch.matchScore >= 60 ? "#f59e0b" : "#ef4444",
                             transition: "width 0.3s",
                           }}
                         />
