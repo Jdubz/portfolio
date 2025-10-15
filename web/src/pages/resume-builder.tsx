@@ -11,6 +11,7 @@ import { SettingsTab } from "../components/tabs/SettingsTab"
 import { DocumentHistoryTab } from "../components/tabs/DocumentHistoryTab"
 import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
 import { GenerationDetailsModal } from "../components/GenerationDetailsModal"
+import { ErrorBoundary } from "../components/ErrorBoundary"
 import { logger } from "../utils/logger"
 import type { JobMatch } from "../types/job-match"
 import type { GenerationRequest } from "../types/generator"
@@ -143,26 +144,43 @@ const ResumeBuilderPage: React.FC = () => {
   }
 
   // Build tabs array (conditionally include editor-only tabs)
+  // Each tab wrapped in ErrorBoundary to prevent entire app crashes
   const tabs: Tab[] = [
     {
       id: "work-experience",
       label: "Work Experience",
-      content: <WorkExperienceTab isEditor={isEditor} user={user} />,
+      content: (
+        <ErrorBoundary>
+          <WorkExperienceTab isEditor={isEditor} user={user} />
+        </ErrorBoundary>
+      ),
     },
     {
       id: "document-builder",
       label: "Document Builder",
-      content: <DocumentBuilderTab isEditor={isEditor} selectedJobMatch={selectedJobMatch ?? undefined} />,
+      content: (
+        <ErrorBoundary>
+          <DocumentBuilderTab isEditor={isEditor} selectedJobMatch={selectedJobMatch ?? undefined} />
+        </ErrorBoundary>
+      ),
     },
     {
       id: "ai-prompts",
       label: "AI Prompts",
-      content: <AIPromptsTab isEditor={isEditor} />,
+      content: (
+        <ErrorBoundary>
+          <AIPromptsTab isEditor={isEditor} />
+        </ErrorBoundary>
+      ),
     },
     {
       id: "settings",
       label: "Personal Info",
-      content: <SettingsTab isEditor={isEditor} />,
+      content: (
+        <ErrorBoundary>
+          <SettingsTab isEditor={isEditor} />
+        </ErrorBoundary>
+      ),
     },
     // Only show editor-only tabs to editors
     ...(isEditor
@@ -171,16 +189,22 @@ const ResumeBuilderPage: React.FC = () => {
             id: "job-applications",
             label: "Job Applications",
             content: (
-              <JobApplicationsTab
-                onSelectJobMatch={handleSelectJobMatch}
-                onViewGeneratedDocs={handleViewGeneratedDocs}
-              />
+              <ErrorBoundary>
+                <JobApplicationsTab
+                  onSelectJobMatch={handleSelectJobMatch}
+                  onViewGeneratedDocs={handleViewGeneratedDocs}
+                />
+              </ErrorBoundary>
             ),
           },
           {
             id: "history",
             label: "Document History",
-            content: <DocumentHistoryTab isEditor={isEditor} />,
+            content: (
+              <ErrorBoundary>
+                <DocumentHistoryTab isEditor={isEditor} />
+              </ErrorBoundary>
+            ),
           },
         ]
       : []),

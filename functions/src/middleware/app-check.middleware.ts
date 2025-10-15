@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express"
 import * as admin from "firebase-admin"
+import { logger } from "../utils/logger"
 
 /**
  * Firebase App Check middleware for Cloud Functions
@@ -14,18 +15,22 @@ const isProduction = process.env.NODE_ENV === "production"
 const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true"
 
+// Explicit enforcement flag - must be set to "disabled" to bypass App Check
+// This prevents accidental bypass through environment variable manipulation
+const isAppCheckEnforced = process.env.APP_CHECK_ENFORCEMENT !== "disabled"
+
 // Configure Firebase Auth Emulator before initializing Admin SDK
 if (isEmulator && !process.env.FIREBASE_AUTH_EMULATOR_HOST) {
   // Set the Auth emulator host for Firebase Admin SDK
   process.env.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099"
-  console.log("[Admin SDK] Configured to use Firebase Auth Emulator at localhost:9099")
+  logger.info("[Admin SDK] Configured to use Firebase Auth Emulator at localhost:9099")
 }
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
   admin.initializeApp()
   if (isEmulator) {
-    console.log("[Admin SDK] Initialized in emulator mode")
+    logger.info("[Admin SDK] Initialized in emulator mode")
   }
 }
 
@@ -40,16 +45,26 @@ export const verifyAppCheck = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  // Skip verification in test environment
+  // Skip verification in test environment only
   if (isTestEnvironment) {
     return next()
   }
 
-  // In development/emulator, allow requests without App Check for testing
-  if (!isProduction || isEmulator) {
+  // Allow bypass ONLY if explicitly disabled via APP_CHECK_ENFORCEMENT=disabled
+  // This prevents accidental bypass through NODE_ENV or FUNCTIONS_EMULATOR manipulation
+  if (!isAppCheckEnforced) {
     const appCheckToken = req.header("X-Firebase-AppCheck")
     if (!appCheckToken) {
-      console.log("[AppCheck] Development mode: Allowing request without App Check token")
+      logger.warning("[AppCheck] App Check enforcement disabled - allowing request without token")
+      logger.warning("[AppCheck] Set APP_CHECK_ENFORCEMENT=enabled to enforce App Check")
+      return next()
+    }
+  } else if (!isProduction && isEmulator) {
+    // In emulator with enforcement enabled, still allow for local testing
+    // but log a warning to make it obvious
+    const appCheckToken = req.header("X-Firebase-AppCheck")
+    if (!appCheckToken) {
+      logger.info("[AppCheck] Emulator mode with enforcement - allowing request for local testing")
       return next()
     }
   }
@@ -58,7 +73,7 @@ export const verifyAppCheck = async (
     const appCheckToken = req.header("X-Firebase-AppCheck")
 
     if (!appCheckToken) {
-      console.warn("[AppCheck] Missing App Check token")
+      logger.warning("[AppCheck] Missing App Check token")
       res.status(401).json({
         success: false,
         error: "UNAUTHORIZED",
@@ -75,13 +90,13 @@ export const verifyAppCheck = async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(req as any).appCheckAppId = appCheckClaims.appId
 
-    console.log("[AppCheck] Token verified successfully", {
+    logger.info("[AppCheck] Token verified successfully", {
       appId: appCheckClaims.appId,
     })
 
     next()
   } catch (error) {
-    console.error("[AppCheck] Token verification failed", {
+    logger.error("[AppCheck] Token verification failed", {
       error: error instanceof Error ? error.message : error,
     })
 

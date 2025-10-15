@@ -33,10 +33,16 @@ export const validators = {
 
   /**
    * Validates email format
+   * Includes ReDoS protection via length check before regex validation
    */
   email: (value: unknown): string | null => {
     if (typeof value !== "string") {
       return "Email must be a string"
+    }
+    // RFC 5321: max email length is 320 chars (64 local + @ + 255 domain)
+    // Length check prevents ReDoS attacks from crafted long inputs
+    if (value.length > 320) {
+      return "Email address is too long (max 320 characters)"
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       return "Please enter a valid email address"

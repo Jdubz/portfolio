@@ -8,6 +8,8 @@
  * - Production: portfolio
  */
 
+import { logger } from "../utils/logger"
+
 /**
  * Get the appropriate Firestore database ID based on environment
  *
@@ -84,6 +86,6 @@ if (!DATABASE_ID) {
 // Log database configuration (redacted in production)
 const isProduction = process.env.ENVIRONMENT === "production" || process.env.NODE_ENV === "production"
 if (!isProduction) {
-  console.log(`[Database Config] Using database: ${DATABASE_ID}`)
-  console.log(`[Database Config] Environment: ${process.env.ENVIRONMENT || process.env.NODE_ENV || "unknown"}`)
+  logger.info(`[Database Config] Using database: ${DATABASE_ID}`)
+  logger.info(`[Database Config] Environment: ${process.env.ENVIRONMENT || process.env.NODE_ENV || "unknown"}`)
 }

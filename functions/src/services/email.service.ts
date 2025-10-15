@@ -101,13 +101,19 @@ export class EmailService {
    */
   private async getEmailConfig(): Promise<EmailConfig> {
     if (this.secretManager.isLocalDevelopment()) {
+      // Validate required environment variables
+      const apiKey = process.env.MAILGUN_API_KEY
+      if (!apiKey) {
+        throw new Error("MAILGUN_API_KEY environment variable is required for local development")
+      }
+
       return {
-        mailgunApiKey: process.env.MAILGUN_API_KEY || "",
-        mailgunDomain: process.env.MAILGUN_DOMAIN || "joshwentworth.com",
-        mailgunRegion: (process.env.MAILGUN_REGION as "us" | "eu") || "us",
-        fromEmail: process.env.FROM_EMAIL || "noreply@joshwentworth.com",
-        toEmail: process.env.TO_EMAIL || "contact-form@joshwentworth.com",
-        replyToEmail: process.env.REPLY_TO_EMAIL || "hello@joshwentworth.com",
+        mailgunApiKey: apiKey,
+        mailgunDomain: process.env.MAILGUN_DOMAIN ?? "joshwentworth.com",
+        mailgunRegion: (process.env.MAILGUN_REGION as "us" | "eu") ?? "us",
+        fromEmail: process.env.FROM_EMAIL ?? "noreply@joshwentworth.com",
+        toEmail: process.env.TO_EMAIL ?? "contact-form@joshwentworth.com",
+        replyToEmail: process.env.REPLY_TO_EMAIL ?? "hello@joshwentworth.com",
       }
     }
 
