@@ -6,7 +6,7 @@
  */
 
 import { GeneratorClient } from "../generator-client"
-import type { GeneratorDefaults, GenerationRequest } from "../../types/generator"
+import type { PersonalInfo, GenerationRequest } from "../../types/generator"
 import { getIdToken } from "../../utils/auth"
 
 // Mock fetch globally
@@ -133,9 +133,9 @@ describe("GeneratorClient API Contract", () => {
     })
   })
 
-  describe("getDefaults() - API Response Contract", () => {
-    it("should correctly parse defaults response", async () => {
-      const mockDefaults: GeneratorDefaults = {
+  describe("getPersonalInfo() - API Response Contract", () => {
+    it("should correctly parse personal info response", async () => {
+      const mockPersonalInfo: PersonalInfo = {
         id: "personal-info",
         type: "personal-info",
         name: "John Doe",
@@ -152,8 +152,8 @@ describe("GeneratorClient API Contract", () => {
 
       const mockApiResponse = {
         success: true,
-        data: mockDefaults,
-        requestId: "req_test_defaults",
+        data: mockPersonalInfo,
+        requestId: "req_test_personal_info",
       }
 
       mockFetch.mockResolvedValueOnce({
@@ -162,17 +162,17 @@ describe("GeneratorClient API Contract", () => {
         json: () => Promise.resolve(mockApiResponse),
       } as Response)
 
-      const result = await client.getDefaults()
+      const result = await client.getPersonalInfo()
 
-      expect(result).toEqual(mockDefaults)
+      expect(result).toEqual(mockPersonalInfo)
       expect(result.name).toBe("John Doe")
       expect(result.accentColor).toBe("#3B82F6")
     })
   })
 
-  describe("updateDefaults() - API Response Contract", () => {
+  describe("updatePersonalInfo() - API Response Contract", () => {
     it("should correctly parse update response with auth", async () => {
-      const mockUpdated: GeneratorDefaults = {
+      const mockUpdated: PersonalInfo = {
         id: "personal-info",
         type: "personal-info",
         name: "Jane Doe",
@@ -197,7 +197,7 @@ describe("GeneratorClient API Contract", () => {
         json: () => Promise.resolve(mockApiResponse),
       } as Response)
 
-      const result = await client.updateDefaults({
+      const result = await client.updatePersonalInfo({
         name: "Jane Doe",
         accentColor: "#EF4444",
       })
@@ -316,7 +316,7 @@ describe("GeneratorClient API Contract", () => {
     it("should handle network errors", async () => {
       mockFetch.mockRejectedValueOnce(new Error("Network error"))
 
-      await expect(client.getDefaults()).rejects.toThrow("Network error")
+      await expect(client.getPersonalInfo()).rejects.toThrow("Network error")
     })
   })
 })

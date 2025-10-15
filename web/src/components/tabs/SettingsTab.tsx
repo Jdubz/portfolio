@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { Box, Heading, Text, Label, Input, Button, Flex, Alert, Spinner, Image } from "theme-ui"
 import { generatorClient } from "../../api/generator-client"
-import type { UpdateDefaultsData } from "../../types/generator"
+import type { UpdatePersonalInfoData } from "../../types/generator"
 import { logger } from "../../utils/logger"
 
 interface SettingsTabProps {
@@ -10,7 +10,7 @@ interface SettingsTabProps {
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
   // Form state
-  const [formData, setFormData] = useState<UpdateDefaultsData>({
+  const [formData, setFormData] = useState<UpdatePersonalInfoData>({
     name: "",
     email: "",
     phone: "",
@@ -36,44 +36,44 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
 
-  // Load current defaults (visible to everyone, editable only for editors)
+  // Load current personal info (visible to everyone, editable only for editors)
   useEffect(() => {
-    const loadDefaults = async () => {
+    const loadPersonalInfo = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        const defaults = await generatorClient.getDefaults()
+        const personalInfo = await generatorClient.getPersonalInfo()
 
         setFormData({
-          name: defaults.name ?? "",
-          email: defaults.email ?? "",
-          phone: defaults.phone ?? "",
-          location: defaults.location ?? "",
-          website: defaults.website ?? "",
-          github: defaults.github ?? "",
-          linkedin: defaults.linkedin ?? "",
-          accentColor: defaults.accentColor ?? "#3B82F6",
-          avatar: defaults.avatar ?? "",
-          logo: defaults.logo ?? "",
+          name: personalInfo.name ?? "",
+          email: personalInfo.email ?? "",
+          phone: personalInfo.phone ?? "",
+          location: personalInfo.location ?? "",
+          website: personalInfo.website ?? "",
+          github: personalInfo.github ?? "",
+          linkedin: personalInfo.linkedin ?? "",
+          accentColor: personalInfo.accentColor ?? "#3B82F6",
+          avatar: personalInfo.avatar ?? "",
+          logo: personalInfo.logo ?? "",
         })
 
         setLoading(false)
       } catch (err) {
-        logger.error("Failed to load defaults", err as Error, {
+        logger.error("Failed to load personal info", err as Error, {
           component: "SettingsTab",
-          action: "loadDefaults",
+          action: "loadPersonalInfo",
         })
         setError(err instanceof Error ? err.message : "Failed to load settings")
         setLoading(false)
       }
     }
 
-    void loadDefaults()
+    void loadPersonalInfo()
   }, [])
 
   // Handle input change
-  const handleChange = (field: keyof UpdateDefaultsData, value: string) => {
+  const handleChange = (field: keyof UpdatePersonalInfoData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     setHasChanges(true)
     setSuccess(false)
@@ -93,7 +93,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
       setError(null)
       setSuccess(false)
 
-      await generatorClient.updateDefaults(formData)
+      await generatorClient.updatePersonalInfo(formData)
 
       setSaving(false)
       setSuccess(true)

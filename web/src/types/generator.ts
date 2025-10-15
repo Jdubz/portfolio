@@ -106,12 +106,6 @@ export interface UpdatePersonalInfoData {
   aiPrompts?: AIPrompts
 }
 
-// Deprecated type aliases for backward compatibility
-/** @deprecated Use PersonalInfo instead */
-export type GeneratorDefaults = PersonalInfo
-/** @deprecated Use UpdatePersonalInfoData instead */
-export type UpdateDefaultsData = UpdatePersonalInfoData
-
 export type GenerationStepStatus = "pending" | "in_progress" | "completed" | "failed" | "skipped"
 
 export interface GenerationStep {

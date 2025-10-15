@@ -145,18 +145,19 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
         setLoading(true)
         setError(null)
 
-        const defaults = await generatorClient.getDefaults()
+        const personalInfo = await generatorClient.getPersonalInfo()
 
-        if (defaults.aiPrompts) {
+        if (personalInfo.aiPrompts) {
           setPrompts({
             resume: {
-              systemPrompt: defaults.aiPrompts.resume?.systemPrompt ?? DEFAULT_RESUME_SYSTEM_PROMPT,
-              userPromptTemplate: defaults.aiPrompts.resume?.userPromptTemplate ?? DEFAULT_RESUME_USER_PROMPT_TEMPLATE,
+              systemPrompt: personalInfo.aiPrompts.resume?.systemPrompt ?? DEFAULT_RESUME_SYSTEM_PROMPT,
+              userPromptTemplate:
+                personalInfo.aiPrompts.resume?.userPromptTemplate ?? DEFAULT_RESUME_USER_PROMPT_TEMPLATE,
             },
             coverLetter: {
-              systemPrompt: defaults.aiPrompts.coverLetter?.systemPrompt ?? DEFAULT_COVER_LETTER_SYSTEM_PROMPT,
+              systemPrompt: personalInfo.aiPrompts.coverLetter?.systemPrompt ?? DEFAULT_COVER_LETTER_SYSTEM_PROMPT,
               userPromptTemplate:
-                defaults.aiPrompts.coverLetter?.userPromptTemplate ?? DEFAULT_COVER_LETTER_USER_PROMPT_TEMPLATE,
+                personalInfo.aiPrompts.coverLetter?.userPromptTemplate ?? DEFAULT_COVER_LETTER_USER_PROMPT_TEMPLATE,
             },
           })
         }
@@ -219,7 +220,7 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
       setError(null)
       setSuccess(false)
 
-      await generatorClient.updateDefaults({ aiPrompts: prompts })
+      await generatorClient.updatePersonalInfo({ aiPrompts: prompts })
 
       setSaving(false)
       setSuccess(true)
