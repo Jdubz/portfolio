@@ -137,28 +137,35 @@ describe("Database Configuration", () => {
   })
 
   describe("Logging behavior", () => {
-    let consoleSpy: jest.SpyInstance
-
     beforeEach(() => {
-      consoleSpy = jest.spyOn(console, "log").mockImplementation()
+      // Mock the logger module
+      jest.doMock("../../utils/logger", () => ({
+        logger: {
+          info: jest.fn(),
+          warning: jest.fn(),
+          error: jest.fn(),
+        },
+      }))
     })
 
     afterEach(() => {
-      consoleSpy.mockRestore()
+      jest.dontMock("../../utils/logger")
     })
 
     it("should log database configuration in non-production environments", async () => {
       process.env.ENVIRONMENT = "development"
+      const { logger } = await import("../../utils/logger")
       await import("../database")
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(logger.info).toHaveBeenCalledWith(
         expect.stringContaining("[Database Config] Using database:")
       )
     })
 
     it("should NOT log database configuration in production", async () => {
       process.env.ENVIRONMENT = "production"
+      const { logger } = await import("../../utils/logger")
       await import("../database")
-      expect(consoleSpy).not.toHaveBeenCalled()
+      expect(logger.info).not.toHaveBeenCalled()
     })
   })
 })
