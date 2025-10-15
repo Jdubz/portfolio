@@ -156,6 +156,13 @@ const updatePersonalInfoSchema = Joi.object({
   defaultStyle: Joi.string().valid("modern", "traditional", "technical", "executive").optional(),
 })
 
+const updateJobMatchSchema = Joi.object({
+  applied: Joi.boolean().optional(),
+  documentGenerated: Joi.boolean().optional(),
+  generationId: Joi.string().optional(),
+  notes: Joi.string().trim().max(5000).optional().allow(""),
+})
+
 /**
  * Main handler for generator requests
  */
@@ -287,6 +294,20 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
           // Route: GET /generator/requests - List requests (auth required)
           if (req.method === "GET" && path === "/generator/requests") {
             await handleListRequests(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: GET /generator/job-matches - List job matches (auth required)
+          if (req.method === "GET" && path === "/generator/job-matches") {
+            await handleListJobMatches(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: PUT /generator/job-matches/:id - Update job match (auth required)
+          if (req.method === "PUT" && path.startsWith("/generator/job-matches/")) {
+            await handleUpdateJobMatch(req as AuthenticatedRequest, res, requestId)
             resolve()
             return
           }
@@ -1723,6 +1744,123 @@ async function handleUploadImage(req: AuthenticatedRequest & { rawBody?: Buffer 
       error: "IMAGE_UPLOAD_FAILED",
       errorCode: err.code,
       message: error instanceof Error ? error.message : "Failed to upload image",
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /generator/job-matches - List job matches (auth required)
+ */
+async function handleListJobMatches(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    logger.info("Listing job matches", { requestId })
+
+    const jobMatchesRef = firestore.collection("job-matches")
+    const snapshot = await jobMatchesRef.orderBy("createdAt", "desc").limit(500).get()
+
+    const jobMatches = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }))
+
+    res.status(200).json({
+      success: true,
+      data: {
+        jobMatches,
+        count: jobMatches.length,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to list job matches", { error, requestId })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * PUT /generator/job-matches/:id - Update job match (auth required)
+ */
+async function handleUpdateJobMatch(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Extract job match ID from path
+    const path = req.path || req.url
+    const jobMatchId = path.split("/").pop()
+
+    if (!jobMatchId) {
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: "Job match ID is required",
+        requestId,
+      })
+      return
+    }
+
+    // Validate request body
+    const { error, value } = updateJobMatchSchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for update job match", {
+        error: error.details,
+        requestId,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    logger.info("Updating job match", {
+      requestId,
+      jobMatchId,
+      fieldsToUpdate: Object.keys(value),
+    })
+
+    const jobMatchRef = firestore.collection("job-matches").doc(jobMatchId)
+    await jobMatchRef.update({
+      ...value,
+      updatedAt: new Date().toISOString(),
+    })
+
+    // Fetch updated document
+    const updated = await jobMatchRef.get()
+    const jobMatch = {
+      id: updated.id,
+      ...updated.data(),
+    }
+
+    res.status(200).json({
+      success: true,
+      data: jobMatch,
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to update job match", { error, requestId })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
       requestId,
     })
   }
