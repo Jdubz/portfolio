@@ -4,6 +4,7 @@ import { Link, type HeadFC, navigate } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
 import { Tabs, type Tab } from "../components/Tabs"
+import { HowItWorksTab } from "../components/tabs/HowItWorksTab"
 import { WorkExperienceTab } from "../components/tabs/WorkExperienceTab"
 import { DocumentBuilderTab } from "../components/tabs/DocumentBuilderTab"
 import { AIPromptsTab } from "../components/tabs/AIPromptsTab"
@@ -13,18 +14,20 @@ import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
 import { GenerationDetailsModal } from "../components/GenerationDetailsModal"
 import { ErrorBoundary } from "../components/ErrorBoundary"
 import { logger } from "../utils/logger"
-import type { JobMatch } from "../types/job-match"
 import type { GenerationRequest } from "../types/generator"
 
 /**
  * Unified Resume Builder Page with Tabs
  *
  * Tabs with URL routing support:
+ * - /resume-builder (default - shows "How It Works")
+ * - /resume-builder?tab=how-it-works
  * - /resume-builder?tab=work-experience
- * - /resume-builder?tab=document-builder (default)
+ * - /resume-builder?tab=document-builder
  * - /resume-builder?tab=ai-prompts
  * - /resume-builder?tab=settings
  * - /resume-builder?tab=history (editor-only)
+ * - /resume-builder?tab=job-applications (editor-only)
  *
  * Legacy routes (redirects):
  * - /experience → /resume-builder?tab=work-experience
@@ -35,20 +38,27 @@ const ResumeBuilderPage: React.FC = () => {
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
 
-  // Job match and document generation state
-  const [selectedJobMatch, setSelectedJobMatch] = useState<JobMatch | null>(null)
+  // Document generation state
   const [modalRequest, setModalRequest] = useState<GenerationRequest | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Get initial tab from URL query param
   const getInitialTab = (): string => {
     if (typeof window === "undefined") {
-      return "document-builder"
+      return "how-it-works"
     }
     const params = new URLSearchParams(window.location.search)
     const tabParam = params.get("tab")
-    const validTabs = ["work-experience", "document-builder", "ai-prompts", "settings", "history", "job-applications"]
-    return tabParam && validTabs.includes(tabParam) ? tabParam : "document-builder"
+    const validTabs = [
+      "how-it-works",
+      "work-experience",
+      "document-builder",
+      "ai-prompts",
+      "settings",
+      "history",
+      "job-applications",
+    ]
+    return tabParam && validTabs.includes(tabParam) ? tabParam : "how-it-works"
   }
 
   const [activeTab, setActiveTab] = useState<string>(getInitialTab())
@@ -63,7 +73,7 @@ const ResumeBuilderPage: React.FC = () => {
     const currentTab = currentParams.get("tab")
 
     if (currentTab !== activeTab) {
-      const newUrl = activeTab === "document-builder" ? "/resume-builder" : `/resume-builder?tab=${activeTab}`
+      const newUrl = activeTab === "how-it-works" ? "/resume-builder" : `/resume-builder?tab=${activeTab}`
       void navigate(newUrl, { replace: true })
     }
   }, [activeTab])
@@ -119,17 +129,6 @@ const ResumeBuilderPage: React.FC = () => {
     })
   }
 
-  // Job match handlers
-  const handleSelectJobMatch = (jobMatch: JobMatch) => {
-    setSelectedJobMatch(jobMatch)
-    setActiveTab("document-builder")
-    logger.info("Job match selected for generation", {
-      jobMatchId: jobMatch.id,
-      company: jobMatch.company,
-      role: jobMatch.role,
-    })
-  }
-
   const handleViewGeneratedDocs = (request: GenerationRequest) => {
     setModalRequest(request)
     setIsModalOpen(true)
@@ -147,6 +146,15 @@ const ResumeBuilderPage: React.FC = () => {
   // Each tab wrapped in ErrorBoundary to prevent entire app crashes
   const tabs: Tab[] = [
     {
+      id: "how-it-works",
+      label: "How It Works",
+      content: (
+        <ErrorBoundary>
+          <HowItWorksTab />
+        </ErrorBoundary>
+      ),
+    },
+    {
       id: "work-experience",
       label: "Work Experience",
       content: (
@@ -160,7 +168,7 @@ const ResumeBuilderPage: React.FC = () => {
       label: "Document Builder",
       content: (
         <ErrorBoundary>
-          <DocumentBuilderTab isEditor={isEditor} selectedJobMatch={selectedJobMatch ?? undefined} />
+          <DocumentBuilderTab isEditor={isEditor} />
         </ErrorBoundary>
       ),
     },
@@ -190,10 +198,7 @@ const ResumeBuilderPage: React.FC = () => {
             label: "Job Applications",
             content: (
               <ErrorBoundary>
-                <JobApplicationsTab
-                  onSelectJobMatch={handleSelectJobMatch}
-                  onViewGeneratedDocs={handleViewGeneratedDocs}
-                />
+                <JobApplicationsTab onViewGeneratedDocs={handleViewGeneratedDocs} />
               </ErrorBoundary>
             ),
           },

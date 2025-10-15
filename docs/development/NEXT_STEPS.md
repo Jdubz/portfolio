@@ -6,6 +6,424 @@ This document lists **prioritized outstanding work** for the portfolio project. 
 
 ---
 
+## Quick Wins: Usability Improvements
+
+**Context**: This tool works in concert with [job-finder](https://github.com/Jdubz/job-finder) to create the best job applications ever:
+- **job-finder**: Discovers jobs, scrapes descriptions, analyzes match quality, extracts insights
+- **portfolio (this tool)**: Generates hyper-customized resumes/cover letters using AI with job-finder's rich context
+
+**Pipeline Vision**: job-finder → Firestore `job-matches` → portfolio tool → AI-generated documents → application submission
+
+The following improvements focus on seamless integration, maximum automation, and producing the highest quality applications.
+
+### Tier 1: Pipeline Integration (Critical for Best-in-Class Applications)
+
+#### 1. Intelligent Context Utilization ✅
+**Status**: Complete (January 2025)
+**Effort**: Investigation revealed already implemented
+**Impact**: CRITICAL - Maximize job-finder insights in AI generation
+
+**Verification Results**:
+After comprehensive code analysis, confirmed that ALL job match insights are already being used in AI prompts:
+
+**OpenAI Service** (`functions/src/services/openai.service.ts:255-288`):
+- ✅ `matchScore` - Overall match percentage
+- ✅ `matchedSkills` - Skills that align with the job
+- ✅ `missingSkills` - Skills to develop (with "don't fabricate" guidance)
+- ✅ `keyStrengths` - What to highlight
+- ✅ `potentialConcerns` - Address weaknesses through relevant experience
+- ✅ `keywords` - Important keywords to use naturally
+- ✅ `customizationRecommendations.skills_to_emphasize`
+- ✅ `customizationRecommendations.resume_focus`
+- ✅ `customizationRecommendations.cover_letter_points`
+- ✅ `resumeIntakeData.target_summary`
+- ✅ `resumeIntakeData.skills_priority`
+- ✅ `resumeIntakeData.keywords_to_include`
+- ✅ `resumeIntakeData.achievement_angles` (line 283)
+
+**Gemini Service** (`functions/src/services/gemini.service.ts:313-347`):
+- Identical comprehensive job match data usage
+- Prompts are consistent between providers for quality parity
+
+**Conclusion**: Task is complete. Both AI providers already leverage all job-finder insights comprehensively. Prompts explicitly instruct AI to use these insights for SELECTION and EMPHASIS only, without fabrication.
+
+---
+
+#### 2. One-Click Generation from Job Applications ✅
+**Status**: Complete (January 2025)
+**Effort**: 45 minutes (actual)
+**Impact**: HIGH - Eliminates friction in pipeline workflow
+
+**Achieved Workflow** (1 click):
+1. Click "Generate" button in Job Applications table → Done
+2. Watch real-time progress inline
+3. Documents automatically linked to job match
+
+**Implementation Completed**:
+- ✅ Created reusable `useDocumentGeneration` hook
+- ✅ Added `buildGenerationOptionsFromJobMatch` helper function
+- ✅ "Generate" button in Actions column for jobs without documents
+- ✅ Real-time progress display with `GenerationProgress` component
+- ✅ Auto-populates all fields from job match:
+  - `jobDescriptionText` / `description` → job description
+  - `matchedSkills` + `keyStrengths` + `keywords` → emphasize field
+  - `companyWebsite` → company website
+  - `url` → job description URL
+  - `jobMatchId` → links generation to job match
+- ✅ Auto-updates job match after success:
+  - `documentGenerated: true`
+  - `generationId: <requestId>`
+  - `documentGeneratedAt: <timestamp>`
+- ✅ Graceful error handling with user notifications
+- ✅ Uses AI provider preference from localStorage (defaults to Gemini)
+- ✅ Optimistic UI updates (grayed out while generating)
+- ✅ Completion animation (2-second delay to show success)
+
+**Files Created/Modified**:
+- `web/src/hooks/useDocumentGeneration.ts` - New reusable hook (235 lines)
+- `web/src/components/tabs/JobApplicationsTab.tsx` - Added one-click generation (436 lines)
+- `web/src/types/job-match.ts` - Added `documentGeneratedAt` to UpdateJobMatchData
+
+**User Experience**:
+- Single click → documents generated and linked
+- No tab switching required
+- Progress visible inline with step-by-step updates
+- Row highlights during generation
+- Automatic status update on completion
+
+---
+
+#### 3. Bulk Generation Queue
+**Status**: Not implemented
+**Effort**: 3-4 hours
+**Impact**: CRITICAL - Process 10-20 job-finder results efficiently
+
+**Use Case**:
+- job-finder finds 15 promising roles
+- User reviews matches, selects top 10
+- Generate tailored documents for all 10 in one action
+
+**Current State**:
+- Must generate one at a time (tedious for high-volume applications)
+- No queue management
+- No aggregate progress tracking
+
+**Implementation**:
+- Multi-select checkboxes in Job Applications table
+- "Generate Selected (N)" action button
+- Queue-based processing:
+  - Process sequentially to avoid rate limits (20 req/15min)
+  - Show aggregate progress: "Generating 3/10..."
+  - Individual job progress indicators
+  - Pause/resume capability
+- Summary on completion:
+  - "✓ 8 succeeded, ✗ 2 failed"
+  - Links to generated documents
+  - Option to retry failed generations
+- Update all job match statuses in batch
+
+**Rate Limiting Considerations**:
+- Editor limit: 20 requests / 15 minutes
+- For 10 jobs: ~7.5 minutes at full speed
+- Add smart throttling to stay under limits
+- Estimate completion time based on queue size
+
+**Files to Modify**:
+- `web/src/components/tabs/JobApplicationsTab.tsx`
+- `web/src/hooks/useBulkGeneration.ts` - New hook for queue management
+- `web/src/components/BulkGenerationModal.tsx` - New component
+
+**Nice-to-Have**:
+- "Auto-generate all matches >80%" button
+- Configurable priority: generate high-match jobs first
+
+---
+
+#### 4. Job Match Edit UI (Manual Override)
+**Status**: Not implemented
+**Effort**: 1-2 hours
+**Impact**: MEDIUM - For edge cases where job-finder data needs adjustment
+
+**Use Cases**:
+- job-finder misclassified role or company
+- Want to add manual notes/context
+- Update job description after it changed
+- Mark as applied/rejected manually
+
+**Implementation**:
+- "Edit" button in Job Applications table (each row)
+- Modal form with all editable fields:
+  - company, role, title, description, url
+  - matchScore (manual override)
+  - status, priority, notes
+  - applied checkbox
+- PUT to existing `/generator/job-matches/:id` endpoint
+- Optimistic updates + revert on error
+
+**Files to Create**:
+- `web/src/components/JobMatchEditModal.tsx` - New component
+- `web/src/components/tabs/JobApplicationsTab.tsx` - Add edit button
+
+**Note**: Create is NOT needed - job-finder handles that
+
+---
+
+### Tier 2: Quality & Efficiency Improvements
+
+#### 5. Smart Filtering & Sorting in Job Applications
+**Status**: Not implemented
+**Effort**: 1 hour
+**Impact**: HIGH - Quickly find best opportunities from job-finder results
+
+**Current State**:
+- Shows all job matches in creation order
+- No filtering or sorting
+
+**Implementation**:
+- **Filters**:
+  - Match score: >90%, 80-90%, 70-80%, <70%
+  - Status: Not Generated, Generated, Applied
+  - Priority: High, Medium, Low (if job-finder sets this)
+- **Sorting**:
+  - By match score (default)
+  - By creation date
+  - By company name
+  - By applied status
+- **Quick Actions**:
+  - "Show only high matches (>80%)" toggle
+  - "Hide already applied" toggle
+- Persist preferences in localStorage
+
+**Files to Modify**:
+- `web/src/components/tabs/JobApplicationsTab.tsx`
+
+---
+
+#### 6. PDF Inline Preview
+**Status**: Not implemented
+**Effort**: 1-2 hours
+**Impact**: MEDIUM - Faster iteration, less clutter
+
+**Problem**:
+- Must download PDF to see result
+- Clutters Downloads folder during iteration
+
+**Implementation**:
+- Use `react-pdf` or `<iframe>` to show PDF inline
+- Collapsible preview panel
+- Download button below preview
+
+**Files to Modify**:
+- `web/src/components/tabs/DocumentBuilderTab.tsx`
+- `web/src/components/PDFPreview.tsx` - New component
+
+---
+
+#### 7. Bi-Directional Sync with job-finder
+**Status**: Not implemented
+**Effort**: 2-3 hours (requires job-finder API support)
+**Impact**: HIGH - Close the feedback loop
+
+**Vision**: Share insights between tools to improve both
+
+**job-finder ← portfolio**:
+- After generating documents, send feedback to job-finder:
+  - Generation success/failure
+  - Time to generate
+  - Which keywords were most valuable
+  - Document quality score (if manually rated)
+- job-finder can use this to refine matching algorithm
+
+**portfolio ← job-finder**:
+- Real-time updates when job-finder creates new matches
+- Webhook or polling mechanism
+- Show notification: "5 new job matches found"
+
+**Implementation Options**:
+1. **Firestore Listeners** (easiest):
+   - Portfolio watches `job-matches` collection for new docs
+   - Both tools write to shared Firestore
+2. **Webhooks**:
+   - job-finder calls portfolio webhook on new match
+   - portfolio calls job-finder webhook after generation
+3. **Shared API**:
+   - Create unified API for both tools
+
+**Files to Create/Modify**:
+- `web/src/hooks/useJobMatchListener.ts` - Firestore listener
+- `functions/src/webhooks.ts` - Webhook handlers (if needed)
+
+**Questions for job-finder integration**:
+- Does job-finder expose an API?
+- What feedback would improve match quality?
+- How often does it run? (hourly cron? on-demand?)
+
+---
+
+### Tier 3: Nice to Have
+
+#### 8. Generation History CSV Export
+**Status**: Not implemented
+**Effort**: 30 minutes
+**Impact**: LOW - Better application tracking
+
+**Implementation**:
+- Add "Export CSV" button to Document History tab
+- Export columns: Date, Company, Role, Status, AI Model, Cost, Generation ID
+- Use `papaparse` or similar library
+
+**Files to Modify**:
+- `web/src/components/GenerationHistory.tsx`
+
+---
+
+#### 9. Default Form Values from Last Generation
+**Status**: Not implemented
+**Effort**: 30 minutes
+**Impact**: LOW - Faster iteration for similar roles
+
+**Implementation**:
+- Store last successful generation params in localStorage
+- Pre-fill form fields on load (except company/role)
+- Add "Use Last Settings" button
+
+---
+
+#### 10. Generation Templates/Presets
+**Status**: Not implemented
+**Effort**: 2-3 hours
+**Impact**: MEDIUM - Faster switching between role types
+
+**Implementation**:
+- Save generation presets: "Full Stack", "Frontend", "DevOps", "Leadership"
+- Each preset includes: emphasize keywords, AI prompts, generation type
+- Dropdown to load preset
+- Store in Firestore under user account
+
+---
+
+#### 11. Keyboard Shortcuts
+**Status**: Not implemented
+**Effort**: 1-2 hours
+**Impact**: LOW - Power user efficiency
+
+**Shortcuts**:
+- `Ctrl+Enter` - Generate documents
+- `Ctrl+K` - Focus company field
+- `Ctrl+N` - New job match
+- `Esc` - Close modals
+
+**Implementation**:
+- Use `react-hotkeys-hook` or similar library
+
+---
+
+## Portfolio Showcase Enhancements
+
+These features demonstrate the sophistication of the integrated job-finder → portfolio pipeline system.
+
+### 12. Pipeline Analytics Dashboard
+**Status**: Not implemented
+**Effort**: 4-5 hours
+**Impact**: Showcases end-to-end system intelligence
+
+**Vision**: Show the complete pipeline in action with real data
+
+**Metrics to Display**:
+
+**job-finder → portfolio Pipeline**:
+- Total jobs discovered vs. documents generated (conversion funnel)
+- Average match score of generated documents
+- Success rate by match score tier (>90%, 80-90%, etc.)
+- Time from job discovery to document generation
+- Most common matched skills across all applications
+
+**Generation Performance**:
+- Gemini vs OpenAI: cost comparison with actual data
+- Average generation time per provider
+- Total cost savings from using Gemini (e.g., "Saved $47.23 vs OpenAI")
+- Token usage trends over time
+- Generation success rate
+
+**Application Outcomes** (manual input):
+- Interview rate by match score
+- Response rate by document quality
+- Which keywords correlated with success
+- Feedback loop to improve job-finder matching
+
+**Implementation**:
+- Aggregate data from `generator_history` + `job-matches` collections
+- Cross-reference by `generationId` ↔ `jobMatchId`
+- Use recharts for visualizations
+- Real-time Firestore listeners for live updates
+- Add as new tab: "Pipeline Analytics"
+
+**Files to Create**:
+- `web/src/components/tabs/PipelineAnalyticsTab.tsx` - New tab
+- `web/src/hooks/usePipelineAnalytics.ts` - Data aggregation
+- `web/src/components/analytics/FunnelChart.tsx` - Conversion funnel
+- `web/src/components/analytics/CostComparison.tsx` - Cost savings
+
+**Demo Value**: Shows technical sophistication + data-driven approach to job search
+
+---
+
+### 13. "How It Works" - Integrated System Documentation
+**Status**: Complete
+**Effort**: 3-4 hours (actual: 1 hour)
+**Impact**: Demonstrates system design thinking
+
+**Content**:
+
+**Architecture Overview**:
+- End-to-end pipeline diagram: job-finder → Firestore → portfolio → AI → GCS → Application
+- Data flow between systems
+- Firestore as integration layer
+
+**job-finder Intelligence**:
+- How it discovers and analyzes jobs
+- Match scoring algorithm (high-level)
+- What insights it provides (matchedSkills, keyStrengths, etc.)
+
+**portfolio AI Customization**:
+- How it uses job-finder insights in prompts
+- Multi-provider AI strategy (Gemini vs OpenAI)
+- Cost optimization (96% savings)
+- PDF generation pipeline
+
+**Security & Scale**:
+- Firebase Auth + custom claims (editor role)
+- Rate limiting strategy
+- Cloud Functions Gen 2 architecture
+- GCS lifecycle policies (COLDLINE after 90 days)
+
+**Code Highlights**:
+- Show interesting code snippets (with syntax highlighting)
+- Link to GitHub if repo is public
+- Explain technical decisions
+
+**Files to Create**:
+- `web/src/pages/how-it-works.tsx` - New page
+- `web/src/components/architecture-diagram.svg` - System diagram
+- Update navigation to include link
+
+**Demo Value**: Shows full-stack expertise, system design, and integration skills
+
+**Implementation** (Completed January 2025):
+- Created `HowItWorksTab.tsx` component with comprehensive documentation
+- Added as first tab in resume builder (accessible to all users, no auth required)
+- Balances layman accessibility with technical depth
+- Covers: pipeline architecture, multi-provider AI, cost optimization, security, quality philosophy
+- Includes links to GitHub repos for both tools
+- Explains integrated job-finder → portfolio system
+- 480 lines of polished content
+
+**Files Created/Modified**:
+- `web/src/components/tabs/HowItWorksTab.tsx` - New component (480 lines)
+- `web/src/pages/resume-builder.tsx` - Added tab as first in list
+
+---
+
 ## Optional Enhancements (Low Priority)
 
 All high-priority work is complete. The items below are optional enhancements that may be considered based on user needs.

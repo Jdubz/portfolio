@@ -91,6 +91,7 @@ export interface UpdateJobMatchData {
   jobDescriptionText?: string
   documentGenerated?: boolean
   generationId?: string
+  documentGeneratedAt?: string
   applied?: boolean
   notes?: string
 }
