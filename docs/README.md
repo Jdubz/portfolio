@@ -7,12 +7,16 @@ This directory contains all documentation for the Josh Wentworth Portfolio proje
 ```
 docs/
 ├── development/
-│   ├── generator/          # AI Resume Generator documentation
-│   ├── setup/              # Setup and configuration guides
 │   ├── ARCHITECTURE.md     # System architecture
-│   └── PLANNED_IMPROVEMENTS.md  # Future roadmap
+│   ├── NEXT_STEPS.md       # Future roadmap and planning
+│   ├── SETUP.md            # Development setup guide
+│   └── test-audit/         # Test coverage reports
+├── setup/                  # Firebase and infrastructure setup
+├── infrastructure/         # Database and infrastructure docs
 ├── brand/                  # Brand assets and guidelines
-└── CHANGELOG.md            # Version history
+├── testing/                # Test documentation
+├── CHANGELOG.md            # Version history
+└── DEVELOPMENT_WORKFLOW.md # Git workflow and deployment
 ```
 
 ## 📚 Documentation Index
@@ -29,17 +33,8 @@ docs/
 
 ### Plans & Roadmap
 
-- **[PLANNED_IMPROVEMENTS.md](./development/PLANNED_IMPROVEMENTS.md)**
-  Future roadmap for the entire project including high-priority improvements and planned features.
-
-- **[AI Resume Generator Plan](./development/generator/PLAN.md)**
-  Future enhancement opportunities for the AI-powered resume generator (production-ready, optional improvements only).
-
-- **[Generator README](./development/generator/README.md)**
-  Complete AI Resume Generator documentation including architecture, getting started, and feature overview.
-
-- **[Generator Schema](./development/generator/SCHEMA.md)**
-  Firestore database schema reference for the generator feature.
+- **[NEXT_STEPS.md](./development/NEXT_STEPS.md)**
+  Future roadmap for the entire project including prioritized improvements and planned features. All core functionality is complete and production-ready - this lists optional enhancements.
 
 ### Brand Assets
 
@@ -62,15 +57,17 @@ docs/
 ### Getting Started
 
 1. Read [ARCHITECTURE.md](./development/ARCHITECTURE.md) to understand the codebase structure
-2. Check [PLANNED_IMPROVEMENTS.md](./development/PLANNED_IMPROVEMENTS.md) for the current roadmap
-3. For generator feature: see [generator/README.md](./development/generator/README.md)
+2. Check [NEXT_STEPS.md](./development/NEXT_STEPS.md) for the current roadmap
+3. Follow [SETUP.md](./development/SETUP.md) for local development setup
+4. Review [DEVELOPMENT_WORKFLOW.md](./DEVELOPMENT_WORKFLOW.md) for git workflow
 
 ### Making Changes
 
 1. Review [ARCHITECTURE.md](./development/ARCHITECTURE.md) for architectural patterns
-2. Check [PLANNED_IMPROVEMENTS.md](./development/PLANNED_IMPROVEMENTS.md) for planned work
-3. For generator enhancements: see [generator/PLAN.md](./development/generator/PLAN.md)
+2. Check [NEXT_STEPS.md](./development/NEXT_STEPS.md) for planned work
+3. Follow git workflow: feature → staging → main
 4. Update [CHANGELOG.md](./CHANGELOG.md) with your changes
+5. Add a changeset: `npm run changeset`
 
 ### Project Information
 
