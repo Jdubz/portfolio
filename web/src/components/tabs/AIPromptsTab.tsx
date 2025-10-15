@@ -297,7 +297,7 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
         sx={{
           bg: "background",
           p: 4,
-          borderRadius: "8px",
+          borderRadius: "md",
           border: "1px solid",
           borderColor: "muted",
         }}
@@ -368,7 +368,7 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
       </Box>
 
       {/* Info Box */}
-      <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
+      <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "sm" }}>
         <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
           <strong>Note:</strong> These prompts control how the AI generates documents. Changes will apply to all future
           generations. Be careful when modifying - incorrect prompts may result in poor quality outputs.

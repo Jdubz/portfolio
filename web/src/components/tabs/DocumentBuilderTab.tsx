@@ -374,7 +374,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
 
       {/* Editor Benefits */}
       {!isEditor && (
-        <Box sx={{ mb: 3, p: 3, bg: "muted", borderRadius: "4px" }}>
+        <Box sx={{ mb: 3, p: 3, bg: "muted", borderRadius: "sm" }}>
           <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
             <strong>Sign in for editor features:</strong> Higher rate limits (20 vs 10 requests/15min), 7-day download
             links, document history, and personal info defaults.
@@ -405,7 +405,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         sx={{
           bg: "background",
           p: 4,
-          borderRadius: "8px",
+          borderRadius: "md",
           border: "1px solid",
           borderColor: "muted",
           mb: 4,
@@ -610,7 +610,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
 
       {/* Metadata section (optional, shown below checklist) */}
       {metadata && generationSteps.length > 0 && (
-        <Box sx={{ mt: 3, p: 3, bg: "muted", borderRadius: "4px" }}>
+        <Box sx={{ mt: 3, p: 3, bg: "muted", borderRadius: "sm" }}>
           <Text sx={{ fontSize: 1, fontFamily: "monospace" }}>
             <strong>Model:</strong> {metadata.model} | <strong>Tokens:</strong> {metadata.tokenUsage?.total ?? "N/A"} |{" "}
             <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) ?? "N/A"} | <strong>Duration:</strong>{" "}
@@ -626,7 +626,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
       )}
 
       {/* Footer Note */}
-      <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
+      <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "sm" }}>
         <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
           <strong>Note:</strong> Generated documents are stored in Google Cloud Storage and automatically moved to
           Coldline storage after 90 days for cost optimization. Download links expire after{" "}
