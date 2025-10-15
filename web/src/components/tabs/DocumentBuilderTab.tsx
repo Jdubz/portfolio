@@ -301,7 +301,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
 
   const downloadFromUrl = (url: string, filename: string) => {
     try {
-      // Create download link for signed URL (Phase 2.2)
+      // Create download link for public URL
       const link = document.createElement("a")
       link.href = url
       link.download = filename

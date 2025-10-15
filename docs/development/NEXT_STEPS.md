@@ -1,6 +1,6 @@
 # Portfolio - Next Steps
 
-**Last Updated**: October 14, 2025
+**Last Updated**: October 15, 2025
 
 This document lists **prioritized outstanding work** for the portfolio project. All core features are complete and production-ready - these are optional enhancements.
 
@@ -8,75 +8,44 @@ This document lists **prioritized outstanding work** for the portfolio project. 
 
 ## High Priority
 
-### 1. Frontend Terminology Migration
+### 1. Clean Up Misleading URL Expiry Code
 
-**Status**: Backend complete, frontend partially complete
-**Effort**: 2-3 hours
-**Why**: Technical debt cleanup, backend already migrated
+**Status**: Not implemented
+**Effort**: 1-2 hours
+**Why**: Code claims URLs expire but they don't (buckets are public)
 
 **Context:**
-Backend uses "personalInfo" terminology but frontend still uses "defaults" in some places.
+GCS buckets (`joshwentworth-resumes`, `joshwentworth-resumes-staging`) are configured as publicly readable. URLs **never expire** - they're permanent public HTTPS URLs like `https://storage.googleapis.com/BUCKET/PATH`.
+
+**Current Misleading Code:**
+- `generator.ts` calculates fake expiry times (7 days for editors, 1 hour for viewers)
+- Stores fake `signedUrlExpiry` timestamps in Firestore
+- Returns fake `urlExpiresIn: "7 days" or "1 hour"` to clients
+- `storage.service.ts` ignores the `expiresInHours` parameter and returns public URLs
 
 **Tasks:**
-1. Update frontend types (`web/src/types/generator.ts`):
-   - Rename `GeneratorDefaults` → `PersonalInfo`
-   - Rename `UpdateDefaultsData` → `UpdatePersonalInfoData`
+1. Remove expiry logic from `functions/src/generator.ts`:
+   - Remove `expiresInHours` calculation (line 566)
+   - Remove `signedUrlExpiry` from Firestore writes (lines 660, 671)
+   - Remove `urlExpiresIn` from API responses (line 727)
+   - Update `generateSignedUrl()` calls to not pass expiry parameter
 
-2. Update API client (`web/src/api/generator-client.ts`):
-   - Remove deprecated method aliases: `getDefaults()`, `updateDefaults()`
+2. Update `storage.service.ts`:
+   - Rename `generateSignedUrl()` → `generatePublicUrl()`
+   - Remove `SignedUrlOptions` interface
+   - Update comments to clarify URLs are public and permanent
 
-3. Update components:
-   - Search for usages: `rg "getDefaults|updateDefaults|GeneratorDefaults" web/src/`
-   - Update state variable names from `defaults` to `personalInfo`
+3. Update Firestore schema:
+   - Remove `signedUrlExpiry` field from `generator_history` documents
+   - Update existing docs or wait for natural turnover (90 day lifecycle)
 
-4. Test thoroughly:
-   ```bash
-   npm run test:web
-   npm run lint:web
-   npm run build:web
-   ```
-
-**Note:** Firestore migration already complete (all environments).
+4. Update frontend comments/docs mentioning "signed URLs" or "expiry"
 
 ---
 
 ## Medium Priority
 
-### 2. URL Expiry Handling
-
-**Status**: Not implemented
-**Effort**: 3-4 hours
-**Why**: Quality of life improvement for users
-
-**Current Behavior:**
-- Signed URLs expire after 1 hour (viewers) or 7 days (editors)
-- Users must re-generate document if URL expired
-- No warning before expiry
-
-**Proposed Enhancement:**
-- Display expiry time in Document History
-- Show warning badge when URL expires soon
-- Add "Refresh URL" button to regenerate signed URL without re-generating document
-
-**Implementation:**
-1. Create endpoint: `POST /generator/requests/:id/refresh-url`
-   - Regenerate signed URLs with fresh expiry
-   - Update response document in Firestore
-   - Return new URLs
-
-2. Update Document History UI:
-   - Show expiry timestamp
-   - Add warning badges (expired, expires soon)
-   - Add refresh button for expired URLs
-
-3. Add API client method:
-   ```typescript
-   async refreshUrls(requestId: string): Promise<GenerateResponse>
-   ```
-
----
-
-### 3. Resume Template Library
+### 2. Resume Template Library
 
 **Status**: Not implemented
 **Effort**: 6-8 hours
@@ -102,7 +71,7 @@ Save and reuse common job descriptions and preferences as templates.
 
 ---
 
-### 4. Analytics Dashboard (Editor Only)
+### 3. Analytics Dashboard (Editor Only)
 
 **Status**: Not implemented
 **Effort**: 10-15 hours
@@ -137,7 +106,7 @@ Save and reuse common job descriptions and preferences as templates.
 
 ## Low Priority
 
-### 5. Storage Class Background Sync
+### 4. Storage Class Background Sync
 
 **Status**: Partially implemented
 **Effort**: 2-3 hours
@@ -156,7 +125,7 @@ Save and reuse common job descriptions and preferences as templates.
 
 ---
 
-### 6. Enhanced Rate Limiting
+### 5. Enhanced Rate Limiting
 
 **Status**: Current system works well
 **Effort**: 30 minutes
@@ -227,6 +196,51 @@ When deciding whether to implement a feature, ask:
 ---
 
 ## Recently Completed ✅
+
+### Frontend Terminology Migration (October 2025)
+
+**Status**: Complete
+**Impact**: Eliminated technical debt, consistent naming across frontend and backend
+
+**Implementation:**
+- Removed deprecated type aliases `GeneratorDefaults` and `UpdateDefaultsData` from types
+- Removed deprecated API methods `getDefaults()` and `updateDefaults()` from generator client
+- Updated all React components to use `personalInfo` terminology:
+  - `SettingsTab.tsx` - Renamed variables and method calls
+  - `AIPromptsTab.tsx` - Renamed variables and method calls
+- Updated test files to use new terminology
+- All 42 tests passing, linting clean
+
+**Files Modified:**
+- `web/src/types/generator.ts` - Removed deprecated type aliases
+- `web/src/api/generator-client.ts` - Removed deprecated methods
+- `web/src/components/tabs/SettingsTab.tsx` - Updated to use personalInfo
+- `web/src/components/tabs/AIPromptsTab.tsx` - Updated to use personalInfo
+- `web/src/api/__tests__/generator-client.test.ts` - Updated test expectations
+
+### Job Matches API Refactoring (October 2025)
+
+**Status**: Complete
+**Impact**: Eliminated direct Firestore access from frontend, better security and consistency
+
+**Implementation:**
+- Added server-side API endpoints in `functions/src/generator.ts`:
+  - `GET /generator/job-matches` - List all job matches (editor-only, auth required)
+  - `PUT /generator/job-matches/:id` - Update job match (editor-only, auth required)
+- Refactored `JobMatchClient` to extend `ApiClient` base class
+- Removed all Firestore SDK imports from frontend
+- Converted to HTTP-based API calls with proper authentication
+- Consistent architecture with other API clients (GeneratorClient, ExperienceClient)
+
+**Benefits:**
+- No client-side auth timing issues
+- Server-side security enforcement
+- Easier debugging with HTTP error codes
+- Complete decoupling from Firestore implementation
+
+**Files Modified:**
+- `functions/src/generator.ts` - Added job-matches endpoints and validation schema
+- `web/src/api/job-match-client.ts` - Refactored to use HTTP instead of Firestore SDK
 
 ### Job Match AI Integration (October 2025)
 
@@ -306,18 +320,18 @@ When deciding whether to implement a feature, ask:
 
 ## Recommended Priorities
 
-**If you have 3 hours:**
-1. Frontend terminology migration (2-3 hours)
+**If you have 2 hours:**
+1. Clean up misleading URL expiry code (1-2 hours)
 
 **If you have a weekend:**
-1. Frontend terminology migration (2-3 hours)
-2. URL expiry handling (3-4 hours)
-3. Resume template library (6-8 hours)
+1. Clean up misleading URL expiry code (1-2 hours)
+2. Resume template library (6-8 hours)
 
 **If you have a week:**
-1. All of the above
-2. Analytics dashboard (10-15 hours)
-3. Storage class sync (2-3 hours)
+1. Clean up misleading URL expiry code (1-2 hours)
+2. Resume template library (6-8 hours)
+3. Analytics dashboard (10-15 hours)
+4. Storage class sync (2-3 hours)
 
 **Otherwise:**
 - System is production-ready as-is
@@ -331,4 +345,4 @@ For development setup, see [SETUP.md](./SETUP.md)
 
 ---
 
-**Last Updated**: October 14, 2025
+**Last Updated**: October 15, 2025

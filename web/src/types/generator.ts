@@ -41,9 +41,8 @@ export interface GenerationMetadata {
 
 export interface GenerateResponse {
   success: boolean
-  resumeUrl?: string // Signed URL for resume download (Phase 2.3)
-  coverLetterUrl?: string // Signed URL for cover letter download (Phase 2.3)
-  urlExpiresIn?: string // Human-readable expiry time ("1 hour" or "7 days")
+  resumeUrl?: string // Public URL for resume download (never expires)
+  coverLetterUrl?: string // Public URL for cover letter download (never expires)
   // Legacy fields (Phase 1) - kept for backwards compatibility
   resume?: string // @deprecated Use resumeUrl instead (base64 PDF)
   coverLetter?: string // @deprecated Use coverLetterUrl instead (base64 PDF)
@@ -55,8 +54,7 @@ export type StorageClass = "STANDARD" | "COLDLINE"
 
 export interface FileMetadata {
   gcsPath: string
-  signedUrl?: string
-  signedUrlExpiry?: string
+  publicUrl?: string // Public HTTPS URL (never expires - buckets are publicly readable)
   size?: number
   storageClass?: StorageClass
 }
