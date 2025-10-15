@@ -232,10 +232,13 @@ What you CANNOT do:
    * Build user prompt for resume generation
    */
   private buildResumeUserPrompt(options: GenerateResumeOptions): string {
+    // Create blurb map for O(1) lookup instead of O(n) find
+    const blurbMap = new Map(options.experienceBlurbs.map((b) => [b.name, b]))
+
     // Format experience data with explicit boundaries
     const experienceData = options.experienceEntries
       .map((entry, index) => {
-        const blurb = options.experienceBlurbs.find((b) => b.name === entry.id)
+        const blurb = blurbMap.get(entry.id)
         return `
 EXPERIENCE ENTRY #${index + 1} (USE ONLY THIS DATA - DO NOT ADD ANYTHING):
 Company/Title: ${entry.title}
@@ -385,10 +388,13 @@ You highlight the candidate's most relevant accomplishments and explain why they
    * Build user prompt for cover letter generation
    */
   private buildCoverLetterUserPrompt(options: GenerateCoverLetterOptions): string {
+    // Create blurb map for O(1) lookup instead of O(n) find
+    const blurbMap = new Map(options.experienceBlurbs.map((b) => [b.name, b]))
+
     // Format experience data (simplified for cover letter)
     const experienceData = options.experienceEntries
       .map((entry) => {
-        const blurb = options.experienceBlurbs.find((b) => b.name === entry.id)
+        const blurb = blurbMap.get(entry.id)
         return `${entry.title}${entry.role ? ` - ${entry.role}` : ""} (${entry.startDate} - ${entry.endDate || "Present"})
 ${blurb ? blurb.content : entry.body || ""}`
       })
@@ -706,10 +712,13 @@ Generate a compelling cover letter that showcases the candidate's qualifications
       return this.buildResumeUserPrompt(options)
     }
 
+    // Create blurb map for O(1) lookup instead of O(n) find
+    const blurbMap = new Map(options.experienceBlurbs.map((b) => [b.name, b]))
+
     // Format experience data
     const experienceData = options.experienceEntries
       .map((entry, index) => {
-        const blurb = options.experienceBlurbs.find((b) => b.name === entry.id)
+        const blurb = blurbMap.get(entry.id)
         return `
 EXPERIENCE ENTRY #${index + 1} (USE ONLY THIS DATA - DO NOT ADD ANYTHING):
 Company/Title: ${entry.title}
@@ -752,10 +761,13 @@ END OF ENTRY #${index + 1} - USE NOTHING BEYOND THIS POINT FOR THIS ENTRY
       return this.buildCoverLetterUserPrompt(options)
     }
 
+    // Create blurb map for O(1) lookup instead of O(n) find
+    const blurbMap = new Map(options.experienceBlurbs.map((b) => [b.name, b]))
+
     // Format experience data (simplified for cover letter)
     const experienceData = options.experienceEntries
       .map((entry) => {
-        const blurb = options.experienceBlurbs.find((b) => b.name === entry.id)
+        const blurb = blurbMap.get(entry.id)
         return `${entry.title}${entry.role ? ` - ${entry.role}` : ""} (${entry.startDate} - ${entry.endDate || "Present"})
 ${blurb ? blurb.content : entry.body || ""}`
       })

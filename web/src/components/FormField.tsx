@@ -32,9 +32,9 @@ interface FormFieldProps {
   onChange: (value: string) => void
 
   /**
-   * Field type: 'input' for single-line, 'textarea' for multi-line
+   * Field type: 'input' for single-line, 'textarea' for multi-line, or HTML5 input types like 'month', 'date', etc.
    */
-  type?: "input" | "textarea"
+  type?: "input" | "textarea" | "month" | "date" | "email" | "tel" | "url" | "number"
 
   /**
    * Number of rows for textarea (only used when type="textarea")
@@ -135,6 +135,7 @@ export const FormField: React.FC<FormFieldProps> = ({
         <Input
           id={name}
           name={name}
+          type={type === "input" ? "text" : type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}

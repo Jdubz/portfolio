@@ -3,6 +3,7 @@ import { Box, Text, Button, Flex, Spinner, Alert, Link } from "theme-ui"
 import { useExperienceData } from "../../hooks/useExperienceData"
 import { ExperienceEntry } from "../ExperienceEntry"
 import { BlurbEntry } from "../BlurbEntry"
+import { ReorderModal } from "../ReorderModal"
 import { CreateExperienceForm } from "../CreateExperienceForm"
 import type { UpdateExperienceData, CreateExperienceData, UpdateBlurbData } from "../../types/experience"
 import type { User } from "firebase/auth"
@@ -19,10 +20,13 @@ export const WorkExperienceTab: React.FC<WorkExperienceTabProps> = ({ isEditor, 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [uploadingResume, setUploadingResume] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [showReorderBlurbsModal, setShowReorderBlurbsModal] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Define blurb order
-  const blurbOrder = ["intro", "selected-projects", "skills", "education-certificates", "biography", "closing-notes"]
+  // Filter page-level blurbs (blurbs come pre-sorted by order field from backend)
+  const pageBlurbs = Object.values(blurbs).filter((blurb) => blurb.type === "page" || !blurb.type) // Include blurbs without type for backward compatibility
+  const introBlurb = pageBlurbs.find((b) => b.name === "intro")
+  const otherBlurbs = pageBlurbs.filter((b) => b.name !== "intro")
 
   const handleUpdateEntry = async (id: string, data: UpdateExperienceData) => {
     const result = await updateEntry(id, data)
@@ -57,6 +61,25 @@ export const WorkExperienceTab: React.FC<WorkExperienceTabProps> = ({ isEditor, 
     const result = await createBlurb({ name, title, content })
     if (!result) {
       throw new Error("Create failed")
+    }
+  }
+
+  const handleReorderBlurbs = async (reorderedItems: Array<{ id: string; title: string; order: number }>) => {
+    try {
+      // Update each blurb with new order
+      for (const item of reorderedItems) {
+        await updateBlurb(item.id, { order: item.order })
+      }
+      logger.info("Blurbs reordered successfully", {
+        component: "WorkExperienceTab",
+        action: "reorderBlurbs",
+      })
+    } catch (error) {
+      logger.error("Failed to reorder blurbs", error as Error, {
+        component: "WorkExperienceTab",
+        action: "reorderBlurbs",
+      })
+      throw error
     }
   }
 
@@ -237,15 +260,26 @@ export const WorkExperienceTab: React.FC<WorkExperienceTabProps> = ({ isEditor, 
           )}
 
           {/* Intro Blurb */}
-          <BlurbEntry
-            name="intro"
-            blurb={blurbs["intro"] ?? null}
-            isEditor={isEditor}
-            onUpdate={handleUpdateBlurb}
-            onCreate={handleCreateBlurb}
-          />
+          {introBlurb && (
+            <BlurbEntry
+              name={introBlurb.name}
+              blurb={introBlurb}
+              isEditor={isEditor}
+              onUpdate={handleUpdateBlurb}
+              onCreate={handleCreateBlurb}
+            />
+          )}
+          {!introBlurb && isEditor && (
+            <BlurbEntry
+              name="intro"
+              blurb={null}
+              isEditor={isEditor}
+              onUpdate={handleUpdateBlurb}
+              onCreate={handleCreateBlurb}
+            />
+          )}
 
-          {/* Experience Entries */}
+          {/* Experience Entries (always chronological order) */}
           {entries.length === 0 ? (
             <Box sx={{ variant: "cards.primary", p: 4, mb: 4, opacity: 0.6, borderStyle: "dashed" }}>
               <Text sx={{ textAlign: "center", color: "textMuted", fontSize: 2 }}>
@@ -283,12 +317,23 @@ export const WorkExperienceTab: React.FC<WorkExperienceTabProps> = ({ isEditor, 
             </Box>
           )}
 
-          {/* Remaining Blurbs (after experience) */}
-          {blurbOrder.slice(1).map((blurbName) => (
+          {/* Remaining Blurbs (after experience) - sorted by order field */}
+          {isEditor && otherBlurbs.length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Button
+                variant="secondary.sm"
+                onClick={() => setShowReorderBlurbsModal(true)}
+              >
+                ⇅ Reorder Sections ({otherBlurbs.length})
+              </Button>
+            </Box>
+          )}
+
+          {otherBlurbs.map((blurb) => (
             <BlurbEntry
-              key={blurbName}
-              name={blurbName}
-              blurb={blurbs[blurbName] ?? null}
+              key={blurb.name}
+              name={blurb.name}
+              blurb={blurb}
               isEditor={isEditor}
               onUpdate={handleUpdateBlurb}
               onCreate={handleCreateBlurb}
@@ -296,6 +341,19 @@ export const WorkExperienceTab: React.FC<WorkExperienceTabProps> = ({ isEditor, 
           ))}
         </>
       )}
+
+      {/* Reorder Blurbs Modal */}
+      <ReorderModal
+        isOpen={showReorderBlurbsModal}
+        title="Reorder Sections"
+        items={otherBlurbs.map((blurb) => ({
+          id: blurb.name,
+          title: blurb.title,
+          order: blurb.order ?? 999,
+        }))}
+        onClose={() => setShowReorderBlurbsModal(false)}
+        onSave={handleReorderBlurbs}
+      />
     </Box>
   )
 }

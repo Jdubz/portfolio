@@ -30,6 +30,8 @@ const createSchema = Joi.object({
     .allow("")
     .allow(null),
   notes: Joi.string().trim().max(2000).optional().allow(""),
+  order: Joi.number().integer().min(0).optional(),
+  relatedBlurbIds: Joi.array().items(Joi.string()).optional(),
 })
 
 const updateSchema = Joi.object({
@@ -46,6 +48,8 @@ const updateSchema = Joi.object({
     .allow("")
     .allow(null),
   notes: Joi.string().trim().max(2000).optional().allow(""),
+  order: Joi.number().integer().min(0).optional(),
+  relatedBlurbIds: Joi.array().items(Joi.string()).optional(),
 })
 
 // Blurb validation schemas
@@ -63,6 +67,9 @@ const createBlurbSchema = Joi.object({
 const updateBlurbSchema = Joi.object({
   title: Joi.string().trim().min(1).max(200).optional(),
   content: Joi.string().trim().max(50000).optional(),
+  order: Joi.number().integer().min(0).optional(),
+  type: Joi.string().valid("page", "entry").optional(),
+  parentEntryId: Joi.string().optional(),
 })
 
 /**

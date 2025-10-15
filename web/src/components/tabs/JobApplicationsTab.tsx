@@ -9,8 +9,8 @@
  * - Toggle applied status
  */
 
-import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button, Flex, Checkbox, Label, Spinner } from "theme-ui"
+import React, { useState, useEffect, useMemo } from "react"
+import { Box, Heading, Text, Button, Flex, Checkbox, Label, Spinner, Select, Input } from "theme-ui"
 import { jobMatchClient } from "../../api"
 import type { JobMatch } from "../../types/job-match"
 import type { GenerationRequest } from "../../types/generator"
@@ -23,15 +23,137 @@ interface JobApplicationsTabProps {
   onViewGeneratedDocs: (request: GenerationRequest) => void
 }
 
+type SortField = "age" | "match" | "company" | "role"
+type SortDirection = "asc" | "desc"
+
+interface Filters {
+  showApplied: boolean
+  showNotApplied: boolean
+  showGenerated: boolean
+  showNotGenerated: boolean
+  minMatchScore: number
+}
+
 export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGeneratedDocs }) => {
   const [jobMatches, setJobMatches] = useState<JobMatch[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [togglingApplied, setTogglingApplied] = useState<Set<string>>(new Set())
 
+  // Sorting and filtering state
+  const [sortField, setSortField] = useState<SortField>("age")
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+  const [filters, setFilters] = useState<Filters>({
+    showApplied: true,
+    showNotApplied: true,
+    showGenerated: true,
+    showNotGenerated: true,
+    minMatchScore: 0,
+  })
+
   // Generation state
   const [generatingJobId, setGeneratingJobId] = useState<string | null>(null)
   const { generating, steps, result, startGeneration, reset } = useDocumentGeneration()
+
+  // Helper function to calculate job age
+  const getJobAge = (postedDate?: string): string => {
+    if (!postedDate) {
+      return "—"
+    }
+
+    try {
+      const posted = new Date(postedDate)
+      const now = new Date()
+      const diffMs = now.getTime() - posted.getTime()
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+      if (diffDays === 0) {
+        return "Today"
+      }
+      if (diffDays === 1) {
+        return "1 day"
+      }
+      if (diffDays < 7) {
+        return `${diffDays} days`
+      }
+      if (diffDays < 14) {
+        return "1 week"
+      }
+      if (diffDays < 30) {
+        return `${Math.floor(diffDays / 7)} weeks`
+      }
+      if (diffDays < 60) {
+        return "1 month"
+      }
+      return `${Math.floor(diffDays / 30)} months`
+    } catch {
+      return "—"
+    }
+  }
+
+  // Helper function to get age in days for sorting
+  const getAgeInDays = (postedDate?: string): number => {
+    if (!postedDate) {
+      return Number.MAX_SAFE_INTEGER // Put jobs without dates at the end
+    }
+    try {
+      const posted = new Date(postedDate)
+      const now = new Date()
+      const diffMs = now.getTime() - posted.getTime()
+      return Math.floor(diffMs / (1000 * 60 * 60 * 24))
+    } catch {
+      return Number.MAX_SAFE_INTEGER
+    }
+  }
+
+  // Apply sorting and filtering
+  const filteredAndSortedJobMatches = useMemo(() => {
+    let filtered = jobMatches.filter((job) => {
+      // Apply filters
+      const appliedFilter = filters.showApplied === filters.showNotApplied || job.applied === filters.showApplied
+      const generatedFilter =
+        filters.showGenerated === filters.showNotGenerated || job.documentGenerated === filters.showGenerated
+
+      const matchScoreFilter = !job.matchScore || job.matchScore >= filters.minMatchScore
+
+      return appliedFilter && generatedFilter && matchScoreFilter
+    })
+
+    // Sort
+    filtered = [...filtered].sort((a, b) => {
+      let comparison = 0
+
+      switch (sortField) {
+        case "age": {
+          const ageA = getAgeInDays(a.postedDate)
+          const ageB = getAgeInDays(b.postedDate)
+          comparison = ageA - ageB
+          break
+        }
+        case "match": {
+          const matchA = a.matchScore ?? -1
+          const matchB = b.matchScore ?? -1
+          comparison = matchA - matchB
+          break
+        }
+        case "company":
+          comparison = a.company.localeCompare(b.company)
+          break
+        case "role": {
+          const roleA = a.title ?? a.role
+          const roleB = b.title ?? b.role
+          comparison = roleA.localeCompare(roleB)
+          break
+        }
+        default:
+          break
+      }
+
+      return sortDirection === "asc" ? comparison : -comparison
+    })
+
+    return filtered
+  }, [jobMatches, sortField, sortDirection, filters])
 
   useEffect(() => {
     void loadJobMatches()
@@ -116,9 +238,8 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
   const handleGenerate = async (jobMatch: JobMatch, event: React.MouseEvent) => {
     event.stopPropagation() // Prevent row click
 
-    // Get AI provider preference from localStorage (default to gemini)
-    const savedProvider = localStorage.getItem("aiProvider")
-    const provider = savedProvider === "openai" || savedProvider === "gemini" ? savedProvider : "gemini"
+    // Default to OpenAI for job match generation (higher quality for important applications)
+    const provider = "openai"
 
     setGeneratingJobId(jobMatch.id)
 
@@ -234,12 +355,171 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
         </Button>
       </Flex>
 
+      {/* Sorting and Filtering Controls */}
+      <Box
+        sx={{
+          mb: 4,
+          p: 3,
+          bg: "muted",
+          borderRadius: "md",
+          border: "1px solid",
+          borderColor: "muted",
+        }}
+      >
+        <Flex sx={{ gap: 4, flexWrap: "wrap", alignItems: "flex-start" }}>
+          {/* Sort Controls */}
+          <Box sx={{ flex: "1 1 200px" }}>
+            <Label htmlFor="sortField" sx={{ fontSize: 1, fontWeight: "bold", mb: 2 }}>
+              Sort By
+            </Label>
+            <Flex sx={{ gap: 2 }}>
+              <Select
+                id="sortField"
+                value={sortField}
+                onChange={(e) => setSortField(e.target.value as SortField)}
+                sx={{ flex: 1 }}
+              >
+                <option value="age">Age (Newest First)</option>
+                <option value="match">Match Score</option>
+                <option value="company">Company</option>
+                <option value="role">Role</option>
+              </Select>
+              <Button
+                onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}
+                variant="secondary"
+                sx={{ px: 2, flexShrink: 0 }}
+                title={sortDirection === "asc" ? "Ascending" : "Descending"}
+              >
+                {sortDirection === "asc" ? "↑" : "↓"}
+              </Button>
+            </Flex>
+          </Box>
+
+          {/* Filter Controls */}
+          <Box sx={{ flex: "1 1 300px" }}>
+            <Text sx={{ fontSize: 1, fontWeight: "bold", mb: 2 }}>Filters</Text>
+            <Flex sx={{ gap: 3, flexWrap: "wrap" }}>
+              <Label sx={{ display: "flex", alignItems: "center", gap: 2, cursor: "pointer" }}>
+                <Checkbox
+                  checked={filters.showApplied}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      showApplied: e.target.checked,
+                    }))
+                  }
+                />
+                <Text sx={{ fontSize: 1 }}>Applied</Text>
+              </Label>
+              <Label sx={{ display: "flex", alignItems: "center", gap: 2, cursor: "pointer" }}>
+                <Checkbox
+                  checked={filters.showNotApplied}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      showNotApplied: e.target.checked,
+                    }))
+                  }
+                />
+                <Text sx={{ fontSize: 1 }}>Not Applied</Text>
+              </Label>
+              <Label sx={{ display: "flex", alignItems: "center", gap: 2, cursor: "pointer" }}>
+                <Checkbox
+                  checked={filters.showGenerated}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      showGenerated: e.target.checked,
+                    }))
+                  }
+                />
+                <Text sx={{ fontSize: 1 }}>Generated</Text>
+              </Label>
+              <Label sx={{ display: "flex", alignItems: "center", gap: 2, cursor: "pointer" }}>
+                <Checkbox
+                  checked={filters.showNotGenerated}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      showNotGenerated: e.target.checked,
+                    }))
+                  }
+                />
+                <Text sx={{ fontSize: 1 }}>Not Generated</Text>
+              </Label>
+            </Flex>
+          </Box>
+
+          {/* Match Score Filter */}
+          <Box sx={{ flex: "1 1 200px" }}>
+            <Label htmlFor="minMatchScore" sx={{ fontSize: 1, fontWeight: "bold", mb: 2 }}>
+              Min Match Score: {filters.minMatchScore}%
+            </Label>
+            <Input
+              id="minMatchScore"
+              type="range"
+              min="0"
+              max="100"
+              step="10"
+              value={filters.minMatchScore}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  minMatchScore: Number(e.target.value),
+                }))
+              }
+              sx={{ width: "100%" }}
+            />
+          </Box>
+        </Flex>
+
+        {/* Active filters summary */}
+        <Flex sx={{ mt: 3, gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+          <Text sx={{ fontSize: 0, color: "textMuted" }}>
+            Showing {filteredAndSortedJobMatches.length} of {jobMatches.length} jobs
+          </Text>
+          {(filters.minMatchScore > 0 ||
+            !filters.showApplied ||
+            !filters.showNotApplied ||
+            !filters.showGenerated ||
+            !filters.showNotGenerated) && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                setFilters({
+                  showApplied: true,
+                  showNotApplied: true,
+                  showGenerated: true,
+                  showNotGenerated: true,
+                  minMatchScore: 0,
+                })
+              }
+              sx={{ px: 2, py: 1, fontSize: 0 }}
+            >
+              Clear Filters
+            </Button>
+          )}
+        </Flex>
+      </Box>
+
       {/* Generation Progress - Show if generating */}
       {generatingJobId && steps.length > 0 && (
         <Box sx={{ mb: 4, p: 4, bg: "muted", borderRadius: "md", border: "1px solid", borderColor: "primary" }}>
-          <Heading as="h3" sx={{ fontSize: 2, mb: 3, color: "primary" }}>
-            {result?.status === "completed" ? "✓ Generation Complete" : "Generating Documents..."}
-          </Heading>
+          <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+            <Heading as="h3" sx={{ fontSize: 2, color: "primary" }}>
+              {result?.status === "completed" ? "✓ Generation Complete" : "Generating Documents..."}
+            </Heading>
+            <Text
+              sx={{
+                fontSize: 2,
+                fontWeight: "bold",
+                color: "primary",
+                fontFamily: "monospace",
+              }}
+            >
+              {steps.filter((s) => s.status === "completed").length} / {steps.length}
+            </Text>
+          </Flex>
           <Text sx={{ fontSize: 1, mb: 3, color: "text" }}>
             {jobMatches.find((jm) => jm.id === generatingJobId)?.company} -{" "}
             {jobMatches.find((jm) => jm.id === generatingJobId)?.title ??
@@ -294,6 +574,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
             <Box as="tr">
               <Box as="th">Company</Box>
               <Box as="th">Title / Role</Box>
+              <Box as="th">Age</Box>
               <Box as="th">Match</Box>
               <Box as="th">Documents</Box>
               <Box as="th">Applied</Box>
@@ -301,7 +582,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
             </Box>
           </Box>
           <Box as="tbody">
-            {jobMatches.map((jobMatch) => {
+            {filteredAndSortedJobMatches.map((jobMatch) => {
               const isGenerating = generatingJobId === jobMatch.id
               const className = isGenerating ? "generating" : jobMatch.documentGenerated ? "clickable" : "not-clickable"
 
@@ -317,6 +598,9 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
                     {jobMatch.title && jobMatch.title !== jobMatch.role && (
                       <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>{jobMatch.role}</Text>
                     )}
+                  </Box>
+                  <Box as="td">
+                    <Text sx={{ fontSize: 1, color: "text" }}>{getJobAge(jobMatch.postedDate)}</Text>
                   </Box>
                   <Box as="td">
                     {jobMatch.matchScore !== undefined ? (
@@ -387,23 +671,45 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
                     </Label>
                   </Box>
                   <Box as="td">
-                    {jobMatch.documentGenerated ? (
-                      <Text sx={{ fontSize: 0, color: "textMuted" }}>Click to view docs</Text>
-                    ) : isGenerating ? (
-                      <Flex sx={{ alignItems: "center", gap: 2 }}>
-                        <Spinner size={16} />
-                        <Text sx={{ fontSize: 0, color: "textMuted" }}>Generating...</Text>
-                      </Flex>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        sx={{ px: 2, py: 1, fontSize: 0 }}
-                        onClick={(e) => void handleGenerate(jobMatch, e)}
-                        disabled={generating}
-                      >
-                        Generate
-                      </Button>
-                    )}
+                    <Flex sx={{ gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+                      {/* Job URL button - always show if URL exists */}
+                      {(jobMatch.url ?? jobMatch.jobDescriptionUrl) && (
+                        <Button
+                          variant="secondary"
+                          sx={{ px: 2, py: 1, fontSize: 0, flexShrink: 0 }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const url = jobMatch.url ?? jobMatch.jobDescriptionUrl
+                            if (url) {
+                              window.open(url, "_blank", "noopener,noreferrer")
+                            }
+                          }}
+                        >
+                          🔗 View Job
+                        </Button>
+                      )}
+
+                      {/* Generation actions */}
+                      {jobMatch.documentGenerated ? (
+                        <Text sx={{ fontSize: 0, color: "textMuted" }}>Click row to view docs</Text>
+                      ) : isGenerating ? (
+                        <Flex sx={{ alignItems: "center", gap: 2 }}>
+                          <Spinner size={16} />
+                          <Text sx={{ fontSize: 0, color: "textMuted" }}>
+                            {steps.filter((s) => s.status === "completed").length} / {steps.length}
+                          </Text>
+                        </Flex>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          sx={{ px: 2, py: 1, fontSize: 0 }}
+                          onClick={(e) => void handleGenerate(jobMatch, e)}
+                          disabled={generating}
+                        >
+                          Generate
+                        </Button>
+                      )}
+                    </Flex>
                   </Box>
                 </Box>
               )

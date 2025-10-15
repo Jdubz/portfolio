@@ -105,12 +105,13 @@ export class PDFService {
         this.coverLetterTemplate = Handlebars.compile(templateSource)
       }
 
-      // Use provided date or format current date as fallback
-      const formattedDate = date || new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      // Use provided date or format current date as "MMM YYYY" fallback
+      const formattedDate =
+        date ||
+        new Date().toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+        })
 
       // Render HTML from template
       const html = this.coverLetterTemplate({

@@ -11,6 +11,9 @@ export interface BlurbEntry {
   name: string // Unique identifier
   title: string
   content: string
+  order?: number // For sorting within page flow, optional for backward compatibility
+  type?: "page" | "entry" // Distinguishes page-level vs entry-specific, optional for backward compatibility
+  parentEntryId?: string // Links entry-specific blurbs to their parent entry, optional for backward compatibility
   createdAt: Timestamp
   updatedAt: Timestamp
   createdBy: string
@@ -21,11 +24,17 @@ export interface CreateBlurbData {
   name: string
   title: string
   content: string
+  order?: number
+  type?: "page" | "entry"
+  parentEntryId?: string
 }
 
 export interface UpdateBlurbData {
   title?: string
   content?: string
+  order?: number
+  type?: "page" | "entry"
+  parentEntryId?: string
 }
 
 export class BlurbService {
@@ -42,11 +51,14 @@ export class BlurbService {
   }
 
   /**
-   * List all blurbs
+   * List all blurbs, sorted by order (ascending)
    */
   async listBlurbs(): Promise<BlurbEntry[]> {
     try {
-      const snapshot = await this.db.collection(this.collectionName).get()
+      const snapshot = await this.db
+        .collection(this.collectionName)
+        .orderBy("order", "asc")
+        .get()
 
       const blurbs = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -98,7 +110,7 @@ export class BlurbService {
     try {
       const now = Timestamp.now()
 
-      const blurb = {
+      const blurb: Record<string, unknown> = {
         name: data.name,
         title: data.title,
         content: data.content,
@@ -108,13 +120,24 @@ export class BlurbService {
         updatedBy: userEmail,
       }
 
+      // Add optional fields if provided
+      if (data.order !== undefined) {
+        blurb.order = data.order
+      }
+      if (data.type !== undefined) {
+        blurb.type = data.type
+      }
+      if (data.parentEntryId !== undefined) {
+        blurb.parentEntryId = data.parentEntryId
+      }
+
       // Use name as document ID for easy lookup
       const docRef = this.db.collection(this.collectionName).doc(data.name)
       await docRef.set(blurb)
 
       const createdBlurb: BlurbEntry = {
         id: data.name,
-        ...blurb,
+        ...(blurb as Omit<BlurbEntry, "id">),
       }
 
       this.logger.info("Created blurb", {
@@ -153,6 +176,9 @@ export class BlurbService {
 
       if (data.title !== undefined) updates.title = data.title
       if (data.content !== undefined) updates.content = data.content
+      if (data.order !== undefined) updates.order = data.order
+      if (data.type !== undefined) updates.type = data.type
+      if (data.parentEntryId !== undefined) updates.parentEntryId = data.parentEntryId
 
       await docRef.update(updates)
 

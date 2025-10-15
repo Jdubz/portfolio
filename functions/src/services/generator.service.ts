@@ -168,8 +168,8 @@ export class GeneratorService {
           accentColor: personalInfo.accentColor,
         },
         job,
-        jobMatchId, // Include job match ID if provided
-        preferences,
+        ...(jobMatchId ? { jobMatchId } : {}), // Only include jobMatchId if provided (Firestore doesn't allow undefined)
+        ...(preferences ? { preferences } : {}), // Only include preferences if provided (Firestore doesn't allow undefined)
         experienceData,
         status: "pending",
         access: {

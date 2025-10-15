@@ -127,21 +127,22 @@ export const CreateExperienceForm: React.FC<CreateExperienceFormProps> = ({ onCr
         <Flex sx={{ gap: 3, flexDirection: ["column", "row"] }}>
           <Box sx={{ flex: 1 }}>
             <FormField
-              label="Start Date (YYYY-MM)"
+              label="Start Date"
               name="startDate"
+              type="month"
               value={formData.startDate}
               onChange={(value) => setFormData({ ...formData, startDate: value })}
-              placeholder="2023-01"
               required
             />
           </Box>
           <Box sx={{ flex: 1 }}>
             <FormField
-              label="End Date (YYYY-MM or leave empty for Present)"
+              label="End Date (leave empty for Present)"
               name="endDate"
+              type="month"
               value={formData.endDate ?? ""}
               onChange={(value) => setFormData({ ...formData, endDate: value || null })}
-              placeholder="2024-12 or empty"
+              placeholder="Leave empty for Present"
             />
           </Box>
         </Flex>
