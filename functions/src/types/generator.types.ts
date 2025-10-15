@@ -65,6 +65,29 @@ export interface AICoverLetterGenerationResult {
 }
 
 /**
+ * Job Match Data for AI prompt customization
+ */
+export interface JobMatchData {
+  matchScore?: number
+  matchedSkills?: string[]
+  missingSkills?: string[]
+  keyStrengths?: string[]
+  potentialConcerns?: string[]
+  keywords?: string[]
+  customizationRecommendations?: {
+    skills_to_emphasize?: string[]
+    resume_focus?: string[]
+    cover_letter_points?: string[]
+  }
+  resumeIntakeData?: {
+    target_summary?: string
+    skills_priority?: string[]
+    keywords_to_include?: string[]
+    achievement_angles?: string[]
+  }
+}
+
+/**
  * Options for generating a resume with AI
  */
 export interface GenerateResumeOptions {
@@ -86,6 +109,7 @@ export interface GenerateResumeOptions {
   experienceEntries: ExperienceEntry[]
   experienceBlurbs: BlurbEntry[]
   emphasize?: string[]
+  jobMatchData?: JobMatchData // AI-generated insights for this specific job match
   customPrompts?: {
     systemPrompt?: string
     userPromptTemplate?: string
@@ -108,6 +132,7 @@ export interface GenerateCoverLetterOptions {
   }
   experienceEntries: ExperienceEntry[]
   experienceBlurbs: BlurbEntry[]
+  jobMatchData?: JobMatchData // AI-generated insights for this specific job match
   customPrompts?: {
     systemPrompt?: string
     userPromptTemplate?: string
@@ -296,6 +321,9 @@ export interface GeneratorRequest {
     jobDescriptionUrl?: string
     jobDescriptionText?: string
   }
+
+  // Job Match Reference (for tracking which job-match this generation is for)
+  jobMatchId?: string
 
   // Generation Preferences
   preferences?: {

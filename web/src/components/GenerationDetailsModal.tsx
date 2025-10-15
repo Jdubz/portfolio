@@ -52,6 +52,20 @@ const formatTimestamp = (timestamp: string | FirestoreTimestamp): string => {
   })
 }
 
+/**
+ * Strip query parameters from GCS URLs
+ *
+ * Old signed URLs have expiring signatures like:
+ * https://storage.googleapis.com/bucket/path.pdf?X-Goog-Algorithm=...&X-Goog-Signature=...
+ *
+ * Since buckets are now public, we can strip query params to access files directly:
+ * https://storage.googleapis.com/bucket/path.pdf
+ */
+const stripUrlQueryParams = (url: string): string => {
+  const questionMarkIndex = url.indexOf("?")
+  return questionMarkIndex !== -1 ? url.substring(0, questionMarkIndex) : url
+}
+
 export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ request, onClose }) => {
   const [viewMode, setViewMode] = useState<ViewMode>("pdf")
   const [documentType, setDocumentType] = useState<DocumentType>("resume")
@@ -72,9 +86,13 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
     return null
   }
 
-  // Extract PDF URLs from steps
-  const resumeUrl = request.steps?.find((s) => s.result?.resumeUrl)?.result?.resumeUrl
-  const coverLetterUrl = request.steps?.find((s) => s.result?.coverLetterUrl)?.result?.coverLetterUrl
+  // Extract PDF URLs from steps and strip query parameters
+  // (old signed URLs have expired signatures, but files are now publicly accessible)
+  const rawResumeUrl = request.steps?.find((s) => s.result?.resumeUrl)?.result?.resumeUrl
+  const rawCoverLetterUrl = request.steps?.find((s) => s.result?.coverLetterUrl)?.result?.coverLetterUrl
+
+  const resumeUrl = rawResumeUrl ? stripUrlQueryParams(rawResumeUrl) : undefined
+  const coverLetterUrl = rawCoverLetterUrl ? stripUrlQueryParams(rawCoverLetterUrl) : undefined
 
   const hasBothDocuments = resumeUrl && coverLetterUrl
 

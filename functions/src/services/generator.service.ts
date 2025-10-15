@@ -158,7 +158,8 @@ export class GeneratorService {
     },
     viewerSessionId?: string,
     editorEmail?: string,
-    provider?: AIProviderType
+    provider?: AIProviderType,
+    jobMatchId?: string
   ): Promise<string> {
     try {
       const timestamp = Date.now()
@@ -183,6 +184,7 @@ export class GeneratorService {
           accentColor: personalInfo.accentColor,
         },
         job,
+        jobMatchId, // Include job match ID if provided
         preferences,
         experienceData,
         status: "pending",

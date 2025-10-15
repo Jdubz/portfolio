@@ -1,4 +1,5 @@
 import rateLimit from "express-rate-limit"
+import { logger } from "../utils/logger"
 
 /**
  * Rate limiting middleware for contact form
@@ -32,7 +33,7 @@ export const contactFormRateLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: () => isTestEnvironment, // Skip rate limiting in tests
   handler: (req, res) => {
-    console.warn("[RateLimit] Rate limit exceeded", {
+    logger.warning("[RateLimit] Rate limit exceeded", {
       ip: req.ip,
       path: req.path,
     })
@@ -62,7 +63,7 @@ export const strictRateLimiter = rateLimit({
   },
   skip: () => isTestEnvironment,
   handler: (req, res) => {
-    console.warn("[RateLimit] Strict rate limit applied", {
+    logger.warning("[RateLimit] Strict rate limit applied", {
       ip: req.ip,
       path: req.path,
       reason: "suspicious_activity",
@@ -100,7 +101,7 @@ export const experienceRateLimiter = rateLimit({
   legacyHeaders: false,
   skip: () => isTestEnvironment,
   handler: (req, res) => {
-    console.warn("[RateLimit] Experience API rate limit exceeded", {
+    logger.warning("[RateLimit] Experience API rate limit exceeded", {
       ip: req.ip,
       path: req.path,
     })
@@ -136,7 +137,7 @@ export const generatorRateLimiter = rateLimit({
   legacyHeaders: false,
   skip: () => isTestEnvironment,
   handler: (req, res) => {
-    console.warn("[RateLimit] Generator API rate limit exceeded", {
+    logger.warning("[RateLimit] Generator API rate limit exceeded", {
       ip: req.ip,
       path: req.path,
     })
@@ -171,7 +172,7 @@ export const generatorEditorRateLimiter = rateLimit({
   legacyHeaders: false,
   skip: () => isTestEnvironment,
   handler: (req, res) => {
-    console.warn("[RateLimit] Generator editor rate limit exceeded", {
+    logger.warning("[RateLimit] Generator editor rate limit exceeded", {
       ip: req.ip,
       path: req.path,
     })

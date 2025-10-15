@@ -297,7 +297,7 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
         sx={{
           bg: "background",
           p: 4,
-          borderRadius: "8px",
+          borderRadius: "md",
           border: "1px solid",
           borderColor: "muted",
         }}
@@ -357,10 +357,10 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
         {/* Actions - Editor Only */}
         {isEditor && (
           <Flex sx={{ gap: 3, justifyContent: "space-between", mt: 4 }}>
-            <Button type="button" variant="secondary" onClick={handleReset} disabled={saving} sx={{ px: 4, py: 2 }}>
+            <Button type="button" variant="secondary" onClick={handleReset} disabled={saving}>
               Reset to Defaults
             </Button>
-            <Button type="submit" variant="primary" disabled={saving || !hasChanges} sx={{ px: 4, py: 2 }}>
+            <Button type="submit" variant="primary" disabled={saving || !hasChanges}>
               {saving ? "Saving..." : hasChanges ? "Save Changes" : "Saved"}
             </Button>
           </Flex>
@@ -368,7 +368,7 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
       </Box>
 
       {/* Info Box */}
-      <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
+      <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "sm" }}>
         <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
           <strong>Note:</strong> These prompts control how the AI generates documents. Changes will apply to all future
           generations. Be careful when modifying - incorrect prompts may result in poor quality outputs.

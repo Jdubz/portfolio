@@ -542,7 +542,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
         {/* Actions - Editor Only */}
         {isEditor && (
           <Flex sx={{ gap: 3, justifyContent: "flex-end", mt: 4 }}>
-            <Button type="submit" variant="primary" disabled={saving || !hasChanges} sx={{ px: 4, py: 2 }}>
+            <Button type="submit" variant="primary" disabled={saving || !hasChanges}>
               {saving ? "Saving..." : hasChanges ? "Save Changes" : "Saved"}
             </Button>
           </Flex>

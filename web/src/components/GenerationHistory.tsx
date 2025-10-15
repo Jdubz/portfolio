@@ -26,6 +26,20 @@ type ProviderFilter = "all" | "openai" | "gemini"
 
 const ITEMS_PER_PAGE = 10
 
+/**
+ * Strip query parameters from GCS URLs
+ *
+ * Old signed URLs have expiring signatures like:
+ * https://storage.googleapis.com/bucket/path.pdf?X-Goog-Algorithm=...&X-Goog-Signature=...
+ *
+ * Since buckets are now public, we can strip query params to access files directly:
+ * https://storage.googleapis.com/bucket/path.pdf
+ */
+const stripUrlQueryParams = (url: string): string => {
+  const questionMarkIndex = url.indexOf("?")
+  return questionMarkIndex !== -1 ? url.substring(0, questionMarkIndex) : url
+}
+
 export const GenerationHistory: React.FC<GenerationHistoryProps> = ({ onViewDetails }) => {
   const [requests, setRequests] = useState<GenerationRequest[]>([])
   const [loading, setLoading] = useState(true)
@@ -159,6 +173,9 @@ export const GenerationHistory: React.FC<GenerationHistoryProps> = ({ onViewDeta
       setDownloadingBulk(true)
 
       const masterZip = new JSZip()
+      let totalPdfs = 0
+      let successfulPdfs = 0
+      let failedPdfs = 0
 
       // Process each request on current page
       for (const request of paginatedRequests) {
@@ -179,49 +196,87 @@ export const GenerationHistory: React.FC<GenerationHistoryProps> = ({ onViewDeta
         const jsonString = JSON.stringify(request, null, 2)
         folder.file("generation.json", jsonString)
 
-        // Extract PDF URLs from steps
-        const resumeUrl = request.steps?.find((s) => s.result?.resumeUrl)?.result?.resumeUrl
-        const coverLetterUrl = request.steps?.find((s) => s.result?.coverLetterUrl)?.result?.coverLetterUrl
+        // Extract PDF URLs from steps and strip query parameters
+        // (old signed URLs have expired signatures, but files are now publicly accessible)
+        const rawResumeUrl = request.steps?.find((s) => s.result?.resumeUrl)?.result?.resumeUrl
+        const rawCoverLetterUrl = request.steps?.find((s) => s.result?.coverLetterUrl)?.result?.coverLetterUrl
+
+        const resumeUrl = rawResumeUrl ? stripUrlQueryParams(rawResumeUrl) : undefined
+        const coverLetterUrl = rawCoverLetterUrl ? stripUrlQueryParams(rawCoverLetterUrl) : undefined
+
+        logger.info(`Processing request ${request.id}`, {
+          company: request.job.company,
+          role: request.job.role,
+          hasResumeUrl: !!resumeUrl,
+          hasCoverLetterUrl: !!coverLetterUrl,
+          status: request.status,
+        })
 
         // Fetch and add resume PDF if available
         if (resumeUrl) {
+          totalPdfs++
           try {
+            logger.info(`Fetching resume PDF`, { url: resumeUrl.substring(0, 100) })
             const resumeResponse = await fetch(resumeUrl)
             if (resumeResponse.ok) {
               const resumeBlob = await resumeResponse.blob()
               folder.file("resume.pdf", resumeBlob)
+              successfulPdfs++
+              logger.info(`Resume fetched successfully`, { size: resumeBlob.size })
             } else {
-              logger.error("Failed to fetch resume PDF", undefined, {
+              failedPdfs++
+              logger.error(`Resume fetch failed`, undefined, {
                 status: resumeResponse.status,
+                statusText: resumeResponse.statusText,
                 request: request.id,
               })
             }
           } catch (err) {
+            failedPdfs++
             logger.error("Error fetching resume PDF", err as Error, { request: request.id })
           }
+        } else {
+          logger.warn(`No resume URL found`, { request: request.id })
         }
 
         // Fetch and add cover letter PDF if available
         if (coverLetterUrl) {
+          totalPdfs++
           try {
+            logger.info(`Fetching cover letter PDF`, { url: coverLetterUrl.substring(0, 100) })
             const coverLetterResponse = await fetch(coverLetterUrl)
             if (coverLetterResponse.ok) {
               const coverLetterBlob = await coverLetterResponse.blob()
               folder.file("cover_letter.pdf", coverLetterBlob)
+              successfulPdfs++
+              logger.info(`Cover letter fetched successfully`, { size: coverLetterBlob.size })
             } else {
-              logger.error("Failed to fetch cover letter PDF", undefined, {
+              failedPdfs++
+              logger.error(`Cover letter fetch failed`, undefined, {
                 status: coverLetterResponse.status,
+                statusText: coverLetterResponse.statusText,
                 request: request.id,
               })
             }
           } catch (err) {
+            failedPdfs++
             logger.error("Error fetching cover letter PDF", err as Error, { request: request.id })
           }
+        } else {
+          logger.warn(`No cover letter URL found`, { request: request.id })
         }
       }
 
+      logger.info(`Bulk download summary`, {
+        totalPdfs,
+        successfulPdfs,
+        failedPdfs,
+        requests: paginatedRequests.length,
+      })
+
       // Generate master zip file
       const zipBlob = await masterZip.generateAsync({ type: "blob" })
+      logger.info(`Zip generated`, { size: zipBlob.size })
 
       // Create download link
       const url = URL.createObjectURL(zipBlob)
@@ -238,9 +293,25 @@ export const GenerationHistory: React.FC<GenerationHistoryProps> = ({ onViewDeta
       URL.revokeObjectURL(url)
 
       setDownloadingBulk(false)
+
+      // Show alert if some PDFs failed
+      if (failedPdfs > 0) {
+        logger.warn(`Bulk download completed with ${failedPdfs} failed PDFs`, {
+          successfulPdfs,
+          totalPdfs,
+          failedPdfs,
+        })
+        // Use window.alert to satisfy ESLint
+        window.alert(
+          `Downloaded ${successfulPdfs}/${totalPdfs} PDFs successfully.\n\n` +
+            `${failedPdfs} PDF(s) failed to download (possibly expired URLs).\n\n` +
+            `Check browser console for details.`
+        )
+      }
     } catch (error) {
       logger.error("Failed to bulk download", error as Error, { component: "GenerationHistory" })
       setDownloadingBulk(false)
+      window.alert(`Download failed: ${error instanceof Error ? error.message : "Unknown error"}`)
     }
   }
 

@@ -1,6 +1,6 @@
 # Portfolio - Next Steps
 
-**Last Updated**: January 2025
+**Last Updated**: October 14, 2025
 
 This document lists **prioritized outstanding work** for the portfolio project. All core features are complete and production-ready - these are optional enhancements.
 
@@ -228,6 +228,28 @@ When deciding whether to implement a feature, ask:
 
 ## Recently Completed ✅
 
+### Job Match AI Integration (October 2025)
+
+**Status**: Complete
+**Impact**: Significantly improves AI-generated resume and cover letter targeting
+
+**Implementation:**
+- Added JobMatchData interface with match insights (match score, matched/missing skills, key strengths, recommendations)
+- Created fetchJobMatchData() helper to retrieve job match analysis from Firestore
+- Enhanced AI prompts (both OpenAI and Gemini) to incorporate job match insights
+- Job match data guides SELECTION and EMPHASIS without fabricating information
+- When jobMatchId is provided, AI receives:
+  - Match score and skill alignment
+  - Customization recommendations (skills to emphasize, resume focus areas)
+  - Achievement angles and cover letter talking points
+  - Keywords to naturally incorporate
+
+**Files Modified:**
+- `functions/src/generator.ts` - Added job match data fetching
+- `functions/src/types/generator.types.ts` - Added JobMatchData interface
+- `functions/src/services/openai.service.ts` - Enhanced prompts with job match insights
+- `functions/src/services/gemini.service.ts` - Enhanced prompts with job match insights
+
 ### Document Length Control (January 2025)
 
 **Layer 1: Smarter AI Prompts** - Complete
@@ -309,4 +331,4 @@ For development setup, see [SETUP.md](./SETUP.md)
 
 ---
 
-**Last Updated**: January 2025
+**Last Updated**: October 14, 2025

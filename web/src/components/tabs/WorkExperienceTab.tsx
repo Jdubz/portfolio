@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react"
-import { Box, Text, Button, Flex, Spinner, Alert } from "theme-ui"
+import { Box, Text, Button, Flex, Spinner, Alert, Link } from "theme-ui"
 import { useExperienceData } from "../../hooks/useExperienceData"
 import { ExperienceEntry } from "../ExperienceEntry"
 import { BlurbEntry } from "../BlurbEntry"
@@ -189,24 +189,25 @@ export const WorkExperienceTab: React.FC<WorkExperienceTabProps> = ({ isEditor, 
             />
           </>
         )}
-        <a
+        <Link
           href="https://storage.googleapis.com/joshwentworth-resume/resume.pdf"
           download="Josh_Wentworth_Resume.pdf"
           onClick={(e) => void handleDownloadResume(e)}
-          style={{
+          sx={{
             display: "inline-block",
-            fontSize: "16px",
+            fontSize: 2,
             fontWeight: "bold",
-            color: "#667eea",
+            color: "icon_indigo",
             textDecoration: "none",
             transition: "color 0.3s ease",
             cursor: "pointer",
+            "&:hover": {
+              color: "primary",
+            },
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#0ea5e9")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#667eea")}
         >
           Download Resume
-        </a>
+        </Link>
       </Flex>
 
       {uploadError && (

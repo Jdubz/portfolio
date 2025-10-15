@@ -5,7 +5,7 @@ import busboy from "busboy"
 import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import { logger } from "./utils/logger"
 import { generateRequestId } from "./utils/request-id"
-import { RESUME_UPLOAD_CORS_OPTIONS } from "./config/cors"
+import { resumeUploadCorsHandler } from "./config/cors"
 import { RESUME_ERROR_CODES as ERROR_CODES } from "./config/error-codes"
 import { PACKAGE_VERSION } from "./config/versions"
 
@@ -27,20 +27,13 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const handleResumeRequest = async (req: Request, res: Response): Promise<void> => {
   const requestId = generateRequestId()
 
-  // Set CORS headers manually to avoid middleware consuming body
-  const origin = req.headers.origin || ""
-  const allowedOrigins = RESUME_UPLOAD_CORS_OPTIONS.origin as string[]
-  const isAllowedOrigin = allowedOrigins.includes(origin)
-
-  if (isAllowedOrigin) {
-    res.setHeader("Access-Control-Allow-Origin", origin)
-    res.setHeader("Access-Control-Allow-Credentials", "true")
-  }
-
-  const methods = RESUME_UPLOAD_CORS_OPTIONS.methods as string[]
-  const headers = RESUME_UPLOAD_CORS_OPTIONS.allowedHeaders as string[]
-  res.setHeader("Access-Control-Allow-Methods", methods.join(", "))
-  res.setHeader("Access-Control-Allow-Headers", headers.join(", "))
+  // Apply CORS middleware (must be before any auth checks)
+  await new Promise<void>((resolve, reject) => {
+    resumeUploadCorsHandler(req, res, (err) => {
+      if (err) reject(err)
+      else resolve()
+    })
+  })
 
   // Handle OPTIONS preflight (must be before any auth checks)
   if (req.method === "OPTIONS") {

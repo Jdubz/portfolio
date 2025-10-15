@@ -2,6 +2,51 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user is an editor
+    function isEditor() {
+      return isAuthenticated() && request.auth.token.role == 'editor';
+    }
+
+    // Experiences collection - public read, editor write
+    match /experiences/{experienceId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Blurbs collection - public read, editor write
+    match /blurbs/{blurbId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Generator defaults - public read, editor write
+    match /generator_defaults/{defaultId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Generator blurbs (AI prompts) - public read, editor write
+    match /generator_blurbs/{blurbId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Generator history - editor-only read/write
+    match /generator_history/{requestId} {
+      allow read, write: if isEditor();
+    }
+
+    // Job matches - editor-only read/write
+    match /job-matches/{jobMatchId} {
+      allow read, write: if isEditor();
+    }
+
+    // Default deny all other collections
     match /{document=**} {
       allow read, write: if false;
     }

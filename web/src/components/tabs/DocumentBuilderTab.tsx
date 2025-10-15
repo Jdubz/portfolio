@@ -11,12 +11,14 @@ import type {
   GenerationRequest,
   GenerationStep,
 } from "../../types/generator"
+import type { JobMatch } from "../../types/job-match"
 
 interface DocumentBuilderTabProps {
   isEditor: boolean
+  selectedJobMatch?: JobMatch
 }
 
-export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor }) => {
+export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor, selectedJobMatch }) => {
   // Get form state from context
   const {
     formState,
@@ -28,6 +30,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
     setJobDescriptionUrl,
     setJobDescriptionText,
     setEmphasize,
+    updateFormFields,
     clearForm,
     isFormEmpty,
   } = useResumeForm()
@@ -36,6 +39,9 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  // Job match tracking (for linking generated docs to job applications)
+  const [jobMatchId, setJobMatchId] = useState<string | null>(null)
 
   // Generation progress tracking
   const [generationStatus, setGenerationStatus] = useState<GenerationRequest["status"] | null>(null)
@@ -48,6 +54,68 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
       setAIProvider(savedProvider)
     }
   }, [setAIProvider])
+
+  // Pre-fill form when a job match is selected
+  useEffect(() => {
+    if (selectedJobMatch) {
+      // Map job match fields to form fields comprehensively
+      const roleValue = selectedJobMatch.role ?? selectedJobMatch.title ?? ""
+      const companyWebsiteValue = selectedJobMatch.companyWebsite ?? ""
+      const jobDescriptionUrlValue = selectedJobMatch.url ?? selectedJobMatch.jobDescriptionUrl ?? ""
+      const jobDescriptionTextValue = selectedJobMatch.description ?? selectedJobMatch.jobDescriptionText ?? ""
+
+      // Build keywords/emphasize field from multiple sources
+      const keywordsArray: string[] = []
+
+      // Add matched skills
+      if (selectedJobMatch.matchedSkills && selectedJobMatch.matchedSkills.length > 0) {
+        keywordsArray.push(...selectedJobMatch.matchedSkills)
+      }
+
+      // Add key strengths
+      if (selectedJobMatch.keyStrengths && selectedJobMatch.keyStrengths.length > 0) {
+        keywordsArray.push(...selectedJobMatch.keyStrengths)
+      }
+
+      // Add keywords from job match
+      if (selectedJobMatch.keywords && selectedJobMatch.keywords.length > 0) {
+        keywordsArray.push(...selectedJobMatch.keywords)
+      }
+
+      // Add skills to emphasize from customization recommendations
+      if (selectedJobMatch.customizationRecommendations?.skills_to_emphasize) {
+        keywordsArray.push(...selectedJobMatch.customizationRecommendations.skills_to_emphasize)
+      }
+
+      // Deduplicate and join
+      const emphasizeValue = Array.from(new Set(keywordsArray)).join(", ")
+
+      // Update all form fields in a single operation to avoid batching issues
+      updateFormFields({
+        role: roleValue,
+        company: selectedJobMatch.company,
+        companyWebsite: companyWebsiteValue,
+        jobDescriptionUrl: jobDescriptionUrlValue,
+        jobDescriptionText: jobDescriptionTextValue,
+        emphasize: emphasizeValue,
+      })
+      setJobMatchId(selectedJobMatch.id)
+
+      logger.info("Form pre-filled with job match data", {
+        jobMatchId: selectedJobMatch.id,
+        company: selectedJobMatch.company,
+        role: roleValue,
+        title: selectedJobMatch.title,
+        companyWebsite: companyWebsiteValue,
+        jobDescriptionUrl: jobDescriptionUrlValue,
+        jobDescriptionText: jobDescriptionTextValue ? `${jobDescriptionTextValue.length} chars` : "empty",
+        emphasize: emphasizeValue ? `${keywordsArray.length} keywords` : "empty",
+        matchScore: selectedJobMatch.matchScore,
+        matchedSkills: selectedJobMatch.matchedSkills?.length ?? 0,
+        keyStrengths: selectedJobMatch.keyStrengths?.length ?? 0,
+      })
+    }
+  }, [selectedJobMatch, updateFormFields])
 
   // Save AI provider preference to localStorage when it changes
   const handleProviderChange = (provider: AIProviderType) => {
@@ -146,6 +214,8 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             .map((s) => s.trim())
             .filter((s) => s.length > 0),
         },
+        // Include job match ID if present (for tracking generated docs)
+        jobMatchId: jobMatchId ?? undefined,
       }
 
       logger.info("Submitting multi-step generation request", payload)
@@ -197,6 +267,8 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
           setGenerationStatus("completed")
           setSuccess(true)
           setGenerating(false)
+          // Clear job match ID after successful generation
+          setJobMatchId(null)
           break
         } else if (stepResult.status === "failed") {
           logger.error("Generation failed", new Error("Step execution failed"))
@@ -215,6 +287,8 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         setGenerationStatus("completed")
         setSuccess(true)
         setGenerating(false)
+        // Clear job match ID after successful generation
+        setJobMatchId(null)
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
@@ -245,9 +319,62 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
 
   return (
     <Box>
+      {/* Job Match Indicator */}
+      {jobMatchId && selectedJobMatch && (
+        <Box
+          sx={{
+            mb: 3,
+            p: 3,
+            bg: "background",
+            border: "1px solid",
+            borderColor: "primary",
+            borderLeft: "4px solid",
+            borderLeftColor: "primary",
+            borderRadius: "sm",
+          }}
+        >
+          <Flex sx={{ alignItems: "flex-start", gap: 2 }}>
+            <Text sx={{ fontSize: 3 }}>📋</Text>
+            <Box sx={{ flex: 1 }}>
+              <Text sx={{ fontSize: 2, fontWeight: "bold", color: "primary", mb: 1 }}>
+                Job Match Loaded: {selectedJobMatch.title ?? selectedJobMatch.role}
+              </Text>
+              <Text sx={{ fontSize: 1, color: "text", mb: 2 }}>
+                Form populated with job match data (ID: {jobMatchId.slice(0, 8)}...)
+              </Text>
+              {selectedJobMatch.matchScore && (
+                <Text sx={{ fontSize: 1, color: "text", mb: 1 }}>
+                  <strong>Match Score:</strong> {selectedJobMatch.matchScore}%
+                </Text>
+              )}
+              {selectedJobMatch.matchedSkills && selectedJobMatch.matchedSkills.length > 0 && (
+                <Text sx={{ fontSize: 1, color: "text", mb: 1 }}>
+                  <strong>Matched Skills:</strong> {selectedJobMatch.matchedSkills.length} skills
+                </Text>
+              )}
+              {selectedJobMatch.keyStrengths && selectedJobMatch.keyStrengths.length > 0 && (
+                <Text sx={{ fontSize: 1, color: "text" }}>
+                  <strong>Key Strengths:</strong> {selectedJobMatch.keyStrengths.join(", ")}
+                </Text>
+              )}
+            </Box>
+            <Button
+              variant="secondary"
+              sx={{ px: 2, py: 1, fontSize: 0 }}
+              onClick={() => {
+                setJobMatchId(null)
+                clearForm()
+              }}
+            >
+              Clear
+            </Button>
+          </Flex>
+        </Box>
+      )}
+
       {/* Editor Benefits */}
       {!isEditor && (
-        <Box sx={{ mb: 3, p: 3, bg: "muted", borderRadius: "4px" }}>
+        <Box sx={{ mb: 3, p: 3, bg: "muted", borderRadius: "sm" }}>
           <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
             <strong>Sign in for editor features:</strong> Higher rate limits (20 vs 10 requests/15min), 7-day download
             links, document history, and personal info defaults.
@@ -278,7 +405,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         sx={{
           bg: "background",
           p: 4,
-          borderRadius: "8px",
+          borderRadius: "md",
           border: "1px solid",
           borderColor: "muted",
           mb: 4,
@@ -425,6 +552,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             type="button"
             onClick={() => {
               clearForm()
+              setJobMatchId(null)
               logger.info("Form cleared")
             }}
             disabled={generating || isFormEmpty()}
@@ -439,7 +567,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
       {/* Generation Progress - Show checklist persistently during and after generation */}
       {generationSteps.length > 0 && (
         <Box sx={{ mt: 4 }}>
-          <Heading as="h2" sx={{ fontSize: 3, mb: 3 }}>
+          <Heading as="h2" sx={{ fontSize: 3, mb: 3, color: "primary" }}>
             {generationStatus === "completed" ? "Generation Complete" : "Generation Progress"}
           </Heading>
           <GenerationProgress steps={generationSteps} />
@@ -482,7 +610,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
 
       {/* Metadata section (optional, shown below checklist) */}
       {metadata && generationSteps.length > 0 && (
-        <Box sx={{ mt: 3, p: 3, bg: "muted", borderRadius: "4px" }}>
+        <Box sx={{ mt: 3, p: 3, bg: "muted", borderRadius: "sm" }}>
           <Text sx={{ fontSize: 1, fontFamily: "monospace" }}>
             <strong>Model:</strong> {metadata.model} | <strong>Tokens:</strong> {metadata.tokenUsage?.total ?? "N/A"} |{" "}
             <strong>Cost:</strong> ${metadata.costUsd?.toFixed(4) ?? "N/A"} | <strong>Duration:</strong>{" "}
@@ -498,7 +626,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
       )}
 
       {/* Footer Note */}
-      <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
+      <Box sx={{ mt: 4, p: 3, bg: "muted", borderRadius: "sm" }}>
         <Text sx={{ fontSize: 1, color: "text", opacity: 0.8 }}>
           <strong>Note:</strong> Generated documents are stored in Google Cloud Storage and automatically moved to
           Coldline storage after 90 days for cost optimization. Download links expire after{" "}

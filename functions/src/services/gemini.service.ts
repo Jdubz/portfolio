@@ -100,7 +100,10 @@ export class GeminiProvider implements AIProvider {
       const text = response.text()
 
       // Parse the JSON response
-      const content = JSON.parse(text) as ResumeContent
+      const rawContent = JSON.parse(text)
+
+      // Normalize Gemini response to match expected schema
+      const content = this.normalizeResumeResponse(rawContent)
 
       // Estimate token usage (Gemini doesn't always provide exact counts)
       const promptTokens = this.estimateTokens(fullPrompt)
@@ -321,7 +324,43 @@ END OF ENTRY #${index + 1} - USE NOTHING BEYOND THIS POINT FOR THIS ENTRY
       })
       .join("\n\n" + "=".repeat(80) + "\n\n")
 
-    return `Create a modern resume for the "${options.job.role}" position at ${options.job.company}.
+    // Format job match insights if available (same as OpenAI for consistency)
+    let jobMatchSection = ""
+    if (options.jobMatchData) {
+      const jm = options.jobMatchData
+      jobMatchSection = `
+
+JOB MATCH INSIGHTS (Use these to guide selection and emphasis):
+${jm.matchScore !== undefined ? `- Overall Match Score: ${Math.round(jm.matchScore)}%` : ""}
+${jm.matchedSkills && jm.matchedSkills.length > 0 ? `- Matched Skills: ${jm.matchedSkills.join(", ")}` : ""}
+${jm.missingSkills && jm.missingSkills.length > 0 ? `- Skills to Develop (don't fabricate, but emphasize related experience): ${jm.missingSkills.join(", ")}` : ""}
+${jm.keyStrengths && jm.keyStrengths.length > 0 ? `- Key Strengths to Highlight: ${jm.keyStrengths.join("; ")}` : ""}
+${jm.potentialConcerns && jm.potentialConcerns.length > 0 ? `- Address These Concerns (through relevant experience): ${jm.potentialConcerns.join("; ")}` : ""}
+${jm.keywords && jm.keywords.length > 0 ? `- Important Keywords (use naturally if present in experience): ${jm.keywords.join(", ")}` : ""}
+
+${
+  jm.customizationRecommendations
+    ? `CUSTOMIZATION RECOMMENDATIONS:
+${jm.customizationRecommendations.skills_to_emphasize && jm.customizationRecommendations.skills_to_emphasize.length > 0 ? `- Skills to Emphasize: ${jm.customizationRecommendations.skills_to_emphasize.join(", ")}` : ""}
+${jm.customizationRecommendations.resume_focus && jm.customizationRecommendations.resume_focus.length > 0 ? `- Resume Focus Areas:\n${jm.customizationRecommendations.resume_focus.map((f) => `  * ${f}`).join("\n")}` : ""}
+`
+    : ""
+}
+${
+  jm.resumeIntakeData
+    ? `RESUME CUSTOMIZATION DATA:
+${jm.resumeIntakeData.target_summary ? `- Target Summary Angle: ${jm.resumeIntakeData.target_summary}` : ""}
+${jm.resumeIntakeData.skills_priority && jm.resumeIntakeData.skills_priority.length > 0 ? `- Skills Priority Order: ${jm.resumeIntakeData.skills_priority.join(", ")}` : ""}
+${jm.resumeIntakeData.keywords_to_include && jm.resumeIntakeData.keywords_to_include.length > 0 ? `- Keywords to Include: ${jm.resumeIntakeData.keywords_to_include.join(", ")}` : ""}
+${jm.resumeIntakeData.achievement_angles && jm.resumeIntakeData.achievement_angles.length > 0 ? `- Achievement Angles:\n${jm.resumeIntakeData.achievement_angles.map((a) => `  * ${a}`).join("\n")}` : ""}
+`
+    : ""
+}
+IMPORTANT: These insights guide SELECTION and EMPHASIS only. Do NOT fabricate experience or skills not in the provided data.
+`
+    }
+
+    return `Create a modern resume for the "${options.job.role}" position at ${options.job.company}.${jobMatchSection}
 
 PERSONAL INFORMATION:
 - Name: ${options.personalInfo.name}
@@ -436,7 +475,32 @@ ${blurb ? blurb.content : entry.body || ""}`
       })
       .join("\n\n")
 
-    return `Create a professional cover letter for the "${options.job.role}" position at ${options.job.company}.
+    // Format job match insights if available (same as OpenAI for consistency)
+    let jobMatchSection = ""
+    if (options.jobMatchData) {
+      const jm = options.jobMatchData
+      jobMatchSection = `
+
+JOB MATCH INSIGHTS (Use these to craft a targeted cover letter):
+${jm.matchScore !== undefined ? `- Overall Match Score: ${Math.round(jm.matchScore)}%` : ""}
+${jm.keyStrengths && jm.keyStrengths.length > 0 ? `- Key Strengths to Emphasize: ${jm.keyStrengths.join("; ")}` : ""}
+${jm.potentialConcerns && jm.potentialConcerns.length > 0 ? `- Address These Potential Gaps: ${jm.potentialConcerns.join("; ")}` : ""}
+${
+  jm.customizationRecommendations?.cover_letter_points && jm.customizationRecommendations.cover_letter_points.length > 0
+    ? `- Recommended Cover Letter Points:\n${jm.customizationRecommendations.cover_letter_points.map((p) => `  * ${p}`).join("\n")}`
+    : ""
+}
+${
+  jm.resumeIntakeData?.achievement_angles && jm.resumeIntakeData.achievement_angles.length > 0
+    ? `- Achievement Angles to Highlight:\n${jm.resumeIntakeData.achievement_angles.map((a) => `  * ${a}`).join("\n")}`
+    : ""
+}
+
+Use these insights to choose the most relevant accomplishments and frame them in a way that addresses the company's needs.
+`
+    }
+
+    return `Create a professional cover letter for the "${options.job.role}" position at ${options.job.company}.${jobMatchSection}
 
 CANDIDATE INFORMATION:
 - Name: ${options.personalInfo.name}
@@ -635,5 +699,60 @@ ${blurb ? blurb.content : entry.body || ""}`
       .replace(/\{\{job\.companyWebsite\}\}/g, options.job.companyWebsite || "")
       .replace(/\{\{job\.jobDescription\}\}/g, options.job.jobDescription || "")
       .replace(/\{\{experienceData\}\}/g, experienceData)
+  }
+
+  /**
+   * Normalize Gemini's response to match the expected ResumeContent schema
+   * Gemini sometimes returns different field names or structures than expected
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private normalizeResumeResponse(rawContent: any): ResumeContent {
+    // Normalize experience entries
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const normalizedExperience = (rawContent.experience || []).map((exp: any) => ({
+      company: exp.company,
+      role: exp.role,
+      location: exp.location,
+      startDate: exp.startDate,
+      endDate: exp.endDate,
+      // Gemini returns "description" instead of "highlights"
+      highlights: exp.highlights || exp.description || [],
+      technologies: exp.technologies || [],
+    }))
+
+    // Normalize skills - Gemini may return object instead of array
+    let normalizedSkills: Array<{ category: string; items: string[] }> = []
+
+    if (Array.isArray(rawContent.skills)) {
+      // Already in correct format
+      normalizedSkills = rawContent.skills
+    } else if (typeof rawContent.skills === "object" && rawContent.skills !== null) {
+      // Convert object format to array format
+      // e.g., { "languages": ["JS"], "frameworks": ["React"] }
+      // -> [{ category: "Languages", items: ["JS"] }, { category: "Frameworks", items: ["React"] }]
+      normalizedSkills = Object.entries(rawContent.skills).map(([category, items]) => ({
+        category: this.capitalizeCategory(category),
+        items: Array.isArray(items) ? items : [],
+      }))
+    }
+
+    return {
+      personalInfo: rawContent.personalInfo,
+      professionalSummary: rawContent.professionalSummary,
+      experience: normalizedExperience,
+      skills: normalizedSkills,
+      education: rawContent.education || [],
+    }
+  }
+
+  /**
+   * Capitalize category names for consistency
+   * e.g., "languages" -> "Languages", "frameworks/libraries" -> "Frameworks/Libraries"
+   */
+  private capitalizeCategory(category: string): string {
+    return category
+      .split(/[/\s]/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ")
   }
 }

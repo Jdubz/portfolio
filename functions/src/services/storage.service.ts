@@ -1,12 +1,16 @@
 /**
  * Storage Service
  *
- * Handles GCS uploads and signed URL generation for generated documents.
+ * Handles GCS uploads and public URL generation for generated documents.
  *
  * Environment-aware bucket selection:
  * - Local/Development: Uses Firebase Storage Emulator (127.0.0.1:9199)
- * - Staging: joshwentworth-resumes-staging
- * - Production: joshwentworth-resumes
+ * - Staging: joshwentworth-resumes-staging (publicly readable)
+ * - Production: joshwentworth-resumes (publicly readable)
+ *
+ * **PUBLIC ACCESS:** Buckets are configured with public read access, so URLs
+ * never expire. Anyone with a URL can download the file, but URLs are
+ * long/random and contain job application materials (not sensitive data).
  *
  * **IMPORTANT:** Only use `FUNCTIONS_EMULATOR === "true"` for emulator detection.
  * Never use `NODE_ENV` or check for absence of `GCP_PROJECT`.
@@ -206,22 +210,23 @@ export class StorageService {
   }
 
   /**
-   * Generate a signed URL for viewing/downloading a file
+   * Generate a public URL for viewing/downloading a file
+   *
+   * Since buckets are configured as publicly readable, we return direct HTTPS URLs
+   * that never expire instead of signed URLs.
+   *
    * @param gcsPath - Full GCS path (e.g., "resumes/YYYY-MM-DD/filename.pdf" or "images/avatars/avatar.jpg")
-   * @param options - Expiration options (1 hour for viewers, 7 days for editors)
+   * @param _options - Expiration options (ignored - kept for API compatibility)
    */
-  async generateSignedUrl(gcsPath: string, options: SignedUrlOptions): Promise<string> {
+  async generateSignedUrl(gcsPath: string, _options: SignedUrlOptions): Promise<string> {
     try {
-      this.logger.info("Generating signed URL", {
+      this.logger.info("Generating public URL", {
         gcsPath,
-        expiresInHours: options.expiresInHours,
+        bucket: this.bucketName,
         emulator: this.useEmulator,
       })
 
-      const bucket = this.storage.bucket(this.bucketName)
-      const file = bucket.file(gcsPath)
-
-      // Emulator doesn't support signed URLs, return direct URL
+      // Emulator: return emulator-specific URL
       if (this.useEmulator) {
         // Use localhost instead of 127.0.0.1 to avoid CORS issues with web app
         const emulatorHost = process.env.FIREBASE_STORAGE_EMULATOR_HOST || "127.0.0.1:9199"
@@ -231,42 +236,23 @@ export class StorageService {
         return directUrl
       }
 
-      // Detect content type from file path
-      const isImage = gcsPath.startsWith("images/")
-      const contentType = isImage ? undefined : "application/pdf"
+      // Production/Staging: return public HTTPS URL
+      // Format: https://storage.googleapis.com/BUCKET_NAME/OBJECT_PATH
+      // These URLs never expire since buckets are publicly readable
+      const publicUrl = `https://storage.googleapis.com/${this.bucketName}/${gcsPath}`
 
-      // Production: use signed URLs with inline disposition for browser viewing
-      const signedUrlConfig: {
-        version: "v4"
-        action: "read"
-        expires: number
-        responseDisposition: string
-        responseType?: string
-      } = {
-        version: "v4",
-        action: "read",
-        expires: Date.now() + options.expiresInHours * 60 * 60 * 1000,
-        responseDisposition: "inline", // Display in browser instead of downloading
-      }
+      this.logger.info("Generated public URL", { publicUrl })
 
-      // Only set responseType for PDFs; let images use their stored content type
-      if (contentType) {
-        signedUrlConfig.responseType = contentType
-      }
-
-      const [signedUrl] = await file.getSignedUrl(signedUrlConfig)
-
-      this.logger.info("Signed URL generated successfully", { isImage, contentType })
-
-      return signedUrl
+      return publicUrl
     } catch (error) {
-      this.logger.error("Failed to generate signed URL", { error })
+      this.logger.error("Failed to generate public URL", { error })
       throw new Error(`URL generation failed: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
   /**
-   * Generate signed URLs for both resume and cover letter
+   * Generate public URLs for both resume and cover letter
+   * Returns direct HTTPS URLs that never expire (buckets are publicly readable)
    */
   async generateSignedUrls(
     resumePath: string | null,
