@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react"
-import { Box, Text, Button, Flex, Spinner, Alert } from "theme-ui"
+import { Box, Text, Button, Flex, Spinner, Alert, Link } from "theme-ui"
 import { useExperienceData } from "../../hooks/useExperienceData"
 import { ExperienceEntry } from "../ExperienceEntry"
 import { BlurbEntry } from "../BlurbEntry"
@@ -189,11 +189,10 @@ export const WorkExperienceTab: React.FC<WorkExperienceTabProps> = ({ isEditor, 
             />
           </>
         )}
-        <Box
-          as="a"
+        <Link
           href="https://storage.googleapis.com/joshwentworth-resume/resume.pdf"
           download="Josh_Wentworth_Resume.pdf"
-          onClick={(e) => void handleDownloadResume(e as unknown as React.MouseEvent<HTMLAnchorElement>)}
+          onClick={(e) => void handleDownloadResume(e)}
           sx={{
             display: "inline-block",
             fontSize: 2,
@@ -208,7 +207,7 @@ export const WorkExperienceTab: React.FC<WorkExperienceTabProps> = ({ isEditor, 
           }}
         >
           Download Resume
-        </Box>
+        </Link>
       </Flex>
 
       {uploadError && (
