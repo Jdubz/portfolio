@@ -59,6 +59,42 @@ const firestore = new Firestore({
 })
 
 /**
+ * Helper function to fetch job match data for prompt customization
+ */
+async function fetchJobMatchData(jobMatchId: string): Promise<import("./types/generator.types").JobMatchData | undefined> {
+  try {
+    const jobMatchRef = firestore.collection("job-matches").doc(jobMatchId)
+    const jobMatchDoc = await jobMatchRef.get()
+
+    if (!jobMatchDoc.exists) {
+      logger.warning("Job match not found", { jobMatchId })
+      return undefined
+    }
+
+    const jobMatch = jobMatchDoc.data()
+    if (!jobMatch) {
+      return undefined
+    }
+
+    // Extract relevant job match data for prompt customization
+    return {
+      matchScore: jobMatch.matchScore,
+      matchedSkills: jobMatch.matchedSkills,
+      missingSkills: jobMatch.missingSkills,
+      keyStrengths: jobMatch.keyStrengths,
+      potentialConcerns: jobMatch.potentialConcerns,
+      keywords: jobMatch.keywords,
+      customizationRecommendations: jobMatch.customizationRecommendations,
+      resumeIntakeData: jobMatch.resumeIntakeData,
+    }
+  } catch (error) {
+    logger.error("Failed to fetch job match data", { error, jobMatchId })
+    // Return undefined rather than failing - generation can proceed without it
+    return undefined
+  }
+}
+
+/**
  * Helper function to update job-match record after successful generation
  */
 async function updateJobMatchAfterGeneration(jobMatchId: string, generationRequestId: string): Promise<void> {
@@ -333,12 +369,17 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       throw new Error("Personal info not found. Please seed the personal-info document.")
     }
 
-    // Step 2: Fetch experience data
-    const [entries, blurbs] = await Promise.all([experienceService.listEntries(), blurbService.listBlurbs()])
+    // Step 2: Fetch experience data and job match data if provided
+    const [entries, blurbs, jobMatchData] = await Promise.all([
+      experienceService.listEntries(),
+      blurbService.listBlurbs(),
+      jobMatchId ? fetchJobMatchData(jobMatchId) : Promise.resolve(undefined),
+    ])
 
     logger.info("Fetched experience data", {
       entriesCount: entries.length,
       blurbsCount: blurbs.length,
+      hasJobMatchData: !!jobMatchData,
     })
 
     // Step 3: Create request document with initial steps
@@ -418,6 +459,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           experienceEntries: entries,
           experienceBlurbs: blurbs,
           emphasize: preferences?.emphasize,
+          jobMatchData, // Include job match insights for prompt customization
           customPrompts: personalInfo.aiPrompts?.resume,
         })
 
@@ -464,6 +506,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
           },
           experienceEntries: entries,
           experienceBlurbs: blurbs,
+          jobMatchData, // Include job match insights for prompt customization
           customPrompts: personalInfo.aiPrompts?.coverLetter,
         })
 
@@ -1050,6 +1093,9 @@ async function executeGenerateResume(request: GeneratorRequest, requestId: strin
   // Initialize AI provider
   const aiProvider = await createAIProvider(request.provider || "gemini", logger)
 
+  // Fetch job match data if jobMatchId is provided
+  const jobMatchData = request.jobMatchId ? await fetchJobMatchData(request.jobMatchId) : undefined
+
   // Prepare job description
   const jobDescription =
     request.job.jobDescriptionText || request.job.jobDescriptionUrl
@@ -1078,6 +1124,7 @@ async function executeGenerateResume(request: GeneratorRequest, requestId: strin
     experienceEntries: request.experienceData.entries,
     experienceBlurbs: request.experienceData.blurbs,
     emphasize: request.preferences?.emphasize,
+    jobMatchData, // Include job match insights for prompt customization
     customPrompts: personalInfo.aiPrompts?.resume,
   })
 
@@ -1116,6 +1163,9 @@ async function executeGenerateCoverLetter(request: GeneratorRequest, requestId: 
   // Initialize AI provider
   const aiProvider = await createAIProvider(request.provider || "gemini", logger)
 
+  // Fetch job match data if jobMatchId is provided
+  const jobMatchData = request.jobMatchId ? await fetchJobMatchData(request.jobMatchId) : undefined
+
   // Prepare job description
   const jobDescription =
     request.job.jobDescriptionText || request.job.jobDescriptionUrl
@@ -1138,6 +1188,7 @@ async function executeGenerateCoverLetter(request: GeneratorRequest, requestId: 
     },
     experienceEntries: request.experienceData.entries,
     experienceBlurbs: request.experienceData.blurbs,
+    jobMatchData, // Include job match insights for prompt customization
     customPrompts: personalInfo.aiPrompts?.coverLetter,
   })
 
