@@ -100,7 +100,10 @@ export class GeminiProvider implements AIProvider {
       const text = response.text()
 
       // Parse the JSON response
-      const content = JSON.parse(text) as ResumeContent
+      const rawContent = JSON.parse(text)
+
+      // Normalize Gemini response to match expected schema
+      const content = this.normalizeResumeResponse(rawContent)
 
       // Estimate token usage (Gemini doesn't always provide exact counts)
       const promptTokens = this.estimateTokens(fullPrompt)
@@ -635,5 +638,60 @@ ${blurb ? blurb.content : entry.body || ""}`
       .replace(/\{\{job\.companyWebsite\}\}/g, options.job.companyWebsite || "")
       .replace(/\{\{job\.jobDescription\}\}/g, options.job.jobDescription || "")
       .replace(/\{\{experienceData\}\}/g, experienceData)
+  }
+
+  /**
+   * Normalize Gemini's response to match the expected ResumeContent schema
+   * Gemini sometimes returns different field names or structures than expected
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private normalizeResumeResponse(rawContent: any): ResumeContent {
+    // Normalize experience entries
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const normalizedExperience = (rawContent.experience || []).map((exp: any) => ({
+      company: exp.company,
+      role: exp.role,
+      location: exp.location,
+      startDate: exp.startDate,
+      endDate: exp.endDate,
+      // Gemini returns "description" instead of "highlights"
+      highlights: exp.highlights || exp.description || [],
+      technologies: exp.technologies || [],
+    }))
+
+    // Normalize skills - Gemini may return object instead of array
+    let normalizedSkills: Array<{ category: string; items: string[] }> = []
+
+    if (Array.isArray(rawContent.skills)) {
+      // Already in correct format
+      normalizedSkills = rawContent.skills
+    } else if (typeof rawContent.skills === "object" && rawContent.skills !== null) {
+      // Convert object format to array format
+      // e.g., { "languages": ["JS"], "frameworks": ["React"] }
+      // -> [{ category: "Languages", items: ["JS"] }, { category: "Frameworks", items: ["React"] }]
+      normalizedSkills = Object.entries(rawContent.skills).map(([category, items]) => ({
+        category: this.capitalizeCategory(category),
+        items: Array.isArray(items) ? items : [],
+      }))
+    }
+
+    return {
+      personalInfo: rawContent.personalInfo,
+      professionalSummary: rawContent.professionalSummary,
+      experience: normalizedExperience,
+      skills: normalizedSkills,
+      education: rawContent.education || [],
+    }
+  }
+
+  /**
+   * Capitalize category names for consistency
+   * e.g., "languages" -> "Languages", "frameworks/libraries" -> "Frameworks/Libraries"
+   */
+  private capitalizeCategory(category: string): string {
+    return category
+      .split(/[/\s]/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ")
   }
 }
