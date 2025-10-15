@@ -1,5 +1,5 @@
 import { Firestore, Timestamp } from "@google-cloud/firestore"
-import { DATABASE_ID, BLURBS_COLLECTION } from "../config/database"
+import { BLURBS_COLLECTION } from "../config/database"
 import { createFirestoreInstance } from "../config/firestore"
 import { createDefaultLogger } from "../utils/logger"
 import type { SimpleLogger } from "../types/logger.types"

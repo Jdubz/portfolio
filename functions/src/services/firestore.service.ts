@@ -1,5 +1,4 @@
 import { Firestore } from "@google-cloud/firestore"
-import { DATABASE_ID } from "../config/database"
 import { createFirestoreInstance } from "../config/firestore"
 import { createDefaultLogger } from "../utils/logger"
 import type { SimpleLogger } from "../types/logger.types"
