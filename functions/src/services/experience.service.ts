@@ -12,12 +12,25 @@ export interface ExperienceEntry {
   title: string
   role?: string // Job title/role (optional)
   location?: string // Location (optional)
-  body?: string
+  body?: string // Deprecated - kept for backward compatibility
   startDate: string // YYYY-MM format
   endDate?: string | null // YYYY-MM format or null (= Present)
   notes?: string
   order?: number // For sorting (lower = earlier), optional for backward compatibility
   relatedBlurbIds?: string[] // References to associated blurbs, optional for backward compatibility
+
+  // NEW: Structured fields
+  renderType?: "structured-entry" | "simple-entry" | "text"
+  summary?: string
+  accomplishments?: string[]
+  technologies?: string[]
+  projects?: Array<{
+    name: string
+    description: string
+    technologies?: string[]
+    challenges?: string[]
+  }>
+
   createdAt: Timestamp
   updatedAt: Timestamp
   createdBy: string // Email of creator

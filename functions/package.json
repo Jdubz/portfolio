@@ -12,7 +12,7 @@
     "build": "tsc && npm run copy-templates && npm run copy-package",
     "gcp-build": "tsc && npm run copy-templates && npm run copy-package",
     "copy-templates": "mkdir -p dist/templates && cp -r src/templates/*.hbs dist/templates/ && mkdir -p dist/templates/assets && cp -r src/templates/assets/* dist/templates/assets/ 2>/dev/null || true",
-    "copy-package": "cp package.json dist/package.json",
+    "copy-package": "cp package.json dist/package.json && node -e \"const pkg = require('./dist/package.json'); pkg.main = 'index.js'; require('fs').writeFileSync('dist/package.json', JSON.stringify(pkg, null, 2));\"",
     "dev": "tsc --watch & nodemon --exec 'functions-framework --target=handleContactForm --port=8080 --host=0.0.0.0'",
     "deploy": "gcloud functions deploy handleContactForm --gen2 --runtime=nodejs20 --region=us-central1 --source=. --entry-point=handleContactForm --trigger-http --allow-unauthenticated --max-instances=10 --memory=256MB --timeout=60s --set-secrets='MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest'",
     "deploy:staging": "gcloud functions deploy handleContactForm-staging --gen2 --runtime=nodejs20 --region=us-central1 --source=. --entry-point=handleContactForm --trigger-http --allow-unauthenticated --max-instances=5 --memory=256MB --timeout=60s --set-secrets='MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest'",

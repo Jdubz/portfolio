@@ -7,6 +7,8 @@ import { FormField } from "./FormField"
 import { FormActions } from "./FormActions"
 import { logger } from "../utils/logger"
 import { formatMonthYear } from "../utils/dateFormat"
+import { StructuredEntryView } from "./entry-types/StructuredEntryView"
+import { SimpleEntryView } from "./entry-types/SimpleEntryView"
 
 interface ExperienceEntryProps {
   entry: ExperienceEntryType
@@ -251,8 +253,12 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
         </Text>
       )}
 
-      {/* Body */}
-      {entry.body && <MarkdownContent sx={{ mb: 3 }}>{entry.body}</MarkdownContent>}
+      {/* Content - render based on type */}
+      {entry.renderType === "structured-entry" && <StructuredEntryView entry={entry} />}
+      {entry.renderType === "simple-entry" && <SimpleEntryView entry={entry} />}
+      {(!entry.renderType || entry.renderType === "text") && entry.body && (
+        <MarkdownContent sx={{ mb: 3 }}>{entry.body}</MarkdownContent>
+      )}
 
       {/* Notes (only for editors) */}
       {isEditor && entry.notes && (

@@ -1,4 +1,5 @@
 import rateLimit from "express-rate-limit"
+import type { Request } from "express"
 import { logger } from "../utils/logger"
 
 /**
@@ -18,6 +19,28 @@ const isProduction = process.env.NODE_ENV === "production"
 const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
 
 /**
+ * Extract IP address from request, handling Firebase Cloud Functions format
+ * Firebase Cloud Functions uses X-Forwarded-For header
+ */
+function getClientIp(req: Request): string {
+  // For Firebase Cloud Functions, check X-Forwarded-For first
+  const forwardedFor = req.headers["x-forwarded-for"]
+  if (forwardedFor) {
+    // X-Forwarded-For can be a comma-separated list, take the first one (client IP)
+    const ips = typeof forwardedFor === "string" ? forwardedFor.split(",") : forwardedFor
+    return ips[0].trim()
+  }
+
+  // Fallback to req.ip (standard Express)
+  if (req.ip) {
+    return req.ip
+  }
+
+  // Last resort: use a placeholder for local/test environments
+  return "unknown"
+}
+
+/**
  * Rate limiter configuration
  */
 export const contactFormRateLimiter = rateLimit({
@@ -32,9 +55,10 @@ export const contactFormRateLimiter = rateLimit({
   standardHeaders: "draft-7", // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: () => isTestEnvironment, // Skip rate limiting in tests
+  keyGenerator: (req) => getClientIp(req), // Custom IP extraction for Firebase Cloud Functions
   handler: (req, res) => {
     logger.warning("[RateLimit] Rate limit exceeded", {
-      ip: req.ip,
+      ip: getClientIp(req),
       path: req.path,
     })
 
@@ -45,7 +69,6 @@ export const contactFormRateLimiter = rateLimit({
       message: "Too many requests from this IP. Please try again in 15 minutes.",
     })
   },
-  // Note: No custom keyGenerator - uses default IP-based limiting that handles IPv6 properly
 })
 
 /**
@@ -62,9 +85,10 @@ export const strictRateLimiter = rateLimit({
     message: "Access temporarily restricted. Please contact support if you believe this is an error.",
   },
   skip: () => isTestEnvironment,
+  keyGenerator: (req) => getClientIp(req),
   handler: (req, res) => {
     logger.warning("[RateLimit] Strict rate limit applied", {
-      ip: req.ip,
+      ip: getClientIp(req),
       path: req.path,
       reason: "suspicious_activity",
     })
@@ -76,7 +100,6 @@ export const strictRateLimiter = rateLimit({
       message: "Access temporarily restricted due to suspicious activity.",
     })
   },
-  // Note: No custom keyGenerator - uses default IP-based limiting that handles IPv6 properly
 })
 
 /**
@@ -100,9 +123,10 @@ export const experienceRateLimiter = rateLimit({
   standardHeaders: "draft-7",
   legacyHeaders: false,
   skip: () => isTestEnvironment,
+  keyGenerator: (req) => getClientIp(req),
   handler: (req, res) => {
     logger.warning("[RateLimit] Experience API rate limit exceeded", {
-      ip: req.ip,
+      ip: getClientIp(req),
       path: req.path,
     })
 
@@ -136,9 +160,10 @@ export const generatorRateLimiter = rateLimit({
   standardHeaders: "draft-7",
   legacyHeaders: false,
   skip: () => isTestEnvironment,
+  keyGenerator: (req) => getClientIp(req),
   handler: (req, res) => {
     logger.warning("[RateLimit] Generator API rate limit exceeded", {
-      ip: req.ip,
+      ip: getClientIp(req),
       path: req.path,
     })
 
@@ -171,9 +196,10 @@ export const generatorEditorRateLimiter = rateLimit({
   standardHeaders: "draft-7",
   legacyHeaders: false,
   skip: () => isTestEnvironment,
+  keyGenerator: (req) => getClientIp(req),
   handler: (req, res) => {
     logger.warning("[RateLimit] Generator editor rate limit exceeded", {
-      ip: req.ip,
+      ip: getClientIp(req),
       path: req.path,
     })
 

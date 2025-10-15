@@ -6,6 +6,14 @@ import { FormField } from "./FormField"
 import { FormActions } from "./FormActions"
 import { MarkdownEditor } from "./MarkdownEditor"
 import { logger } from "../utils/logger"
+import { ProfileHeaderView } from "./blurb-types/ProfileHeaderView"
+import { ProfileHeaderEdit } from "./blurb-types/ProfileHeaderEdit"
+import { ProjectShowcaseView } from "./blurb-types/ProjectShowcaseView"
+import { ProjectShowcaseEdit } from "./blurb-types/ProjectShowcaseEdit"
+import { CategorizedListView } from "./blurb-types/CategorizedListView"
+import { CategorizedListEdit } from "./blurb-types/CategorizedListEdit"
+import { TimelineView } from "./blurb-types/TimelineView"
+import { TimelineEdit } from "./blurb-types/TimelineEdit"
 
 interface BlurbEntryProps {
   name: string
@@ -32,9 +40,10 @@ const DEFAULT_TITLES: Record<string, string> = {
 export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, onUpdate, onCreate }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [editData, setEditData] = useState<UpdateBlurbData>({
+  const [editData, setEditData] = useState<UpdateBlurbData & { structuredData?: BlurbEntryType["structuredData"] }>({
     title: blurb?.title ?? DEFAULT_TITLES[name] ?? name,
     content: blurb?.content ?? "",
+    structuredData: blurb?.structuredData,
   })
 
   const handleSave = async () => {
@@ -63,9 +72,12 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
     setEditData({
       title: blurb?.title ?? DEFAULT_TITLES[name] ?? name,
       content: blurb?.content ?? "",
+      structuredData: blurb?.structuredData,
     })
     setIsEditing(false)
   }
+
+  const renderType = blurb?.renderType || "text"
 
   // Edit mode
   if (isEditing) {
@@ -88,14 +100,45 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
             required
           />
 
-          <MarkdownEditor
-            label="Content (Markdown)"
-            name="content"
-            value={editData.content ?? ""}
-            onChange={(value) => setEditData({ ...editData, content: value })}
-            rows={12}
-            showPreview
-          />
+          {/* Render appropriate edit component based on renderType */}
+          {renderType === "profile-header" && (
+            <ProfileHeaderEdit
+              data={editData.structuredData}
+              onChange={(data) => setEditData({ ...editData, structuredData: data })}
+            />
+          )}
+
+          {renderType === "project-showcase" && (
+            <ProjectShowcaseEdit
+              data={editData.structuredData}
+              onChange={(data) => setEditData({ ...editData, structuredData: data })}
+            />
+          )}
+
+          {renderType === "categorized-list" && (
+            <CategorizedListEdit
+              data={editData.structuredData}
+              onChange={(data) => setEditData({ ...editData, structuredData: data })}
+            />
+          )}
+
+          {renderType === "timeline" && (
+            <TimelineEdit
+              data={editData.structuredData}
+              onChange={(data) => setEditData({ ...editData, structuredData: data })}
+            />
+          )}
+
+          {renderType === "text" && (
+            <MarkdownEditor
+              label="Content (Markdown)"
+              name="content"
+              value={editData.content ?? ""}
+              onChange={(value) => setEditData({ ...editData, content: value })}
+              rows={12}
+              showPreview
+            />
+          )}
 
           <FormActions
             onCancel={handleCancel}
@@ -173,7 +216,12 @@ export const BlurbEntry: React.FC<BlurbEntryProps> = ({ name, blurb, isEditor, o
         {blurb.title}
       </Heading>
 
-      <MarkdownContent>{blurb.content}</MarkdownContent>
+      {/* Render appropriate view component based on renderType */}
+      {renderType === "profile-header" && <ProfileHeaderView blurb={blurb} />}
+      {renderType === "project-showcase" && <ProjectShowcaseView blurb={blurb} />}
+      {renderType === "categorized-list" && <CategorizedListView blurb={blurb} />}
+      {renderType === "timeline" && <TimelineView blurb={blurb} />}
+      {renderType === "text" && <MarkdownContent>{blurb.content}</MarkdownContent>}
 
       {/* Editor Actions */}
       {isEditor && (
