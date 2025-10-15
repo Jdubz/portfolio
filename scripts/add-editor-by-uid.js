@@ -26,7 +26,7 @@ async function addEditorByUid(uid) {
     const currentClaims = user.customClaims || {}
 
     // Check if already an editor
-    if (currentClaims.editor === true) {
+    if (currentClaims.role === "editor") {
       console.log(`✓ User already has editor role`)
       console.log(`  Email: ${user.email}`)
       console.log(`  UID: ${user.uid}`)
@@ -35,8 +35,7 @@ async function addEditorByUid(uid) {
 
     // Set editor custom claim
     await auth.setCustomUserClaims(user.uid, {
-      ...currentClaims,
-      editor: true,
+      role: "editor",
     })
 
     console.log(`✓ Editor role granted successfully!`)
