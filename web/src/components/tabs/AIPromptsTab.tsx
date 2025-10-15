@@ -357,10 +357,10 @@ export const AIPromptsTab: React.FC<AIPromptsTabProps> = ({ isEditor }) => {
         {/* Actions - Editor Only */}
         {isEditor && (
           <Flex sx={{ gap: 3, justifyContent: "space-between", mt: 4 }}>
-            <Button type="button" variant="secondary" onClick={handleReset} disabled={saving} sx={{ px: 4, py: 2 }}>
+            <Button type="button" variant="secondary" onClick={handleReset} disabled={saving}>
               Reset to Defaults
             </Button>
-            <Button type="submit" variant="primary" disabled={saving || !hasChanges} sx={{ px: 4, py: 2 }}>
+            <Button type="submit" variant="primary" disabled={saving || !hasChanges}>
               {saving ? "Saving..." : hasChanges ? "Save Changes" : "Saved"}
             </Button>
           </Flex>
