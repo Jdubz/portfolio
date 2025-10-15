@@ -1,10 +1,6 @@
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager"
-
-type SimpleLogger = {
-  info: (message: string, data?: unknown) => void
-  warning: (message: string, data?: unknown) => void
-  error: (message: string, data?: unknown) => void
-}
+import { createDefaultLogger } from "../utils/logger"
+import type { SimpleLogger } from "../types/logger.types"
 
 export class SecretManagerService {
   private client: SecretManagerServiceClient
@@ -15,19 +11,8 @@ export class SecretManagerService {
     this.client = new SecretManagerServiceClient()
     this.projectId = projectId ?? process.env.GCP_PROJECT ?? "static-sites-257923"
 
-    const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
-
-    this.logger = {
-      info: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
-      },
-      warning: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
-      },
-      error: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
-      },
-    }
+    // Use shared logger factory
+    this.logger = createDefaultLogger()
   }
 
   /**

@@ -9,6 +9,8 @@
  */
 
 import OpenAI from "openai"
+import { createDefaultLogger } from "../utils/logger"
+import type { SimpleLogger } from "../types/logger.types"
 import type {
   AIProvider,
   AIProviderType,
@@ -20,12 +22,6 @@ import type {
   ResumeContent,
   CoverLetterContent,
 } from "../types/generator.types"
-
-type SimpleLogger = {
-  info: (message: string, data?: unknown) => void
-  warning: (message: string, data?: unknown) => void
-  error: (message: string, data?: unknown) => void
-}
 
 // Legacy type aliases for backward compatibility
 export type ResumeGenerationResult = AIResumeGenerationResult
@@ -48,20 +44,10 @@ export class OpenAIService implements AIProvider {
       apiKey,
     })
 
-    const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
     this.useMockMode = process.env.OPENAI_MOCK_MODE === "true"
 
-    this.logger = logger || {
-      info: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
-      },
-      warning: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
-      },
-      error: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
-      },
-    }
+    // Use shared logger factory
+    this.logger = logger || createDefaultLogger()
 
     if (this.useMockMode) {
       this.logger.warning("⚠️  OpenAI MOCK MODE ENABLED - Using mock responses instead of real API calls")

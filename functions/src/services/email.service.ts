@@ -1,12 +1,8 @@
 import Mailgun from "mailgun.js"
 import formData from "form-data"
 import { SecretManagerService } from "./secret-manager.service"
-
-type SimpleLogger = {
-  info: (message: string, data?: unknown) => void
-  warning: (message: string, data?: unknown) => void
-  error: (message: string, data?: unknown) => void
-}
+import { createDefaultLogger } from "../utils/logger"
+import type { SimpleLogger } from "../types/logger.types"
 
 export interface ContactFormNotificationData {
   name: string
@@ -44,19 +40,8 @@ export class EmailService {
   constructor(secretManager: SecretManagerService, logger?: SimpleLogger) {
     this.secretManager = secretManager
 
-    const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
-
-    this.logger = logger || {
-      info: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
-      },
-      warning: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
-      },
-      error: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
-      },
-    }
+    // Use shared logger factory
+    this.logger = logger || createDefaultLogger()
   }
 
   /**
