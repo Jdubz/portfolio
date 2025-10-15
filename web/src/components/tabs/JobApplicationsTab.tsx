@@ -143,7 +143,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onSelect
   return (
     <Box sx={{ mt: 4 }}>
       <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Heading as="h2" sx={{ fontSize: 3, fontWeight: "heading" }}>
+        <Heading as="h2" sx={{ fontSize: 3, color: "primary" }}>
           Job Applications
         </Heading>
         <Button

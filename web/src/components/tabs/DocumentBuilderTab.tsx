@@ -567,7 +567,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
       {/* Generation Progress - Show checklist persistently during and after generation */}
       {generationSteps.length > 0 && (
         <Box sx={{ mt: 4 }}>
-          <Heading as="h2" sx={{ fontSize: 3, mb: 3 }}>
+          <Heading as="h2" sx={{ fontSize: 3, mb: 3, color: "primary" }}>
             {generationStatus === "completed" ? "Generation Complete" : "Generation Progress"}
           </Heading>
           <GenerationProgress steps={generationSteps} />
