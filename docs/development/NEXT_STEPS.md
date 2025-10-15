@@ -8,38 +8,50 @@ This document lists **prioritized outstanding work** for the portfolio project. 
 
 ## High Priority
 
-### 1. Clean Up Misleading URL Expiry Code
+### 1. Eliminate Code Duplication (SimpleLogger Type)
 
-**Status**: Not implemented
-**Effort**: 1-2 hours
-**Why**: Code claims URLs expire but they don't (buckets are public)
+**Status**: Partially complete (infrastructure ready, migration in progress)
+**Effort**: 1-2 hours total (30 min infrastructure + 1-1.5 hours migration)
+**Why**: SimpleLogger type is duplicated across 13+ files
 
 **Context:**
-GCS buckets (`joshwentworth-resumes`, `joshwentworth-resumes-staging`) are configured as publicly readable. URLs **never expire** - they're permanent public HTTPS URLs like `https://storage.googleapis.com/BUCKET/PATH`.
+The `SimpleLogger` interface and default logger initialization pattern is copy-pasted across all service classes. This creates maintenance burden and inconsistency risk.
 
-**Current Misleading Code:**
-- `generator.ts` calculates fake expiry times (7 days for editors, 1 hour for viewers)
-- Stores fake `signedUrlExpiry` timestamps in Firestore
-- Returns fake `urlExpiresIn: "7 days" or "1 hour"` to clients
-- `storage.service.ts` ignores the `expiresInHours` parameter and returns public URLs
+**Infrastructure Complete (October 2025):**
+- ✅ Created `functions/src/types/logger.types.ts` with shared `SimpleLogger` type
+- ✅ Created `createDefaultLogger()` factory in `functions/src/utils/logger.ts`
+- ✅ Created `createFirestoreInstance()` factory in `functions/src/config/firestore.ts`
+- ✅ Updated `GeneratorService` to demonstrate pattern (constructor reduced from 23 lines to 5 lines)
+- ✅ All 169 tests passing
 
-**Tasks:**
-1. Remove expiry logic from `functions/src/generator.ts`:
-   - Remove `expiresInHours` calculation (line 566)
-   - Remove `signedUrlExpiry` from Firestore writes (lines 660, 671)
-   - Remove `urlExpiresIn` from API responses (line 727)
-   - Update `generateSignedUrl()` calls to not pass expiry parameter
+**Remaining Tasks:**
+1. Update remaining service files to use shared types and factories:
+   - `ExperienceService`, `BlurbService`, `FirestoreService`
+   - AI provider services: `OpenAIService`, `GeminiService`
+   - Other services: `PDFService`, `EmailService`, `StorageService`
+2. Update middleware: `auth.middleware.ts`
+3. Verify all tests pass after migration
 
-2. Update `storage.service.ts`:
-   - Rename `generateSignedUrl()` → `generatePublicUrl()`
-   - Remove `SignedUrlOptions` interface
-   - Update comments to clarify URLs are public and permanent
+**Example Pattern (GeneratorService):**
+```typescript
+// Before (23 lines):
+type SimpleLogger = { ... }  // Duplicated type
+constructor(logger?: SimpleLogger) {
+  this.db = new Firestore({ databaseId: DATABASE_ID })
+  const isTestEnvironment = ...
+  this.logger = logger || { /* 15 lines of duplicate code */ }
+}
 
-3. Update Firestore schema:
-   - Remove `signedUrlExpiry` field from `generator_history` documents
-   - Update existing docs or wait for natural turnover (90 day lifecycle)
+// After (5 lines):
+import { createFirestoreInstance } from "../config/firestore"
+import { createDefaultLogger } from "../utils/logger"
+import type { SimpleLogger } from "../types/logger.types"
 
-4. Update frontend comments/docs mentioning "signed URLs" or "expiry"
+constructor(logger?: SimpleLogger) {
+  this.db = createFirestoreInstance()
+  this.logger = logger || createDefaultLogger()
+}
+```
 
 ---
 
@@ -197,6 +209,45 @@ When deciding whether to implement a feature, ask:
 
 ## Recently Completed ✅
 
+### URL Expiry Code Cleanup (October 2025)
+
+**Status**: Complete (Commit: 756355f)
+**Impact**: Eliminated misleading URL expiry logic, clarified that GCS URLs are permanent
+
+**Problem Solved:**
+GCS buckets are publicly readable, so URLs never expire. However, the code was calculating and storing fake expiry times (7 days for editors, 1 hour for viewers), which was misleading and created unnecessary complexity.
+
+**Implementation:**
+- **Backend Changes:**
+  - Renamed `generateSignedUrl()` → `generatePublicUrl()` in storage.service.ts
+  - Removed `SignedUrlOptions` interface (no longer needed)
+  - Removed `expiresInHours` calculations from generator.ts
+  - Removed `signedUrlExpiry` fields from Firestore writes
+  - Removed `urlExpiresIn` from API responses
+  - Fixed bug where image upload referenced undefined `signedUrl` variable
+
+- **Frontend Changes:**
+  - Updated `GenerateResponse` type: removed `urlExpiresIn` field
+  - Updated `FileMetadata` type: `signedUrl` → `publicUrl`, removed `signedUrlExpiry`
+  - Updated comments in `GenerationDetailsModal`, `GenerationHistory`, `DocumentBuilderTab`
+  - Changed "signed URL" terminology to "public URL" throughout
+
+**Verification:**
+- All 169 functions tests passing
+- All 42 web tests passing
+- All linting clean (TypeScript + ESLint)
+
+**Files Modified:**
+- `functions/src/generator.ts` - Removed expiry calculations and updated method calls
+- `functions/src/services/storage.service.ts` - Renamed methods, removed options interface
+- `web/src/types/generator.ts` - Updated type definitions
+- `web/src/components/GenerationDetailsModal.tsx` - Updated comments
+- `web/src/components/GenerationHistory.tsx` - Updated comments
+- `web/src/components/tabs/DocumentBuilderTab.tsx` - Updated comments
+- `docs/development/NEXT_STEPS.md` - Documentation update
+
+---
+
 ### Frontend Terminology Migration (October 2025)
 
 **Status**: Complete
@@ -306,7 +357,7 @@ When deciding whether to implement a feature, ask:
 **Core Features Complete**:
 - ✅ Multi-provider AI (OpenAI, Gemini)
 - ✅ PDF export with modern templates
-- ✅ GCS storage with signed URLs
+- ✅ GCS storage with public URLs (never expire)
 - ✅ Firebase Auth integration
 - ✅ Editor role management
 - ✅ Rate limiting
@@ -321,14 +372,14 @@ When deciding whether to implement a feature, ask:
 ## Recommended Priorities
 
 **If you have 2 hours:**
-1. Clean up misleading URL expiry code (1-2 hours)
+1. Eliminate code duplication (SimpleLogger type + factories) (1-2 hours)
 
 **If you have a weekend:**
-1. Clean up misleading URL expiry code (1-2 hours)
+1. Eliminate code duplication (1-2 hours)
 2. Resume template library (6-8 hours)
 
 **If you have a week:**
-1. Clean up misleading URL expiry code (1-2 hours)
+1. Eliminate code duplication (1-2 hours)
 2. Resume template library (6-8 hours)
 3. Analytics dashboard (10-15 hours)
 4. Storage class sync (2-3 hours)
