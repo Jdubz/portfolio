@@ -1,6 +1,6 @@
 # Portfolio - Next Steps
 
-**Last Updated**: January 14, 2025
+**Last Updated**: January 15, 2025
 
 This document lists **prioritized outstanding work** for the portfolio project. All core features are complete and production-ready - these are optional enhancements.
 
@@ -424,6 +424,209 @@ These features demonstrate the sophistication of the integrated job-finder → p
 
 ---
 
+### Tier 4: Real-Time Job Alerting System
+
+#### 14. Push Notification Integration with Job Finder
+**Status**: Planned (Architecture designed January 2025)
+**Effort**: 8-10 hours
+**Impact**: CRITICAL - Real-time alerts for perfect match jobs from job-finder
+
+**Use Case**:
+- job-finder discovers a perfect match job (>90% match score)
+- Instantly notify user via push notification (even if browser closed)
+- User clicks notification → opens job details
+- Seamless pipeline: Discovery → Alert → Review → Generate → Apply
+
+**Architecture Overview**:
+
+**Components**:
+1. **Firebase Cloud Messaging (FCM)** - Web push notifications
+2. **Webhook Endpoint** - Receives alerts from job-finder
+3. **Service Worker** - Handles background notifications
+4. **User Subscription Flow** - Permission request and token storage
+
+**Current Infrastructure** (Already Available):
+- ✅ Firebase SDK v12.3.0 with messaging support
+- ✅ PWA manifest configured (standalone mode, icons)
+- ✅ Service worker headers in firebase.json
+- ✅ Cloud Functions infrastructure
+- ✅ Firestore for token storage
+
+**What's Needed**:
+- Firebase Cloud Messaging initialization
+- Service worker for push notifications (`firebase-messaging-sw.js`)
+- User notification permission UI
+- FCM token storage in Firestore
+- Webhook Cloud Function endpoint
+
+**Implementation Plan**:
+
+**Phase 1: FCM Setup** (1-2 hours)
+- Generate VAPID keys in Firebase Console
+- Create `web/src/utils/firebase-messaging.ts` utility
+- Create service worker `web/static/firebase-messaging-sw.js`
+- Initialize FCM in app startup
+
+**Phase 2: User Subscription** (2-3 hours)
+- Create notification permission UI component
+- Implement FCM token storage in Firestore collection `fcm_tokens`:
+  ```typescript
+  {
+    userId: string         // Firebase Auth UID
+    token: string          // FCM registration token
+    createdAt: Timestamp
+    lastUsed: Timestamp
+    userAgent: string
+    isActive: boolean
+  }
+  ```
+- Add user preferences for notifications:
+  ```typescript
+  {
+    notifications: {
+      jobAlerts: boolean      // Opt-in/opt-out
+      minMatchScore: number   // Only alert if score >= X
+    }
+  }
+  ```
+- Handle token refresh logic
+
+**Phase 3: Webhook Endpoint** (2-3 hours)
+- Create new Cloud Function `functions/src/job-alerts.ts`
+- Endpoint: `POST /jobAlerts`
+- Payload validation (Joi schema):
+  ```typescript
+  {
+    jobId: string
+    title: string
+    company: string
+    matchScore: number
+    url: string
+    userId?: string  // Optional: target specific user
+  }
+  ```
+- Security:
+  - API key authentication (shared secret with job-finder)
+  - Rate limiting (max 10 alerts per minute)
+  - Payload validation
+- Fetch user's FCM tokens from Firestore
+- Send push notification via Firebase Admin SDK:
+  ```typescript
+  admin.messaging().send({
+    token: userToken,
+    notification: {
+      title: `Perfect Job Match: ${company}`,
+      body: `${title} - ${matchScore}% match`,
+      icon: '/favicons/primary-192.png'
+    },
+    data: {
+      jobId,
+      url,
+      matchScore: matchScore.toString()
+    },
+    webpush: {
+      fcmOptions: {
+        link: url  // Click opens job URL
+      }
+    }
+  })
+  ```
+
+**Phase 4: Service Worker** (1-2 hours)
+- Handle background notifications
+- Define notification click behavior:
+  ```typescript
+  self.addEventListener('notificationclick', (event) => {
+    event.notification.close()
+    event.waitUntil(
+      clients.openWindow(event.notification.data.url)
+    )
+  })
+  ```
+- Show notification with job details
+- Track analytics (optional)
+
+**Phase 5: Testing** (1-2 hours)
+- Test local notifications with Firebase emulator
+- Test staging webhook with mock payload
+- Verify notification appearance on Chrome, Firefox, Safari
+- Test deep linking to job URLs
+- Monitor error logs and delivery metrics
+
+**Data Flow**:
+```
+job-finder discovers match
+  ↓
+POST /jobAlerts webhook
+  ↓
+Validate payload + check user preferences
+  ↓
+Fetch FCM tokens from Firestore
+  ↓
+Send push notification via Firebase Admin SDK
+  ↓
+User receives notification (even if browser closed)
+  ↓
+User clicks notification
+  ↓
+Opens job URL in new tab
+  ↓
+User reviews match and generates documents
+```
+
+**Browser Support**:
+- ✅ Chrome/Edge/Firefox: Full support
+- ✅ Safari iOS 16.4+: Push notification support (requires "Add to Home Screen")
+- ✅ Safari macOS: Full support
+
+**Cost Estimate**:
+- Firebase Cloud Messaging: **FREE** for web push
+- Cloud Function invocations: ~$0.0000004 per alert
+- Firestore reads/writes: Minimal (token storage only)
+- **Expected monthly cost**: < $1 for up to 10,000 alerts
+
+**Security Considerations**:
+- VAPID keys stored in Secret Manager
+- Webhook authentication with API key
+- Rate limiting to prevent abuse
+- User opt-in required (notification permission)
+- Token cleanup for expired/invalid tokens
+
+**Future Enhancements**:
+- Topic-based subscriptions (frontend jobs, backend jobs, etc.)
+- Notification scheduling (don't send at night)
+- Rich notifications with job preview images
+- In-app notification center (persistent history)
+- Analytics dashboard for alert effectiveness
+- Customizable alert thresholds per user
+
+**Files to Create**:
+- `functions/src/job-alerts.ts` - Webhook endpoint
+- `web/src/utils/firebase-messaging.ts` - FCM initialization
+- `web/static/firebase-messaging-sw.js` - Service worker
+- `web/src/components/NotificationSettings.tsx` - Permission UI
+- `web/src/hooks/useNotifications.ts` - FCM token management
+
+**Files to Modify**:
+- `web/gatsby-browser.tsx` - Initialize FCM on app start
+- `web/src/components/tabs/SettingsTab.tsx` - Add notification preferences
+- `functions/src/index.ts` - Export job alerts function
+- `firebase.json` - Ensure service worker headers configured
+
+**Integration with job-finder**:
+- job-finder needs webhook URL and API key
+- Recommend alerting criteria: match score >85%, high priority roles
+- Provide webhook payload format documentation
+- Monitor delivery success rates and adjust thresholds
+
+**Deployment**:
+- Deploy to staging first for testing
+- Verify notification delivery on mobile and desktop
+- Deploy to production after verification
+- Configure job-finder with production webhook URL
+
+---
+
 ## Optional Enhancements (Low Priority)
 
 All high-priority work is complete. The items below are optional enhancements that may be considered based on user needs.
@@ -747,4 +950,4 @@ For development setup, see [SETUP.md](./SETUP.md)
 
 ---
 
-**Last Updated**: January 14, 2025
+**Last Updated**: January 15, 2025
