@@ -94,7 +94,7 @@ describe("ExperienceService", () => {
       const result = await service.listEntries()
 
       expect(mockCollection).toHaveBeenCalledWith("experience-entries")
-      expect(mockOrderBy).toHaveBeenCalledWith("startDate", "desc")
+      expect(mockOrderBy).toHaveBeenCalledWith("order", "asc")
       expect(result).toEqual(mockEntries)
     })
 
