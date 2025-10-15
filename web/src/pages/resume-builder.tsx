@@ -177,7 +177,7 @@ const ResumeBuilderPage: React.FC = () => {
       label: "AI Prompts",
       content: (
         <ErrorBoundary>
-          <AIPromptsTab isEditor={isEditor} />
+          <AIPromptsTab />
         </ErrorBoundary>
       ),
     },
