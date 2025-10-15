@@ -59,6 +59,17 @@ export interface UpdateExperienceData {
   notes?: string
   order?: number
   relatedBlurbIds?: string[]
+  // Structured fields
+  renderType?: "structured-entry" | "simple-entry" | "text"
+  summary?: string
+  accomplishments?: string[]
+  technologies?: string[]
+  projects?: Array<{
+    name: string
+    description: string
+    technologies?: string[]
+    challenges?: string[]
+  }>
 }
 
 export class ExperienceService {
@@ -240,6 +251,22 @@ export class ExperienceService {
       }
       if (data.relatedBlurbIds !== undefined) {
         updates.relatedBlurbIds = data.relatedBlurbIds
+      }
+      // Structured fields
+      if (data.renderType !== undefined) {
+        updates.renderType = data.renderType
+      }
+      if (data.summary !== undefined) {
+        updates.summary = data.summary && data.summary.trim() !== "" ? data.summary : null
+      }
+      if (data.accomplishments !== undefined) {
+        updates.accomplishments = data.accomplishments
+      }
+      if (data.technologies !== undefined) {
+        updates.technologies = data.technologies
+      }
+      if (data.projects !== undefined) {
+        updates.projects = data.projects
       }
 
       await docRef.update(updates)

@@ -50,6 +50,21 @@ const updateSchema = Joi.object({
   notes: Joi.string().trim().max(2000).optional().allow(""),
   order: Joi.number().integer().min(0).optional(),
   relatedBlurbIds: Joi.array().items(Joi.string()).optional(),
+  // Structured fields
+  renderType: Joi.string().valid("structured-entry", "simple-entry", "text").optional(),
+  summary: Joi.string().trim().max(5000).optional().allow(""),
+  accomplishments: Joi.array().items(Joi.string().trim().max(2000)).optional(),
+  technologies: Joi.array().items(Joi.string().trim().max(100)).optional(),
+  projects: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().trim().max(200).required(),
+        description: Joi.string().trim().max(2000).required(),
+        technologies: Joi.array().items(Joi.string().trim().max(100)).optional(),
+        challenges: Joi.array().items(Joi.string().trim().max(2000)).optional(),
+      })
+    )
+    .optional(),
 })
 
 // Blurb validation schemas
@@ -70,6 +85,10 @@ const updateBlurbSchema = Joi.object({
   order: Joi.number().integer().min(0).optional(),
   type: Joi.string().valid("page", "entry").optional(),
   parentEntryId: Joi.string().optional(),
+  renderType: Joi.string()
+    .valid("profile-header", "project-showcase", "categorized-list", "timeline", "text")
+    .optional(),
+  structuredData: Joi.object().optional(),
 })
 
 /**
