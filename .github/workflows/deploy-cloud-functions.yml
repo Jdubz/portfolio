@@ -34,6 +34,7 @@ jobs:
       contact-form: ${{ steps.changes.outputs.contact-form }}
       experience: ${{ steps.changes.outputs.experience }}
       generator: ${{ steps.changes.outputs.generator }}
+      resume: ${{ steps.changes.outputs.resume }}
       any-changed: ${{ steps.changes.outputs.any-changed }}
     steps:
       - name: Checkout repository
@@ -66,6 +67,7 @@ jobs:
           CONTACT_FORM_CHANGED=false
           EXPERIENCE_CHANGED=false
           GENERATOR_CHANGED=false
+          RESUME_CHANGED=false
           ANY_CHANGED=false
 
           # Check for shared code changes (affects all functions)
@@ -74,6 +76,7 @@ jobs:
             CONTACT_FORM_CHANGED=true
             EXPERIENCE_CHANGED=true
             GENERATOR_CHANGED=true
+            RESUME_CHANGED=true
             ANY_CHANGED=true
           fi
 
@@ -93,24 +96,32 @@ jobs:
             ANY_CHANGED=true
           fi
 
+          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(resume\.ts|services/storage)"; then
+            RESUME_CHANGED=true
+            ANY_CHANGED=true
+          fi
+
           # Check workflow changes (redeploy all)
           if echo "$CHANGED_FILES" | grep -qE "^\.github/workflows/deploy-cloud-functions\.yml"; then
             echo "Workflow changed - all functions need redeployment"
             CONTACT_FORM_CHANGED=true
             EXPERIENCE_CHANGED=true
             GENERATOR_CHANGED=true
+            RESUME_CHANGED=true
             ANY_CHANGED=true
           fi
 
           echo "contact-form=$CONTACT_FORM_CHANGED" >> $GITHUB_OUTPUT
           echo "experience=$EXPERIENCE_CHANGED" >> $GITHUB_OUTPUT
           echo "generator=$GENERATOR_CHANGED" >> $GITHUB_OUTPUT
+          echo "resume=$RESUME_CHANGED" >> $GITHUB_OUTPUT
           echo "any-changed=$ANY_CHANGED" >> $GITHUB_OUTPUT
 
           echo "Results:"
           echo "  contact-form: $CONTACT_FORM_CHANGED"
           echo "  experience: $EXPERIENCE_CHANGED"
           echo "  generator: $GENERATOR_CHANGED"
+          echo "  resume: $RESUME_CHANGED"
           echo "  any-changed: $ANY_CHANGED"
 
   # Build and test (runs once, cached)
@@ -184,7 +195,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: 3  # Deploy functions in parallel
+      max-parallel: 4  # Deploy functions in parallel
       matrix:
         function:
           - name: contact-form
@@ -208,6 +219,13 @@ jobs:
             max_instances: 10
             secrets: "OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
             changed: ${{ needs.detect-changes.outputs.generator }}
+          - name: uploadResume
+            entry_point: uploadResume
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 512Mi
+            max_instances: 5
+            secrets: ""
+            changed: ${{ needs.detect-changes.outputs.resume }}
 
     steps:
       - name: Check if deployment needed
@@ -320,7 +338,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: 3  # Deploy functions in parallel
+      max-parallel: 4  # Deploy functions in parallel
       matrix:
         function:
           - name: contact-form
@@ -344,6 +362,13 @@ jobs:
             max_instances: 10
             secrets: "OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
             changed: ${{ needs.detect-changes.outputs.generator }}
+          - name: uploadResume
+            entry_point: uploadResume
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 512Mi
+            max_instances: 5
+            secrets: ""
+            changed: ${{ needs.detect-changes.outputs.resume }}
 
     steps:
       - name: Check if deployment needed
