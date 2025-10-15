@@ -10,13 +10,9 @@ import Handlebars from "handlebars"
 import type { TemplateDelegate as HandlebarsTemplateDelegate } from "handlebars"
 import * as fs from "fs/promises"
 import * as path from "path"
+import { createDefaultLogger } from "../utils/logger"
+import type { SimpleLogger } from "../types/logger.types"
 import type { ResumeContent, CoverLetterContent } from "../types/generator.types"
-
-type SimpleLogger = {
-  info: (message: string, data?: unknown) => void
-  warning: (message: string, data?: unknown) => void
-  error: (message: string, data?: unknown) => void
-}
 
 export class PDFService {
   private logger: SimpleLogger
@@ -24,19 +20,8 @@ export class PDFService {
   private coverLetterTemplate?: HandlebarsTemplateDelegate
 
   constructor(logger?: SimpleLogger) {
-    const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
-
-    this.logger = logger || {
-      info: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
-      },
-      warning: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
-      },
-      error: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
-      },
-    }
+    // Use shared logger factory
+    this.logger = logger || createDefaultLogger()
   }
 
   /**

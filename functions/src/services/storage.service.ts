@@ -31,9 +31,6 @@ export interface UploadResult {
   storageClass: "STANDARD" | "COLDLINE"
 }
 
-export interface SignedUrlOptions {
-  expiresInHours: number
-}
 
 /**
  * Get environment-aware bucket name
@@ -213,12 +210,12 @@ export class StorageService {
    * Generate a public URL for viewing/downloading a file
    *
    * Since buckets are configured as publicly readable, we return direct HTTPS URLs
-   * that never expire instead of signed URLs.
+   * that never expire.
    *
    * @param gcsPath - Full GCS path (e.g., "resumes/YYYY-MM-DD/filename.pdf" or "images/avatars/avatar.jpg")
-   * @param _options - Expiration options (ignored - kept for API compatibility)
+   * @returns A permanent public HTTPS URL to the file
    */
-  async generateSignedUrl(gcsPath: string, _options: SignedUrlOptions): Promise<string> {
+  async generatePublicUrl(gcsPath: string): Promise<string> {
     try {
       this.logger.info("Generating public URL", {
         gcsPath,
@@ -254,10 +251,9 @@ export class StorageService {
    * Generate public URLs for both resume and cover letter
    * Returns direct HTTPS URLs that never expire (buckets are publicly readable)
    */
-  async generateSignedUrls(
+  async generatePublicUrls(
     resumePath: string | null,
-    coverLetterPath: string | null,
-    options: SignedUrlOptions
+    coverLetterPath: string | null
   ): Promise<{
     resumeUrl?: string
     coverLetterUrl?: string
@@ -265,11 +261,11 @@ export class StorageService {
     const result: { resumeUrl?: string; coverLetterUrl?: string } = {}
 
     if (resumePath) {
-      result.resumeUrl = await this.generateSignedUrl(resumePath, options)
+      result.resumeUrl = await this.generatePublicUrl(resumePath)
     }
 
     if (coverLetterPath) {
-      result.coverLetterUrl = await this.generateSignedUrl(coverLetterPath, options)
+      result.coverLetterUrl = await this.generatePublicUrl(coverLetterPath)
     }
 
     return result

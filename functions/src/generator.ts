@@ -156,6 +156,13 @@ const updatePersonalInfoSchema = Joi.object({
   defaultStyle: Joi.string().valid("modern", "traditional", "technical", "executive").optional(),
 })
 
+const updateJobMatchSchema = Joi.object({
+  applied: Joi.boolean().optional(),
+  documentGenerated: Joi.boolean().optional(),
+  generationId: Joi.string().optional(),
+  notes: Joi.string().trim().max(5000).optional().allow(""),
+})
+
 /**
  * Main handler for generator requests
  */
@@ -287,6 +294,20 @@ const handleGeneratorRequest = async (req: Request, res: Response): Promise<void
           // Route: GET /generator/requests - List requests (auth required)
           if (req.method === "GET" && path === "/generator/requests") {
             await handleListRequests(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: GET /generator/job-matches - List job matches (auth required)
+          if (req.method === "GET" && path === "/generator/job-matches") {
+            await handleListJobMatches(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: PUT /generator/job-matches/:id - Update job match (auth required)
+          if (req.method === "PUT" && path.startsWith("/generator/job-matches/")) {
+            await handleUpdateJobMatch(req as AuthenticatedRequest, res, requestId)
             resolve()
             return
           }
@@ -537,12 +558,8 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       type UploadResult = Awaited<ReturnType<typeof storageService.uploadPDF>>
       let resumeUploadResult: UploadResult | undefined
       let coverLetterUploadResult: UploadResult | undefined
-      let resumeSignedUrl: string | undefined
-      let coverLetterSignedUrl: string | undefined
-
-      // Check if user is an editor (for signed URL expiry)
-      const isEditor = await checkOptionalAuth(req as AuthenticatedRequest, logger)
-      const expiresInHours = isEditor ? 168 : 1 // 7 days (168 hours) for editors, 1 hour for viewers
+      let resumePublicUrl: string | undefined
+      let coverLetterPublicUrl: string | undefined
 
       // Generate filename-safe strings
       const companySafe = job.company.replace(/[^a-z0-9]/gi, "_").toLowerCase()
@@ -557,13 +574,13 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         const filename = `${companySafe}_${roleSafe}_resume_${timestamp}.pdf`
         resumeUploadResult = await storageService.uploadPDF(resumePDF, filename, "resume")
 
-        // Generate signed URL
-        resumeSignedUrl = await storageService.generateSignedUrl(resumeUploadResult.gcsPath, { expiresInHours })
+        // Generate public URL
+        resumePublicUrl = await storageService.generatePublicUrl(resumeUploadResult.gcsPath)
 
-        logger.info("Resume uploaded to GCS", { gcsPath: resumeUploadResult.gcsPath, expiresInHours })
+        logger.info("Resume uploaded to GCS", { gcsPath: resumeUploadResult.gcsPath })
 
         // Complete create_resume_pdf step with download URL (enables early download!)
-        steps = completeStep(steps, "create_resume_pdf", { resumeUrl: resumeSignedUrl })
+        steps = completeStep(steps, "create_resume_pdf", { resumeUrl: resumePublicUrl })
         await generatorService.updateSteps(generationRequestId, steps)
       }
 
@@ -571,13 +588,13 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         const filename = `${companySafe}_${roleSafe}_cover_letter_${timestamp}.pdf`
         coverLetterUploadResult = await storageService.uploadPDF(coverLetterPDF, filename, "cover-letter")
 
-        // Generate signed URL
-        coverLetterSignedUrl = await storageService.generateSignedUrl(coverLetterUploadResult.gcsPath, { expiresInHours })
+        // Generate public URL
+        coverLetterPublicUrl = await storageService.generatePublicUrl(coverLetterUploadResult.gcsPath)
 
-        logger.info("Cover letter uploaded to GCS", { gcsPath: coverLetterUploadResult.gcsPath, expiresInHours })
+        logger.info("Cover letter uploaded to GCS", { gcsPath: coverLetterUploadResult.gcsPath })
 
         // Complete create_cover_letter_pdf step with download URL (enables early download!)
-        steps = completeStep(steps, "create_cover_letter_pdf", { coverLetterUrl: coverLetterSignedUrl })
+        steps = completeStep(steps, "create_cover_letter_pdf", { coverLetterUrl: coverLetterPublicUrl })
         await generatorService.updateSteps(generationRequestId, steps)
       }
 
@@ -631,23 +648,19 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
       // Build files object for GCS storage information
       const files: GeneratorResponse["files"] = {}
 
-      if (resumeUploadResult && resumeSignedUrl) {
+      if (resumeUploadResult && resumePublicUrl) {
         files.resume = {
           gcsPath: resumeUploadResult.gcsPath,
-          signedUrl: resumeSignedUrl,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          signedUrlExpiry: new Date(Date.now() + expiresInHours * 60 * 60 * 1000) as any, // Will be converted to Firestore Timestamp
+          signedUrl: resumePublicUrl,
           size: resumeUploadResult.size,
           storageClass: resumeUploadResult.storageClass,
         }
       }
 
-      if (coverLetterUploadResult && coverLetterSignedUrl) {
+      if (coverLetterUploadResult && coverLetterPublicUrl) {
         files.coverLetter = {
           gcsPath: coverLetterUploadResult.gcsPath,
-          signedUrl: coverLetterSignedUrl,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          signedUrlExpiry: new Date(Date.now() + expiresInHours * 60 * 60 * 1000) as any, // Will be converted to Firestore Timestamp
+          signedUrl: coverLetterPublicUrl,
           size: coverLetterUploadResult.size,
           storageClass: coverLetterUploadResult.storageClass,
         }
@@ -681,7 +694,7 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
         costUsd,
       })
 
-      // Step 6: Return signed URLs for GCS downloads
+      // Step 6: Return public URLs for GCS downloads
       res.status(200).json({
         success: true,
         data: {
@@ -699,11 +712,9 @@ async function handleGenerate(req: Request, res: Response, requestId: string): P
             model: resumeResult?.model || coverLetterResult?.model || aiProvider.model,
             durationMs,
           },
-          // Return signed URLs for downloads (Phase 2.2)
-          resumeUrl: resumeSignedUrl,
-          coverLetterUrl: coverLetterSignedUrl,
-          // Include expiry information
-          urlExpiresIn: isEditor ? "7 days" : "1 hour",
+          // Return public URLs for downloads
+          resumeUrl: resumePublicUrl,
+          coverLetterUrl: coverLetterPublicUrl,
         },
         requestId, // HTTP request ID for tracking
       })
@@ -1240,7 +1251,7 @@ async function executeCreateResumePDF(request: GeneratorRequest, requestId: stri
   const filename = `${companySafe}_${roleSafe}_resume_${timestamp}.pdf`
 
   const uploadResult = await storageService.uploadPDF(pdf, filename, "resume")
-  const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 168 })
+  const publicUrl = await storageService.generatePublicUrl(uploadResult.gcsPath)
 
   logger.info("Resume uploaded to GCS", {
     requestId,
@@ -1249,7 +1260,7 @@ async function executeCreateResumePDF(request: GeneratorRequest, requestId: stri
   })
 
   // Complete step with URL
-  steps = completeStep(steps, "create_resume_pdf", { resumeUrl: signedUrl })
+  steps = completeStep(steps, "create_resume_pdf", { resumeUrl: publicUrl })
   await generatorService.updateSteps(request.id, steps)
 }
 
@@ -1291,7 +1302,7 @@ async function executeCreateCoverLetterPDF(request: GeneratorRequest, requestId:
   const filename = `${companySafe}_${roleSafe}_cover_letter_${timestamp}.pdf`
 
   const uploadResult = await storageService.uploadPDF(pdf, filename, "cover-letter")
-  const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 168 })
+  const publicUrl = await storageService.generatePublicUrl(uploadResult.gcsPath)
 
   logger.info("Cover letter uploaded to GCS", {
     requestId,
@@ -1300,7 +1311,7 @@ async function executeCreateCoverLetterPDF(request: GeneratorRequest, requestId:
   })
 
   // Complete step with URL
-  steps = completeStep(steps, "create_cover_letter_pdf", { coverLetterUrl: signedUrl })
+  steps = completeStep(steps, "create_cover_letter_pdf", { coverLetterUrl: publicUrl })
   await generatorService.updateSteps(request.id, steps)
 }
 
@@ -1697,18 +1708,18 @@ async function handleUploadImage(req: AuthenticatedRequest & { rawBody?: Buffer 
     // Upload to GCS
     const uploadResult = await storageService.uploadImage(validFileBuffer, uniqueFilename, validImageType, validContentType)
 
-    // Generate signed URL for immediate use (max 7 days)
-    const signedUrl = await storageService.generateSignedUrl(uploadResult.gcsPath, { expiresInHours: 168 }) // 7 days (GCS max)
+    // Generate public URL
+    const publicUrl = await storageService.generatePublicUrl(uploadResult.gcsPath)
 
     // Update personal info with new image URL
-    const updateData = validImageType === "avatar" ? { avatar: signedUrl } : { logo: signedUrl }
+    const updateData = validImageType === "avatar" ? { avatar: publicUrl } : { logo: publicUrl }
     await generatorService.updatePersonalInfo(updateData, userEmail)
 
     res.status(200).json({
       success: true,
       data: {
         imageType: validImageType,
-        url: signedUrl,
+        url: publicUrl,
         gcsPath: uploadResult.gcsPath,
         size: uploadResult.size,
       },
@@ -1723,6 +1734,123 @@ async function handleUploadImage(req: AuthenticatedRequest & { rawBody?: Buffer 
       error: "IMAGE_UPLOAD_FAILED",
       errorCode: err.code,
       message: error instanceof Error ? error.message : "Failed to upload image",
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /generator/job-matches - List job matches (auth required)
+ */
+async function handleListJobMatches(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    logger.info("Listing job matches", { requestId })
+
+    const jobMatchesRef = firestore.collection("job-matches")
+    const snapshot = await jobMatchesRef.orderBy("createdAt", "desc").limit(500).get()
+
+    const jobMatches = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }))
+
+    res.status(200).json({
+      success: true,
+      data: {
+        jobMatches,
+        count: jobMatches.length,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to list job matches", { error, requestId })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * PUT /generator/job-matches/:id - Update job match (auth required)
+ */
+async function handleUpdateJobMatch(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Extract job match ID from path
+    const path = req.path || req.url
+    const jobMatchId = path.split("/").pop()
+
+    if (!jobMatchId) {
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: "Job match ID is required",
+        requestId,
+      })
+      return
+    }
+
+    // Validate request body
+    const { error, value } = updateJobMatchSchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for update job match", {
+        error: error.details,
+        requestId,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    logger.info("Updating job match", {
+      requestId,
+      jobMatchId,
+      fieldsToUpdate: Object.keys(value),
+    })
+
+    const jobMatchRef = firestore.collection("job-matches").doc(jobMatchId)
+    await jobMatchRef.update({
+      ...value,
+      updatedAt: new Date().toISOString(),
+    })
+
+    // Fetch updated document
+    const updated = await jobMatchRef.get()
+    const jobMatch = {
+      id: updated.id,
+      ...updated.data(),
+    }
+
+    res.status(200).json({
+      success: true,
+      data: jobMatch,
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to update job match", { error, requestId })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
       requestId,
     })
   }

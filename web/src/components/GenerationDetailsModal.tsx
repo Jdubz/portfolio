@@ -55,10 +55,10 @@ const formatTimestamp = (timestamp: string | FirestoreTimestamp): string => {
 /**
  * Strip query parameters from GCS URLs
  *
- * Old signed URLs have expiring signatures like:
- * https://storage.googleapis.com/bucket/path.pdf?X-Goog-Algorithm=...&X-Goog-Signature=...
+ * Historical note: Some old documents may have query parameters from when we used
+ * time-limited signed URLs. Those have been replaced with permanent public URLs.
  *
- * Since buckets are now public, we can strip query params to access files directly:
+ * This helper ensures we access files using clean public URLs:
  * https://storage.googleapis.com/bucket/path.pdf
  */
 const stripUrlQueryParams = (url: string): string => {
@@ -87,7 +87,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
   }
 
   // Extract PDF URLs from steps and strip query parameters
-  // (old signed URLs have expired signatures, but files are now publicly accessible)
+  // (removes any legacy query params from historical documents)
   const rawResumeUrl = request.steps?.find((s) => s.result?.resumeUrl)?.result?.resumeUrl
   const rawCoverLetterUrl = request.steps?.find((s) => s.result?.coverLetterUrl)?.result?.coverLetterUrl
 

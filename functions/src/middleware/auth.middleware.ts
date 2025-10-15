@@ -1,12 +1,7 @@
 import type { Request, Response, NextFunction } from "express"
 import { auth } from "firebase-admin"
-
-// Simple logger type
-type SimpleLogger = {
-  info: (message: string, data?: unknown) => void
-  warning: (message: string, data?: unknown) => void
-  error: (message: string, data?: unknown) => void
-}
+import { createDefaultLogger } from "../utils/logger"
+import type { SimpleLogger } from "../types/logger.types"
 
 // Error codes for authentication
 export const AUTH_ERROR_CODES = {
@@ -70,12 +65,8 @@ export interface AuthenticatedRequest extends Request {
  * Sets req.user with { uid, email, email_verified } if authenticated
  */
 export function verifyAuthenticatedEditor(logger?: SimpleLogger) {
-  // Create logger if not provided
-  const log = logger || {
-    info: (message: string, data?: unknown) => console.log(`[INFO] ${message}`, data || ""),
-    warning: (message: string, data?: unknown) => console.warn(`[WARN] ${message}`, data || ""),
-    error: (message: string, data?: unknown) => console.error(`[ERROR] ${message}`, data || ""),
-  }
+  // Use shared logger factory
+  const log = logger || createDefaultLogger()
 
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     const requestId = (req as Request & { requestId?: string }).requestId || "unknown"
@@ -251,11 +242,8 @@ export function verifyAuthenticatedEditor(logger?: SimpleLogger) {
  * Sets req.user with { uid, email, email_verified } if authenticated
  */
 export async function checkOptionalAuth(req: AuthenticatedRequest, logger?: SimpleLogger): Promise<boolean> {
-  const log = logger || {
-    info: (message: string, data?: unknown) => console.log(`[INFO] ${message}`, data || ""),
-    warning: (message: string, data?: unknown) => console.warn(`[WARN] ${message}`, data || ""),
-    error: (message: string, data?: unknown) => console.error(`[ERROR] ${message}`, data || ""),
-  }
+  // Use shared logger factory
+  const log = logger || createDefaultLogger()
 
   try {
     // Extract Authorization header

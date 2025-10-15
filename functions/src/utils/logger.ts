@@ -5,11 +5,9 @@
  * Provides consistent logging across all functions with automatic PII redaction.
  */
 
-export type Logger = {
-  info: (message: string, data?: unknown) => void
-  warning: (message: string, data?: unknown) => void
-  error: (message: string, data?: unknown) => void
-}
+import type { SimpleLogger } from "../types/logger.types"
+
+export type Logger = SimpleLogger
 
 /**
  * Check if we're in a test environment
@@ -125,7 +123,30 @@ export const createLogger = (): Logger => ({
 })
 
 /**
+ * Create a default logger instance without PII redaction (for services)
+ *
+ * This is a simpler logger for use in service constructors where PII redaction
+ * may not be needed (the main logger handles that). Services can optionally
+ * accept a logger instance or use this as a fallback.
+ */
+export const createDefaultLogger = (): SimpleLogger => {
+  const isTestEnv = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
+
+  return {
+    info: (message: string, data?: unknown) => {
+      if (!isTestEnv) console.log(`[INFO] ${message}`, data || "")
+    },
+    warning: (message: string, data?: unknown) => {
+      if (!isTestEnv) console.warn(`[WARN] ${message}`, data || "")
+    },
+    error: (message: string, data?: unknown) => {
+      if (!isTestEnv) console.error(`[ERROR] ${message}`, data || "")
+    },
+  }
+}
+
+/**
  * Default logger instance
- * Use this in most cases
+ * Use this in most cases - includes automatic PII redaction
  */
 export const logger = createLogger()

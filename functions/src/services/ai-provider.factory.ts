@@ -6,15 +6,10 @@
  */
 
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager"
+import type { SimpleLogger } from "../types/logger.types"
 import type { AIProvider, AIProviderType } from "../types/generator.types"
 import { OpenAIService } from "./openai.service"
 import { GeminiProvider } from "./gemini.service"
-
-type SimpleLogger = {
-  info: (message: string, data?: unknown) => void
-  warning: (message: string, data?: unknown) => void
-  error: (message: string, data?: unknown) => void
-}
 
 // Cache for API keys to avoid repeated Secret Manager calls
 const apiKeyCache: Map<string, string> = new Map()

@@ -1,143 +1,434 @@
 # Portfolio - Next Steps
 
-**Last Updated**: October 14, 2025
+**Last Updated**: January 14, 2025
 
 This document lists **prioritized outstanding work** for the portfolio project. All core features are complete and production-ready - these are optional enhancements.
 
 ---
 
-## High Priority
+## Quick Wins: Usability Improvements
 
-### 1. Frontend Terminology Migration
+**Context**: This tool works in concert with [job-finder](https://github.com/Jdubz/job-finder) to create the best job applications ever:
+- **job-finder**: Discovers jobs, scrapes descriptions, analyzes match quality, extracts insights
+- **portfolio (this tool)**: Generates hyper-customized resumes/cover letters using AI with job-finder's rich context
 
-**Status**: Backend complete, frontend partially complete
-**Effort**: 2-3 hours
-**Why**: Technical debt cleanup, backend already migrated
+**Pipeline Vision**: job-finder → Firestore `job-matches` → portfolio tool → AI-generated documents → application submission
 
-**Context:**
-Backend uses "personalInfo" terminology but frontend still uses "defaults" in some places.
+The following improvements focus on seamless integration, maximum automation, and producing the highest quality applications.
 
-**Tasks:**
-1. Update frontend types (`web/src/types/generator.ts`):
-   - Rename `GeneratorDefaults` → `PersonalInfo`
-   - Rename `UpdateDefaultsData` → `UpdatePersonalInfoData`
+### Tier 1: Pipeline Integration (Critical for Best-in-Class Applications)
 
-2. Update API client (`web/src/api/generator-client.ts`):
-   - Remove deprecated method aliases: `getDefaults()`, `updateDefaults()`
+#### 1. Intelligent Context Utilization ✅
+**Status**: Complete (January 2025)
+**Effort**: Investigation revealed already implemented
+**Impact**: CRITICAL - Maximize job-finder insights in AI generation
 
-3. Update components:
-   - Search for usages: `rg "getDefaults|updateDefaults|GeneratorDefaults" web/src/`
-   - Update state variable names from `defaults` to `personalInfo`
+**Verification Results**:
+After comprehensive code analysis, confirmed that ALL job match insights are already being used in AI prompts:
 
-4. Test thoroughly:
-   ```bash
-   npm run test:web
-   npm run lint:web
-   npm run build:web
-   ```
+**OpenAI Service** (`functions/src/services/openai.service.ts:255-288`):
+- ✅ `matchScore` - Overall match percentage
+- ✅ `matchedSkills` - Skills that align with the job
+- ✅ `missingSkills` - Skills to develop (with "don't fabricate" guidance)
+- ✅ `keyStrengths` - What to highlight
+- ✅ `potentialConcerns` - Address weaknesses through relevant experience
+- ✅ `keywords` - Important keywords to use naturally
+- ✅ `customizationRecommendations.skills_to_emphasize`
+- ✅ `customizationRecommendations.resume_focus`
+- ✅ `customizationRecommendations.cover_letter_points`
+- ✅ `resumeIntakeData.target_summary`
+- ✅ `resumeIntakeData.skills_priority`
+- ✅ `resumeIntakeData.keywords_to_include`
+- ✅ `resumeIntakeData.achievement_angles` (line 283)
 
-**Note:** Firestore migration already complete (all environments).
+**Gemini Service** (`functions/src/services/gemini.service.ts:313-347`):
+- Identical comprehensive job match data usage
+- Prompts are consistent between providers for quality parity
+
+**Conclusion**: Task is complete. Both AI providers already leverage all job-finder insights comprehensively. Prompts explicitly instruct AI to use these insights for SELECTION and EMPHASIS only, without fabrication.
 
 ---
 
-## Medium Priority
+#### 2. One-Click Generation from Job Applications ✅
+**Status**: Complete (January 2025)
+**Effort**: 45 minutes (actual)
+**Impact**: HIGH - Eliminates friction in pipeline workflow
 
-### 2. URL Expiry Handling
+**Achieved Workflow** (1 click):
+1. Click "Generate" button in Job Applications table → Done
+2. Watch real-time progress inline
+3. Documents automatically linked to job match
 
+**Implementation Completed**:
+- ✅ Created reusable `useDocumentGeneration` hook
+- ✅ Added `buildGenerationOptionsFromJobMatch` helper function
+- ✅ "Generate" button in Actions column for jobs without documents
+- ✅ Real-time progress display with `GenerationProgress` component
+- ✅ Auto-populates all fields from job match:
+  - `jobDescriptionText` / `description` → job description
+  - `matchedSkills` + `keyStrengths` + `keywords` → emphasize field
+  - `companyWebsite` → company website
+  - `url` → job description URL
+  - `jobMatchId` → links generation to job match
+- ✅ Auto-updates job match after success:
+  - `documentGenerated: true`
+  - `generationId: <requestId>`
+  - `documentGeneratedAt: <timestamp>`
+- ✅ Graceful error handling with user notifications
+- ✅ Uses AI provider preference from localStorage (defaults to Gemini)
+- ✅ Optimistic UI updates (grayed out while generating)
+- ✅ Completion animation (2-second delay to show success)
+
+**Files Created/Modified**:
+- `web/src/hooks/useDocumentGeneration.ts` - New reusable hook (235 lines)
+- `web/src/components/tabs/JobApplicationsTab.tsx` - Added one-click generation (436 lines)
+- `web/src/types/job-match.ts` - Added `documentGeneratedAt` to UpdateJobMatchData
+
+**User Experience**:
+- Single click → documents generated and linked
+- No tab switching required
+- Progress visible inline with step-by-step updates
+- Row highlights during generation
+- Automatic status update on completion
+
+---
+
+#### 3. Bulk Generation Queue
 **Status**: Not implemented
 **Effort**: 3-4 hours
-**Why**: Quality of life improvement for users
+**Impact**: CRITICAL - Process 10-20 job-finder results efficiently
 
-**Current Behavior:**
-- Signed URLs expire after 1 hour (viewers) or 7 days (editors)
-- Users must re-generate document if URL expired
-- No warning before expiry
+**Use Case**:
+- job-finder finds 15 promising roles
+- User reviews matches, selects top 10
+- Generate tailored documents for all 10 in one action
 
-**Proposed Enhancement:**
-- Display expiry time in Document History
-- Show warning badge when URL expires soon
-- Add "Refresh URL" button to regenerate signed URL without re-generating document
+**Current State**:
+- Must generate one at a time (tedious for high-volume applications)
+- No queue management
+- No aggregate progress tracking
 
-**Implementation:**
-1. Create endpoint: `POST /generator/requests/:id/refresh-url`
-   - Regenerate signed URLs with fresh expiry
-   - Update response document in Firestore
-   - Return new URLs
+**Implementation**:
+- Multi-select checkboxes in Job Applications table
+- "Generate Selected (N)" action button
+- Queue-based processing:
+  - Process sequentially to avoid rate limits (20 req/15min)
+  - Show aggregate progress: "Generating 3/10..."
+  - Individual job progress indicators
+  - Pause/resume capability
+- Summary on completion:
+  - "✓ 8 succeeded, ✗ 2 failed"
+  - Links to generated documents
+  - Option to retry failed generations
+- Update all job match statuses in batch
 
-2. Update Document History UI:
-   - Show expiry timestamp
-   - Add warning badges (expired, expires soon)
-   - Add refresh button for expired URLs
+**Rate Limiting Considerations**:
+- Editor limit: 20 requests / 15 minutes
+- For 10 jobs: ~7.5 minutes at full speed
+- Add smart throttling to stay under limits
+- Estimate completion time based on queue size
 
-3. Add API client method:
-   ```typescript
-   async refreshUrls(requestId: string): Promise<GenerateResponse>
-   ```
+**Files to Modify**:
+- `web/src/components/tabs/JobApplicationsTab.tsx`
+- `web/src/hooks/useBulkGeneration.ts` - New hook for queue management
+- `web/src/components/BulkGenerationModal.tsx` - New component
+
+**Nice-to-Have**:
+- "Auto-generate all matches >80%" button
+- Configurable priority: generate high-match jobs first
 
 ---
 
-### 3. Resume Template Library
-
+#### 4. Job Match Edit UI (Manual Override)
 **Status**: Not implemented
-**Effort**: 6-8 hours
-**Why**: Useful for users applying to similar roles repeatedly
+**Effort**: 1-2 hours
+**Impact**: MEDIUM - For edge cases where job-finder data needs adjustment
 
-**Use Case:**
-Save and reuse common job descriptions and preferences as templates.
+**Use Cases**:
+- job-finder misclassified role or company
+- Want to add manual notes/context
+- Update job description after it changed
+- Mark as applied/rejected manually
 
-**Implementation:**
-1. Create Firestore collection: `generator-templates`
-   - Fields: name, job details, preferences, userId
-   - Security: Users can only read/write their own templates
+**Implementation**:
+- "Edit" button in Job Applications table (each row)
+- Modal form with all editable fields:
+  - company, role, title, description, url
+  - matchScore (manual override)
+  - status, priority, notes
+  - applied checkbox
+- PUT to existing `/generator/job-matches/:id` endpoint
+- Optimistic updates + revert on error
 
-2. Add API endpoints:
-   - `GET /generator/templates` - List user's templates
-   - `POST /generator/templates` - Create template
-   - `DELETE /generator/templates/:id` - Delete template
+**Files to Create**:
+- `web/src/components/JobMatchEditModal.tsx` - New component
+- `web/src/components/tabs/JobApplicationsTab.tsx` - Add edit button
 
-3. Add UI in Document Builder:
-   - Template dropdown selector
-   - "Load Template" button (auto-fills form)
-   - "Save as Template" button
+**Note**: Create is NOT needed - job-finder handles that
 
 ---
 
-### 4. Analytics Dashboard (Editor Only)
+### Tier 2: Quality & Efficiency Improvements
 
+#### 5. Smart Filtering & Sorting in Job Applications
 **Status**: Not implemented
-**Effort**: 10-15 hours
-**Why**: Useful for monitoring usage and costs
+**Effort**: 1 hour
+**Impact**: HIGH - Quickly find best opportunities from job-finder results
 
-**What to Build:**
-- Total generations by day/week/month
-- Success rate over time
-- Cost analysis (OpenAI vs Gemini usage trends)
-- Popular companies/roles
-- User engagement (viewer vs editor activity)
-- Average generation duration by provider
+**Current State**:
+- Shows all job matches in creation order
+- No filtering or sorting
 
-**Implementation:**
-1. Create analytics route: `/resume-builder/analytics` (editor-only)
+**Implementation**:
+- **Filters**:
+  - Match score: >90%, 80-90%, 70-80%, <70%
+  - Status: Not Generated, Generated, Applied
+  - Priority: High, Medium, Low (if job-finder sets this)
+- **Sorting**:
+  - By match score (default)
+  - By creation date
+  - By company name
+  - By applied status
+- **Quick Actions**:
+  - "Show only high matches (>80%)" toggle
+  - "Hide already applied" toggle
+- Persist preferences in localStorage
 
-2. Add API endpoint:
-   - `GET /generator/analytics?startDate=...&endDate=...`
-   - Query Firestore responses within date range
-   - Calculate metrics and group by provider/company
-
-3. Create dashboard component:
-   - Metric cards (total generations, success rate, cost)
-   - Line chart (generations over time)
-   - Pie chart (provider distribution)
-   - Bar chart (top companies)
-   - CSV export option
-
-4. Use Chart.js or Recharts for visualizations
+**Files to Modify**:
+- `web/src/components/tabs/JobApplicationsTab.tsx`
 
 ---
 
-## Low Priority
+#### 6. PDF Inline Preview
+**Status**: Not implemented
+**Effort**: 1-2 hours
+**Impact**: MEDIUM - Faster iteration, less clutter
 
-### 5. Storage Class Background Sync
+**Problem**:
+- Must download PDF to see result
+- Clutters Downloads folder during iteration
+
+**Implementation**:
+- Use `react-pdf` or `<iframe>` to show PDF inline
+- Collapsible preview panel
+- Download button below preview
+
+**Files to Modify**:
+- `web/src/components/tabs/DocumentBuilderTab.tsx`
+- `web/src/components/PDFPreview.tsx` - New component
+
+---
+
+#### 7. Bi-Directional Sync with job-finder
+**Status**: Not implemented
+**Effort**: 2-3 hours (requires job-finder API support)
+**Impact**: HIGH - Close the feedback loop
+
+**Vision**: Share insights between tools to improve both
+
+**job-finder ← portfolio**:
+- After generating documents, send feedback to job-finder:
+  - Generation success/failure
+  - Time to generate
+  - Which keywords were most valuable
+  - Document quality score (if manually rated)
+- job-finder can use this to refine matching algorithm
+
+**portfolio ← job-finder**:
+- Real-time updates when job-finder creates new matches
+- Webhook or polling mechanism
+- Show notification: "5 new job matches found"
+
+**Implementation Options**:
+1. **Firestore Listeners** (easiest):
+   - Portfolio watches `job-matches` collection for new docs
+   - Both tools write to shared Firestore
+2. **Webhooks**:
+   - job-finder calls portfolio webhook on new match
+   - portfolio calls job-finder webhook after generation
+3. **Shared API**:
+   - Create unified API for both tools
+
+**Files to Create/Modify**:
+- `web/src/hooks/useJobMatchListener.ts` - Firestore listener
+- `functions/src/webhooks.ts` - Webhook handlers (if needed)
+
+**Questions for job-finder integration**:
+- Does job-finder expose an API?
+- What feedback would improve match quality?
+- How often does it run? (hourly cron? on-demand?)
+
+---
+
+### Tier 3: Nice to Have
+
+#### 8. Generation History CSV Export
+**Status**: Not implemented
+**Effort**: 30 minutes
+**Impact**: LOW - Better application tracking
+
+**Implementation**:
+- Add "Export CSV" button to Document History tab
+- Export columns: Date, Company, Role, Status, AI Model, Cost, Generation ID
+- Use `papaparse` or similar library
+
+**Files to Modify**:
+- `web/src/components/GenerationHistory.tsx`
+
+---
+
+#### 9. Default Form Values from Last Generation
+**Status**: Not implemented
+**Effort**: 30 minutes
+**Impact**: LOW - Faster iteration for similar roles
+
+**Implementation**:
+- Store last successful generation params in localStorage
+- Pre-fill form fields on load (except company/role)
+- Add "Use Last Settings" button
+
+---
+
+#### 10. Generation Templates/Presets
+**Status**: Not implemented
+**Effort**: 2-3 hours
+**Impact**: MEDIUM - Faster switching between role types
+
+**Implementation**:
+- Save generation presets: "Full Stack", "Frontend", "DevOps", "Leadership"
+- Each preset includes: emphasize keywords, AI prompts, generation type
+- Dropdown to load preset
+- Store in Firestore under user account
+
+---
+
+#### 11. Keyboard Shortcuts
+**Status**: Not implemented
+**Effort**: 1-2 hours
+**Impact**: LOW - Power user efficiency
+
+**Shortcuts**:
+- `Ctrl+Enter` - Generate documents
+- `Ctrl+K` - Focus company field
+- `Ctrl+N` - New job match
+- `Esc` - Close modals
+
+**Implementation**:
+- Use `react-hotkeys-hook` or similar library
+
+---
+
+## Portfolio Showcase Enhancements
+
+These features demonstrate the sophistication of the integrated job-finder → portfolio pipeline system.
+
+### 12. Pipeline Analytics Dashboard
+**Status**: Not implemented
+**Effort**: 4-5 hours
+**Impact**: Showcases end-to-end system intelligence
+
+**Vision**: Show the complete pipeline in action with real data
+
+**Metrics to Display**:
+
+**job-finder → portfolio Pipeline**:
+- Total jobs discovered vs. documents generated (conversion funnel)
+- Average match score of generated documents
+- Success rate by match score tier (>90%, 80-90%, etc.)
+- Time from job discovery to document generation
+- Most common matched skills across all applications
+
+**Generation Performance**:
+- Gemini vs OpenAI: cost comparison with actual data
+- Average generation time per provider
+- Total cost savings from using Gemini (e.g., "Saved $47.23 vs OpenAI")
+- Token usage trends over time
+- Generation success rate
+
+**Application Outcomes** (manual input):
+- Interview rate by match score
+- Response rate by document quality
+- Which keywords correlated with success
+- Feedback loop to improve job-finder matching
+
+**Implementation**:
+- Aggregate data from `generator_history` + `job-matches` collections
+- Cross-reference by `generationId` ↔ `jobMatchId`
+- Use recharts for visualizations
+- Real-time Firestore listeners for live updates
+- Add as new tab: "Pipeline Analytics"
+
+**Files to Create**:
+- `web/src/components/tabs/PipelineAnalyticsTab.tsx` - New tab
+- `web/src/hooks/usePipelineAnalytics.ts` - Data aggregation
+- `web/src/components/analytics/FunnelChart.tsx` - Conversion funnel
+- `web/src/components/analytics/CostComparison.tsx` - Cost savings
+
+**Demo Value**: Shows technical sophistication + data-driven approach to job search
+
+---
+
+### 13. "How It Works" - Integrated System Documentation
+**Status**: Complete
+**Effort**: 3-4 hours (actual: 1 hour)
+**Impact**: Demonstrates system design thinking
+
+**Content**:
+
+**Architecture Overview**:
+- End-to-end pipeline diagram: job-finder → Firestore → portfolio → AI → GCS → Application
+- Data flow between systems
+- Firestore as integration layer
+
+**job-finder Intelligence**:
+- How it discovers and analyzes jobs
+- Match scoring algorithm (high-level)
+- What insights it provides (matchedSkills, keyStrengths, etc.)
+
+**portfolio AI Customization**:
+- How it uses job-finder insights in prompts
+- Multi-provider AI strategy (Gemini vs OpenAI)
+- Cost optimization (96% savings)
+- PDF generation pipeline
+
+**Security & Scale**:
+- Firebase Auth + custom claims (editor role)
+- Rate limiting strategy
+- Cloud Functions Gen 2 architecture
+- GCS lifecycle policies (COLDLINE after 90 days)
+
+**Code Highlights**:
+- Show interesting code snippets (with syntax highlighting)
+- Link to GitHub if repo is public
+- Explain technical decisions
+
+**Files to Create**:
+- `web/src/pages/how-it-works.tsx` - New page
+- `web/src/components/architecture-diagram.svg` - System diagram
+- Update navigation to include link
+
+**Demo Value**: Shows full-stack expertise, system design, and integration skills
+
+**Implementation** (Completed January 2025):
+- Created `HowItWorksTab.tsx` component with comprehensive documentation
+- Added as first tab in resume builder (accessible to all users, no auth required)
+- Balances layman accessibility with technical depth
+- Covers: pipeline architecture, multi-provider AI, cost optimization, security, quality philosophy
+- Includes links to GitHub repos for both tools
+- Explains integrated job-finder → portfolio system
+- 480 lines of polished content
+
+**Files Created/Modified**:
+- `web/src/components/tabs/HowItWorksTab.tsx` - New component (480 lines)
+- `web/src/pages/resume-builder.tsx` - Added tab as first in list
+
+---
+
+## Optional Enhancements (Low Priority)
+
+All high-priority work is complete. The items below are optional enhancements that may be considered based on user needs.
+
+### 1. Storage Class Background Sync
 
 **Status**: Partially implemented
 **Effort**: 2-3 hours
@@ -156,7 +447,7 @@ Save and reuse common job descriptions and preferences as templates.
 
 ---
 
-### 6. Enhanced Rate Limiting
+### 2. Enhanced Rate Limiting
 
 **Status**: Current system works well
 **Effort**: 30 minutes
@@ -220,13 +511,150 @@ When deciding whether to implement a feature, ask:
 **Examples:**
 
 - **URL Refresh**: ✅ Medium frequency, high value, simple → **Do it**
-- **Analytics Dashboard**: ⚠️ Low frequency, medium value, can query Firestore → **Optional**
 - **LinkedIn Integration**: ❌ Low frequency, high complexity, high maintenance → **Skip**
 - **Batch Generation**: ❌ Very low frequency, can run multiple times manually → **Skip**
 
 ---
 
 ## Recently Completed ✅
+
+### SimpleLogger Type Migration (January 2025)
+
+**Status**: Complete (Commits: 68f1dbb, 3922084, c78bba2)
+**Impact**: Eliminated 137 lines of duplicate code across 10 files (73% reduction)
+
+**Problem Solved:**
+The `SimpleLogger` interface and default logger initialization pattern was duplicated across 13+ files. Every service class had the same 15-line logger initialization block, creating maintenance burden and inconsistency risk.
+
+**Implementation:**
+- **Infrastructure (68f1dbb):**
+  - Created `functions/src/types/logger.types.ts` with shared `SimpleLogger` type
+  - Created `createDefaultLogger()` factory in `functions/src/utils/logger.ts`
+  - Created `createFirestoreInstance()` factory in `functions/src/config/firestore.ts`
+  - Updated `GeneratorService` to demonstrate pattern (constructor: 23 → 5 lines)
+
+- **Migration (3922084):**
+  - Migrated 10 service files to use shared types and factories
+  - Services: Experience, Blurb, Firestore, Email, OpenAI, Gemini, PDF, SecretManager
+  - Updated ai-provider.factory.ts and auth.middleware.ts
+  - Constructor size reductions: 60-83% across all services
+
+- **Cleanup (c78bba2):**
+  - Removed unused `DATABASE_ID` imports after migration
+  - Fixed ESLint warnings
+
+**Pattern Applied:**
+```typescript
+// Before (23 lines per service):
+type SimpleLogger = { ... }  // Duplicated 13+ times
+constructor(logger?: SimpleLogger) {
+  this.db = new Firestore({ databaseId: DATABASE_ID })
+  const isTestEnvironment = ...
+  this.logger = logger || { /* 15 lines */ }
+}
+
+// After (5 lines):
+import { createFirestoreInstance } from "../config/firestore"
+import { createDefaultLogger } from "../utils/logger"
+import type { SimpleLogger } from "../types/logger.types"
+
+constructor(logger?: SimpleLogger) {
+  this.db = createFirestoreInstance()
+  this.logger = logger || createDefaultLogger()
+}
+```
+
+**Verification:**
+- All 211 tests passing (169 functions + 42 web)
+- All linting checks passing (TypeScript + ESLint + Prettier)
+- Single source of truth for logger type
+- Consistent logging patterns across entire codebase
+
+---
+
+### URL Expiry Code Cleanup (October 2025)
+
+**Status**: Complete (Commit: 756355f)
+**Impact**: Eliminated misleading URL expiry logic, clarified that GCS URLs are permanent
+
+**Problem Solved:**
+GCS buckets are publicly readable, so URLs never expire. However, the code was calculating and storing fake expiry times (7 days for editors, 1 hour for viewers), which was misleading and created unnecessary complexity.
+
+**Implementation:**
+- **Backend Changes:**
+  - Renamed `generateSignedUrl()` → `generatePublicUrl()` in storage.service.ts
+  - Removed `SignedUrlOptions` interface (no longer needed)
+  - Removed `expiresInHours` calculations from generator.ts
+  - Removed `signedUrlExpiry` fields from Firestore writes
+  - Removed `urlExpiresIn` from API responses
+  - Fixed bug where image upload referenced undefined `signedUrl` variable
+
+- **Frontend Changes:**
+  - Updated `GenerateResponse` type: removed `urlExpiresIn` field
+  - Updated `FileMetadata` type: `signedUrl` → `publicUrl`, removed `signedUrlExpiry`
+  - Updated comments in `GenerationDetailsModal`, `GenerationHistory`, `DocumentBuilderTab`
+  - Changed "signed URL" terminology to "public URL" throughout
+
+**Verification:**
+- All 169 functions tests passing
+- All 42 web tests passing
+- All linting clean (TypeScript + ESLint)
+
+**Files Modified:**
+- `functions/src/generator.ts` - Removed expiry calculations and updated method calls
+- `functions/src/services/storage.service.ts` - Renamed methods, removed options interface
+- `web/src/types/generator.ts` - Updated type definitions
+- `web/src/components/GenerationDetailsModal.tsx` - Updated comments
+- `web/src/components/GenerationHistory.tsx` - Updated comments
+- `web/src/components/tabs/DocumentBuilderTab.tsx` - Updated comments
+- `docs/development/NEXT_STEPS.md` - Documentation update
+
+---
+
+### Frontend Terminology Migration (October 2025)
+
+**Status**: Complete
+**Impact**: Eliminated technical debt, consistent naming across frontend and backend
+
+**Implementation:**
+- Removed deprecated type aliases `GeneratorDefaults` and `UpdateDefaultsData` from types
+- Removed deprecated API methods `getDefaults()` and `updateDefaults()` from generator client
+- Updated all React components to use `personalInfo` terminology:
+  - `SettingsTab.tsx` - Renamed variables and method calls
+  - `AIPromptsTab.tsx` - Renamed variables and method calls
+- Updated test files to use new terminology
+- All 42 tests passing, linting clean
+
+**Files Modified:**
+- `web/src/types/generator.ts` - Removed deprecated type aliases
+- `web/src/api/generator-client.ts` - Removed deprecated methods
+- `web/src/components/tabs/SettingsTab.tsx` - Updated to use personalInfo
+- `web/src/components/tabs/AIPromptsTab.tsx` - Updated to use personalInfo
+- `web/src/api/__tests__/generator-client.test.ts` - Updated test expectations
+
+### Job Matches API Refactoring (October 2025)
+
+**Status**: Complete
+**Impact**: Eliminated direct Firestore access from frontend, better security and consistency
+
+**Implementation:**
+- Added server-side API endpoints in `functions/src/generator.ts`:
+  - `GET /generator/job-matches` - List all job matches (editor-only, auth required)
+  - `PUT /generator/job-matches/:id` - Update job match (editor-only, auth required)
+- Refactored `JobMatchClient` to extend `ApiClient` base class
+- Removed all Firestore SDK imports from frontend
+- Converted to HTTP-based API calls with proper authentication
+- Consistent architecture with other API clients (GeneratorClient, ExperienceClient)
+
+**Benefits:**
+- No client-side auth timing issues
+- Server-side security enforcement
+- Easier debugging with HTTP error codes
+- Complete decoupling from Firestore implementation
+
+**Files Modified:**
+- `functions/src/generator.ts` - Added job-matches endpoints and validation schema
+- `web/src/api/job-match-client.ts` - Refactored to use HTTP instead of Firestore SDK
 
 ### Job Match AI Integration (October 2025)
 
@@ -292,7 +720,7 @@ When deciding whether to implement a feature, ask:
 **Core Features Complete**:
 - ✅ Multi-provider AI (OpenAI, Gemini)
 - ✅ PDF export with modern templates
-- ✅ GCS storage with signed URLs
+- ✅ GCS storage with public URLs (never expire)
 - ✅ Firebase Auth integration
 - ✅ Editor role management
 - ✅ Rate limiting
@@ -306,21 +734,9 @@ When deciding whether to implement a feature, ask:
 
 ## Recommended Priorities
 
-**If you have 3 hours:**
-1. Frontend terminology migration (2-3 hours)
-
-**If you have a weekend:**
-1. Frontend terminology migration (2-3 hours)
-2. URL expiry handling (3-4 hours)
-3. Resume template library (6-8 hours)
-
-**If you have a week:**
-1. All of the above
-2. Analytics dashboard (10-15 hours)
-3. Storage class sync (2-3 hours)
-
-**Otherwise:**
-- System is production-ready as-is
+**System is production-ready as-is:**
+- All core features complete and tested
+- Optional enhancements available if needed
 - Monitor usage and gather user feedback
 - Prioritize based on actual user needs
 
@@ -331,4 +747,4 @@ For development setup, see [SETUP.md](./SETUP.md)
 
 ---
 
-**Last Updated**: October 14, 2025
+**Last Updated**: January 14, 2025

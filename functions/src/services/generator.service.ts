@@ -1,5 +1,8 @@
 import { Firestore, Timestamp, FieldValue } from "@google-cloud/firestore"
-import { DATABASE_ID, GENERATOR_COLLECTION } from "../config/database"
+import { GENERATOR_COLLECTION } from "../config/database"
+import { createFirestoreInstance } from "../config/firestore"
+import { createDefaultLogger } from "../utils/logger"
+import type { SimpleLogger } from "../types/logger.types"
 import type {
   PersonalInfo,
   UpdatePersonalInfoData,
@@ -15,36 +18,17 @@ import type { BlurbEntry } from "./blurb.service"
 const COLLECTION_NAME = GENERATOR_COLLECTION
 const PERSONAL_INFO_DOC_ID = "personal-info"
 
-type SimpleLogger = {
-  info: (message: string, data?: unknown) => void
-  warning: (message: string, data?: unknown) => void
-  error: (message: string, data?: unknown) => void
-}
-
 export class GeneratorService {
   private db: Firestore
   private logger: SimpleLogger
   private collectionName = COLLECTION_NAME
 
   constructor(logger?: SimpleLogger) {
-    // Initialize Firestore with the named database "portfolio"
-    this.db = new Firestore({
-      databaseId: DATABASE_ID,
-    })
+    // Use shared Firestore factory for consistent configuration
+    this.db = createFirestoreInstance()
 
-    const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined
-
-    this.logger = logger || {
-      info: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.log(`[INFO] ${message}`, data || "")
-      },
-      warning: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.warn(`[WARN] ${message}`, data || "")
-      },
-      error: (message: string, data?: unknown) => {
-        if (!isTestEnvironment) console.error(`[ERROR] ${message}`, data || "")
-      },
-    }
+    // Use shared logger factory
+    this.logger = logger || createDefaultLogger()
   }
 
   /**

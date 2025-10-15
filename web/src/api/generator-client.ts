@@ -112,16 +112,6 @@ export class GeneratorClient extends ApiClient {
     return this.put<PersonalInfo>("/generator/personal-info", data, true)
   }
 
-  /** @deprecated Use getPersonalInfo() instead */
-  async getDefaults(): Promise<PersonalInfo> {
-    return this.getPersonalInfo()
-  }
-
-  /** @deprecated Use updatePersonalInfo() instead */
-  async updateDefaults(data: UpdatePersonalInfoData): Promise<PersonalInfo> {
-    return this.updatePersonalInfo(data)
-  }
-
   /**
    * Get a generation request by ID (for polling progress)
    * Public endpoint - no auth required
