@@ -6,6 +6,7 @@ const mockSet = jest.fn()
 const mockUpdate = jest.fn()
 const mockDelete = jest.fn()
 const mockDoc = jest.fn()
+const mockOrderBy = jest.fn()
 const mockCollection = jest.fn()
 
 jest.mock("@google-cloud/firestore", () => {
@@ -28,8 +29,12 @@ describe("BlurbService", () => {
 
     // Setup mock chain
     mockCollection.mockReturnValue({
-      get: mockGet,
+      orderBy: mockOrderBy,
       doc: mockDoc,
+    })
+
+    mockOrderBy.mockReturnValue({
+      get: mockGet,
     })
 
     mockDoc.mockReturnValue({
@@ -81,6 +86,7 @@ describe("BlurbService", () => {
       expect(result[0].name).toBe("intro")
       expect(result[1].name).toBe("skills")
       expect(mockCollection).toHaveBeenCalledWith("experience-blurbs")
+      expect(mockOrderBy).toHaveBeenCalledWith("order", "asc")
     })
   })
 

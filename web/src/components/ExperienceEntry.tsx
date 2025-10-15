@@ -6,6 +6,7 @@ import { MarkdownContent } from "./MarkdownContent"
 import { FormField } from "./FormField"
 import { FormActions } from "./FormActions"
 import { logger } from "../utils/logger"
+import { formatMonthYear } from "../utils/dateFormat"
 
 interface ExperienceEntryProps {
   entry: ExperienceEntryType
@@ -32,15 +33,6 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
     endDate: entry.endDate,
     notes: entry.notes,
   })
-
-  const formatDate = (dateStr: string | null | undefined): string => {
-    if (!dateStr) {
-      return "Present"
-    }
-    const [year, month] = dateStr.split("-")
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    return `${monthNames[parseInt(month) - 1]} ${year}`
-  }
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -133,21 +125,22 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
           <Flex sx={{ gap: 3, flexDirection: ["column", "row"] }}>
             <Box sx={{ flex: 1 }}>
               <FormField
-                label="Start Date (YYYY-MM)"
+                label="Start Date"
                 name="startDate"
+                type="month"
                 value={editData.startDate ?? ""}
                 onChange={(value) => setEditData({ ...editData, startDate: value })}
-                placeholder="2023-01"
                 required
               />
             </Box>
             <Box sx={{ flex: 1 }}>
               <FormField
-                label="End Date (YYYY-MM or leave empty for Present)"
+                label="End Date (leave empty for Present)"
                 name="endDate"
+                type="month"
                 value={editData.endDate ?? ""}
                 onChange={(value) => setEditData({ ...editData, endDate: value || null })}
-                placeholder="2024-12 or empty"
+                placeholder="Leave empty for Present"
               />
             </Box>
           </Flex>
@@ -214,7 +207,7 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
           letterSpacing: "0.05em",
         }}
       >
-        {formatDate(entry.startDate)} – {formatDate(entry.endDate)}
+        {formatMonthYear(entry.startDate)} – {formatMonthYear(entry.endDate)}
       </Text>
 
       {/* Title */}

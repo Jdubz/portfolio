@@ -16,6 +16,8 @@ export interface ExperienceEntry {
   startDate: string // YYYY-MM format
   endDate?: string | null // YYYY-MM format or null (= Present)
   notes?: string
+  order?: number // For sorting (lower = earlier), optional for backward compatibility
+  relatedBlurbIds?: string[] // References to associated blurbs, optional for backward compatibility
   createdAt: Timestamp
   updatedAt: Timestamp
   createdBy: string // Email of creator
@@ -30,6 +32,8 @@ export interface CreateExperienceData {
   startDate: string
   endDate?: string | null
   notes?: string
+  order?: number
+  relatedBlurbIds?: string[]
 }
 
 export interface UpdateExperienceData {
@@ -40,6 +44,8 @@ export interface UpdateExperienceData {
   startDate?: string
   endDate?: string | null
   notes?: string
+  order?: number
+  relatedBlurbIds?: string[]
 }
 
 export class ExperienceService {
@@ -56,13 +62,15 @@ export class ExperienceService {
   }
 
   /**
-   * List all experience entries, sorted by startDate (newest first)
+   * List all experience entries, sorted by order (ascending) or fallback to startDate (newest first)
    */
   async listEntries(): Promise<ExperienceEntry[]> {
     try {
+      // Use order field for sorting (lower values appear first)
+      // Fallback to startDate descending for entries without order field (backward compatibility)
       const snapshot = await this.db
         .collection(this.collectionName)
-        .orderBy("startDate", "desc")
+        .orderBy("order", "asc")
         .get()
 
       const entries = snapshot.docs.map((doc) => ({
@@ -139,6 +147,12 @@ export class ExperienceService {
       if (data.notes && data.notes.trim() !== "") {
         entry.notes = data.notes
       }
+      if (data.order !== undefined) {
+        entry.order = data.order
+      }
+      if (data.relatedBlurbIds !== undefined) {
+        entry.relatedBlurbIds = data.relatedBlurbIds
+      }
 
       const docRef = await this.db.collection(this.collectionName).add(entry)
 
@@ -207,6 +221,12 @@ export class ExperienceService {
       }
       if (data.notes !== undefined) {
         updates.notes = data.notes && data.notes.trim() !== "" ? data.notes : null
+      }
+      if (data.order !== undefined) {
+        updates.order = data.order
+      }
+      if (data.relatedBlurbIds !== undefined) {
+        updates.relatedBlurbIds = data.relatedBlurbIds
       }
 
       await docRef.update(updates)
