@@ -14,6 +14,43 @@ export interface BlurbEntry {
   order?: number // For sorting within page flow, optional for backward compatibility
   type?: "page" | "entry" // Distinguishes page-level vs entry-specific, optional for backward compatibility
   parentEntryId?: string // Links entry-specific blurbs to their parent entry, optional for backward compatibility
+
+  // NEW: Structured rendering
+  renderType?: "profile-header" | "project-showcase" | "categorized-list" | "timeline" | "text"
+  structuredData?: {
+    // For profile-header
+    role?: string
+    summary?: string
+    primaryStack?: string[]
+    links?: Array<{ label: string; url: string }>
+    tagline?: string
+
+    // For project-showcase
+    projects?: Array<{
+      name: string
+      description: string
+      technologies?: string[]
+      links?: Array<{ label: string; url: string }>
+    }>
+
+    // For categorized-list
+    categories?: Array<{
+      category: string
+      skills?: string[]
+    }>
+
+    // For timeline
+    items?: Array<{
+      title: string
+      date?: string
+      dateRange?: string
+      description?: string
+      details?: string
+      honors?: string
+      type?: string
+    }>
+  }
+
   createdAt: Timestamp
   updatedAt: Timestamp
   createdBy: string
@@ -35,6 +72,8 @@ export interface UpdateBlurbData {
   order?: number
   type?: "page" | "entry"
   parentEntryId?: string
+  renderType?: "profile-header" | "project-showcase" | "categorized-list" | "timeline" | "text"
+  structuredData?: BlurbEntry["structuredData"]
 }
 
 export class BlurbService {
@@ -179,6 +218,8 @@ export class BlurbService {
       if (data.order !== undefined) updates.order = data.order
       if (data.type !== undefined) updates.type = data.type
       if (data.parentEntryId !== undefined) updates.parentEntryId = data.parentEntryId
+      if (data.renderType !== undefined) updates.renderType = data.renderType
+      if (data.structuredData !== undefined) updates.structuredData = data.structuredData
 
       await docRef.update(updates)
 

@@ -1,0 +1,274 @@
+[
+  {
+    "id": "o3yRwXG6LGcPsniTLwl5",
+    "title": "Fulfil Solutions",
+    "role": "Senior Software Engineer",
+    "location": "Mountain View, CA - Remote (Portland, OR)",
+    "startDate": "2021-12",
+    "endDate": "2025-03",
+    "notes": "Imported from LinkedIn - Full-time · Remote",
+    "order": 1,
+    "renderType": "structured-entry",
+    "accomplishments": [
+      "Scaled the platform from stealth to powering three automated grocery stores (DoorDash DashMart, Whole Foods).",
+      "Integrated partners (Amazon, DoorDash, Uber Eats, Stripe, TaxJar, Twilio, SendGrid, PagerDuty, Slack) to unlock new fulfillment and comms flows.",
+      "Architected & delivered APIs and automation for Amazon Fresh/Whole Foods delivery systems; operationalized with dashboards/alerts.",
+      "Built async job pipelines (BullMQ / queues) and cache patterns that stabilized workloads under bursty demand."
+    ],
+    "technologies": [
+      "Angular",
+      "Node.js (TypeScript)",
+      "MySQL",
+      "Redis",
+      "MongoDB",
+      "BullMQ",
+      "Pub/Sub",
+      "Kubernetes",
+      "Grafana/Loki",
+      "Elastic",
+      "Google Cloud Platform (GCP)",
+      "Firebase",
+      "GitHub"
+    ],
+    "projects": [
+      {
+        "name": "Amazon Fresh / Whole Foods",
+        "description": "I was on the team engaged on a year-long project to build the cloud infrastructure and API to integrate with Amazon. We worked closely with Amazon's team to translate their business requirements into feasible requirements that would work with our system, which was built with a different architecture in mind. The project was a success, and now Fulfil's robotics are being implemented in whole foods across the US."
+      },
+      {
+        "name": "Order Management Web Apps",
+        "description": "My team was responsible for building and maintaining the end-user facing web (mobile) application and the kiosk application for order pickup."
+      },
+      {
+        "name": "Marketplace Support",
+        "description": "My team was responsible for integrating with marketplaces including Doordash and Uber eats. This meant communicating inventory, order status and lifecycle events, and customer support. We used Doordash Drive for last mile delivery."
+      }
+    ],
+    "body": "- Scaled the platform from stealth to powering three automated grocery stores (DoorDash DashMart, Whole Foods).\n - Integrated partners (Amazon, DoorDash, Uber Eats, Stripe, TaxJar, Twilio, SendGrid, PagerDuty, Slack) to unlock new fulfillment and comms flows. \n - Architected & delivered APIs and automation for Amazon Fresh/Whole Foods delivery systems; operationalized with dashboards/alerts. \n - Built async job pipelines (BullMQ / queues) and cache patterns that stabilized workloads under bursty demand. \n - **Skills**: Angular, Node.js (TypeScript), MySQL, Redis, MongoDB, BullMQ, Pub/Sub, Kubernetes, Grafana/Loki, Elastic, Google Cloud Platform (GCP), Firebase, GitHub\n\n## Projects\n\n### Amazon Fresh / Whole Foods\nI was on the team engaged on a year-long project to build the cloud infrastructure and API to integrate with Amazon. We worked closely with Amazon's team to translate their business requirements into feasible requirements that would work with our system, which was built with a different architecture in mind. The project was a success, and now Fulfil's robotics are being implemented in whole foods across the US.\n\n### Order Management Web Apps\nMy team was responsible for building and maintaining the end-user facing web (mobile) application and the kiosk application for order pickup.\n\n### Marketplace Support\nMy team was responsible for integrating with marketplaces including Doordash and Uber eats. This meant communicating inventory, order status and lifecycle events, and customer support.\nWe used Doordash Drive for last mile delivery.",
+    "relatedBlurbIds": [],
+    "createdAt": "2025-10-08T01:43:01.000Z",
+    "updatedAt": "2025-10-15T20:00:46.532Z",
+    "createdBy": "seed-script@joshwentworth.com",
+    "updatedBy": "jess.castaldi@gmail.com"
+  },
+  {
+    "id": "5Y9d7e3KE2Dt1JSItABC",
+    "title": "Meow Wolf",
+    "role": "Front End Software Developer",
+    "location": "Denver, CO - Remote",
+    "startDate": "2021-03",
+    "endDate": "2021-07",
+    "order": 2,
+    "renderType": "simple-entry",
+    "summary": "I worked on multiple web applications, as well as their component library, and integrated with the docker system for fleet management. These applications had a complex pub/sub architecture to view who was using the installation (if logged in) and update their profile based on completing puzzles.",
+    "technologies": [
+      "Docker",
+      "React",
+      "Styled Components",
+      "Bootstrap",
+      "MaterialUI",
+      "Pub/Sub"
+    ],
+    "body": "I worked on multiple web applications, as well as their component library, and integrated with the docker system for fleet management. These applications had a complex pub/sub architecture to view who was using the installation (if logged in) and update their profile based on completing puzzles.\n\nStack: Docker, React, Styled Components, Bootstrap, MaterialUI, Pub/Sub",
+    "relatedBlurbIds": [],
+    "createdAt": "2025-10-13T03:59:23.000Z",
+    "updatedAt": "2025-10-15T20:00:46.729Z",
+    "createdBy": "contact@joshwentworth.com",
+    "updatedBy": "contact@joshwentworth.com"
+  },
+  {
+    "id": "LLc5WcAW6L9M0M1LD7g0",
+    "title": "OPNA dev",
+    "role": "Co-Founder & Lead Engineer",
+    "location": "San Francisco - Bay Area, CA",
+    "startDate": "2017-06",
+    "endDate": "2021-12",
+    "notes": "Imported from LinkedIn - Oakland, CA · 5 yrs 9 mos",
+    "order": 3,
+    "renderType": "structured-entry",
+    "accomplishments": [
+      "Delivered custom web apps, integrations, and internal tools for Intuit, McDonald's, Google and others.",
+      "Built full-stack solutions with React, Node.js, Python; designed GCP deployments for production scale.",
+      "Implemented featured GCP products as part of Google's partner program: Enterprise apps on Dialogflow (natural language pipeline) and Game Servers for a large mobile gaming company.",
+      "Partnered cross-functionally to design user-focused products and streamline ops workflows."
+    ],
+    "projects": [
+      {
+        "name": "Intuit",
+        "description": "Intuit's marketing team often needed widgets implemented into their product quickly and efficiently. These widgets had to use vanilla JS as we were not allowed access to their dependency library, and had to have excellent text coverage.",
+        "technologies": [
+          "Vanilla JS",
+          "unit testing"
+        ]
+      },
+      {
+        "name": "Dialogflow & JLL",
+        "description": "I was brought on to create a massive microservice architecture that sat behind an NLP interface. The app was a simple chat with a bot, but could do everything from schedule corporate meetings to order take out. The most requested feature was managing facilities requests. Namely temperature control.",
+        "technologies": [
+          "Dialogflow",
+          "App Engine",
+          "GCP",
+          "StackTrace",
+          "GraphQL",
+          "Apollo",
+          "CircleCI",
+          "React",
+          "CodeClimate"
+        ]
+      },
+      {
+        "name": "Dialogflow & McDonalds",
+        "description": "I was on a team that implemented McDonald's entire menu into a chat application for customer ordering. This allowed for substitutions and order modifications, as well as coupons and special codes.",
+        "technologies": [
+          "Dialogflow",
+          "Node",
+          "Express"
+        ]
+      },
+      {
+        "name": "Game servers",
+        "description": "In a multiplayer video game context you cannot simply scale containers up and down to react to load like a normal application. Game servers is a GCP product that allows you to select a set of users for a \"match\" and assign them to a specific instance. the container is then automatically spun up and down for the duration of the match.",
+        "technologies": [
+          "Python",
+          "gRPC",
+          "Docker"
+        ]
+      },
+      {
+        "name": "Bartendro",
+        "description": "An open source cocktail mixing machine. We rebuilt the UI and implemented a containerized server that communicated with the hardware. We added observability, remote updates, remote monitoring, and cloud menu management.",
+        "technologies": [
+          "Docker",
+          "Django",
+          "Python",
+          "React",
+          "Raspberry Pi"
+        ]
+      },
+      {
+        "name": "Driver's Benefits",
+        "description": "The client had a massive HIPAA compliant Salesforce instance for case management. Their goal was to help gig workers, specifically drivers, obtain health care through government assistance. We helped them update their workflow to adhere to software best practices, like IAC and unit testing, while maintaining HIPAA compliance.",
+        "technologies": [
+          "Salesforce",
+          "Java (Apex)"
+        ]
+      }
+    ],
+    "body": "- Delivered custom web apps, integrations, and internal tools for Intuit, McDonald's, Google and others.\n - Built full-stack solutions with React, Node.js, Python; designed GCP deployments for production scale.\n - Implemented featured GCP products as part of Google's partner program:\n     - Enterprise apps on Dialogflow (natural language pipeline).\n     - Game Servers for a large mobile gaming company.\n - Partnered cross-functionally to design user-focused products and streamline ops workflows.\n\n## Clients\n\n## Intuit\nIntuit's marketing team often needed widgets implemented into their product quickly and efficiently. These widgets had to use vanilla JS as we were not allowed access to their dependency library, and had to have excellent text coverage.\n**Skills**: Vanilla JS, unit testing\n\n## Google Partner Program\nThe reason I got the GCP professional Developer Certificate was to qualify as a contractor in the partner program. When Google had a partner that was interested in a new product they would bring me on to implement said product into the partner's platform. This required me to quickly learn the best practices for the new product and implement it in whatever language and frameworks the partner happened to be using.\n\n**Dialogflow & JLL**\nI was brought on to create a massive microservice architecture that sat behind an NLP interface. The app was a simple chat with a bot, but could do everything from schedule corporate meetings to order take out. The most requested feature was managing facilities requests. Namely temperature control.\n**Skills**: Dialogflow, App Engine, GCP, StackTrace, GraphQL, Apollo, CircleCI, React, CodeClimate\n\n**Dialogflow & McDonalds**\nI was on a team that implemented McDonald's entire menu into a chat application for customer ordering. This allowed for substitutions and order modifications, as well as coupons and special codes.\n**Skills**: Dialogflow, Node, Express\n\n## Game servers\nIn a multiplayer video game context you cannot simply scale containers up and down to react to load like a normal application. Game servers is a GCP product that allows you to select a set of users for a \"match\" and assign them to a specific instance. the container is then automatically spun up and down for the duration of the match.\n**Skills**: Python, gRPC, Docker\n\n## Bartendro\nAn open source cocktail mixing machine. We rebuilt the UI and implemented a containerized server that communicated with the hardware. We added observability, remote updates, remote monitoring, and cloud menu management.\n**Skills**: Docker, Django, Python, React, Raspberry Pi\n\n## Driver's Benefits\nThe client had a massive HIPAA compliant Salesforce instance for case management. Their goal was to help gig workers, specifically drivers, obtain health care through government assistance. We helped them update their workflow to adhere to software best practices, like IAC and unit testing, while maintaining HIPAA compliance.\n**Skills**: Salesforce, Java (Apex)",
+    "relatedBlurbIds": [],
+    "createdAt": "2025-10-08T01:43:01.000Z",
+    "updatedAt": "2025-10-15T20:00:46.914Z",
+    "createdBy": "seed-script@joshwentworth.com",
+    "updatedBy": "jess.castaldi@gmail.com"
+  },
+  {
+    "id": "HLz8LMdITCTXSnvSDCIr",
+    "title": "Contractor",
+    "role": "Software Engineer",
+    "location": "San Francisco - Bay Area, CA",
+    "startDate": "2015-08",
+    "endDate": "2017-06",
+    "notes": "Imported from LinkedIn - San Francisco Bay Area · 1 yr 11 mos",
+    "order": 4,
+    "renderType": "structured-entry",
+    "accomplishments": [
+      "Built applications across enterprise software and embedded systems; worked in JavaScript, Python, and real-time system design."
+    ],
+    "projects": [
+      {
+        "name": "Digital Promise",
+        "description": "Designed and implemented the micro-credential builder for Digital Promise. Used by the National Education Association, National Geographic, and many other national education programs."
+      }
+    ],
+    "body": "- Built applications across enterprise software and embedded systems; worked in JavaScript, Python, and real-time system design.\n\n## Digital Promise\n - Designed and implemented the micro-credential builder for [Digital Promise](https://digitalpromise.org/initiative/micro-credentials/)\n     - Used by the National Education Association, National Geographic, and many other national education programs.",
+    "relatedBlurbIds": [],
+    "createdAt": "2025-10-08T01:43:01.000Z",
+    "updatedAt": "2025-10-15T20:00:47.084Z",
+    "createdBy": "seed-script@joshwentworth.com",
+    "updatedBy": "jess.castaldi@gmail.com"
+  },
+  {
+    "id": "H06igzoJvDEBLScNlyUi",
+    "title": "BriteLite Immersive",
+    "role": "Technical Director",
+    "location": "San Francisco, CA",
+    "startDate": "2013-02",
+    "endDate": "2015-09",
+    "notes": "Imported from LinkedIn - 665 chestnut st, 2nd flr · 2 yrs 8 mos",
+    "order": 5,
+    "renderType": "structured-entry",
+    "accomplishments": [
+      "Design, program and maintain interactive multimedia display systems for events and permanent installations",
+      "Implemented tools for broadcast including many used on the red carpet for awards shows.",
+      "Built and maintained BSO's (Bright Shiny Objects) for marketing initiatives.",
+      "Clients included: Facebook, Instagram, Salesforce, Pinterest, Twitter"
+    ],
+    "technologies": [
+      "Python",
+      "GLSL",
+      "Touch Designer",
+      "Javascript"
+    ],
+    "projects": [
+      {
+        "name": "Instagram Instastop / Twitter Golden Screen",
+        "description": "One of the primary pieces I created at Britelite was a touch screen interface that pulled content from a moderated social media stream and allowed celebrities at the event to record responses live on broadcast that would then be pushed to the moderation and marketing team to re-post as contractually allowed.",
+        "challenges": [
+          "live on the air - no mistakes.",
+          "calibrating color temperature for the cameras.",
+          "the touch screens were IR grids that were sensitive to the flood lights, causing ghost touches.",
+          "Super high pressure environment. FB / Instagram / Twitter would pay millions for their 30 second spot so it had to be perfect."
+        ]
+      }
+    ],
+    "body": "- Design, program and maintain interactive multimedia display systems for events and permanent installations\n - Implemented tools for broadcast including many used on the red carpet for awards shows.\n - Built and maintained BSO's (Bright Shiny Objects) for marketing initiatives.\n - Clients included: Facebook, Instagram, Salesforce, Pinterest, Twitter\n - Python, GLSL, Touch Designer, Javascript\n\n## Instagram Instastop / Twitter Golden Screen\nOne of the primary pieces I created at Britelite was a touch screen interface that pulled content from a moderated social media stream and allowed celebrities at the event to record responses live on broadcast that would then be pushed to the moderation and marketing team to re-post as contractually allowed.\n\n**challenges**\n- live on the air - no mistakes.\n- calibrating color temperature for the cameras.\n- the touch screens were IR grids that were sensitive to the flood lights, causing ghost touches.\n- Super high pressure environment. FB / Instagram / Twitter would pay millions for their 30 second spot so it had to be perfect.",
+    "relatedBlurbIds": [],
+    "createdAt": "2025-10-08T01:43:01.000Z",
+    "updatedAt": "2025-10-15T20:00:47.271Z",
+    "createdBy": "seed-script@joshwentworth.com",
+    "updatedBy": "contact@joshwentworth.com"
+  },
+  {
+    "id": "rXGBH4M6AHESLPZUf90y",
+    "title": "Madrone Studios",
+    "role": "Interactive Developer",
+    "location": "San Francisco, CA",
+    "startDate": "2012-09",
+    "endDate": "2013-02",
+    "notes": "Imported from LinkedIn · 6 mos",
+    "order": 6,
+    "renderType": "simple-entry",
+    "accomplishments": [
+      "Wrote custom, controllable lighting and video applications for an immersive corporate venue including a 15 projector stitch."
+    ],
+    "technologies": [
+      "Python",
+      "GLSL",
+      "Touch Designer"
+    ],
+    "body": "- Wrote custom, controllable lighting and video applications for an immersive corporate venue including a 15 projector stitch.\n - Python, GLSL, Touch Designer",
+    "relatedBlurbIds": [],
+    "createdAt": "2025-10-08T01:43:01.000Z",
+    "updatedAt": "2025-10-15T20:00:47.440Z",
+    "createdBy": "seed-script@joshwentworth.com",
+    "updatedBy": "contact@joshwentworth.com"
+  },
+  {
+    "id": "v2L9JOaQTNiO8x7C0pd8",
+    "title": "Wentworth Precision Machining",
+    "role": "CNC machinist",
+    "location": "Sonora, CA",
+    "startDate": "2004-09",
+    "endDate": "2010-08",
+    "notes": "Imported from LinkedIn · 6 yrs",
+    "order": 7,
+    "renderType": "text",
+    "summary": "CNC Mill operator",
+    "body": "CNC Mill operator",
+    "relatedBlurbIds": [],
+    "createdAt": "2025-10-08T01:43:01.000Z",
+    "updatedAt": "2025-10-15T20:00:47.624Z",
+    "createdBy": "seed-script@joshwentworth.com",
+    "updatedBy": "contact@joshwentworth.com"
+  }
+]
