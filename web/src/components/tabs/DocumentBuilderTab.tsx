@@ -325,15 +325,18 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
           sx={{
             mb: 3,
             p: 3,
-            bg: "#e6f7ff",
-            borderLeft: "4px solid #1890ff",
-            borderRadius: "4px",
+            bg: "background",
+            border: "1px solid",
+            borderColor: "primary",
+            borderLeft: "4px solid",
+            borderLeftColor: "primary",
+            borderRadius: "sm",
           }}
         >
           <Flex sx={{ alignItems: "flex-start", gap: 2 }}>
             <Text sx={{ fontSize: 3 }}>📋</Text>
             <Box sx={{ flex: 1 }}>
-              <Text sx={{ fontSize: 2, fontWeight: "bold", color: "#1890ff", mb: 1 }}>
+              <Text sx={{ fontSize: 2, fontWeight: "bold", color: "primary", mb: 1 }}>
                 Job Match Loaded: {selectedJobMatch.title ?? selectedJobMatch.role}
               </Text>
               <Text sx={{ fontSize: 1, color: "text", mb: 2 }}>
