@@ -94,12 +94,7 @@ export const ProfileHeaderEdit: React.FC<ProfileHeaderEditProps> = ({ data, onCh
                 placeholder="Technology name"
               />
             </Box>
-            <Button
-              type="button"
-              variant="danger.sm"
-              onClick={() => handleRemoveTech(idx)}
-              sx={{ flexShrink: 0 }}
-            >
+            <Button type="button" variant="danger.sm" onClick={() => handleRemoveTech(idx)} sx={{ flexShrink: 0 }}>
               Remove
             </Button>
           </Flex>

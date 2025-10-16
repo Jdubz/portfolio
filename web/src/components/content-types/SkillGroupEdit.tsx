@@ -35,7 +35,12 @@ export const SkillGroupEdit: React.FC<SkillGroupEditProps> = ({ data, onChange }
     if (field === "skills") {
       updatedSubcategories[index] = {
         ...updatedSubcategories[index],
-        skills: value ? value.split(",").map((s) => s.trim()).filter(Boolean) : [],
+        skills: value
+          ? value
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
       }
     } else {
       updatedSubcategories[index] = { ...updatedSubcategories[index], [field]: value }
@@ -62,7 +67,12 @@ export const SkillGroupEdit: React.FC<SkillGroupEditProps> = ({ data, onChange }
         onChange={(value) =>
           onChange({
             ...data,
-            skills: value ? value.split(",").map((s) => s.trim()).filter(Boolean) : [],
+            skills: value
+              ? value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              : [],
           })
         }
         placeholder="React, TypeScript, CSS"
@@ -106,11 +116,7 @@ export const SkillGroupEdit: React.FC<SkillGroupEditProps> = ({ data, onChange }
                     onChange={(value) => handleSubcategoryChange(idx, "skills", value)}
                     placeholder="React, Vue, Angular"
                   />
-                  <Button
-                    type="button"
-                    onClick={() => handleRemoveSubcategory(idx)}
-                    variant="secondary.sm"
-                  >
+                  <Button type="button" onClick={() => handleRemoveSubcategory(idx)} variant="secondary.sm">
                     Remove Subcategory
                   </Button>
                 </Flex>
@@ -118,9 +124,7 @@ export const SkillGroupEdit: React.FC<SkillGroupEditProps> = ({ data, onChange }
             ))}
           </Flex>
         ) : (
-          <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>
-            No subcategories added yet
-          </Text>
+          <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>No subcategories added yet</Text>
         )}
       </Box>
     </Flex>

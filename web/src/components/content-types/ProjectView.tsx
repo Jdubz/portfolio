@@ -180,9 +180,7 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ item }) => {
             borderColor: "muted",
           }}
         >
-          <Text sx={{ fontSize: 1, fontStyle: "italic", color: "textMuted" }}>
-            {item.context}
-          </Text>
+          <Text sx={{ fontSize: 1, fontStyle: "italic", color: "textMuted" }}>{item.context}</Text>
         </Box>
       )}
     </Box>

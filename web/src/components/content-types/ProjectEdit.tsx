@@ -107,7 +107,12 @@ export const ProjectEdit: React.FC<ProjectEditProps> = ({ data, onChange }) => {
         onChange={(value) =>
           onChange({
             ...data,
-            technologies: value ? value.split(",").map((t) => t.trim()).filter(Boolean) : [],
+            technologies: value
+              ? value
+                  .split(",")
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+              : [],
           })
         }
         placeholder="React, TypeScript, GraphQL"
@@ -161,21 +166,14 @@ export const ProjectEdit: React.FC<ProjectEditProps> = ({ data, onChange }) => {
                     placeholder="https://github.com/..."
                   />
                 </Box>
-                <Button
-                  type="button"
-                  onClick={() => handleRemoveLink(idx)}
-                  variant="secondary.sm"
-                  sx={{ mb: 1 }}
-                >
+                <Button type="button" onClick={() => handleRemoveLink(idx)} variant="secondary.sm" sx={{ mb: 1 }}>
                   Remove
                 </Button>
               </Flex>
             ))}
           </Flex>
         ) : (
-          <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>
-            No links added yet
-          </Text>
+          <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>No links added yet</Text>
         )}
       </Box>
 

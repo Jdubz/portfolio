@@ -60,7 +60,12 @@ export const AccomplishmentEdit: React.FC<AccomplishmentEditProps> = ({ data, on
         onChange={(value) =>
           onChange({
             ...data,
-            technologies: value ? value.split(",").map((t) => t.trim()).filter(Boolean) : [],
+            technologies: value
+              ? value
+                  .split(",")
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+              : [],
           })
         }
         placeholder="React, TypeScript"

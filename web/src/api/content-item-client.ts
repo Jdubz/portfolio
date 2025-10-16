@@ -39,10 +39,18 @@ export class ContentItemClient extends ApiClient {
    */
   async listItems(options?: ListContentItemsOptions): Promise<ContentItem[]> {
     const params = new URLSearchParams()
-    if (options?.type) params.append("type", options.type)
-    if (options?.parentId !== undefined) params.append("parentId", options.parentId ?? "")
-    if (options?.visibility) params.append("visibility", options.visibility)
-    if (options?.limit) params.append("limit", String(options.limit))
+    if (options?.type) {
+      params.append("type", options.type)
+    }
+    if (options?.parentId !== undefined) {
+      params.append("parentId", options.parentId ?? "")
+    }
+    if (options?.visibility) {
+      params.append("visibility", options.visibility)
+    }
+    if (options?.limit) {
+      params.append("limit", String(options.limit))
+    }
 
     const queryString = params.toString()
     const endpoint = queryString ? `/content-items?${queryString}` : "/content-items"
@@ -55,10 +63,7 @@ export class ContentItemClient extends ApiClient {
    * Fetches content items organized in a hierarchical tree
    */
   async getHierarchy(): Promise<ContentItemWithChildren[]> {
-    const response = await this.get<{ hierarchy: ContentItemWithChildren[] }>(
-      "/content-items/hierarchy",
-      false
-    )
+    const response = await this.get<{ hierarchy: ContentItemWithChildren[] }>("/content-items/hierarchy", false)
     return response.hierarchy
   }
 
@@ -118,10 +123,7 @@ export class ContentItemClient extends ApiClient {
    * Deletes a content item and all its children recursively
    */
   async deleteWithChildren(id: string): Promise<number> {
-    const response = await this.delete<{ deletedCount: number }>(
-      `/content-items/${id}/cascade`,
-      true
-    )
+    const response = await this.delete<{ deletedCount: number }>(`/content-items/${id}/cascade`, true)
     return response.deletedCount
   }
 

@@ -117,9 +117,10 @@ export const getEndpointUrl = (endpoint?: string): string => {
  */
 export const getUploadResumeUrl = (): string => {
   // Production/staging URL from env var (baked in at build time)
-  const envUrl = process.env.GATSBY_ENVIRONMENT === "production"
-    ? process.env.GATSBY_UPLOAD_RESUME_URL_PROD
-    : process.env.GATSBY_UPLOAD_RESUME_URL_DEV
+  const envUrl =
+    process.env.GATSBY_ENVIRONMENT === "production"
+      ? process.env.GATSBY_UPLOAD_RESUME_URL_PROD
+      : process.env.GATSBY_UPLOAD_RESUME_URL_DEV
 
   return (
     envUrl ??

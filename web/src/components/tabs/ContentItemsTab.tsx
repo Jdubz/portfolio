@@ -44,17 +44,15 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
 
   // Get profile sections and companies for rendering
   const profileSections = getItemsByType("profile-section")
-  const introSection = profileSections.find((s) =>
-    s.type === "profile-section" && s.heading?.toLowerCase().includes(INTRO_PROFILE_SECTION_KEYWORD)
+  const introSection = profileSections.find(
+    (s) => s.type === "profile-section" && s.heading?.toLowerCase().includes(INTRO_PROFILE_SECTION_KEYWORD)
   )
 
   // Get root-level companies (work experience)
   const companies = hierarchy.filter((item) => item.type === "company")
 
   // Get other root-level items (skills, education, etc.)
-  const otherRootItems = hierarchy.filter(
-    (item) => item.type !== "company" && item.type !== "profile-section"
-  )
+  const otherRootItems = hierarchy.filter((item) => item.type !== "company" && item.type !== "profile-section")
 
   const handleUpdateItem = async (id: string, data: UpdateContentItemData) => {
     const result = await updateItem(id, data)
@@ -203,9 +201,7 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
       >
         {/* Render children if they exist */}
         {item.children && item.children.length > 0 && (
-          <Box sx={{ mt: 4 }}>
-            {item.children.map((child) => renderItemWithChildren(child))}
-          </Box>
+          <Box sx={{ mt: 4 }}>{item.children.map((child) => renderItemWithChildren(child))}</Box>
         )}
       </ContentItem>
     )
@@ -310,9 +306,7 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
 
           {/* Work Experience (Companies with nested Projects) */}
           {companies.length > 0 && (
-            <Box sx={{ mb: 5 }}>
-              {companies.map((company) => renderItemWithChildren(company))}
-            </Box>
+            <Box sx={{ mb: 5 }}>{companies.map((company) => renderItemWithChildren(company))}</Box>
           )}
 
           {companies.length === 0 && (

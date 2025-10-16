@@ -90,34 +90,31 @@ export const useContentItems = (): UseContentItems => {
   }, [])
 
   // Update item
-  const updateItem = useCallback(
-    async (id: string, data: UpdateContentItemData): Promise<ContentItem | null> => {
-      try {
-        const item = await contentItemClient.updateItem(id, data)
+  const updateItem = useCallback(async (id: string, data: UpdateContentItemData): Promise<ContentItem | null> => {
+    try {
+      const item = await contentItemClient.updateItem(id, data)
 
-        // Update in flat list
-        setItems((prev) => prev.map((i) => (i.id === id ? item : i)))
+      // Update in flat list
+      setItems((prev) => prev.map((i) => (i.id === id ? item : i)))
 
-        // Refetch hierarchy if parent changed or order changed
-        if (data.parentId !== undefined || data.order !== undefined) {
-          const hierarchyData = await contentItemClient.getHierarchy()
-          setHierarchy(hierarchyData)
-        }
-
-        return item
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to update item"
-        setError(errorMessage)
-        logger.error("Failed to update content item", err as Error, {
-          hook: "useContentItems",
-          action: "updateItem",
-          itemId: id,
-        })
-        return null
+      // Refetch hierarchy if parent changed or order changed
+      if (data.parentId !== undefined || data.order !== undefined) {
+        const hierarchyData = await contentItemClient.getHierarchy()
+        setHierarchy(hierarchyData)
       }
-    },
-    []
-  )
+
+      return item
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to update item"
+      setError(errorMessage)
+      logger.error("Failed to update content item", err as Error, {
+        hook: "useContentItems",
+        action: "updateItem",
+        itemId: id,
+      })
+      return null
+    }
+  }, [])
 
   // Delete item (single)
   const deleteItem = useCallback(async (id: string): Promise<boolean> => {
@@ -145,57 +142,57 @@ export const useContentItems = (): UseContentItems => {
   }, [])
 
   // Delete item with all children (cascade)
-  const deleteItemWithChildren = useCallback(async (id: string): Promise<number> => {
-    try {
-      const deletedCount = await contentItemClient.deleteWithChildren(id)
-
-      // Refetch all data after cascade delete
-      await fetchAll()
-
-      return deletedCount
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to delete item with children"
-      setError(errorMessage)
-      logger.error("Failed to delete content item with children", err as Error, {
-        hook: "useContentItems",
-        action: "deleteItemWithChildren",
-        itemId: id,
-      })
-      return 0
-    }
-  }, [fetchAll])
-
-  // Reorder items
-  const reorderItems = useCallback(
-    async (itemsToReorder: Array<{ id: string; order: number }>): Promise<boolean> => {
+  const deleteItemWithChildren = useCallback(
+    async (id: string): Promise<number> => {
       try {
-        await contentItemClient.reorderItems(itemsToReorder)
+        const deletedCount = await contentItemClient.deleteWithChildren(id)
 
-        // Update local state
-        setItems((prev) =>
-          prev.map((item) => {
-            const reorderData = itemsToReorder.find((r) => r.id === item.id)
-            return reorderData ? { ...item, order: reorderData.order } : item
-          })
-        )
+        // Refetch all data after cascade delete
+        await fetchAll()
 
-        // Refetch hierarchy
-        const hierarchyData = await contentItemClient.getHierarchy()
-        setHierarchy(hierarchyData)
-
-        return true
+        return deletedCount
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to reorder items"
+        const errorMessage = err instanceof Error ? err.message : "Failed to delete item with children"
         setError(errorMessage)
-        logger.error("Failed to reorder content items", err as Error, {
+        logger.error("Failed to delete content item with children", err as Error, {
           hook: "useContentItems",
-          action: "reorderItems",
+          action: "deleteItemWithChildren",
+          itemId: id,
         })
-        return false
+        return 0
       }
     },
-    []
+    [fetchAll]
   )
+
+  // Reorder items
+  const reorderItems = useCallback(async (itemsToReorder: Array<{ id: string; order: number }>): Promise<boolean> => {
+    try {
+      await contentItemClient.reorderItems(itemsToReorder)
+
+      // Update local state
+      setItems((prev) =>
+        prev.map((item) => {
+          const reorderData = itemsToReorder.find((r) => r.id === item.id)
+          return reorderData ? { ...item, order: reorderData.order } : item
+        })
+      )
+
+      // Refetch hierarchy
+      const hierarchyData = await contentItemClient.getHierarchy()
+      setHierarchy(hierarchyData)
+
+      return true
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to reorder items"
+      setError(errorMessage)
+      logger.error("Failed to reorder content items", err as Error, {
+        hook: "useContentItems",
+        action: "reorderItems",
+      })
+      return false
+    }
+  }, [])
 
   // Helper: Get items by type
   const getItemsByType = useCallback(

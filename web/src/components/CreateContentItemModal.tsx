@@ -11,7 +11,7 @@ const MODAL_STEPS = {
   FILL_FORM: "fill-form",
 } as const
 
-type ModalStep = typeof MODAL_STEPS[keyof typeof MODAL_STEPS]
+type ModalStep = (typeof MODAL_STEPS)[keyof typeof MODAL_STEPS]
 
 interface CreateContentItemModalProps {
   isOpen: boolean
@@ -25,9 +25,14 @@ interface CreateContentItemModalProps {
  * Step 1: Select content type
  * Step 2: Fill in type-specific form
  */
-export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({ isOpen, onClose, onCreate, preselectedType }) => {
+export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({
+  isOpen,
+  onClose,
+  onCreate,
+  preselectedType,
+}) => {
   const [step, setStep] = useState<ModalStep>(preselectedType ? MODAL_STEPS.FILL_FORM : MODAL_STEPS.SELECT_TYPE)
-  const [selectedType, setSelectedType] = useState<ContentItemType | null>(preselectedType as ContentItemType || null)
+  const [selectedType, setSelectedType] = useState<ContentItemType | null>((preselectedType as ContentItemType) || null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Form data for different types
@@ -76,7 +81,9 @@ export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({ 
     description: "",
   })
 
-  if (!isOpen) return null
+  if (!isOpen) {
+    return null
+  }
 
   const handleTypeSelect = (type: ContentItemType) => {
     setSelectedType(type)
@@ -89,7 +96,9 @@ export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({ 
   }
 
   const handleSubmit = async () => {
-    if (!selectedType) return
+    if (!selectedType) {
+      return
+    }
 
     setIsSubmitting(true)
     try {

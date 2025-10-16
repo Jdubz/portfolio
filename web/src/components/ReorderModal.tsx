@@ -1,6 +1,14 @@
 import React, { useState } from "react"
 import { Box, Button, Flex, Heading, Text } from "theme-ui"
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
 import {
   arrayMove,
   SortableContext,
@@ -149,7 +157,9 @@ export const ReorderModal: React.FC<ReorderModalProps> = ({ isOpen, title, items
     onClose()
   }
 
-  if (!isOpen) return null
+  if (!isOpen) {
+    return null
+  }
 
   return (
     <Box

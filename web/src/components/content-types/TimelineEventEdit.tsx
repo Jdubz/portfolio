@@ -120,21 +120,14 @@ export const TimelineEventEdit: React.FC<TimelineEventEditProps> = ({ data, onCh
                     placeholder="https://..."
                   />
                 </Box>
-                <Button
-                  type="button"
-                  onClick={() => handleRemoveLink(idx)}
-                  variant="secondary.sm"
-                  sx={{ mb: 1 }}
-                >
+                <Button type="button" onClick={() => handleRemoveLink(idx)} variant="secondary.sm" sx={{ mb: 1 }}>
                   Remove
                 </Button>
               </Flex>
             ))}
           </Flex>
         ) : (
-          <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>
-            No links added yet
-          </Text>
+          <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>No links added yet</Text>
         )}
       </Box>
     </Flex>

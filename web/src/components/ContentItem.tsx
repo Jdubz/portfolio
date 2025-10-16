@@ -31,7 +31,7 @@ interface ContentItemProps {
   onUpdate: (id: string, data: UpdateContentItemData) => Promise<void>
   onDelete: (id: string) => Promise<void>
   onAddChild?: (parentId: string, childType: string) => void
-  onReorderChildren?: (parentId: string, reorderedChildren: Array<{ id: string; order: number }>) => Promise<void>
+  _onReorderChildren?: (parentId: string, reorderedChildren: Array<{ id: string; order: number }>) => Promise<void>
   children?: React.ReactNode
   childItems?: ContentItemType[]
 }
@@ -46,7 +46,7 @@ export const ContentItem: React.FC<ContentItemProps> = ({
   onUpdate,
   onDelete,
   onAddChild,
-  onReorderChildren,
+  _onReorderChildren,
   children,
   childItems = [],
 }) => {
@@ -56,6 +56,9 @@ export const ContentItem: React.FC<ContentItemProps> = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [editData, setEditData] = useState<UpdateContentItemData>(item)
   const [expandedChildId, setExpandedChildId] = useState<string | null>(null)
+  const [editingChildId, setEditingChildId] = useState<string | null>(null)
+  const [childEditData, setChildEditData] = useState<UpdateContentItemData | null>(null)
+  const [isSavingChild, setIsSavingChild] = useState(false)
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -103,6 +106,38 @@ export const ContentItem: React.FC<ContentItemProps> = ({
     setShowDeleteDialog(false)
   }
 
+  const handleEditChild = (child: ContentItemType) => {
+    setEditingChildId(child.id)
+    setChildEditData(child)
+    setExpandedChildId(null) // Collapse the child when editing
+  }
+
+  const handleSaveChild = async () => {
+    if (!childEditData || !editingChildId) {
+      return
+    }
+
+    setIsSavingChild(true)
+    try {
+      await onUpdate(editingChildId, childEditData)
+      setEditingChildId(null)
+      setChildEditData(null)
+    } catch (error) {
+      logger.error("Failed to save child item", error as Error, {
+        component: "ContentItem",
+        action: "handleSaveChild",
+        childId: editingChildId,
+      })
+    } finally {
+      setIsSavingChild(false)
+    }
+  }
+
+  const handleCancelChildEdit = () => {
+    setEditingChildId(null)
+    setChildEditData(null)
+  }
+
   // Get item title for delete confirmation
   const getItemTitle = (): string => {
     switch (item.type) {
@@ -139,30 +174,14 @@ export const ContentItem: React.FC<ContentItemProps> = ({
         }}
       >
         {/* Render appropriate edit component based on type */}
-        {item.type === "company" && (
-          <CompanyEdit data={editData} onChange={setEditData} />
-        )}
-        {item.type === "project" && (
-          <ProjectEdit data={editData} onChange={setEditData} />
-        )}
-        {item.type === "skill-group" && (
-          <SkillGroupEdit data={editData} onChange={setEditData} />
-        )}
-        {item.type === "education" && (
-          <EducationEdit data={editData} onChange={setEditData} />
-        )}
-        {item.type === "profile-section" && (
-          <ProfileSectionEdit data={editData} onChange={setEditData} />
-        )}
-        {item.type === "text-section" && (
-          <TextSectionEdit data={editData} onChange={setEditData} />
-        )}
-        {item.type === "accomplishment" && (
-          <AccomplishmentEdit data={editData} onChange={setEditData} />
-        )}
-        {item.type === "timeline-event" && (
-          <TimelineEventEdit data={editData} onChange={setEditData} />
-        )}
+        {item.type === "company" && <CompanyEdit data={editData} onChange={setEditData} />}
+        {item.type === "project" && <ProjectEdit data={editData} onChange={setEditData} />}
+        {item.type === "skill-group" && <SkillGroupEdit data={editData} onChange={setEditData} />}
+        {item.type === "education" && <EducationEdit data={editData} onChange={setEditData} />}
+        {item.type === "profile-section" && <ProfileSectionEdit data={editData} onChange={setEditData} />}
+        {item.type === "text-section" && <TextSectionEdit data={editData} onChange={setEditData} />}
+        {item.type === "accomplishment" && <AccomplishmentEdit data={editData} onChange={setEditData} />}
+        {item.type === "timeline-event" && <TimelineEventEdit data={editData} onChange={setEditData} />}
 
         {/* Child Items Management */}
         {canHaveChildren(item.type) && childItems.length > 0 && (
@@ -171,104 +190,138 @@ export const ContentItem: React.FC<ContentItemProps> = ({
               <Heading as="h3" sx={{ fontSize: 3 }}>
                 {getChildTypeName(item.type)}s ({childItems.length})
               </Heading>
-              <Text sx={{ fontSize: 1, color: "textMuted" }}>
-                Ordered by creation • Click to expand
-              </Text>
+              <Text sx={{ fontSize: 1, color: "textMuted" }}>Ordered by creation • Click to expand</Text>
             </Box>
 
-            {childItems.map((child, index) => (
-              <Box
-                key={child.id}
-                sx={{
-                  p: 3,
-                  mb: 2,
-                  bg: expandedChildId === child.id ? "muted" : "background",
-                  border: "1px solid",
-                  borderColor: expandedChildId === child.id ? "primary" : "gray",
-                  borderRadius: 4,
-                }}
-              >
+            {childItems.map((child, index) => {
+              const isEditingThisChild = editingChildId === child.id
+
+              return (
                 <Box
-                  onClick={() => setExpandedChildId(expandedChildId === child.id ? null : child.id)}
+                  key={child.id}
                   sx={{
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    userSelect: "none",
+                    p: 3,
+                    mb: 2,
+                    bg: isEditingThisChild ? "muted" : expandedChildId === child.id ? "muted" : "background",
+                    border: "2px solid",
+                    borderColor: isEditingThisChild ? "primary" : expandedChildId === child.id ? "primary" : "gray",
+                    borderRadius: 4,
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Text sx={{ fontSize: 1, color: "textMuted" }}>#{index + 1}</Text>
-                    <Text sx={{ fontSize: 2, fontWeight: "bold" }}>
-                      {getTitleForContentItem(child)}
-                    </Text>
-                  </Box>
-                  <Text sx={{ fontSize: 1, color: "textMuted" }}>
-                    {expandedChildId === child.id ? "▼" : "▶"}
-                  </Text>
-                </Box>
-
-                {expandedChildId === child.id && (
-                  <Box sx={{ mt: 3, pt: 3, borderTop: "1px solid", borderColor: "gray" }}>
-                    {/* Child content preview */}
-                    {child.type === "project" && (
-                      <Box>
-                        <Text sx={{ fontSize: 1, color: "textMuted", mb: 2 }}>
-                          {child.description}
-                        </Text>
-                        {child.role && (
-                          <Text sx={{ fontSize: 1, color: "textMuted" }}>
-                            Role: {child.role}
-                          </Text>
-                        )}
+                  {isEditingThisChild && childEditData ? (
+                    // Edit mode for this child
+                    <Box>
+                      <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
+                        <Text sx={{ fontSize: 1, color: "textMuted" }}>#{index + 1}</Text>
+                        <Heading as="h4" sx={{ fontSize: 2 }}>
+                          Editing: {getTitleForContentItem(child)}
+                        </Heading>
                       </Box>
-                    )}
-                    {child.type === "education" && (
-                      <Box>
-                        {child.degree && (
-                          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>
-                            {child.degree}
-                          </Text>
-                        )}
-                        {child.field && (
-                          <Text sx={{ fontSize: 1, color: "textMuted" }}>
-                            Field: {child.field}
-                          </Text>
-                        )}
-                      </Box>
-                    )}
 
-                    {/* Child actions */}
-                    <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
-                      <Button
-                        type="button"
-                        variant="secondary.sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          // TODO: Open edit modal for child
-                          logger.info("Edit child clicked", { childId: child.id })
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="danger.sm"
-                        onClick={async (e) => {
-                          e.stopPropagation()
-                          if (window.confirm(`Delete ${getTitleForContentItem(child)}?`)) {
-                            await onDelete(child.id)
-                          }
-                        }}
-                      >
-                        Delete
-                      </Button>
+                      {/* Render appropriate edit component based on child type */}
+                      {child.type === "project" && <ProjectEdit data={childEditData} onChange={setChildEditData} />}
+                      {child.type === "education" && <EducationEdit data={childEditData} onChange={setChildEditData} />}
+                      {child.type === "accomplishment" && (
+                        <AccomplishmentEdit data={childEditData} onChange={setChildEditData} />
+                      )}
+                      {child.type === "timeline-event" && (
+                        <TimelineEventEdit data={childEditData} onChange={setChildEditData} />
+                      )}
+
+                      {/* Edit actions */}
+                      <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={handleCancelChildEdit}
+                          disabled={isSavingChild}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          onClick={() => void handleSaveChild()}
+                          disabled={isSavingChild}
+                        >
+                          {isSavingChild ? "Saving..." : "Save"}
+                        </Button>
+                      </Box>
                     </Box>
-                  </Box>
-                )}
-              </Box>
-            ))}
+                  ) : (
+                    // View mode for this child
+                    <>
+                      <Box
+                        onClick={() => setExpandedChildId(expandedChildId === child.id ? null : child.id)}
+                        sx={{
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          userSelect: "none",
+                        }}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Text sx={{ fontSize: 1, color: "textMuted" }}>#{index + 1}</Text>
+                          <Text sx={{ fontSize: 2, fontWeight: "bold" }}>{getTitleForContentItem(child)}</Text>
+                        </Box>
+                        <Text sx={{ fontSize: 1, color: "textMuted" }}>
+                          {expandedChildId === child.id ? "▼" : "▶"}
+                        </Text>
+                      </Box>
+
+                      {expandedChildId === child.id && (
+                        <Box sx={{ mt: 3, pt: 3, borderTop: "1px solid", borderColor: "gray" }}>
+                          {/* Child content preview */}
+                          {child.type === "project" && (
+                            <Box>
+                              <Text sx={{ fontSize: 1, color: "textMuted", mb: 2 }}>{child.description}</Text>
+                              {child.role && <Text sx={{ fontSize: 1, color: "textMuted" }}>Role: {child.role}</Text>}
+                            </Box>
+                          )}
+                          {child.type === "education" && (
+                            <Box>
+                              {child.degree && (
+                                <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>{child.degree}</Text>
+                              )}
+                              {child.field && (
+                                <Text sx={{ fontSize: 1, color: "textMuted" }}>Field: {child.field}</Text>
+                              )}
+                            </Box>
+                          )}
+
+                          {/* Child actions */}
+                          <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+                            <Button
+                              type="button"
+                              variant="secondary.sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEditChild(child)
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="danger.sm"
+                              onClick={async (e) => {
+                                e.stopPropagation()
+                                if (window.confirm(`Delete ${getTitleForContentItem(child)}?`)) {
+                                  await onDelete(child.id)
+                                }
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </Box>
+                        </Box>
+                      )}
+                    </>
+                  )}
+                </Box>
+              )
+            })}
 
             {onAddChild && (
               <Button
@@ -334,11 +387,7 @@ export const ContentItem: React.FC<ContentItemProps> = ({
             Edit
           </Button>
           {canHaveChildren(item.type) && onAddChild && (
-            <Button
-              type="button"
-              onClick={() => onAddChild(item.id, getChildType(item.type))}
-              variant="secondary.sm"
-            >
+            <Button type="button" onClick={() => onAddChild(item.id, getChildType(item.type))} variant="secondary.sm">
               + Add {getChildTypeName(item.type)}
             </Button>
           )}

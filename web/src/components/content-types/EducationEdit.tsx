@@ -93,7 +93,12 @@ export const EducationEdit: React.FC<EducationEditProps> = ({ data, onChange }) 
         onChange={(value) =>
           onChange({
             ...data,
-            relevantCourses: value ? value.split(",").map((c) => c.trim()).filter(Boolean) : [],
+            relevantCourses: value
+              ? value
+                  .split(",")
+                  .map((c) => c.trim())
+                  .filter(Boolean)
+              : [],
           })
         }
         placeholder="Data Structures, Algorithms, Machine Learning"
