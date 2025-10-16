@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Box, Button, Flex, Heading, Text } from "theme-ui"
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core"
 import {
   arrayMove,
   SortableContext,
@@ -115,12 +115,12 @@ export const ReorderModal: React.FC<ReorderModalProps> = ({ isOpen, title, items
     })
   )
 
-  const handleDragEnd = (event: { active: { id: string }; over: { id: string } | null }) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
 
     if (over && active.id !== over.id) {
-      const oldIndex = localItems.findIndex((item) => item.id === active.id)
-      const newIndex = localItems.findIndex((item) => item.id === over.id)
+      const oldIndex = localItems.findIndex((item) => item.id === String(active.id))
+      const newIndex = localItems.findIndex((item) => item.id === String(over.id))
 
       const reordered = arrayMove(localItems, oldIndex, newIndex)
       const withNewOrder = reordered.map((item, index) => ({
