@@ -1,4 +1,4 @@
-import { Firestore, Timestamp } from "@google-cloud/firestore"
+import { Firestore, Timestamp, Query } from "@google-cloud/firestore"
 import { CONTENT_ITEMS_COLLECTION } from "../config/database"
 import { createFirestoreInstance } from "../config/firestore"
 import { createDefaultLogger } from "../utils/logger"
@@ -36,20 +36,20 @@ export class ContentItemService {
 
       // Apply filters
       if (options?.type) {
-        query = query.where("type", "==", options.type) as FirebaseFirestore.Query
+        query = query.where("type", "==", options.type) as Query
       }
 
       if (options?.parentId !== undefined) {
-        query = query.where("parentId", "==", options.parentId) as FirebaseFirestore.Query
+        query = query.where("parentId", "==", options.parentId) as Query
       }
 
       if (options?.visibility) {
-        query = query.where("visibility", "==", options.visibility) as FirebaseFirestore.Query
+        query = query.where("visibility", "==", options.visibility) as Query
       }
 
       // Tag filter (array-contains, only supports single tag)
       if (options?.tags && options.tags.length > 0) {
-        query = query.where("tags", "array-contains", options.tags[0]) as FirebaseFirestore.Query
+        query = query.where("tags", "array-contains", options.tags[0]) as Query
       }
 
       // Pagination
@@ -60,7 +60,7 @@ export class ContentItemService {
       }
 
       if (options?.limit) {
-        query = query.limit(options.limit) as FirebaseFirestore.Query
+        query = query.limit(options.limit) as Query
       }
 
       const snapshot = await query.get()

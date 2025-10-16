@@ -7,14 +7,17 @@
  * - experience-entries → CompanyItem + nested ProjectItem
  * - experience-blurbs → ProfileSectionItem | SkillGroupItem | EducationItem | TextSectionItem
  *
+ * IMPORTANT: This script always reads from production data (portfolio database)
+ * and writes to the current environment's database.
+ *
  * Usage:
- *   # Migrate local emulator data
+ *   # Migrate to local emulator (reads from production, writes to emulator)
  *   FIRESTORE_EMULATOR_HOST=localhost:8080 npx tsx scripts/migrate-to-content-items.ts
  *
- *   # Migrate staging data
+ *   # Migrate to staging (reads from production, writes to staging)
  *   FIRESTORE_DATABASE_ID=portfolio-staging npx tsx scripts/migrate-to-content-items.ts
  *
- *   # Migrate production data (use with caution!)
+ *   # Migrate to production (reads and writes to production)
  *   FIRESTORE_DATABASE_ID=portfolio npx tsx scripts/migrate-to-content-items.ts
  *
  * Options:
@@ -22,6 +25,7 @@
  *   --force      Skip confirmation prompt
  */
 
+import { Firestore } from "@google-cloud/firestore"
 import { createFirestoreInstance } from "../functions/src/config/firestore"
 import { DATABASE_ID } from "../functions/src/config/database"
 import type { ExperienceEntry } from "../functions/src/services/experience.service"
@@ -35,7 +39,14 @@ const args = process.argv.slice(2)
 const isDryRun = args.includes("--dry-run")
 const isForce = args.includes("--force")
 
+// Target database (where we write)
 const db = createFirestoreInstance()
+
+// Source database (always production for reading)
+const sourceDb = new Firestore({
+  projectId: "static-sites-257923",
+  databaseId: "portfolio",
+})
 
 interface MigrationStats {
   experienceEntriesRead: number
@@ -250,7 +261,8 @@ async function confirm(message: string): Promise<boolean> {
 async function migrate() {
   console.log("🚀 Content Items Migration Script")
   console.log("==================================")
-  console.log(`Database: ${DATABASE_ID}`)
+  console.log(`Source Database: portfolio (production)`)
+  console.log(`Target Database: ${DATABASE_ID}`)
   console.log(`Mode: ${isDryRun ? "DRY RUN (no changes will be made)" : "LIVE"}`)
   console.log()
 
@@ -262,11 +274,11 @@ async function migrate() {
   }
 
   try {
-    // Read existing data
-    console.log("📖 Reading existing data...")
+    // Read existing data from production
+    console.log("📖 Reading existing data from production...")
 
-    const experienceSnapshot = await db.collection("experience-entries").orderBy("order", "asc").get()
-    const blurbSnapshot = await db.collection("experience-blurbs").orderBy("order", "asc").get()
+    const experienceSnapshot = await sourceDb.collection("experience-entries").orderBy("order", "asc").get()
+    const blurbSnapshot = await sourceDb.collection("experience-blurbs").orderBy("order", "asc").get()
 
     const experiences = experienceSnapshot.docs.map((doc) => ({
       id: doc.id,
