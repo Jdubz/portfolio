@@ -70,6 +70,12 @@ export const EXPERIENCE_COLLECTION = "experience-entries"
 export const BLURBS_COLLECTION = "experience-blurbs"
 
 /**
+ * Content items collection name
+ * Unified collection for all portfolio content (replaces experience-entries and experience-blurbs)
+ */
+export const CONTENT_ITEMS_COLLECTION = "content-items"
+
+/**
  * Generator collection name
  * Stores default settings, generation requests, and generation responses
  */
