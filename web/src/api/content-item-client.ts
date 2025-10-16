@@ -5,6 +5,7 @@
  */
 
 import { ApiClient } from "./client"
+import { getContentItemsApiUrl } from "../config/api"
 import type {
   ContentItem,
   ContentItemWithChildren,
@@ -27,6 +28,12 @@ export interface ReorderItem {
 }
 
 export class ContentItemClient extends ApiClient {
+  constructor() {
+    super()
+    // Override baseUrl to use content-items function
+    this.baseUrl = getContentItemsApiUrl()
+  }
+
   /**
    * Fetches all content items with optional filters
    */

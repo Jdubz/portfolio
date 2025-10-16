@@ -107,6 +107,28 @@ function mapExperienceProjects(entry: ExperienceEntry, companyId: string, baseOr
 }
 
 /**
+ * Map timeline items to EducationItem array
+ */
+function mapTimelineItems(timelineItems: any[], parentId: string, baseOrder: number): CreateContentItemData[] {
+  return timelineItems.map((item, idx) => {
+    const educationItem: CreateContentItemData = {
+      type: "education",
+      institution: item.title,
+      degree: item.description,
+      field: item.details,
+      startDate: item.dateRange?.split('–')?.[0] || item.date,
+      endDate: item.dateRange?.split('–')?.[1],
+      notes: item.honors,
+      parentId,
+      order: baseOrder + idx,
+      visibility: "published",
+    }
+
+    return educationItem
+  })
+}
+
+/**
  * Map blurb to appropriate ContentItem type based on renderType
  */
 function mapBlurbToContentItem(blurb: BlurbEntry, order: number): CreateContentItemData[] {
@@ -129,91 +151,59 @@ function mapBlurbToContentItem(blurb: BlurbEntry, order: number): CreateContentI
     }
 
     case "categorized-list": {
-      // Create a parent text-section for the category list
+      // Create a single skill-group with subcategories
+      const skillGroupItem: CreateContentItemData = {
+        type: "skill-group",
+        category: blurb.title,
+        skills: [], // Empty main skills array
+        subcategories: blurb.structuredData?.categories?.map((cat) => ({
+          name: cat.category,
+          skills: cat.skills || [],
+        })),
+        parentId: null,
+        order,
+        visibility: "published",
+      }
+      items.push(skillGroupItem)
+      break
+    }
+
+    case "project-showcase": {
+      // Keep as a single text-section with the markdown content
+      // The old UI rendered this as a single card, not individual project items
+      const item: CreateContentItemData = {
+        type: "text-section",
+        heading: blurb.title,
+        content: blurb.content || "",
+        format: "markdown",
+        parentId: null,
+        order,
+        visibility: "published",
+      }
+      items.push(item)
+      break
+    }
+
+    case "timeline": {
+      // Create a parent text-section, then create education items from structured data
       const parentItem: CreateContentItemData = {
         type: "text-section",
         heading: blurb.title,
         content: blurb.content || "",
+        format: "markdown",
         parentId: null,
         order,
         visibility: "published",
       }
       items.push(parentItem)
 
-      // Create child skill-group items for each category
-      // Note: We'll need to create the parent first to get its ID
-      // For now, mark these with a temporary parentId that we'll update after creation
-      if (blurb.structuredData?.categories) {
-        blurb.structuredData.categories.forEach((category, idx) => {
-          const skillGroupItem: CreateContentItemData = {
-            type: "skill-group",
-            category: category.category,
-            skills: category.skills || [],
-            parentId: `__TEMP_PARENT__${blurb.id}`, // Temporary marker
-            order: idx,
-            visibility: "published",
-          }
-          items.push(skillGroupItem)
-        })
-      }
-      break
-    }
-
-    case "project-showcase": {
-      // Create individual project items
-      if (blurb.structuredData?.projects) {
-        blurb.structuredData.projects.forEach((project, idx) => {
-          const projectItem: CreateContentItemData = {
-            type: "project",
-            name: project.name,
-            description: project.description,
-            technologies: project.technologies,
-            links: project.links,
-            parentId: null,
-            order: order + idx,
-            visibility: "published",
-          }
-          items.push(projectItem)
-        })
-      }
-      break
-    }
-
-    case "timeline": {
-      // Create individual timeline/education items
-      if (blurb.structuredData?.items) {
-        blurb.structuredData.items.forEach((timelineItem, idx) => {
-          // Determine if this is education or generic timeline
-          const isEducation = blurb.name.toLowerCase().includes("education") || blurb.name.toLowerCase().includes("certificate")
-
-          if (isEducation) {
-            const educationItem: CreateContentItemData = {
-              type: "education",
-              institution: timelineItem.title,
-              degree: timelineItem.description,
-              honors: timelineItem.honors,
-              description: timelineItem.details,
-              startDate: timelineItem.dateRange,
-              parentId: null,
-              order: order + idx,
-              visibility: "published",
-            }
-            items.push(educationItem)
-          } else {
-            const eventItem: CreateContentItemData = {
-              type: "timeline-event",
-              title: timelineItem.title,
-              date: timelineItem.date,
-              dateRange: timelineItem.dateRange,
-              description: timelineItem.description,
-              details: timelineItem.details,
-              parentId: null,
-              order: order + idx,
-              visibility: "published",
-            }
-            items.push(eventItem)
-          }
-        })
+      // Mark this item so we can create children in second pass
+      if (blurb.structuredData?.items && blurb.structuredData.items.length > 0) {
+        items[items.length - 1].metadata = {
+          ...items[items.length - 1].metadata,
+          hasTimelineChildren: true,
+          timelineItems: blurb.structuredData.items,
+        }
       }
       break
     }
@@ -315,8 +305,14 @@ async function migrate() {
       })
       orderCounter++
 
-      // Note: Projects will need to be created after the company to get the parent ID
-      // We'll handle this in the write phase
+      // Mark experience for later project creation (we'll use metadata to track this)
+      if (experience.projects && experience.projects.length > 0) {
+        itemsToCreate[itemsToCreate.length - 1].metadata = {
+          ...itemsToCreate[itemsToCreate.length - 1].metadata!,
+          hasProjects: true,
+          originalExperience: experience,
+        }
+      }
     }
 
     // Transform blurbs
@@ -412,9 +408,66 @@ async function migrate() {
       }
     }
 
-    // Second pass: Handle nested items (projects under companies, skill groups under sections)
-    // For now, we'll skip this as it requires a more complex two-phase migration
-    // TODO: Implement nested item creation in a future iteration
+    // Second pass: Create nested items (projects under companies, education under timelines)
+    console.log("🔗 Creating nested items...")
+
+    for (const [sourceId, parentDocId] of idMap.entries()) {
+      // Find the original item that has this sourceId
+      const originalItem = itemsToCreate.find(
+        (item) => item.metadata?.sourceId === sourceId
+      )
+
+      // Handle projects under companies
+      if (originalItem?.metadata?.hasProjects && originalItem?.metadata?.originalExperience) {
+        const experience = originalItem.metadata.originalExperience as ExperienceEntry
+        const projectItems = mapExperienceProjects(experience, parentDocId, 0)
+
+        for (const projectItem of projectItems) {
+          try {
+            const projectData = removeUndefined({
+              ...projectItem,
+              createdAt: now,
+              updatedAt: now,
+              createdBy: migratedBy,
+              updatedBy: migratedBy,
+            })
+
+            await db.collection("content-items").add(projectData)
+            stats.contentItemsCreated++
+            console.log(`   ✓ Created project: ${projectItem.name} (parent: ${experience.title})`)
+          } catch (error) {
+            console.error(`   ✗ Failed to create project:`, error)
+            stats.errors++
+          }
+        }
+      }
+
+      // Handle education items under timeline sections
+      if (originalItem?.metadata?.hasTimelineChildren && originalItem?.metadata?.timelineItems) {
+        const timelineItems = originalItem.metadata.timelineItems
+        const educationItems = mapTimelineItems(timelineItems, parentDocId, 0)
+
+        for (const educationItem of educationItems) {
+          try {
+            const educationData = removeUndefined({
+              ...educationItem,
+              createdAt: now,
+              updatedAt: now,
+              createdBy: migratedBy,
+              updatedBy: migratedBy,
+            })
+
+            await db.collection("content-items").add(educationData)
+            stats.contentItemsCreated++
+            console.log(`   ✓ Created education: ${educationItem.institution}`)
+          } catch (error) {
+            console.error(`   ✗ Failed to create education item:`, error)
+            stats.errors++
+          }
+        }
+      }
+    }
+
 
     console.log()
     console.log("✅ Migration complete!")

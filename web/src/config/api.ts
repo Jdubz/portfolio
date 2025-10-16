@@ -10,6 +10,7 @@ export const API_CONFIG = {
   projectId: "static-sites-257923",
   region: "us-central1",
   functionName: "manageExperience",
+  contentItemsFunctionName: "manageContentItems",
   emulatorPort: 5001,
   defaultEmulatorHost: "localhost",
 } as const
@@ -77,6 +78,25 @@ export const API_ENDPOINTS = {
 } as const
 
 export type ApiEndpoint = (typeof API_ENDPOINTS)[keyof typeof API_ENDPOINTS]
+
+/**
+ * Get the content-items API base URL based on environment
+ *
+ * @returns Base URL for content-items API requests
+ */
+export const getContentItemsApiUrl = (): string => {
+  // Use emulator in local development (runtime hostname check)
+  if (isLocalhost()) {
+    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
+    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/${API_CONFIG.contentItemsFunctionName}`
+  }
+
+  // Production/staging URL from env var (baked in at build time)
+  return (
+    process.env.GATSBY_CONTENT_ITEMS_API_URL ??
+    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.contentItemsFunctionName}`
+  )
+}
 
 /**
  * Get full URL for a specific endpoint

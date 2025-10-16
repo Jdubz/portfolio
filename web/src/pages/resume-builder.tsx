@@ -5,7 +5,7 @@ import Seo from "../components/homepage/Seo"
 import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
 import { Tabs, type Tab } from "../components/Tabs"
 import { HowItWorksTab } from "../components/tabs/HowItWorksTab"
-import { WorkExperienceTab } from "../components/tabs/WorkExperienceTab"
+import { ContentItemsTab } from "../components/tabs/ContentItemsTab"
 import { DocumentBuilderTab } from "../components/tabs/DocumentBuilderTab"
 import { AIPromptsTab } from "../components/tabs/AIPromptsTab"
 import { SettingsTab } from "../components/tabs/SettingsTab"
@@ -159,7 +159,7 @@ const ResumeBuilderPage: React.FC = () => {
       label: "Work Experience",
       content: (
         <ErrorBoundary>
-          <WorkExperienceTab isEditor={isEditor} user={user} />
+          <ContentItemsTab isEditor={isEditor} user={user} />
         </ErrorBoundary>
       ),
     },

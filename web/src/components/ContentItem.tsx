@@ -30,6 +30,7 @@ interface ContentItemProps {
   isEditor: boolean
   onUpdate: (id: string, data: UpdateContentItemData) => Promise<void>
   onDelete: (id: string) => Promise<void>
+  onAddChild?: (parentId: string, childType: string) => void
   children?: React.ReactNode
 }
 
@@ -42,6 +43,7 @@ export const ContentItem: React.FC<ContentItemProps> = ({
   isEditor,
   onUpdate,
   onDelete,
+  onAddChild,
   children,
 }) => {
   const [isEditing, setIsEditing] = useState(false)
@@ -203,12 +205,56 @@ export const ContentItem: React.FC<ContentItemProps> = ({
 
       {/* Editor Actions */}
       {isEditor && (
-        <Box sx={{ mt: 4 }}>
+        <Box sx={{ mt: 4, display: "flex", gap: 2 }}>
           <Button type="button" onClick={() => setIsEditing(true)} variant="secondary.sm">
             Edit
           </Button>
+          {canHaveChildren(item.type) && onAddChild && (
+            <Button
+              type="button"
+              onClick={() => onAddChild(item.id, getChildType(item.type))}
+              variant="secondary.sm"
+            >
+              + Add {getChildTypeName(item.type)}
+            </Button>
+          )}
         </Box>
       )}
     </Box>
   )
+}
+
+/**
+ * Determine if an item type can have children
+ */
+function canHaveChildren(type: string): boolean {
+  return type === "company" || type === "text-section"
+}
+
+/**
+ * Get the child type for a given parent type
+ */
+function getChildType(parentType: string): string {
+  switch (parentType) {
+    case "company":
+      return "project"
+    case "text-section":
+      return "education" // or project for Selected Projects
+    default:
+      return "text-section"
+  }
+}
+
+/**
+ * Get human-readable name for child type
+ */
+function getChildTypeName(parentType: string): string {
+  switch (parentType) {
+    case "company":
+      return "Project"
+    case "text-section":
+      return "Child Item"
+    default:
+      return "Item"
+  }
 }
