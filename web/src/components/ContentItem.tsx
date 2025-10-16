@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Box, Button } from "theme-ui"
+import { Box, Button, Heading, Text } from "theme-ui"
 import type { ContentItem as ContentItemType, UpdateContentItemData } from "../types/content-item"
 import { ConfirmDialog } from "./ConfirmDialog"
 import { FormActions } from "./FormActions"
@@ -31,7 +31,9 @@ interface ContentItemProps {
   onUpdate: (id: string, data: UpdateContentItemData) => Promise<void>
   onDelete: (id: string) => Promise<void>
   onAddChild?: (parentId: string, childType: string) => void
+  onReorderChildren?: (parentId: string, reorderedChildren: Array<{ id: string; order: number }>) => Promise<void>
   children?: React.ReactNode
+  childItems?: ContentItemType[]
 }
 
 /**
@@ -44,13 +46,16 @@ export const ContentItem: React.FC<ContentItemProps> = ({
   onUpdate,
   onDelete,
   onAddChild,
+  onReorderChildren,
   children,
+  childItems = [],
 }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [editData, setEditData] = useState<UpdateContentItemData>(item)
+  const [expandedChildId, setExpandedChildId] = useState<string | null>(null)
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -159,6 +164,125 @@ export const ContentItem: React.FC<ContentItemProps> = ({
           <TimelineEventEdit data={editData} onChange={setEditData} />
         )}
 
+        {/* Child Items Management */}
+        {canHaveChildren(item.type) && childItems.length > 0 && (
+          <Box sx={{ mt: 4, pt: 4, borderTop: "1px solid", borderColor: "muted" }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+              <Heading as="h3" sx={{ fontSize: 3 }}>
+                {getChildTypeName(item.type)}s ({childItems.length})
+              </Heading>
+              <Text sx={{ fontSize: 1, color: "textMuted" }}>
+                Ordered by creation • Click to expand
+              </Text>
+            </Box>
+
+            {childItems.map((child, index) => (
+              <Box
+                key={child.id}
+                sx={{
+                  p: 3,
+                  mb: 2,
+                  bg: expandedChildId === child.id ? "muted" : "background",
+                  border: "1px solid",
+                  borderColor: expandedChildId === child.id ? "primary" : "gray",
+                  borderRadius: 4,
+                }}
+              >
+                <Box
+                  onClick={() => setExpandedChildId(expandedChildId === child.id ? null : child.id)}
+                  sx={{
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    userSelect: "none",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Text sx={{ fontSize: 1, color: "textMuted" }}>#{index + 1}</Text>
+                    <Text sx={{ fontSize: 2, fontWeight: "bold" }}>
+                      {getTitleForContentItem(child)}
+                    </Text>
+                  </Box>
+                  <Text sx={{ fontSize: 1, color: "textMuted" }}>
+                    {expandedChildId === child.id ? "▼" : "▶"}
+                  </Text>
+                </Box>
+
+                {expandedChildId === child.id && (
+                  <Box sx={{ mt: 3, pt: 3, borderTop: "1px solid", borderColor: "gray" }}>
+                    {/* Child content preview */}
+                    {child.type === "project" && (
+                      <Box>
+                        <Text sx={{ fontSize: 1, color: "textMuted", mb: 2 }}>
+                          {child.description}
+                        </Text>
+                        {child.role && (
+                          <Text sx={{ fontSize: 1, color: "textMuted" }}>
+                            Role: {child.role}
+                          </Text>
+                        )}
+                      </Box>
+                    )}
+                    {child.type === "education" && (
+                      <Box>
+                        {child.degree && (
+                          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>
+                            {child.degree}
+                          </Text>
+                        )}
+                        {child.field && (
+                          <Text sx={{ fontSize: 1, color: "textMuted" }}>
+                            Field: {child.field}
+                          </Text>
+                        )}
+                      </Box>
+                    )}
+
+                    {/* Child actions */}
+                    <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+                      <Button
+                        type="button"
+                        variant="secondary.sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          // TODO: Open edit modal for child
+                          logger.info("Edit child clicked", { childId: child.id })
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="danger.sm"
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          if (window.confirm(`Delete ${getTitleForContentItem(child)}?`)) {
+                            await onDelete(child.id)
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            ))}
+
+            {onAddChild && (
+              <Button
+                type="button"
+                variant="secondary.sm"
+                onClick={() => onAddChild(item.id, getChildType(item.type))}
+                sx={{ mt: 2 }}
+              >
+                + Add {getChildTypeName(item.type)}
+              </Button>
+            )}
+          </Box>
+        )}
+
         <FormActions
           onCancel={handleCancel}
           onSave={() => void handleSave()}
@@ -254,6 +378,32 @@ function getChildTypeName(parentType: string): string {
       return "Project"
     case "text-section":
       return "Child Item"
+    default:
+      return "Item"
+  }
+}
+
+/**
+ * Get item title for any content item (global helper)
+ */
+function getTitleForContentItem(item: ContentItemType): string {
+  switch (item.type) {
+    case "company":
+      return item.company
+    case "project":
+      return item.name
+    case "skill-group":
+      return item.category
+    case "education":
+      return item.institution
+    case "profile-section":
+      return item.heading
+    case "text-section":
+      return item.heading || "Text Section"
+    case "accomplishment":
+      return item.description.substring(0, 50) + "..."
+    case "timeline-event":
+      return item.title
     default:
       return "Item"
   }

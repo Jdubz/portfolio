@@ -200,6 +200,7 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
         onUpdate={handleUpdateItem}
         onDelete={handleDeleteItem}
         onAddChild={handleAddChild}
+        childItems={item.children || []}
       >
         {/* Render children if they exist */}
         {item.children && item.children.length > 0 && (
