@@ -11,6 +11,7 @@ export const API_CONFIG = {
   region: "us-central1",
   functionName: "manageExperience",
   contentItemsFunctionName: "manageContentItems",
+  uploadResumeFunctionName: "uploadResume",
   emulatorPort: 5001,
   defaultEmulatorHost: "localhost",
 } as const
@@ -107,4 +108,21 @@ export const getContentItemsApiUrl = (): string => {
 export const getEndpointUrl = (endpoint?: string): string => {
   const baseUrl = getApiUrl()
   return endpoint ? `${baseUrl}/${endpoint}` : baseUrl
+}
+
+/**
+ * Get the upload resume API URL based on environment
+ *
+ * @returns URL for resume upload endpoint
+ */
+export const getUploadResumeUrl = (): string => {
+  // Production/staging URL from env var (baked in at build time)
+  const envUrl = process.env.GATSBY_ENVIRONMENT === "production"
+    ? process.env.GATSBY_UPLOAD_RESUME_URL_PROD
+    : process.env.GATSBY_UPLOAD_RESUME_URL_DEV
+
+  return (
+    envUrl ??
+    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.uploadResumeFunctionName}`
+  )
 }

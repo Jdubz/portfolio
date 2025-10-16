@@ -5,6 +5,14 @@ import { FormActions } from "./FormActions"
 import type { CreateContentItemData, ContentItemType } from "../types/content-item"
 import { logger } from "../utils/logger"
 
+// Modal step constants
+const MODAL_STEPS = {
+  SELECT_TYPE: "select-type",
+  FILL_FORM: "fill-form",
+} as const
+
+type ModalStep = typeof MODAL_STEPS[keyof typeof MODAL_STEPS]
+
 interface CreateContentItemModalProps {
   isOpen: boolean
   onClose: () => void
@@ -18,7 +26,7 @@ interface CreateContentItemModalProps {
  * Step 2: Fill in type-specific form
  */
 export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({ isOpen, onClose, onCreate, preselectedType }) => {
-  const [step, setStep] = useState<"select-type" | "fill-form">(preselectedType ? "fill-form" : "select-type")
+  const [step, setStep] = useState<ModalStep>(preselectedType ? MODAL_STEPS.FILL_FORM : MODAL_STEPS.SELECT_TYPE)
   const [selectedType, setSelectedType] = useState<ContentItemType | null>(preselectedType as ContentItemType || null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -72,11 +80,11 @@ export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({ 
 
   const handleTypeSelect = (type: ContentItemType) => {
     setSelectedType(type)
-    setStep("fill-form")
+    setStep(MODAL_STEPS.FILL_FORM)
   }
 
   const handleBack = () => {
-    setStep("select-type")
+    setStep(MODAL_STEPS.SELECT_TYPE)
     setSelectedType(null)
   }
 
@@ -222,10 +230,10 @@ export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({ 
         onClick={(e) => e.stopPropagation()}
       >
         <Heading as="h2" sx={{ mb: 4 }}>
-          {step === "select-type" ? "Select Content Type" : `Create ${selectedType}`}
+          {step === MODAL_STEPS.SELECT_TYPE ? "Select Content Type" : `Create ${selectedType}`}
         </Heading>
 
-        {step === "select-type" ? (
+        {step === MODAL_STEPS.SELECT_TYPE ? (
           <Box>
             <Text sx={{ mb: 4, color: "textMuted" }}>Choose the type of content you want to add:</Text>
 

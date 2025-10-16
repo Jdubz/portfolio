@@ -7,6 +7,10 @@ import { CreateContentItemModal } from "../CreateContentItemModal"
 import type { UpdateContentItemData, CreateContentItemData, ContentItemWithChildren } from "../../types/content-item"
 import type { User } from "firebase/auth"
 import { logger } from "../../utils/logger"
+import { getUploadResumeUrl } from "../../config/api"
+
+// Constants
+const INTRO_PROFILE_SECTION_KEYWORD = "intro"
 
 interface ContentItemsTabProps {
   isEditor: boolean
@@ -41,7 +45,7 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
   // Get profile sections and companies for rendering
   const profileSections = getItemsByType("profile-section")
   const introSection = profileSections.find((s) =>
-    s.type === "profile-section" && s.heading?.toLowerCase().includes("intro")
+    s.type === "profile-section" && s.heading?.toLowerCase().includes(INTRO_PROFILE_SECTION_KEYWORD)
   )
 
   // Get root-level companies (work experience)
@@ -146,12 +150,7 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
         throw new Error("Not authenticated")
       }
 
-      const functionUrl =
-        process.env.GATSBY_ENVIRONMENT === "production"
-          ? (process.env.GATSBY_UPLOAD_RESUME_URL_PROD ??
-            "https://us-central1-static-sites-257923.cloudfunctions.net/uploadResume")
-          : (process.env.GATSBY_UPLOAD_RESUME_URL_DEV ??
-            "https://us-central1-static-sites-257923.cloudfunctions.net/uploadResume")
+      const functionUrl = getUploadResumeUrl()
 
       const formData = new FormData()
       formData.append("file", file)

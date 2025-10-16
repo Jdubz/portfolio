@@ -39,6 +39,10 @@ const args = process.argv.slice(2)
 const isDryRun = args.includes("--dry-run")
 const isForce = args.includes("--force")
 
+// Configuration constants for source (production) Firestore
+const SOURCE_PROJECT_ID = process.env.FIRESTORE_SOURCE_PROJECT_ID || "static-sites-257923"
+const SOURCE_DATABASE_ID = process.env.FIRESTORE_SOURCE_DATABASE_ID || "portfolio"
+
 // Target database (where we write)
 const db = createFirestoreInstance()
 
@@ -48,8 +52,8 @@ const sourceDb = isEmulator
   ? db // Use same db (emulator)
   : new Firestore({
       // Production
-      projectId: "static-sites-257923",
-      databaseId: "portfolio",
+      projectId: SOURCE_PROJECT_ID,
+      databaseId: SOURCE_DATABASE_ID,
     })
 
 interface MigrationStats {

@@ -18,6 +18,9 @@ import type {
 // Initialize service
 const contentItemService = new ContentItemService(logger)
 
+// Validation constants
+const YYYY_MM_DATE_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/
+
 // Validation schemas for each content type
 
 // Company validation
@@ -28,10 +31,10 @@ const companySchema = Joi.object({
   location: Joi.string().trim().max(200).optional().allow(""),
   website: Joi.string().uri().optional().allow(""),
   startDate: Joi.string()
-    .pattern(/^\d{4}-(0[1-9]|1[0-2])$/)
+    .pattern(YYYY_MM_DATE_PATTERN)
     .required(),
   endDate: Joi.string()
-    .pattern(/^\d{4}-(0[1-9]|1[0-2])$/)
+    .pattern(YYYY_MM_DATE_PATTERN)
     .optional()
     .allow("")
     .allow(null),
@@ -56,11 +59,11 @@ const projectSchema = Joi.object({
   name: Joi.string().trim().min(1).max(200).required(),
   role: Joi.string().trim().max(200).optional().allow(""),
   startDate: Joi.string()
-    .pattern(/^\d{4}-(0[1-9]|1[0-2])$/)
+    .pattern(YYYY_MM_DATE_PATTERN)
     .optional()
     .allow(""),
   endDate: Joi.string()
-    .pattern(/^\d{4}-(0[1-9]|1[0-2])$/)
+    .pattern(YYYY_MM_DATE_PATTERN)
     .optional()
     .allow("")
     .allow(null),
