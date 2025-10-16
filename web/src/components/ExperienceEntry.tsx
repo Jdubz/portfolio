@@ -5,10 +5,13 @@ import { ConfirmDialog } from "./ConfirmDialog"
 import { MarkdownContent } from "./MarkdownContent"
 import { FormField } from "./FormField"
 import { FormActions } from "./FormActions"
+import { MarkdownEditor } from "./MarkdownEditor"
 import { logger } from "../utils/logger"
 import { formatMonthYear } from "../utils/dateFormat"
 import { StructuredEntryView } from "./entry-types/StructuredEntryView"
 import { SimpleEntryView } from "./entry-types/SimpleEntryView"
+import { StructuredEntryEdit } from "./entry-types/StructuredEntryEdit"
+import { SimpleEntryEdit } from "./entry-types/SimpleEntryEdit"
 
 interface ExperienceEntryProps {
   entry: ExperienceEntryType
@@ -26,7 +29,12 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [editData, setEditData] = useState<UpdateExperienceData>({
+  const [editData, setEditData] = useState<UpdateExperienceData & {
+    summary?: string
+    accomplishments?: string[]
+    technologies?: string[]
+    projects?: ExperienceEntryType["projects"]
+  }>({
     title: entry.title,
     role: entry.role,
     location: entry.location,
@@ -34,6 +42,10 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
     startDate: entry.startDate,
     endDate: entry.endDate,
     notes: entry.notes,
+    summary: entry.summary,
+    accomplishments: entry.accomplishments,
+    technologies: entry.technologies,
+    projects: entry.projects,
   })
 
   const handleSave = async () => {
@@ -61,6 +73,10 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
       startDate: entry.startDate,
       endDate: entry.endDate,
       notes: entry.notes,
+      summary: entry.summary,
+      accomplishments: entry.accomplishments,
+      technologies: entry.technologies,
+      projects: entry.projects,
     })
     setIsEditing(false)
   }
@@ -147,14 +163,51 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
             </Box>
           </Flex>
 
-          <FormField
-            label="Description"
-            name="body"
-            value={editData.body ?? ""}
-            onChange={(value) => setEditData({ ...editData, body: value })}
-            type="textarea"
-            rows={6}
-          />
+          {/* Render appropriate edit component based on renderType */}
+          {entry.renderType === "structured-entry" && (
+            <StructuredEntryEdit
+              data={{
+                summary: editData.summary,
+                accomplishments: editData.accomplishments,
+                technologies: editData.technologies,
+                projects: editData.projects,
+              }}
+              onChange={(data) =>
+                setEditData({
+                  ...editData,
+                  summary: data.summary,
+                  accomplishments: data.accomplishments,
+                  technologies: data.technologies,
+                  projects: data.projects,
+                })
+              }
+            />
+          )}
+
+          {entry.renderType === "simple-entry" && (
+            <SimpleEntryEdit
+              data={{
+                technologies: editData.technologies,
+              }}
+              onChange={(data) =>
+                setEditData({
+                  ...editData,
+                  technologies: data.technologies,
+                })
+              }
+            />
+          )}
+
+          {(!entry.renderType || entry.renderType === "text") && (
+            <MarkdownEditor
+              label="Description"
+              name="body"
+              value={editData.body ?? ""}
+              onChange={(value) => setEditData({ ...editData, body: value })}
+              rows={12}
+              showPreview
+            />
+          )}
 
           <FormField
             label="Notes (internal)"
