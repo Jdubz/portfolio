@@ -42,11 +42,15 @@ const isForce = args.includes("--force")
 // Target database (where we write)
 const db = createFirestoreInstance()
 
-// Source database (always production for reading)
-const sourceDb = new Firestore({
-  projectId: "static-sites-257923",
-  databaseId: "portfolio",
-})
+// Source database - use emulator if FIRESTORE_EMULATOR_HOST is set, otherwise production
+const isEmulator = !!process.env.FIRESTORE_EMULATOR_HOST
+const sourceDb = isEmulator
+  ? db // Use same db (emulator)
+  : new Firestore({
+      // Production
+      projectId: "static-sites-257923",
+      databaseId: "portfolio",
+    })
 
 interface MigrationStats {
   experienceEntriesRead: number
@@ -261,7 +265,7 @@ async function confirm(message: string): Promise<boolean> {
 async function migrate() {
   console.log("🚀 Content Items Migration Script")
   console.log("==================================")
-  console.log(`Source Database: portfolio (production)`)
+  console.log(`Source Database: ${isEmulator ? `${DATABASE_ID} (emulator)` : "portfolio (production)"}`)
   console.log(`Target Database: ${DATABASE_ID}`)
   console.log(`Mode: ${isDryRun ? "DRY RUN (no changes will be made)" : "LIVE"}`)
   console.log()
@@ -274,8 +278,8 @@ async function migrate() {
   }
 
   try {
-    // Read existing data from production
-    console.log("📖 Reading existing data from production...")
+    // Read existing data
+    console.log(`📖 Reading existing data from ${isEmulator ? "emulator" : "production"}...`)
 
     const experienceSnapshot = await sourceDb.collection("experience-entries").orderBy("order", "asc").get()
     const blurbSnapshot = await sourceDb.collection("experience-blurbs").orderBy("order", "asc").get()
@@ -370,16 +374,27 @@ async function migrate() {
     // Track mapping of source IDs to new IDs for handling nested items
     const idMap = new Map<string, string>()
 
+    // Helper function to remove undefined values (Firestore doesn't accept them)
+    const removeUndefined = (obj: Record<string, unknown>): Record<string, unknown> => {
+      const result: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(obj)) {
+        if (value !== undefined) {
+          result[key] = value
+        }
+      }
+      return result
+    }
+
     // First pass: Create all items
     for (const item of itemsToCreate) {
       try {
-        const docData = {
+        const docData = removeUndefined({
           ...item,
           createdAt: now,
           updatedAt: now,
           createdBy: migratedBy,
           updatedBy: migratedBy,
-        }
+        })
 
         // Remove metadata (it's just for tracking during migration)
         delete (docData as { metadata?: unknown }).metadata
