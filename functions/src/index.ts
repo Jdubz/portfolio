@@ -392,3 +392,9 @@ export { uploadResume } from "./resume"
  */
 export { manageGenerator } from "./generator"
 
+/**
+ * Content Items endpoint (unified schema)
+ * Deployed via: firebase deploy --only functions:manageContentItems
+ */
+export { manageContentItems } from "./content-items"
+
