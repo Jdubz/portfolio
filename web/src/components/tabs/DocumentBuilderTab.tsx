@@ -321,7 +321,6 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             onChange={(e) => setGenerateType(e.target.value as GenerationType)}
             disabled={generating}
             required
-            sx={{ fontSize: 2 }}
           >
             <option value="both">Resume + Cover Letter</option>
             <option value="resume">Resume Only</option>
@@ -340,7 +339,6 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
             disabled={generating}
             required
-            sx={{ fontSize: 2 }}
           >
             <option value="openai">OpenAI GPT-4o (Recommended)</option>
             <option value="gemini">Gemini 2.0 Flash</option>
