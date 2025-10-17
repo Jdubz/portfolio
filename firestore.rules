@@ -46,6 +46,22 @@ service cloud.firestore {
       allow read, write: if isEditor();
     }
 
+    // Job queue - editor-only read/write
+    match /job-queue/{queueItemId} {
+      allow read, write: if isEditor();
+    }
+
+    // Job finder configuration - editor-only read/write
+    match /job-finder-config/{configId} {
+      allow read, write: if isEditor();
+    }
+
+    // Content items (unified experience system) - public read, editor write
+    match /content-items/{itemId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
     // Default deny all other collections
     match /{document=**} {
       allow read, write: if false;
