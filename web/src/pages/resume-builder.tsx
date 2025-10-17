@@ -16,6 +16,7 @@ import { JobFinderConfigTab } from "../components/tabs/JobFinderConfigTab"
 import { QueueManagementTab } from "../components/tabs/QueueManagementTab"
 import { CompaniesTab } from "../components/tabs/CompaniesTab"
 import { SourcesTab } from "../components/tabs/SourcesTab"
+import { TroubleshootingTab } from "../components/tabs/TroubleshootingTab"
 import { GenerationDetailsModal } from "../components/GenerationDetailsModal"
 import { ErrorBoundary } from "../components/ErrorBoundary"
 import { logger } from "../utils/logger"
@@ -68,6 +69,7 @@ const ResumeBuilderPage: React.FC = () => {
       "job-finder-config",
       "companies",
       "sources",
+      "troubleshooting",
     ]
     return tabParam && validTabs.includes(tabParam) ? tabParam : "how-it-works"
   }
@@ -294,6 +296,17 @@ const ResumeBuilderPage: React.FC = () => {
       content: (
         <ErrorBoundary>
           <DocumentHistoryTab isEditor={isEditor} />
+        </ErrorBoundary>
+      ),
+    },
+    {
+      id: "troubleshooting",
+      label: "Troubleshooting",
+      icon: "🔧",
+      group: "admin",
+      content: (
+        <ErrorBoundary>
+          <TroubleshootingTab />
         </ErrorBoundary>
       ),
     },
