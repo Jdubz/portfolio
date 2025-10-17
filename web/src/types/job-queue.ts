@@ -1,16 +1,31 @@
 /**
  * Job Queue Types (Frontend)
  *
- * Client-side types for job queue functionality
+ * Re-exports from @jdubz/shared-types with frontend-specific extensions
  */
 
-export type QueueStatus = "pending" | "processing" | "success" | "failed" | "skipped"
+export type {
+  QueueStatus,
+  QueueItemType,
+  QueueSource,
+  StopList,
+  QueueStats,
+  SubmitJobRequest,
+  SubmitJobResponse,
+} from "@jdubz/shared-types"
 
+export { isQueueStatus, isQueueItemType } from "@jdubz/shared-types"
+
+// Frontend-specific QueueItem with string dates (serialized from Firestore)
 export interface QueueItem {
   id: string
-  status: QueueStatus
+  type: "job" | "company"
+  status: "pending" | "processing" | "success" | "failed" | "skipped"
   url: string
   company_name: string
+  company_id: string | null
+  source: "user_submission" | "automated_scan" | "scraper" | "webhook" | "email"
+  submitted_by: string | null
   result_message?: string
   error_message?: string
   error_details?: string
@@ -20,33 +35,4 @@ export interface QueueItem {
   completed_at?: string
   retry_count: number
   max_retries: number
-}
-
-export interface StopList {
-  excludedCompanies: string[]
-  excludedKeywords: string[]
-  excludedDomains: string[]
-}
-
-export interface QueueStats {
-  pending: number
-  processing: number
-  success: number
-  failed: number
-  skipped: number
-  total: number
-}
-
-export interface SubmitJobRequest {
-  url: string
-  companyName?: string
-  generationId?: string // Optional ID for pre-generated documents
-}
-
-export interface SubmitJobResponse {
-  status: "success" | "skipped"
-  message: string
-  queueItemId?: string
-  queueItem?: QueueItem
-  jobId?: string
 }

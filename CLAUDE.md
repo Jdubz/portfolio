@@ -25,7 +25,7 @@ portfolio/
 │   │   ├── hooks/         # Custom React hooks (useAuth, useExperienceData)
 │   │   ├── pages/         # Gatsby page components
 │   │   ├── styles/        # Shared styles and Theme UI config
-│   │   ├── types/         # TypeScript type definitions
+│   │   ├── types/         # TypeScript type definitions (extends @jdubz/shared-types)
 │   │   └── utils/         # Utilities (logger, validators, firebase)
 │   └── static/            # Static assets
 │
@@ -34,10 +34,12 @@ portfolio/
 │       ├── config/        # Configuration (cors, secrets, database, error-codes)
 │       ├── middleware/    # Auth and App Check verification
 │       ├── services/      # Business logic (email, firestore, AI providers, PDF, storage)
+│       ├── types/         # Type definitions (re-exports @jdubz/shared-types)
 │       ├── utils/         # Utilities (logger, request-id)
 │       ├── index.ts       # Contact form handler
 │       ├── experience.ts  # Experience management API
 │       ├── generator.ts   # AI resume generator API
+│       ├── job-queue.ts   # Job queue management API
 │       └── resume.ts      # Resume upload handler
 │
 ├── scripts/               # Build and utility scripts
@@ -45,6 +47,33 @@ portfolio/
 ├── emulator-data/         # Firebase emulator persistence
 └── Makefile              # Development commands
 ```
+
+### Shared Types Architecture
+
+This project uses `@jdubz/shared-types` (located at `../shared-types`) as a local package dependency:
+
+```
+../shared-types/           # Shared TypeScript types (separate repository)
+├── src/
+│   ├── index.ts          # Main exports
+│   └── queue.types.ts    # Queue and job matching types
+├── dist/                 # Compiled TypeScript
+├── CONTEXT.md            # Architecture documentation
+└── README.md             # Usage guide
+```
+
+**Integration:**
+- **Portfolio** imports as: `import { QueueItem, JobMatch } from '@jdubz/shared-types'`
+- **Job-finder** (Python) mirrors these types in Pydantic models
+- Types are the **single source of truth** for cross-project data structures
+
+**Key Shared Types:**
+- `QueueItem` - Job queue structure in Firestore
+- `JobMatch` - AI-analyzed job match results
+- `QueueSettings`, `StopList`, `AISettings` - Configuration types
+- API request/response types: `SubmitJobRequest`, `SubmitJobResponse`
+
+See `../shared-types/CONTEXT.md` for detailed architecture documentation.
 
 ## Common Development Commands
 
@@ -444,3 +473,187 @@ For more details, see:
 - [Firebase Configuration](./docs/setup/FIREBASE_CONFIG_CHECKLIST.md)
 - [Known Issues](./docs/development/KNOWN_ISSUES.md)
 - [Brand Guidelines](./docs/brand/README.md)
+
+## Cross-Project Integration: Job-Finder
+
+This portfolio integrates with a separate **job-finder** Python application that automates job discovery and matching:
+
+### Architecture Overview
+
+```
+┌─────────────────┐        Firestore         ┌─────────────────┐
+│   Portfolio     │◄────────(shared)─────────►│  Job-Finder     │
+│  (TypeScript)   │                           │    (Python)     │
+└─────────────────┘                           └─────────────────┘
+        │                                              │
+        │                                              │
+        ▼                                              ▼
+  @jdubz/shared-types ◄────────────────── Python Pydantic Models
+   (TypeScript types)        (mirrors)        (runtime validation)
+```
+
+### Shared Data Collections
+
+**Firestore Collections (shared between projects):**
+
+1. **`job-queue`** - Queue of jobs to process
+   - Written by: Portfolio (user submissions) + Job-finder (automated scans)
+   - Read by: Job-finder (processing) + Portfolio (status display)
+   - Type: `QueueItem` from `@jdubz/shared-types`
+
+2. **`job-matches`** - AI-analyzed job match results
+   - Written by: Job-finder (after AI analysis)
+   - Read by: Portfolio (job applications tab)
+   - Type: `JobMatch` from `@jdubz/shared-types`
+
+3. **`job-finder-config`** - Configuration documents
+   - `stop-list`: Companies/keywords to exclude (Type: `StopList`)
+   - `queue-settings`: Processing parameters (Type: `QueueSettings`)
+   - `ai-settings`: AI provider configuration (Type: `AISettings`)
+   - Written/read by: Both projects
+
+### Type Synchronization
+
+**TypeScript → Python Type Mapping:**
+
+All types defined in `@jdubz/shared-types` have corresponding Python Pydantic models in `job-finder/src/job_finder/queue/models.py`:
+
+```typescript
+// TypeScript (@jdubz/shared-types)
+export interface QueueItem {
+  type: QueueItemType
+  status: QueueStatus
+  url: string
+  company_name: string
+  // ...
+}
+```
+
+```python
+# Python (job-finder)
+class JobQueueItem(BaseModel):
+    type: QueueItemType  # Enum
+    status: QueueStatus  # Enum
+    url: str
+    company_name: str
+    # ...
+```
+
+**Important:** When modifying shared types:
+1. Update TypeScript types in `@jdubz/shared-types`
+2. Update Python models in `job-finder`
+3. Test both projects together
+4. Deploy to staging and verify integration
+
+### Job Queue Flow
+
+1. **Submission** (Portfolio):
+   - User submits job URL via JobFinderTab UI
+   - API call to `job-queue.ts` Cloud Function
+   - Creates `QueueItem` with status "pending"
+
+2. **Processing** (Job-Finder):
+   - Python worker polls `job-queue` collection
+   - Updates status to "processing"
+   - Scrapes job data, analyzes with AI
+   - Creates `JobMatch` document if score ≥ threshold
+   - Updates `QueueItem` status to "success"/"failed"
+
+3. **Display** (Portfolio):
+   - JobFinderTab shows queue status
+   - JobApplicationsTab displays matched jobs
+   - User can generate custom resume/cover letter
+
+### API Endpoints
+
+**Portfolio Functions:**
+- `POST /submitJob` - Submit job URL to queue
+- `GET /jobQueue` - Get queue status (admin only)
+- `GET /jobMatches` - Get AI-analyzed matches
+
+**Job-Finder Endpoints:**
+- Internal processing only (no HTTP endpoints)
+- Communicates via Firestore only
+
+### Configuration Management
+
+Both projects share configuration via Firestore:
+
+```typescript
+// Portfolio (read/write via UI)
+const settings: QueueSettings = {
+  maxRetries: 3,
+  retryDelaySeconds: 300,
+  processingTimeout: 600
+}
+```
+
+```python
+# Job-finder (read for processing)
+settings = await config_service.get_queue_settings()
+max_retries = settings.max_retries
+```
+
+### Development Workflow
+
+When working on job-finder integration:
+
+1. **Check shared types** in `../shared-types/CONTEXT.md`
+2. **Test locally** with Firebase emulators
+3. **Run both projects** simultaneously:
+   ```bash
+   # Terminal 1: Portfolio
+   cd /home/jdubz/Development/portfolio
+   make dev
+
+   # Terminal 2: Job-finder
+   cd /home/jdubz/Development/job-finder
+   python -m job_finder.queue.worker
+   ```
+4. **Monitor Firestore** for data flow
+5. **Test end-to-end** flow before deploying
+
+### Related Files
+
+**Portfolio:**
+- `functions/src/job-queue.ts` - Queue management API
+- `functions/src/types/job-queue.types.ts` - Type re-exports
+- `web/src/components/tabs/JobFinderTab.tsx` - Queue submission UI
+- `web/src/components/tabs/JobApplicationsTab.tsx` - Matches display UI
+- `web/src/api/job-queue-client.ts` - API client
+
+**Job-Finder:**
+- `src/job_finder/queue/worker.py` - Queue processor
+- `src/job_finder/queue/models.py` - Pydantic models
+- `src/job_finder/services/ai_analyzer.py` - AI matching logic
+- `src/job_finder/services/firestore_service.py` - Firestore operations
+
+**Shared Types:**
+- `../shared-types/src/queue.types.ts` - Single source of truth
+- `../shared-types/CONTEXT.md` - Architecture documentation
+- `../shared-types/README.md` - Usage examples
+
+### Troubleshooting Integration Issues
+
+1. **Type mismatches between projects:**
+   - Check `@jdubz/shared-types` is up to date
+   - Rebuild shared-types: `cd ../shared-types && npm run build`
+   - Reinstall in portfolio: `npm install`
+
+2. **Queue items not processing:**
+   - Verify job-finder worker is running
+   - Check Firestore rules allow writes
+   - Check queue item status in Firestore UI
+   - Review job-finder logs for errors
+
+3. **Data not appearing in UI:**
+   - Check Firestore collection names match
+   - Verify user has proper Firebase Auth token
+   - Check browser console for API errors
+   - Verify emulator vs production environment
+
+4. **AI matching not working:**
+   - Check AI provider API keys in Secret Manager
+   - Verify `ai-settings` configuration in Firestore
+   - Check cost budget hasn't been exceeded
+   - Review job-finder logs for AI errors
