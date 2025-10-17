@@ -24,7 +24,7 @@ jobs:
       - name: Checkout shared-types
         uses: actions/checkout@v4
         with:
-          repository: Jdubz/shared-types
+          repository: Jdubz/job-finder-shared-types
           path: shared-types
           token: ${{ secrets.GITHUB_TOKEN }}
 
