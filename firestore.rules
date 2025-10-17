@@ -36,14 +36,47 @@ service cloud.firestore {
       allow write: if isEditor();
     }
 
-    // Generator history - editor-only read/write
+    // Generator history - public read, editor-only write
     match /generator_history/{requestId} {
-      allow read, write: if isEditor();
+      allow read: if true;
+      allow write: if isEditor();
     }
 
-    // Job matches - editor-only read/write
+    // Job matches - public read, editor-only write
     match /job-matches/{jobMatchId} {
-      allow read, write: if isEditor();
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Job queue - public read and create, editor-only update/delete
+    match /job-queue/{queueItemId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isEditor();
+    }
+
+    // Job finder configuration - public read, editor-only write
+    match /job-finder-config/{configId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Companies - public read, editor-only write
+    match /companies/{companyId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Job sources - public read, editor-only write
+    match /job-sources/{sourceId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Content items (unified experience system) - public read, editor write
+    match /content-items/{itemId} {
+      allow read: if true;
+      allow write: if isEditor();
     }
 
     // Default deny all other collections

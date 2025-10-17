@@ -13,6 +13,9 @@ import { DocumentHistoryTab } from "../components/tabs/DocumentHistoryTab"
 import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
 import { JobFinderTab } from "../components/tabs/JobFinderTab"
 import { JobFinderConfigTab } from "../components/tabs/JobFinderConfigTab"
+import { QueueManagementTab } from "../components/tabs/QueueManagementTab"
+import { CompaniesTab } from "../components/tabs/CompaniesTab"
+import { SourcesTab } from "../components/tabs/SourcesTab"
 import { GenerationDetailsModal } from "../components/GenerationDetailsModal"
 import { ErrorBoundary } from "../components/ErrorBoundary"
 import { logger } from "../utils/logger"
@@ -60,7 +63,10 @@ const ResumeBuilderPage: React.FC = () => {
       "history",
       "job-applications",
       "job-finder",
+      "queue-management",
       "job-finder-config",
+      "companies",
+      "sources",
     ]
     return tabParam && validTabs.includes(tabParam) ? tabParam : "how-it-works"
   }
@@ -97,18 +103,8 @@ const ResumeBuilderPage: React.FC = () => {
     return () => window.removeEventListener("popstate", handlePopState)
   }, [])
 
-  // Redirect non-editors away from editor-only tabs
-  useEffect(() => {
-    const editorOnlyTabs = ["history", "job-applications", "job-finder", "job-finder-config"]
-    if (!authLoading && editorOnlyTabs.includes(activeTab) && !isEditor) {
-      logger.info("Non-editor attempted to access editor-only tab, redirecting to document-builder", {
-        page: "resume-builder",
-        tab: activeTab,
-        user: user?.email ?? "anonymous",
-      })
-      void navigate("/resume-builder?tab=document-builder", { replace: true })
-    }
-  }, [authLoading, activeTab, isEditor, user])
+  // No tab restrictions - all tabs visible to everyone
+  // Edit buttons are conditionally hidden based on isEditor prop
 
   const handleSignIn = () => {
     setSigningIn(true)
@@ -147,14 +143,15 @@ const ResumeBuilderPage: React.FC = () => {
     setModalRequest(null)
   }
 
-  // Build tab groups
+  // Build tab groups - all visible to everyone
   const groups: TabGroup[] = [
     { id: "resume", label: "Resume", icon: "📝" },
-    ...(isEditor ? [{ id: "job-finder", label: "Job Finder", icon: "🔍" }] : []),
-    ...(isEditor ? [{ id: "admin", label: "Admin", icon: "⚙️" }] : []),
+    { id: "job-finder", label: "Job Finder", icon: "🔍" },
+    { id: "admin", label: "Admin", icon: "⚙️" },
   ]
 
-  // Build tabs array (conditionally include editor-only tabs)
+  // Build tabs array - all tabs visible to everyone
+  // Edit buttons are conditionally hidden based on isEditor prop
   // Each tab wrapped in ErrorBoundary to prevent entire app crashes
   const tabs: Tab[] = [
     // Resume Group
@@ -213,60 +210,85 @@ const ResumeBuilderPage: React.FC = () => {
         </ErrorBoundary>
       ),
     },
-    // Job Finder Group (editor-only)
-    ...(isEditor
-      ? [
-          {
-            id: "job-finder",
-            label: "Submit Jobs",
-            icon: "➕",
-            group: "job-finder",
-            content: (
-              <ErrorBoundary>
-                <JobFinderTab />
-              </ErrorBoundary>
-            ),
-          },
-          {
-            id: "job-applications",
-            label: "Job Applications",
-            icon: "📋",
-            group: "job-finder",
-            content: (
-              <ErrorBoundary>
-                <JobApplicationsTab onViewGeneratedDocs={handleViewGeneratedDocs} />
-              </ErrorBoundary>
-            ),
-          },
-          {
-            id: "job-finder-config",
-            label: "Configuration",
-            icon: "⚙️",
-            group: "job-finder",
-            content: (
-              <ErrorBoundary>
-                <JobFinderConfigTab />
-              </ErrorBoundary>
-            ),
-          },
-        ]
-      : []),
-    // Admin Group (editor-only)
-    ...(isEditor
-      ? [
-          {
-            id: "history",
-            label: "Document History",
-            icon: "📚",
-            group: "admin",
-            content: (
-              <ErrorBoundary>
-                <DocumentHistoryTab isEditor={isEditor} />
-              </ErrorBoundary>
-            ),
-          },
-        ]
-      : []),
+    // Job Finder Group (all visible, edit controls hidden for non-editors)
+    {
+      id: "job-finder",
+      label: "Submit Jobs",
+      icon: "➕",
+      group: "job-finder",
+      content: (
+        <ErrorBoundary>
+          <JobFinderTab />
+        </ErrorBoundary>
+      ),
+    },
+    {
+      id: "job-applications",
+      label: "Job Applications",
+      icon: "📋",
+      group: "job-finder",
+      content: (
+        <ErrorBoundary>
+          <JobApplicationsTab onViewGeneratedDocs={handleViewGeneratedDocs} />
+        </ErrorBoundary>
+      ),
+    },
+    {
+      id: "queue-management",
+      label: "Queue Management",
+      icon: "📊",
+      group: "job-finder",
+      content: (
+        <ErrorBoundary>
+          <QueueManagementTab />
+        </ErrorBoundary>
+      ),
+    },
+    {
+      id: "job-finder-config",
+      label: "Configuration",
+      icon: "⚙️",
+      group: "job-finder",
+      content: (
+        <ErrorBoundary>
+          <JobFinderConfigTab />
+        </ErrorBoundary>
+      ),
+    },
+    {
+      id: "companies",
+      label: "Companies",
+      icon: "🏢",
+      group: "job-finder",
+      content: (
+        <ErrorBoundary>
+          <CompaniesTab />
+        </ErrorBoundary>
+      ),
+    },
+    {
+      id: "sources",
+      label: "Sources",
+      icon: "📡",
+      group: "job-finder",
+      content: (
+        <ErrorBoundary>
+          <SourcesTab />
+        </ErrorBoundary>
+      ),
+    },
+    // Admin Group (all visible, edit controls hidden for non-editors)
+    {
+      id: "history",
+      label: "Document History",
+      icon: "📚",
+      group: "admin",
+      content: (
+        <ErrorBoundary>
+          <DocumentHistoryTab isEditor={isEditor} />
+        </ErrorBoundary>
+      ),
+    },
   ]
 
   return (

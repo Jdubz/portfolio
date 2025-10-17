@@ -2,8 +2,19 @@
  * Job Match Type Definitions
  *
  * Types for tracking job applications and matching them with generated documents
+ *
+ * Note: The core JobMatch type from @jdubz/shared-types represents the structure
+ * written by job-finder (AI-analyzed results). This file extends it with portfolio-specific
+ * fields for application tracking and document generation.
  */
 
+// Re-export the shared JobMatch type for queue integration
+export type { JobMatch as JobQueueMatch } from "@jdubz/shared-types"
+
+/**
+ * Extended JobMatch for portfolio application tracking
+ * Combines AI-analyzed results with portfolio-specific metadata
+ */
 export interface JobMatch {
   id: string
   company: string

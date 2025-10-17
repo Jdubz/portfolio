@@ -25,16 +25,35 @@ const updateStopListSchema = Joi.object({
   excludedDomains: Joi.array().items(Joi.string().trim().max(200)).required(),
 })
 
+const updateAISettingsSchema = Joi.object({
+  provider: Joi.string().valid("claude", "openai").required(),
+  model: Joi.string().trim().max(100).required(),
+  minMatchScore: Joi.number().min(0).max(100).required(),
+  costBudgetDaily: Joi.number().min(0).required(),
+})
+
+const updateQueueSettingsSchema = Joi.object({
+  maxRetries: Joi.number().integer().min(0).max(10).required(),
+  retryDelaySeconds: Joi.number().integer().min(0).required(),
+  processingTimeout: Joi.number().integer().min(0).required(),
+})
+
 /**
  * Cloud Function to manage job queue operations
  *
  * Routes:
- * - GET    /health            - Health check (public)
- * - POST   /submit            - Submit job to queue (auth required)
- * - GET    /status/:id        - Get queue item status (auth required, owner check)
- * - GET    /config/stop-list  - Get stop list (auth required)
- * - PUT    /config/stop-list  - Update stop list (auth required)
- * - GET    /stats             - Get queue statistics (auth required)
+ * - GET    /health                  - Health check (public)
+ * - POST   /submit                  - Submit job to queue (public)
+ * - GET    /status/:id              - Get queue item status (public)
+ * - GET    /stats                   - Get queue statistics (public)
+ * - GET    /config/stop-list        - Get stop list (public, read-only)
+ * - GET    /config/ai-settings      - Get AI settings (public, read-only)
+ * - GET    /config/queue-settings   - Get queue settings (public, read-only)
+ * - POST   /retry/:id               - Retry failed queue item (editor only)
+ * - DELETE /queue/:id               - Delete queue item (editor only)
+ * - PUT    /config/stop-list        - Update stop list (editor only)
+ * - PUT    /config/ai-settings      - Update AI settings (editor only)
+ * - PUT    /config/queue-settings   - Update queue settings (editor only)
  */
 const handleJobQueueRequest = async (req: Request, res: Response): Promise<void> => {
   const requestId = generateRequestId()
@@ -67,7 +86,57 @@ const handleJobQueueRequest = async (req: Request, res: Response): Promise<void>
             return
           }
 
-          // All other routes require authentication
+          // Public routes (no authentication required)
+          const publicRoutes = ["/submit", "/stats"].some((route) => path === route) ||
+                               path.startsWith("/status/") ||
+                               (req.method === "GET" && path.startsWith("/config/"))
+
+          if (publicRoutes) {
+            // Route: POST /submit - Submit job to queue (public)
+            if (req.method === "POST" && path === "/submit") {
+              await handleSubmitJob(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+
+            // Route: GET /status/:id - Get queue item status (public)
+            if (req.method === "GET" && path.startsWith("/status/")) {
+              const id = path.replace("/status/", "")
+              await handleGetQueueStatus(req as AuthenticatedRequest, res, requestId, id)
+              resolve()
+              return
+            }
+
+            // Route: GET /stats - Get queue statistics (public)
+            if (req.method === "GET" && path === "/stats") {
+              await handleGetStats(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+
+            // Route: GET /config/stop-list - Get stop list (public, read-only)
+            if (req.method === "GET" && path === "/config/stop-list") {
+              await handleGetStopList(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+
+            // Route: GET /config/ai-settings - Get AI settings (public, read-only)
+            if (req.method === "GET" && path === "/config/ai-settings") {
+              await handleGetAISettings(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+
+            // Route: GET /config/queue-settings - Get queue settings (public, read-only)
+            if (req.method === "GET" && path === "/config/queue-settings") {
+              await handleGetQueueSettings(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+          }
+
+          // All other routes require editor role
           await new Promise<void>((resolveAuth, rejectAuth) => {
             verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
               if (err) rejectAuth(err)
@@ -75,38 +144,39 @@ const handleJobQueueRequest = async (req: Request, res: Response): Promise<void>
             })
           })
 
-          // Route: POST /submit - Submit job to queue
-          if (req.method === "POST" && path === "/submit") {
-            await handleSubmitJob(req as AuthenticatedRequest, res, requestId)
-            resolve()
-            return
-          }
-
-          // Route: GET /status/:id - Get queue item status
-          if (req.method === "GET" && path.startsWith("/status/")) {
-            const id = path.replace("/status/", "")
-            await handleGetQueueStatus(req as AuthenticatedRequest, res, requestId, id)
-            resolve()
-            return
-          }
-
-          // Route: GET /config/stop-list - Get stop list
-          if (req.method === "GET" && path === "/config/stop-list") {
-            await handleGetStopList(req as AuthenticatedRequest, res, requestId)
-            resolve()
-            return
-          }
-
-          // Route: PUT /config/stop-list - Update stop list
+          // Route: PUT /config/stop-list - Update stop list (editor only)
           if (req.method === "PUT" && path === "/config/stop-list") {
             await handleUpdateStopList(req as AuthenticatedRequest, res, requestId)
             resolve()
             return
           }
 
-          // Route: GET /stats - Get queue statistics
-          if (req.method === "GET" && path === "/stats") {
-            await handleGetStats(req as AuthenticatedRequest, res, requestId)
+          // Route: PUT /config/ai-settings - Update AI settings (editor only)
+          if (req.method === "PUT" && path === "/config/ai-settings") {
+            await handleUpdateAISettings(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: PUT /config/queue-settings - Update queue settings (editor only)
+          if (req.method === "PUT" && path === "/config/queue-settings") {
+            await handleUpdateQueueSettings(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
+
+          // Route: POST /retry/:id - Retry failed queue item (editor only)
+          if (req.method === "POST" && path.startsWith("/retry/")) {
+            const id = path.replace("/retry/", "")
+            await handleRetryQueueItem(req as AuthenticatedRequest, res, requestId, id)
+            resolve()
+            return
+          }
+
+          // Route: DELETE /queue/:id - Delete queue item (editor only)
+          if (req.method === "DELETE" && path.startsWith("/queue/")) {
+            const id = path.replace("/queue/", "")
+            await handleDeleteQueueItem(req as AuthenticatedRequest, res, requestId, id)
             resolve()
             return
           }
@@ -174,38 +244,18 @@ async function handleSubmitJob(req: AuthenticatedRequest, res: Response, request
     }
 
     const { url, companyName = "", generationId } = value
-    const userId = req.user!.uid
+    const userId = req.user?.uid || null // Allow anonymous submissions
 
     logger.info("Processing job submission", {
       requestId,
       url,
       companyName,
-      userId,
+      userId: userId || "anonymous",
       hasGenerationId: !!generationId,
     })
 
-    // Load stop list
-    const stopList = await jobQueueService.loadStopList()
-
-    // Check stop list
-    const stopListCheck = jobQueueService.checkStopList(url, companyName, stopList)
-    if (!stopListCheck.allowed) {
-      logger.info("Job blocked by stop list", {
-        requestId,
-        url,
-        reason: stopListCheck.reason,
-      })
-
-      res.status(200).json({
-        success: true,
-        data: {
-          status: "skipped",
-          message: stopListCheck.reason,
-        },
-        requestId,
-      })
-      return
-    }
+    // Note: Stop list validation is handled by the Python job-finder scraper
+    // Portfolio submissions skip stop list checks
 
     // Check for duplicates in queue
     const queueDuplicate = await jobQueueService.checkQueueDuplicate(url)
@@ -288,7 +338,7 @@ async function handleGetQueueStatus(
     logger.info("Getting queue status", {
       requestId,
       queueItemId: id,
-      userId: req.user!.uid,
+      userId: req.user?.uid || "anonymous",
     })
 
     const queueItem = await jobQueueService.getQueueStatus(id)
@@ -305,25 +355,7 @@ async function handleGetQueueStatus(
       return
     }
 
-    // Verify user owns this submission
-    if (queueItem.submitted_by !== req.user!.uid) {
-      logger.warning("User attempted to access queue item they don't own", {
-        requestId,
-        queueItemId: id,
-        ownerId: queueItem.submitted_by,
-        requesterId: req.user!.uid,
-      })
-
-      const err = ERROR_CODES.FORBIDDEN
-      res.status(err.status).json({
-        success: false,
-        error: "FORBIDDEN",
-        errorCode: err.code,
-        message: err.message,
-        requestId,
-      })
-      return
-    }
+    // Public endpoint - no ownership check needed
 
     res.status(200).json({
       success: true,
@@ -367,7 +399,7 @@ async function handleGetStopList(req: AuthenticatedRequest, res: Response, reque
   try {
     logger.info("Getting stop list", {
       requestId,
-      userEmail: req.user!.email,
+      userEmail: req.user?.email || "anonymous",
     })
 
     const stopList = await jobQueueService.loadStopList()
@@ -461,7 +493,7 @@ async function handleGetStats(req: AuthenticatedRequest, res: Response, requestI
   try {
     logger.info("Getting queue stats", {
       requestId,
-      userEmail: req.user!.email,
+      userEmail: req.user?.email || "anonymous",
     })
 
     const stats = await jobQueueService.getQueueStats()
@@ -475,6 +507,306 @@ async function handleGetStats(req: AuthenticatedRequest, res: Response, requestI
     logger.error("Failed to get queue stats", {
       error,
       requestId,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * POST /retry/:id - Retry failed queue item (auth required)
+ */
+async function handleRetryQueueItem(
+  req: AuthenticatedRequest,
+  res: Response,
+  requestId: string,
+  id: string
+): Promise<void> {
+  try {
+    logger.info("Retrying queue item", {
+      requestId,
+      queueItemId: id,
+      userEmail: req.user!.email,
+    })
+
+    const success = await jobQueueService.retryQueueItem(id)
+
+    if (!success) {
+      const err = ERROR_CODES.NOT_FOUND
+      res.status(err.status).json({
+        success: false,
+        error: "NOT_FOUND_OR_INVALID_STATUS",
+        errorCode: err.code,
+        message: "Queue item not found or status is not 'failed'",
+        requestId,
+      })
+      return
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message: "Queue item reset to pending for retry",
+        queueItemId: id,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to retry queue item", {
+      error,
+      requestId,
+      queueItemId: id,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * DELETE /queue/:id - Delete queue item (auth required)
+ */
+async function handleDeleteQueueItem(
+  req: AuthenticatedRequest,
+  res: Response,
+  requestId: string,
+  id: string
+): Promise<void> {
+  try {
+    logger.info("Deleting queue item", {
+      requestId,
+      queueItemId: id,
+      userEmail: req.user!.email,
+    })
+
+    const success = await jobQueueService.deleteQueueItem(id)
+
+    if (!success) {
+      const err = ERROR_CODES.NOT_FOUND
+      res.status(err.status).json({
+        success: false,
+        error: "NOT_FOUND",
+        errorCode: err.code,
+        message: "Queue item not found",
+        requestId,
+      })
+      return
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message: "Queue item deleted successfully",
+        queueItemId: id,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to delete queue item", {
+      error,
+      requestId,
+      queueItemId: id,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /config/ai-settings - Get AI settings (auth required)
+ */
+async function handleGetAISettings(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    logger.info("Getting AI settings", {
+      requestId,
+      userEmail: req.user?.email || "anonymous",
+    })
+
+    const settings = await jobQueueService.getAISettings()
+
+    res.status(200).json({
+      success: true,
+      data: settings,
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to get AI settings", {
+      error,
+      requestId,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * PUT /config/ai-settings - Update AI settings (auth required)
+ */
+async function handleUpdateAISettings(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Validate request body
+    const { error, value } = updateAISettingsSchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for AI settings update", {
+        error: error.details,
+        requestId,
+        body: req.body,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    const userEmail = req.user!.email
+
+    logger.info("Updating AI settings", {
+      requestId,
+      userEmail,
+    })
+
+    const settings = await jobQueueService.updateAISettings(value, userEmail)
+
+    res.status(200).json({
+      success: true,
+      data: settings,
+      message: "AI settings updated successfully",
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to update AI settings", {
+      error,
+      requestId,
+      userEmail: req.user?.email,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /config/queue-settings - Get queue settings (auth required)
+ */
+async function handleGetQueueSettings(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    logger.info("Getting queue settings", {
+      requestId,
+      userEmail: req.user?.email || "anonymous",
+    })
+
+    const settings = await jobQueueService.getPublicQueueSettings()
+
+    res.status(200).json({
+      success: true,
+      data: settings,
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to get queue settings", {
+      error,
+      requestId,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * PUT /config/queue-settings - Update queue settings (auth required)
+ */
+async function handleUpdateQueueSettings(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Validate request body
+    const { error, value } = updateQueueSettingsSchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for queue settings update", {
+        error: error.details,
+        requestId,
+        body: req.body,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    const userEmail = req.user!.email
+
+    logger.info("Updating queue settings", {
+      requestId,
+      userEmail,
+    })
+
+    const settings = await jobQueueService.updateQueueSettings(value, userEmail)
+
+    res.status(200).json({
+      success: true,
+      data: settings,
+      message: "Queue settings updated successfully",
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to update queue settings", {
+      error,
+      requestId,
+      userEmail: req.user?.email,
     })
 
     const err = ERROR_CODES.FIRESTORE_ERROR

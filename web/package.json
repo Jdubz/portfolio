@@ -61,6 +61,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@emotion/react": "^11.14.0",
+    "@jdubz/shared-types": "file:../../shared-types",
     "@mdx-js/react": "^3.1.1",
     "@react-spring/parallax": "^10.0.3",
     "@theme-ui/mdx": "^0.17.2",
