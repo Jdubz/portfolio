@@ -33,6 +33,7 @@ jobs:
     outputs:
       contact-form: ${{ steps.changes.outputs.contact-form }}
       experience: ${{ steps.changes.outputs.experience }}
+      content-items: ${{ steps.changes.outputs.content-items }}
       generator: ${{ steps.changes.outputs.generator }}
       resume: ${{ steps.changes.outputs.resume }}
       any-changed: ${{ steps.changes.outputs.any-changed }}
@@ -66,6 +67,7 @@ jobs:
           # Check if shared code or specific function changed
           CONTACT_FORM_CHANGED=false
           EXPERIENCE_CHANGED=false
+          CONTENT_ITEMS_CHANGED=false
           GENERATOR_CHANGED=false
           RESUME_CHANGED=false
           ANY_CHANGED=false
@@ -75,6 +77,7 @@ jobs:
             echo "Shared code changed - all functions need redeployment"
             CONTACT_FORM_CHANGED=true
             EXPERIENCE_CHANGED=true
+            CONTENT_ITEMS_CHANGED=true
             GENERATOR_CHANGED=true
             RESUME_CHANGED=true
             ANY_CHANGED=true
@@ -88,6 +91,11 @@ jobs:
 
           if echo "$CHANGED_FILES" | grep -qE "^functions/src/(experience\.ts|services/experience)"; then
             EXPERIENCE_CHANGED=true
+            ANY_CHANGED=true
+          fi
+
+          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(content-items\.ts|services/content-item)"; then
+            CONTENT_ITEMS_CHANGED=true
             ANY_CHANGED=true
           fi
 
@@ -106,6 +114,7 @@ jobs:
             echo "Workflow changed - all functions need redeployment"
             CONTACT_FORM_CHANGED=true
             EXPERIENCE_CHANGED=true
+            CONTENT_ITEMS_CHANGED=true
             GENERATOR_CHANGED=true
             RESUME_CHANGED=true
             ANY_CHANGED=true
@@ -113,6 +122,7 @@ jobs:
 
           echo "contact-form=$CONTACT_FORM_CHANGED" >> $GITHUB_OUTPUT
           echo "experience=$EXPERIENCE_CHANGED" >> $GITHUB_OUTPUT
+          echo "content-items=$CONTENT_ITEMS_CHANGED" >> $GITHUB_OUTPUT
           echo "generator=$GENERATOR_CHANGED" >> $GITHUB_OUTPUT
           echo "resume=$RESUME_CHANGED" >> $GITHUB_OUTPUT
           echo "any-changed=$ANY_CHANGED" >> $GITHUB_OUTPUT
@@ -120,6 +130,7 @@ jobs:
           echo "Results:"
           echo "  contact-form: $CONTACT_FORM_CHANGED"
           echo "  experience: $EXPERIENCE_CHANGED"
+          echo "  content-items: $CONTENT_ITEMS_CHANGED"
           echo "  generator: $GENERATOR_CHANGED"
           echo "  resume: $RESUME_CHANGED"
           echo "  any-changed: $ANY_CHANGED"
@@ -212,6 +223,13 @@ jobs:
             max_instances: 10
             secrets: ""
             changed: ${{ needs.detect-changes.outputs.experience }}
+          - name: manageContentItems
+            entry_point: manageContentItems
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 256Mi
+            max_instances: 10
+            secrets: ""
+            changed: ${{ needs.detect-changes.outputs.content-items }}
           - name: manageGenerator
             entry_point: manageGenerator
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
@@ -355,6 +373,13 @@ jobs:
             max_instances: 10
             secrets: ""
             changed: ${{ needs.detect-changes.outputs.experience }}
+          - name: manageContentItems
+            entry_point: manageContentItems
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 256Mi
+            max_instances: 10
+            secrets: ""
+            changed: ${{ needs.detect-changes.outputs.content-items }}
           - name: manageGenerator
             entry_point: manageGenerator
             runtime_service_account: 789847666726-compute@developer.gserviceaccount.com

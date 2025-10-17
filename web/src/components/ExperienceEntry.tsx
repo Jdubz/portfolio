@@ -29,12 +29,14 @@ export const ExperienceEntry: React.FC<ExperienceEntryProps> = ({ entry, isEdito
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [editData, setEditData] = useState<UpdateExperienceData & {
-    summary?: string
-    accomplishments?: string[]
-    technologies?: string[]
-    projects?: ExperienceEntryType["projects"]
-  }>({
+  const [editData, setEditData] = useState<
+    UpdateExperienceData & {
+      summary?: string
+      accomplishments?: string[]
+      technologies?: string[]
+      projects?: ExperienceEntryType["projects"]
+    }
+  >({
     title: entry.title,
     role: entry.role,
     location: entry.location,

@@ -10,6 +10,8 @@ export const API_CONFIG = {
   projectId: "static-sites-257923",
   region: "us-central1",
   functionName: "manageExperience",
+  contentItemsFunctionName: "manageContentItems",
+  uploadResumeFunctionName: "uploadResume",
   emulatorPort: 5001,
   defaultEmulatorHost: "localhost",
 } as const
@@ -79,6 +81,25 @@ export const API_ENDPOINTS = {
 export type ApiEndpoint = (typeof API_ENDPOINTS)[keyof typeof API_ENDPOINTS]
 
 /**
+ * Get the content-items API base URL based on environment
+ *
+ * @returns Base URL for content-items API requests
+ */
+export const getContentItemsApiUrl = (): string => {
+  // Use emulator in local development (runtime hostname check)
+  if (isLocalhost()) {
+    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
+    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/${API_CONFIG.contentItemsFunctionName}`
+  }
+
+  // Production/staging URL from env var (baked in at build time)
+  return (
+    process.env.GATSBY_CONTENT_ITEMS_API_URL ??
+    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.contentItemsFunctionName}`
+  )
+}
+
+/**
  * Get full URL for a specific endpoint
  *
  * @param endpoint - Optional endpoint name to append to base URL
@@ -87,4 +108,22 @@ export type ApiEndpoint = (typeof API_ENDPOINTS)[keyof typeof API_ENDPOINTS]
 export const getEndpointUrl = (endpoint?: string): string => {
   const baseUrl = getApiUrl()
   return endpoint ? `${baseUrl}/${endpoint}` : baseUrl
+}
+
+/**
+ * Get the upload resume API URL based on environment
+ *
+ * @returns URL for resume upload endpoint
+ */
+export const getUploadResumeUrl = (): string => {
+  // Production/staging URL from env var (baked in at build time)
+  const envUrl =
+    process.env.GATSBY_ENVIRONMENT === "production"
+      ? process.env.GATSBY_UPLOAD_RESUME_URL_PROD
+      : process.env.GATSBY_UPLOAD_RESUME_URL_DEV
+
+  return (
+    envUrl ??
+    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.uploadResumeFunctionName}`
+  )
 }

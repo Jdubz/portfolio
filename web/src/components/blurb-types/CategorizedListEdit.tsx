@@ -100,11 +100,7 @@ export const CategorizedListEdit: React.FC<CategorizedListEditProps> = ({ data, 
             <Heading as="h4" sx={{ fontSize: 3 }}>
               Category {catIdx + 1}
             </Heading>
-            <Button
-              type="button"
-              variant="danger.sm"
-              onClick={() => handleRemoveCategory(catIdx)}
-            >
+            <Button type="button" variant="danger.sm" onClick={() => handleRemoveCategory(catIdx)}>
               Remove Category
             </Button>
           </Flex>
@@ -141,11 +137,7 @@ export const CategorizedListEdit: React.FC<CategorizedListEditProps> = ({ data, 
                   </Button>
                 </Flex>
               ))}
-              <Button
-                type="button"
-                variant="secondary.sm"
-                onClick={() => handleAddSkill(catIdx)}
-              >
+              <Button type="button" variant="secondary.sm" onClick={() => handleAddSkill(catIdx)}>
                 + Add Skill
               </Button>
             </Box>

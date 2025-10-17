@@ -36,11 +36,7 @@ export const ProjectShowcaseEdit: React.FC<ProjectShowcaseEditProps> = ({ data, 
     })
   }
 
-  const handleUpdateProject = (
-    index: number,
-    field: "name" | "description",
-    value: string
-  ) => {
+  const handleUpdateProject = (index: number, field: "name" | "description", value: string) => {
     const newProjects = [...projects]
     newProjects[index] = { ...newProjects[index], [field]: value }
     onChange({
@@ -117,12 +113,7 @@ export const ProjectShowcaseEdit: React.FC<ProjectShowcaseEditProps> = ({ data, 
     })
   }
 
-  const handleUpdateLink = (
-    projectIndex: number,
-    linkIndex: number,
-    field: "label" | "url",
-    value: string
-  ) => {
+  const handleUpdateLink = (projectIndex: number, linkIndex: number, field: "label" | "url", value: string) => {
     const newProjects = [...projects]
     const links = [...(newProjects[projectIndex].links || [])]
     links[linkIndex] = { ...links[linkIndex], [field]: value }
@@ -152,11 +143,7 @@ export const ProjectShowcaseEdit: React.FC<ProjectShowcaseEditProps> = ({ data, 
             <Heading as="h4" sx={{ fontSize: 3 }}>
               Project {projectIdx + 1}
             </Heading>
-            <Button
-              type="button"
-              variant="danger.sm"
-              onClick={() => handleRemoveProject(projectIdx)}
-            >
+            <Button type="button" variant="danger.sm" onClick={() => handleRemoveProject(projectIdx)}>
               Remove Project
             </Button>
           </Flex>
@@ -201,11 +188,7 @@ export const ProjectShowcaseEdit: React.FC<ProjectShowcaseEditProps> = ({ data, 
                   </Button>
                 </Flex>
               ))}
-              <Button
-                type="button"
-                variant="secondary.sm"
-                onClick={() => handleAddTech(projectIdx)}
-              >
+              <Button type="button" variant="secondary.sm" onClick={() => handleAddTech(projectIdx)}>
                 + Add Technology
               </Button>
             </Box>
@@ -242,11 +225,7 @@ export const ProjectShowcaseEdit: React.FC<ProjectShowcaseEditProps> = ({ data, 
                   </Button>
                 </Flex>
               ))}
-              <Button
-                type="button"
-                variant="secondary.sm"
-                onClick={() => handleAddLink(projectIdx)}
-              >
+              <Button type="button" variant="secondary.sm" onClick={() => handleAddLink(projectIdx)}>
                 + Add Link
               </Button>
             </Box>

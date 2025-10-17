@@ -320,10 +320,7 @@ export const WorkExperienceTab: React.FC<WorkExperienceTabProps> = ({ isEditor, 
           {/* Remaining Blurbs (after experience) - sorted by order field */}
           {isEditor && otherBlurbs.length > 0 && (
             <Box sx={{ mb: 3 }}>
-              <Button
-                variant="secondary.sm"
-                onClick={() => setShowReorderBlurbsModal(true)}
-              >
+              <Button variant="secondary.sm" onClick={() => setShowReorderBlurbsModal(true)}>
                 ⇅ Reorder Sections ({otherBlurbs.length})
               </Button>
             </Box>

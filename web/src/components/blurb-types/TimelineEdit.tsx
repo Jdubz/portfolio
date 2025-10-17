@@ -68,11 +68,7 @@ export const TimelineEdit: React.FC<TimelineEditProps> = ({ data, onChange }) =>
             <Heading as="h4" sx={{ fontSize: 3 }}>
               Item {idx + 1}
             </Heading>
-            <Button
-              type="button"
-              variant="danger.sm"
-              onClick={() => handleRemoveItem(idx)}
-            >
+            <Button type="button" variant="danger.sm" onClick={() => handleRemoveItem(idx)}>
               Remove Item
             </Button>
           </Flex>

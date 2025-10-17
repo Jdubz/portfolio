@@ -53,12 +53,7 @@ export const SimpleEntryEdit: React.FC<SimpleEntryEditProps> = ({ data, onChange
                 placeholder="Technology, framework, or tool"
               />
             </Box>
-            <Button
-              type="button"
-              variant="danger.sm"
-              onClick={() => handleRemoveTech(idx)}
-              sx={{ flexShrink: 0 }}
-            >
+            <Button type="button" variant="danger.sm" onClick={() => handleRemoveTech(idx)} sx={{ flexShrink: 0 }}>
               Remove
             </Button>
           </Flex>

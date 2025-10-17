@@ -101,11 +101,7 @@ export const StructuredEntryEdit: React.FC<StructuredEntryEditProps> = ({ data, 
     })
   }
 
-  const handleUpdateProject = (
-    index: number,
-    field: "name" | "description",
-    value: string
-  ) => {
+  const handleUpdateProject = (index: number, field: "name" | "description", value: string) => {
     const projects = [...(structuredData.projects || [])]
     projects[index] = { ...projects[index], [field]: value }
     onChange({
@@ -141,11 +137,7 @@ export const StructuredEntryEdit: React.FC<StructuredEntryEditProps> = ({ data, 
     })
   }
 
-  const handleUpdateProjectTech = (
-    projectIndex: number,
-    techIndex: number,
-    value: string
-  ) => {
+  const handleUpdateProjectTech = (projectIndex: number, techIndex: number, value: string) => {
     const projects = [...(structuredData.projects || [])]
     const technologies = [...(projects[projectIndex].technologies || [])]
     technologies[techIndex] = value
@@ -186,11 +178,7 @@ export const StructuredEntryEdit: React.FC<StructuredEntryEditProps> = ({ data, 
     })
   }
 
-  const handleUpdateProjectChallenge = (
-    projectIndex: number,
-    challengeIndex: number,
-    value: string
-  ) => {
+  const handleUpdateProjectChallenge = (projectIndex: number, challengeIndex: number, value: string) => {
     const projects = [...(structuredData.projects || [])]
     const challenges = [...(projects[projectIndex].challenges || [])]
     challenges[challengeIndex] = value
@@ -262,12 +250,7 @@ export const StructuredEntryEdit: React.FC<StructuredEntryEditProps> = ({ data, 
                 placeholder="Technology, framework, or tool"
               />
             </Box>
-            <Button
-              type="button"
-              variant="danger.sm"
-              onClick={() => handleRemoveTech(idx)}
-              sx={{ flexShrink: 0 }}
-            >
+            <Button type="button" variant="danger.sm" onClick={() => handleRemoveTech(idx)} sx={{ flexShrink: 0 }}>
               Remove
             </Button>
           </Flex>
@@ -294,11 +277,7 @@ export const StructuredEntryEdit: React.FC<StructuredEntryEditProps> = ({ data, 
           >
             <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
               <Text sx={{ fontSize: 2, fontWeight: "bold" }}>Project {projIdx + 1}</Text>
-              <Button
-                type="button"
-                variant="danger.sm"
-                onClick={() => handleRemoveProject(projIdx)}
-              >
+              <Button type="button" variant="danger.sm" onClick={() => handleRemoveProject(projIdx)}>
                 Remove Project
               </Button>
             </Flex>
@@ -333,9 +312,7 @@ export const StructuredEntryEdit: React.FC<StructuredEntryEditProps> = ({ data, 
                       label=""
                       name={`project-${projIdx}-tech-${techIdx}`}
                       value={tech}
-                      onChange={(value) =>
-                        handleUpdateProjectTech(projIdx, techIdx, value)
-                      }
+                      onChange={(value) => handleUpdateProjectTech(projIdx, techIdx, value)}
                       placeholder="Technology"
                     />
                   </Box>
@@ -361,9 +338,7 @@ export const StructuredEntryEdit: React.FC<StructuredEntryEditProps> = ({ data, 
 
             {/* Project Challenges */}
             <Box>
-              <Text sx={{ fontSize: 1, fontWeight: "bold", mb: 2 }}>
-                Technical Challenges
-              </Text>
+              <Text sx={{ fontSize: 1, fontWeight: "bold", mb: 2 }}>Technical Challenges</Text>
               {(project.challenges || []).map((challenge, chalIdx) => (
                 <Flex key={chalIdx} sx={{ gap: 2, mb: 2, alignItems: "flex-start" }}>
                   <Box sx={{ flex: 1 }}>
@@ -371,9 +346,7 @@ export const StructuredEntryEdit: React.FC<StructuredEntryEditProps> = ({ data, 
                       label=""
                       name={`project-${projIdx}-challenge-${chalIdx}`}
                       value={challenge}
-                      onChange={(value) =>
-                        handleUpdateProjectChallenge(projIdx, chalIdx, value)
-                      }
+                      onChange={(value) => handleUpdateProjectChallenge(projIdx, chalIdx, value)}
                       type="textarea"
                       rows={2}
                       placeholder="Technical challenge and how you solved it"
