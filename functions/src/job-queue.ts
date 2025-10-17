@@ -2,7 +2,11 @@ import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
 import Joi from "joi"
 import { JobQueueService } from "./services/job-queue.service"
-import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
+import {
+  verifyAuthenticatedEditor,
+  verifyAuthenticatedUser,
+  type AuthenticatedRequest,
+} from "./middleware/auth.middleware"
 import { logger } from "./utils/logger"
 import { generateRequestId } from "./utils/request-id"
 import { corsHandler } from "./config/cors"
@@ -43,17 +47,17 @@ const updateQueueSettingsSchema = Joi.object({
  *
  * Routes:
  * - GET    /health                  - Health check (public)
- * - POST   /submit                  - Submit job to queue (auth required)
- * - GET    /status/:id              - Get queue item status (auth required, owner check)
- * - POST   /retry/:id               - Retry failed queue item (auth required)
- * - DELETE /queue/:id               - Delete queue item (auth required)
- * - GET    /config/stop-list        - Get stop list (auth required)
- * - PUT    /config/stop-list        - Update stop list (auth required)
- * - GET    /config/ai-settings      - Get AI settings (auth required)
- * - PUT    /config/ai-settings      - Update AI settings (auth required)
- * - GET    /config/queue-settings   - Get queue settings (auth required)
- * - PUT    /config/queue-settings   - Update queue settings (auth required)
- * - GET    /stats                   - Get queue statistics (auth required)
+ * - POST   /submit                  - Submit job to queue (any authenticated user)
+ * - GET    /status/:id              - Get queue item status (any authenticated user, owner check)
+ * - POST   /retry/:id               - Retry failed queue item (editor only)
+ * - DELETE /queue/:id               - Delete queue item (editor only)
+ * - GET    /config/stop-list        - Get stop list (editor only)
+ * - PUT    /config/stop-list        - Update stop list (editor only)
+ * - GET    /config/ai-settings      - Get AI settings (editor only)
+ * - PUT    /config/ai-settings      - Update AI settings (editor only)
+ * - GET    /config/queue-settings   - Get queue settings (editor only)
+ * - PUT    /config/queue-settings   - Update queue settings (editor only)
+ * - GET    /stats                   - Get queue statistics (any authenticated user)
  */
 const handleJobQueueRequest = async (req: Request, res: Response): Promise<void> => {
   const requestId = generateRequestId()
@@ -86,28 +90,48 @@ const handleJobQueueRequest = async (req: Request, res: Response): Promise<void>
             return
           }
 
-          // All other routes require authentication
+          // Routes accessible to any authenticated user (viewers + editors)
+          const viewerRoutes = ["/submit", "/stats"].some((route) => path === route) || path.startsWith("/status/")
+
+          if (viewerRoutes) {
+            // Verify any authenticated user
+            await new Promise<void>((resolveAuth, rejectAuth) => {
+              verifyAuthenticatedUser(logger)(req as AuthenticatedRequest, res, (err) => {
+                if (err) rejectAuth(err)
+                else resolveAuth()
+              })
+            })
+
+            // Route: POST /submit - Submit job to queue
+            if (req.method === "POST" && path === "/submit") {
+              await handleSubmitJob(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+
+            // Route: GET /status/:id - Get queue item status
+            if (req.method === "GET" && path.startsWith("/status/")) {
+              const id = path.replace("/status/", "")
+              await handleGetQueueStatus(req as AuthenticatedRequest, res, requestId, id)
+              resolve()
+              return
+            }
+
+            // Route: GET /stats - Get queue statistics
+            if (req.method === "GET" && path === "/stats") {
+              await handleGetStats(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+          }
+
+          // All other routes require editor role
           await new Promise<void>((resolveAuth, rejectAuth) => {
             verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
               if (err) rejectAuth(err)
               else resolveAuth()
             })
           })
-
-          // Route: POST /submit - Submit job to queue
-          if (req.method === "POST" && path === "/submit") {
-            await handleSubmitJob(req as AuthenticatedRequest, res, requestId)
-            resolve()
-            return
-          }
-
-          // Route: GET /status/:id - Get queue item status
-          if (req.method === "GET" && path.startsWith("/status/")) {
-            const id = path.replace("/status/", "")
-            await handleGetQueueStatus(req as AuthenticatedRequest, res, requestId, id)
-            resolve()
-            return
-          }
 
           // Route: GET /config/stop-list - Get stop list
           if (req.method === "GET" && path === "/config/stop-list") {
@@ -119,13 +143,6 @@ const handleJobQueueRequest = async (req: Request, res: Response): Promise<void>
           // Route: PUT /config/stop-list - Update stop list
           if (req.method === "PUT" && path === "/config/stop-list") {
             await handleUpdateStopList(req as AuthenticatedRequest, res, requestId)
-            resolve()
-            return
-          }
-
-          // Route: GET /stats - Get queue statistics
-          if (req.method === "GET" && path === "/stats") {
-            await handleGetStats(req as AuthenticatedRequest, res, requestId)
             resolve()
             return
           }

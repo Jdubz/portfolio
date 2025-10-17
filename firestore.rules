@@ -46,9 +46,16 @@ service cloud.firestore {
       allow read, write: if isEditor();
     }
 
-    // Job queue - editor-only read/write
+    // Job queue - viewers can read their own submissions, editors can read/write all
     match /job-queue/{queueItemId} {
-      allow read, write: if isEditor();
+      // Viewers can read their own queue items
+      allow read: if isAuthenticated() && (
+        resource.data.submitted_by == request.auth.uid || isEditor()
+      );
+      // Viewers can create new queue items
+      allow create: if isAuthenticated() && request.resource.data.submitted_by == request.auth.uid;
+      // Only editors can update or delete
+      allow update, delete: if isEditor();
     }
 
     // Job finder configuration - editor-only read/write

@@ -228,6 +228,158 @@ export function verifyAuthenticatedEditor(logger?: SimpleLogger) {
 }
 
 /**
+ * Middleware to verify any authenticated user (viewer or editor)
+ *
+ * Usage:
+ *   app.post('/protected-route', verifyAuthenticatedUser, handler)
+ *
+ * Sets req.user with { uid, email, email_verified } if authenticated
+ */
+export function verifyAuthenticatedUser(logger?: SimpleLogger) {
+  // Use shared logger factory
+  const log = logger || createDefaultLogger()
+
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    const requestId = (req as Request & { requestId?: string }).requestId || "unknown"
+
+    try {
+      // Extract Authorization header
+      const authHeader = req.headers.authorization
+
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        log.warning("Missing or invalid Authorization header", {
+          requestId,
+          headers: req.headers,
+        })
+
+        const err = AUTH_ERROR_CODES.UNAUTHORIZED
+        res.status(err.status).json({
+          success: false,
+          error: "UNAUTHORIZED",
+          errorCode: err.code,
+          message: err.message,
+          requestId,
+        })
+        return
+      }
+
+      // Extract token
+      const idToken = authHeader.split("Bearer ")[1]
+
+      if (!idToken) {
+        log.warning("Empty bearer token", { requestId })
+
+        const err = AUTH_ERROR_CODES.UNAUTHORIZED
+        res.status(err.status).json({
+          success: false,
+          error: "UNAUTHORIZED",
+          errorCode: err.code,
+          message: err.message,
+          requestId,
+        })
+        return
+      }
+
+      // Verify token with Firebase Admin SDK
+      let decodedToken: auth.DecodedIdToken
+      try {
+        decodedToken = await auth().verifyIdToken(idToken)
+      } catch (tokenError) {
+        const errorMessage = tokenError instanceof Error ? tokenError.message : String(tokenError)
+
+        // Check if token is expired
+        const isExpired = errorMessage.includes("expired")
+
+        log.warning("Token verification failed", {
+          requestId,
+          error: errorMessage,
+          isExpired,
+        })
+
+        const err = isExpired ? AUTH_ERROR_CODES.TOKEN_EXPIRED : AUTH_ERROR_CODES.INVALID_TOKEN
+        res.status(err.status).json({
+          success: false,
+          error: isExpired ? "TOKEN_EXPIRED" : "INVALID_TOKEN",
+          errorCode: err.code,
+          message: err.message,
+          requestId,
+        })
+        return
+      }
+
+      // Extract user info
+      const { uid, email, email_verified } = decodedToken
+
+      if (!email) {
+        log.warning("Token missing email claim", {
+          requestId,
+          uid,
+        })
+
+        const err = AUTH_ERROR_CODES.INVALID_TOKEN
+        res.status(err.status).json({
+          success: false,
+          error: "INVALID_TOKEN",
+          errorCode: err.code,
+          message: "Token missing email claim",
+          requestId,
+        })
+        return
+      }
+
+      // Check if email is verified
+      if (!email_verified) {
+        log.warning("Email not verified", {
+          requestId,
+          email,
+          uid,
+        })
+
+        const err = AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED
+        res.status(err.status).json({
+          success: false,
+          error: "EMAIL_NOT_VERIFIED",
+          errorCode: err.code,
+          message: err.message,
+          requestId,
+        })
+        return
+      }
+
+      // Attach user info to request (no role check - any authenticated user is allowed)
+      req.user = {
+        uid,
+        email,
+        email_verified,
+      }
+
+      log.info("User authenticated successfully", {
+        requestId,
+        email,
+        uid,
+        role: decodedToken.role || "viewer",
+      })
+
+      // Continue to next middleware/handler
+      next()
+    } catch (error) {
+      log.error("Unexpected error in auth middleware", {
+        error,
+        requestId,
+      })
+
+      res.status(500).json({
+        success: false,
+        error: "INTERNAL_ERROR",
+        errorCode: "EXP_SYS_001",
+        message: "An unexpected error occurred",
+        requestId,
+      })
+    }
+  }
+}
+
+/**
  * Optional auth check - verifies token if present but doesn't reject if missing
  *
  * Usage:
