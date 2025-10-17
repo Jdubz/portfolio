@@ -1,10 +1,11 @@
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Flex } from "theme-ui"
+import { Box, Text, Button, Flex, Heading } from "theme-ui"
 import { ScrapeConfigModal } from "../ScrapeConfigModal"
 import { jobQueueClient } from "../../api/job-queue-client"
 import { useAuth } from "../../hooks/useAuth"
 import type { ScrapeConfig } from "../../types/job-queue"
 import { logger } from "../../utils/logger"
+import { TabHeader, InfoBox } from "../ui"
 
 /**
  * Scraping Tab
@@ -76,38 +77,38 @@ export const ScrapingTab: React.FC = () => {
 
   return (
     <Box>
-      <Heading as="h2" sx={{ fontSize: 4, mb: 3 }}>
-        Job Scraping
-      </Heading>
-
-      <Text sx={{ color: "textMuted", mb: 4, fontSize: 2 }}>
-        Trigger automated job scraping to discover new opportunities. The scraper will search configured job boards,
-        analyze positions with AI, and save matches above your threshold.
-      </Text>
+      <TabHeader
+        title="Job Scraping"
+        description="Trigger automated job scraping to discover new opportunities. The scraper will search configured job boards, analyze positions with AI, and save matches above your threshold."
+      />
 
       {/* Status Messages */}
       {error && (
-        <Box sx={{ p: 3, bg: "danger", color: "background", borderRadius: "md", mb: 3 }}>
-          <Text sx={{ fontWeight: "medium" }}>{error}</Text>
+        <Box sx={{ mb: 3 }}>
+          <InfoBox variant="danger">{error}</InfoBox>
         </Box>
       )}
 
       {success && (
-        <Box sx={{ variant: "cards.primary", p: 3, mb: 4, borderLeft: "4px solid", borderColor: "success" }}>
-          <Text sx={{ fontWeight: "medium", mb: 2 }}>{success}</Text>
-          <Text sx={{ fontSize: 1, color: "textMuted" }}>
-            View scrape progress in the{" "}
-            <a href="/resume-builder?tab=scrape-history" style={{ textDecoration: "underline", color: "inherit" }}>
-              Scrape History
-            </a>{" "}
-            tab.
-          </Text>
+        <Box sx={{ mb: 4 }}>
+          <InfoBox variant="success">
+            <Box>
+              <Text sx={{ fontWeight: "medium", mb: 2 }}>{success}</Text>
+              <Text sx={{ fontSize: 1 }}>
+                View scrape progress in the{" "}
+                <a href="/resume-builder?tab=scrape-history" style={{ textDecoration: "underline", color: "inherit" }}>
+                  Scrape History
+                </a>{" "}
+                tab.
+              </Text>
+            </Box>
+          </InfoBox>
         </Box>
       )}
 
       {!user && (
-        <Box sx={{ variant: "cards.primary", p: 3, mb: 4, borderLeft: "4px solid", borderColor: "highlight" }}>
-          <Text>Please sign in to trigger job scraping</Text>
+        <Box sx={{ mb: 4 }}>
+          <InfoBox variant="info">Please sign in to trigger job scraping</InfoBox>
         </Box>
       )}
 

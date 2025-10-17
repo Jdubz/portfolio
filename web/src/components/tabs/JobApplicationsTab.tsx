@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from "react"
-import { Box, Heading, Text, Button, Flex, Checkbox, Label, Spinner, Select, Input } from "theme-ui"
+import { Box, Text, Button, Flex, Checkbox, Label, Spinner, Select, Input, Heading } from "theme-ui"
 import { jobMatchClient } from "../../api"
 import type { JobMatch } from "../../types/job-match"
 import type { GenerationRequest } from "../../types/generator"
@@ -19,6 +19,7 @@ import { logger } from "../../utils/logger"
 import { useAuth } from "../../hooks/useAuth"
 import { useDocumentGeneration, buildGenerationOptionsFromJobMatch } from "../../hooks/useDocumentGeneration"
 import { GenerationProgress } from "../GenerationProgress"
+import { TabHeader, LoadingState, EmptyState } from "../ui"
 
 interface JobApplicationsTabProps {
   onViewGeneratedDocs: (request: GenerationRequest) => void
@@ -299,80 +300,36 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
   }
 
   if (authLoading || loading) {
-    return (
-      <Box
-        sx={{
-          textAlign: "center",
-          py: 4,
-          color: "textMuted",
-        }}
-      >
-        Loading job matches...
-      </Box>
-    )
+    return <LoadingState message="Loading job matches..." />
   }
 
   if (!user) {
-    return (
-      <Box
-        sx={{
-          textAlign: "center",
-          py: 4,
-          color: "textMuted",
-        }}
-      >
-        Please sign in to view job applications
-      </Box>
-    )
+    return <EmptyState icon="🔒" message="Please sign in to view job applications" />
   }
 
   if (error) {
-    return (
-      <Box
-        sx={{
-          p: 3,
-          bg: "muted",
-          borderRadius: "8px",
-          color: "red",
-        }}
-      >
-        Error: {error}
-      </Box>
-    )
+    return <EmptyState icon="❌" message={`Error: ${error}`} />
   }
 
   if (jobMatches.length === 0) {
     return (
-      <Box
-        sx={{
-          textAlign: "center",
-          py: 4,
-          color: "textMuted",
-        }}
-      >
-        No job matches yet. Add job matches to your Firestore database to see them here.
-      </Box>
+      <EmptyState
+        icon="📭"
+        message="No job matches yet. Add job matches to your Firestore database to see them here."
+      />
     )
   }
 
   return (
     <Box sx={{ mt: 4 }}>
-      <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Heading as="h2" sx={{ fontSize: 3, color: "primary" }}>
-          Job Applications
-        </Heading>
-        <Button
-          onClick={() => void loadJobMatches()}
-          variant="secondary"
-          sx={{
-            px: 3,
-            py: 2,
-            fontSize: 1,
-          }}
-        >
-          Refresh
-        </Button>
-      </Flex>
+      <TabHeader
+        title="Job Applications"
+        actions={
+          <Button onClick={() => void loadJobMatches()} variant="secondary">
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Sorting and Filtering Controls */}
       <Box

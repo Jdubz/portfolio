@@ -1,8 +1,8 @@
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Flex, Spinner, Grid, Input, Select } from "theme-ui"
+import { Box, Text, Button, Flex, Spinner, Grid, Input, Select } from "theme-ui"
 import { useAuth } from "../../hooks/useAuth"
 import { useQueueManagement } from "../../hooks/useQueueManagement"
-import { StatusBadge } from "../ui/StatusBadge"
+import { TabHeader, LoadingState, EmptyState, StatsGrid, InfoBox, StatusBadge } from "../ui"
 import { ScrapeResultModal } from "../ScrapeResultModal"
 import type { QueueStatus, QueueItem } from "../../types/job-queue"
 import { logger } from "../../utils/logger"
@@ -82,32 +82,25 @@ export const ScrapeHistoryTab: React.FC = () => {
   }
 
   if (authLoading) {
-    return (
-      <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>
-        <Spinner size={32} />
-      </Box>
-    )
+    return <LoadingState />
   }
 
   if (!user) {
-    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Please sign in to view scrape history</Box>
+    return <EmptyState icon="🔒" message="Please sign in to view scrape history" />
   }
 
   return (
     <Box>
-      <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Heading as="h2" sx={{ fontSize: 4 }}>
-          Scrape History
-        </Heading>
-        <Flex sx={{ alignItems: "center", gap: 2 }}>
-          {loading && <Spinner size={16} />}
-          <StatusBadge status="live">Live Updates</StatusBadge>
-        </Flex>
-      </Flex>
-
-      <Text sx={{ color: "textMuted", mb: 4, fontSize: 2 }}>
-        View all your past scrape requests and their results. Updates automatically via Firestore.
-      </Text>
+      <TabHeader
+        title="Scrape History"
+        description="View all your past scrape requests and their results. Updates automatically via Firestore."
+        actions={
+          <>
+            {loading && <Spinner size={16} />}
+            <StatusBadge status="live">Live Updates</StatusBadge>
+          </>
+        }
+      />
 
       {/* Filters */}
       <Box sx={{ variant: "cards.primary", p: 3, mb: 4 }}>
@@ -142,94 +135,38 @@ export const ScrapeHistoryTab: React.FC = () => {
 
       {/* Error Display */}
       {firestoreError && (
-        <Box sx={{ p: 3, bg: "danger", color: "background", borderRadius: "md", mb: 3 }}>
-          <Text sx={{ fontWeight: "medium" }}>{firestoreError}</Text>
+        <Box sx={{ mb: 3 }}>
+          <InfoBox variant="danger">{firestoreError}</InfoBox>
         </Box>
       )}
 
       {/* Stats */}
-      <Grid columns={[2, 2, 4]} gap={3} sx={{ mb: 4 }}>
-        <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text
-            sx={{
-              fontSize: 1,
-              color: "textMuted",
-              mb: 2,
-              fontWeight: "medium",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Total Scrapes
-          </Text>
-          <Text sx={{ fontSize: 5, fontWeight: "bold" }}>{scrapeItems.length}</Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text
-            sx={{
-              fontSize: 1,
-              color: "textMuted",
-              mb: 2,
-              fontWeight: "medium",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Active
-          </Text>
-          <Text sx={{ fontSize: 5, fontWeight: "bold", color: "orange" }}>
-            {scrapeItems.filter((i) => i.status === "pending" || i.status === "processing").length}
-          </Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text
-            sx={{
-              fontSize: 1,
-              color: "textMuted",
-              mb: 2,
-              fontWeight: "medium",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Completed
-          </Text>
-          <Text sx={{ fontSize: 5, fontWeight: "bold", color: "success" }}>
-            {scrapeItems.filter((i) => i.status === "success").length}
-          </Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text
-            sx={{
-              fontSize: 1,
-              color: "textMuted",
-              mb: 2,
-              fontWeight: "medium",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Failed
-          </Text>
-          <Text sx={{ fontSize: 5, fontWeight: "bold", color: "danger" }}>
-            {scrapeItems.filter((i) => i.status === "failed").length}
-          </Text>
-        </Box>
-      </Grid>
+      <StatsGrid
+        columns={[2, 2, 4]}
+        stats={[
+          { label: "Total Scrapes", value: scrapeItems.length },
+          {
+            label: "Active",
+            value: scrapeItems.filter((i) => i.status === "pending" || i.status === "processing").length,
+            color: "orange",
+          },
+          { label: "Completed", value: scrapeItems.filter((i) => i.status === "success").length, color: "success" },
+          { label: "Failed", value: scrapeItems.filter((i) => i.status === "failed").length, color: "danger" },
+        ]}
+      />
 
       {/* Scrape Items List */}
       {loading && scrapeItems.length === 0 ? (
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <Spinner size={32} />
-        </Box>
+        <LoadingState />
       ) : sortedItems.length === 0 ? (
-        <Box sx={{ variant: "cards.primary", p: 4, textAlign: "center" }}>
-          <Text sx={{ color: "textMuted" }}>
-            {searchQuery || filterStatus !== "all"
+        <EmptyState
+          icon="📭"
+          message={
+            searchQuery || filterStatus !== "all"
               ? "No scrapes match your filters"
-              : "No scrape history found. Start your first scrape from the Job Scraping tab!"}
-          </Text>
-        </Box>
+              : "No scrape history found. Start your first scrape from the Job Scraping tab!"
+          }
+        />
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {sortedItems.map((item) => {

@@ -5,12 +5,12 @@
  */
 
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Flex, Spinner, Grid, Input, Select } from "theme-ui"
+import { Box, Text, Button, Flex, Spinner, Grid, Input, Select } from "theme-ui"
 import { useAuth } from "../../hooks/useAuth"
 import { useQueueManagement } from "../../hooks/useQueueManagement"
 import { jobQueueClient } from "../../api"
 import { logger } from "../../utils/logger"
-import { StatusBadge } from "../ui/StatusBadge"
+import { TabHeader, LoadingState, EmptyState, StatsGrid, InfoBox, StatusBadge } from "../ui"
 import type { QueueStatus } from "../../types/job-queue"
 
 export const QueueManagementTab: React.FC = () => {
@@ -91,11 +91,11 @@ export const QueueManagementTab: React.FC = () => {
   }
 
   if (authLoading) {
-    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Loading...</Box>
+    return <LoadingState />
   }
 
   if (!user) {
-    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Please sign in to access queue management</Box>
+    return <EmptyState icon="🔒" message="Please sign in to access queue management" />
   }
 
   // Display combined error from Firestore or operations
@@ -103,19 +103,16 @@ export const QueueManagementTab: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: "1200px", mx: "auto" }}>
-      <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Heading as="h2" sx={{ fontSize: 4 }}>
-          Queue Management
-        </Heading>
-        <Flex sx={{ alignItems: "center", gap: 2 }}>
-          {loading && <Spinner size={16} />}
-          <StatusBadge status="live">Live Updates</StatusBadge>
-        </Flex>
-      </Flex>
-
-      <Text sx={{ color: "textMuted", mb: 4, fontSize: 2 }}>
-        Real-time view of all job queue items. Updates automatically via Firestore listeners.
-      </Text>
+      <TabHeader
+        title="Queue Management"
+        description="Real-time view of all job queue items. Updates automatically via Firestore listeners."
+        actions={
+          <>
+            {loading && <Spinner size={16} />}
+            <StatusBadge status="live">Live Updates</StatusBadge>
+          </>
+        }
+      />
 
       {/* Filters */}
       <Box sx={{ variant: "cards.primary", p: 3, mb: 4 }}>
@@ -151,100 +148,34 @@ export const QueueManagementTab: React.FC = () => {
 
       {/* Error Display */}
       {displayError && (
-        <Box
-          sx={{
-            p: 3,
-            bg: "danger",
-            color: "background",
-            borderRadius: "md",
-            mb: 3,
-          }}
-        >
-          <Text sx={{ fontWeight: "medium" }}>{displayError}</Text>
+        <Box sx={{ mb: 3 }}>
+          <InfoBox variant="danger">{displayError}</InfoBox>
         </Box>
       )}
 
       {/* Queue Stats */}
-      <Grid columns={[2, 2, 4]} gap={3} sx={{ mb: 4 }}>
-        <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text
-            sx={{
-              fontSize: 1,
-              color: "textMuted",
-              mb: 2,
-              fontWeight: "medium",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Total Items
-          </Text>
-          <Text sx={{ fontSize: 5, fontWeight: "bold" }}>{filteredItems.length}</Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text
-            sx={{
-              fontSize: 1,
-              color: "textMuted",
-              mb: 2,
-              fontWeight: "medium",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Pending
-          </Text>
-          <Text sx={{ fontSize: 5, fontWeight: "bold", color: "blue" }}>
-            {filteredItems.filter((i) => i.status === "pending").length}
-          </Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text
-            sx={{
-              fontSize: 1,
-              color: "textMuted",
-              mb: 2,
-              fontWeight: "medium",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Processing
-          </Text>
-          <Text sx={{ fontSize: 5, fontWeight: "bold", color: "orange" }}>
-            {filteredItems.filter((i) => i.status === "processing").length}
-          </Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text
-            sx={{
-              fontSize: 1,
-              color: "textMuted",
-              mb: 2,
-              fontWeight: "medium",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Failed
-          </Text>
-          <Text sx={{ fontSize: 5, fontWeight: "bold", color: "red" }}>
-            {filteredItems.filter((i) => i.status === "failed").length}
-          </Text>
-        </Box>
-      </Grid>
+      <StatsGrid
+        columns={[2, 2, 4]}
+        stats={[
+          { label: "Total Items", value: filteredItems.length },
+          { label: "Pending", value: filteredItems.filter((i) => i.status === "pending").length, color: "blue" },
+          {
+            label: "Processing",
+            value: filteredItems.filter((i) => i.status === "processing").length,
+            color: "orange",
+          },
+          { label: "Failed", value: filteredItems.filter((i) => i.status === "failed").length, color: "red" },
+        ]}
+      />
 
       {/* Queue Items List */}
       {loading && queueItems.length === 0 ? (
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <Spinner size={32} />
-        </Box>
+        <LoadingState />
       ) : filteredItems.length === 0 ? (
-        <Box sx={{ variant: "cards.primary", p: 4, textAlign: "center" }}>
-          <Text sx={{ color: "textMuted" }}>
-            {searchQuery || filterStatus !== "all" ? "No items match your filters" : "No queue items found"}
-          </Text>
-        </Box>
+        <EmptyState
+          icon="📭"
+          message={searchQuery || filterStatus !== "all" ? "No items match your filters" : "No queue items found"}
+        />
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {filteredItems.map((item) => (
@@ -336,12 +267,14 @@ export const QueueManagementTab: React.FC = () => {
               )}
 
               {item.error_details && (
-                <Box sx={{ p: 2, bg: "danger", color: "background", borderRadius: "sm" }}>
-                  <Text sx={{ fontSize: 0, mb: 1, fontWeight: "bold" }}>Error Details</Text>
-                  <Text sx={{ fontSize: 1, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
-                    {item.error_details}
-                  </Text>
-                </Box>
+                <InfoBox variant="danger">
+                  <Box>
+                    <Text sx={{ fontSize: 0, mb: 1, fontWeight: "bold" }}>Error Details</Text>
+                    <Text sx={{ fontSize: 1, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
+                      {item.error_details}
+                    </Text>
+                  </Box>
+                </InfoBox>
               )}
             </Box>
           ))}
