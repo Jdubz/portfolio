@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react"
-import { Box, Button, Flex, Heading, Text, Grid, Spinner } from "theme-ui"
+import { Box, Flex, Heading, Text, Grid } from "theme-ui"
 import { collection, query, where, orderBy, limit as firestoreLimit, getDocs } from "firebase/firestore"
 import { getFirestoreInstance } from "../utils/firestore"
-import { StatusBadge } from "./ui/StatusBadge"
+import { StatusBadge, Modal, ModalHeader, ModalBody, ModalFooter, LoadingState, InfoBox } from "./ui"
 import type { QueueItem } from "../types/job-queue"
 import { logger } from "../utils/logger"
 
@@ -124,7 +124,7 @@ export const SourceDetailModal: React.FC<SourceDetailModalProps> = ({ isOpen, on
     }
   }
 
-  if (!isOpen || !source) {
+  if (!source) {
     return null
   }
 
@@ -135,232 +135,177 @@ export const SourceDetailModal: React.FC<SourceDetailModalProps> = ({ isOpen, on
   const successRate = totalScrapes > 0 ? Math.round((successfulScrapes / totalScrapes) * 100) : 0
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        p: 3,
-      }}
-      onClick={onClose}
-    >
-      <Box
-        sx={{
-          bg: "background",
-          borderRadius: "md",
-          maxWidth: "900px",
-          width: "100%",
-          maxHeight: "90vh",
-          overflow: "auto",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <Flex
-          sx={{
-            justifyContent: "space-between",
-            alignItems: "center",
-            p: 4,
-            borderBottom: "1px solid",
-            borderColor: "muted",
-          }}
-        >
-          <Heading as="h2" sx={{ fontSize: 4 }}>
-            {source.company_name}
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <ModalHeader title={source.company_name} onClose={onClose} />
+
+      <ModalBody>
+        {/* Source Details */}
+        <Box sx={{ mb: 4 }}>
+          <Heading as="h3" sx={{ fontSize: 3, mb: 3 }}>
+            Source Details
           </Heading>
-          <Button variant="secondary" onClick={onClose} sx={{ fontSize: 2 }}>
-            ✕
-          </Button>
-        </Flex>
-
-        {/* Content */}
-        <Box sx={{ p: 4 }}>
-          {/* Source Details */}
-          <Box sx={{ mb: 4 }}>
-            <Heading as="h3" sx={{ fontSize: 3, mb: 3 }}>
-              Source Details
-            </Heading>
-            <Grid columns={[1, 2]} gap={3} sx={{ variant: "cards.primary", p: 3 }}>
+          <Grid columns={[1, 2]} gap={3} sx={{ variant: "cards.primary", p: 3 }}>
+            <Box>
+              <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Status</Text>
+              <Flex sx={{ gap: 2, alignItems: "center" }}>
+                {source.scraping_enabled ? (
+                  <StatusBadge status="success">Enabled</StatusBadge>
+                ) : (
+                  <StatusBadge status="danger">Disabled</StatusBadge>
+                )}
+              </Flex>
+            </Box>
+            {source.priority_tier && (
               <Box>
-                <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Status</Text>
-                <Flex sx={{ gap: 2, alignItems: "center" }}>
-                  {source.scraping_enabled ? (
-                    <StatusBadge status="success">Enabled</StatusBadge>
-                  ) : (
-                    <StatusBadge status="danger">Disabled</StatusBadge>
-                  )}
-                </Flex>
-              </Box>
-              {source.priority_tier && (
-                <Box>
-                  <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Priority Tier</Text>
-                  <Text sx={{ fontSize: 2, fontWeight: "medium" }}>Tier {source.priority_tier.toUpperCase()}</Text>
-                </Box>
-              )}
-              {source.priority_score !== undefined && (
-                <Box>
-                  <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Priority Score</Text>
-                  <Text sx={{ fontSize: 2, fontWeight: "medium" }}>{source.priority_score}</Text>
-                </Box>
-              )}
-              {source.source_type && (
-                <Box>
-                  <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Source Type</Text>
-                  <Text sx={{ fontSize: 2, fontWeight: "medium" }}>{source.source_type}</Text>
-                </Box>
-              )}
-              {source.scrape_frequency_days !== undefined && (
-                <Box>
-                  <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Scrape Frequency</Text>
-                  <Text sx={{ fontSize: 2, fontWeight: "medium" }}>Every {source.scrape_frequency_days} days</Text>
-                </Box>
-              )}
-              {source.last_scraped_at && (
-                <Box>
-                  <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Last Scraped</Text>
-                  <Text sx={{ fontSize: 2, fontWeight: "medium" }}>{formatRelativeDate(source.last_scraped_at)}</Text>
-                </Box>
-              )}
-              {source.careers_page_url && (
-                <Box sx={{ gridColumn: ["1", "1 / -1"] }}>
-                  <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Careers Page URL</Text>
-                  <a
-                    href={source.careers_page_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "inherit", wordBreak: "break-all" }}
-                  >
-                    {source.careers_page_url}
-                  </a>
-                </Box>
-              )}
-            </Grid>
-          </Box>
-
-          {/* Scraping Stats */}
-          <Box sx={{ mb: 4 }}>
-            <Heading as="h3" sx={{ fontSize: 3, mb: 3 }}>
-              Scraping Statistics
-            </Heading>
-            <Grid columns={[2, 4]} gap={3}>
-              <Box sx={{ variant: "cards.primary", p: 3 }}>
-                <Text
-                  sx={{
-                    fontSize: 0,
-                    color: "textMuted",
-                    mb: 1,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  Total Jobs Found
-                </Text>
-                <Text sx={{ fontSize: 4, fontWeight: "bold", color: "primary" }}>{source.total_jobs_found || 0}</Text>
-              </Box>
-              <Box sx={{ variant: "cards.primary", p: 3 }}>
-                <Text
-                  sx={{
-                    fontSize: 0,
-                    color: "textMuted",
-                    mb: 1,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  Total Scrapes
-                </Text>
-                <Text sx={{ fontSize: 4, fontWeight: "bold" }}>{totalScrapes}</Text>
-              </Box>
-              <Box sx={{ variant: "cards.primary", p: 3 }}>
-                <Text
-                  sx={{
-                    fontSize: 0,
-                    color: "textMuted",
-                    mb: 1,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  Success Rate
-                </Text>
-                <Text sx={{ fontSize: 4, fontWeight: "bold", color: "success" }}>{successRate}%</Text>
-              </Box>
-              <Box sx={{ variant: "cards.primary", p: 3 }}>
-                <Text
-                  sx={{
-                    fontSize: 0,
-                    color: "textMuted",
-                    mb: 1,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  Failed Scrapes
-                </Text>
-                <Text sx={{ fontSize: 4, fontWeight: "bold", color: "danger" }}>{failedScrapes}</Text>
-              </Box>
-            </Grid>
-          </Box>
-
-          {/* Scrape History */}
-          <Box>
-            <Heading as="h3" sx={{ fontSize: 3, mb: 3 }}>
-              Recent Scrape History
-            </Heading>
-            {loading ? (
-              <Box sx={{ textAlign: "center", py: 4 }}>
-                <Spinner size={32} />
-              </Box>
-            ) : scrapeHistory.length === 0 ? (
-              <Box sx={{ variant: "cards.primary", p: 3, textAlign: "center" }}>
-                <Text sx={{ color: "textMuted" }}>No scrape history found for this source</Text>
-              </Box>
-            ) : (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {scrapeHistory.map((item) => (
-                  <Box key={item.id} sx={{ variant: "cards.primary", p: 3 }}>
-                    <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                      <Flex sx={{ alignItems: "center", gap: 2 }}>
-                        <StatusBadge status={item.status} />
-                        <Text sx={{ fontSize: 1, color: "textMuted" }}>{formatRelativeDate(item.created_at)}</Text>
-                      </Flex>
-                      <Text sx={{ fontSize: 1, fontFamily: "monospace", color: "textMuted" }}>{item.type}</Text>
-                    </Flex>
-                    {item.result_message && <Text sx={{ fontSize: 1, color: "textMuted" }}>{item.result_message}</Text>}
-                    {item.error_details && (
-                      <Text sx={{ fontSize: 1, color: "danger", fontFamily: "monospace", mt: 1 }}>
-                        {item.error_details}
-                      </Text>
-                    )}
-                  </Box>
-                ))}
+                <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Priority Tier</Text>
+                <Text sx={{ fontSize: 2, fontWeight: "medium" }}>Tier {source.priority_tier.toUpperCase()}</Text>
               </Box>
             )}
-          </Box>
+            {source.priority_score !== undefined && (
+              <Box>
+                <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Priority Score</Text>
+                <Text sx={{ fontSize: 2, fontWeight: "medium" }}>{source.priority_score}</Text>
+              </Box>
+            )}
+            {source.source_type && (
+              <Box>
+                <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Source Type</Text>
+                <Text sx={{ fontSize: 2, fontWeight: "medium" }}>{source.source_type}</Text>
+              </Box>
+            )}
+            {source.scrape_frequency_days !== undefined && (
+              <Box>
+                <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Scrape Frequency</Text>
+                <Text sx={{ fontSize: 2, fontWeight: "medium" }}>Every {source.scrape_frequency_days} days</Text>
+              </Box>
+            )}
+            {source.last_scraped_at && (
+              <Box>
+                <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Last Scraped</Text>
+                <Text sx={{ fontSize: 2, fontWeight: "medium" }}>{formatRelativeDate(source.last_scraped_at)}</Text>
+              </Box>
+            )}
+            {source.careers_page_url && (
+              <Box sx={{ gridColumn: ["1", "1 / -1"] }}>
+                <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Careers Page URL</Text>
+                <a
+                  href={source.careers_page_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "inherit", wordBreak: "break-all" }}
+                >
+                  {source.careers_page_url}
+                </a>
+              </Box>
+            )}
+          </Grid>
         </Box>
 
-        {/* Footer */}
-        <Flex
-          sx={{
-            justifyContent: "flex-end",
-            p: 4,
-            borderTop: "1px solid",
-            borderColor: "muted",
-          }}
-        >
-          <Button variant="secondary" onClick={onClose}>
-            Close
-          </Button>
-        </Flex>
-      </Box>
-    </Box>
+        {/* Scraping Stats */}
+        <Box sx={{ mb: 4 }}>
+          <Heading as="h3" sx={{ fontSize: 3, mb: 3 }}>
+            Scraping Statistics
+          </Heading>
+          <Grid columns={[2, 4]} gap={3}>
+            <Box sx={{ variant: "cards.primary", p: 3 }}>
+              <Text
+                sx={{
+                  fontSize: 0,
+                  color: "textMuted",
+                  mb: 1,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Total Jobs Found
+              </Text>
+              <Text sx={{ fontSize: 4, fontWeight: "bold", color: "primary" }}>{source.total_jobs_found || 0}</Text>
+            </Box>
+            <Box sx={{ variant: "cards.primary", p: 3 }}>
+              <Text
+                sx={{
+                  fontSize: 0,
+                  color: "textMuted",
+                  mb: 1,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Total Scrapes
+              </Text>
+              <Text sx={{ fontSize: 4, fontWeight: "bold" }}>{totalScrapes}</Text>
+            </Box>
+            <Box sx={{ variant: "cards.primary", p: 3 }}>
+              <Text
+                sx={{
+                  fontSize: 0,
+                  color: "textMuted",
+                  mb: 1,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Success Rate
+              </Text>
+              <Text sx={{ fontSize: 4, fontWeight: "bold", color: "success" }}>{successRate}%</Text>
+            </Box>
+            <Box sx={{ variant: "cards.primary", p: 3 }}>
+              <Text
+                sx={{
+                  fontSize: 0,
+                  color: "textMuted",
+                  mb: 1,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Failed Scrapes
+              </Text>
+              <Text sx={{ fontSize: 4, fontWeight: "bold", color: "danger" }}>{failedScrapes}</Text>
+            </Box>
+          </Grid>
+        </Box>
+
+        {/* Scrape History */}
+        <Box>
+          <Heading as="h3" sx={{ fontSize: 3, mb: 3 }}>
+            Recent Scrape History
+          </Heading>
+          {loading ? (
+            <LoadingState />
+          ) : scrapeHistory.length === 0 ? (
+            <InfoBox variant="info">No scrape history found for this source</InfoBox>
+          ) : (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {scrapeHistory.map((item) => (
+                <Box key={item.id} sx={{ variant: "cards.primary", p: 3 }}>
+                  <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                    <Flex sx={{ alignItems: "center", gap: 2 }}>
+                      <StatusBadge status={item.status} />
+                      <Text sx={{ fontSize: 1, color: "textMuted" }}>{formatRelativeDate(item.created_at)}</Text>
+                    </Flex>
+                    <Text sx={{ fontSize: 1, fontFamily: "monospace", color: "textMuted" }}>{item.type}</Text>
+                  </Flex>
+                  {item.result_message && <Text sx={{ fontSize: 1, color: "textMuted" }}>{item.result_message}</Text>}
+                  {item.error_details && (
+                    <Text sx={{ fontSize: 1, color: "danger", fontFamily: "monospace", mt: 1 }}>
+                      {item.error_details}
+                    </Text>
+                  )}
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
+      </ModalBody>
+
+      <ModalFooter
+        primaryAction={{
+          label: "Close",
+          onClick: onClose,
+          variant: "secondary",
+        }}
+      />
+    </Modal>
   )
 }

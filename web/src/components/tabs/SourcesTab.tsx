@@ -6,10 +6,10 @@
  */
 
 import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button, Flex, Spinner, Grid, Input } from "theme-ui"
+import { Box, Text, Button, Flex, Grid, Input } from "theme-ui"
 import { useAuth } from "../../hooks/useAuth"
 import { logger } from "../../utils/logger"
-import { StatusBadge } from "../ui/StatusBadge"
+import { TabHeader, LoadingState, EmptyState, StatsGrid, InfoBox, StatusBadge } from "../ui"
 import { AddSourceModal } from "../AddSourceModal"
 import { SourceDetailModal } from "../SourceDetailModal"
 import { jobQueueClient } from "../../api/job-queue-client"
@@ -188,29 +188,25 @@ export const SourcesTab: React.FC = () => {
   }
 
   if (authLoading) {
-    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Loading...</Box>
+    return <LoadingState message="Loading authentication..." />
   }
 
   return (
     <Box sx={{ maxWidth: "1200px", mx: "auto" }}>
-      <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Heading as="h2" sx={{ fontSize: 4 }}>
-          Job Sources
-        </Heading>
-        <Flex sx={{ alignItems: "center", gap: 2 }}>
-          {loading && <Spinner size={16} />}
-          <Button onClick={() => setIsAddModalOpen(true)} disabled={!user}>
-            Add Source
-          </Button>
-          <Button onClick={() => void loadSources()} variant="secondary.sm">
-            Refresh
-          </Button>
-        </Flex>
-      </Flex>
-
-      <Text sx={{ color: "textMuted", mb: 4, fontSize: 2 }}>
-        Job board and company career page sources tracked by the job-finder application.
-      </Text>
+      <TabHeader
+        title="Job Sources"
+        description="Job board and company career page sources tracked by the job-finder application."
+        actions={
+          <>
+            <Button onClick={() => setIsAddModalOpen(true)} disabled={!user}>
+              Add Source
+            </Button>
+            <Button onClick={() => void loadSources()} variant="secondary.sm">
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {/* Search */}
       <Box sx={{ variant: "cards.primary", p: 3, mb: 4 }}>
@@ -226,75 +222,64 @@ export const SourcesTab: React.FC = () => {
 
       {/* Status Messages */}
       {error && (
-        <Box
-          sx={{
-            p: 3,
-            bg: "danger",
-            color: "background",
-            borderRadius: "md",
-            mb: 3,
-          }}
-        >
-          <Text sx={{ fontWeight: "medium" }}>{error}</Text>
+        <Box sx={{ mb: 3 }}>
+          <InfoBox variant="danger">{error}</InfoBox>
         </Box>
       )}
 
       {submitSuccess && (
-        <Box sx={{ variant: "cards.primary", p: 3, mb: 4, borderLeft: "4px solid", borderColor: "success" }}>
-          <Text sx={{ fontWeight: "medium", mb: 2 }}>{submitSuccess}</Text>
-          <Text sx={{ fontSize: 1, color: "textMuted" }}>
-            The job-finder application will process this source and add it to the database.
-          </Text>
+        <Box sx={{ mb: 4 }}>
+          <InfoBox variant="success">
+            <Text sx={{ fontWeight: "medium", mb: 2 }}>{submitSuccess}</Text>
+            <Text sx={{ fontSize: 1 }}>
+              The job-finder application will process this source and add it to the database.
+            </Text>
+          </InfoBox>
         </Box>
       )}
 
       {!user && (
-        <Box sx={{ variant: "cards.primary", p: 3, mb: 4, borderLeft: "4px solid", borderColor: "highlight" }}>
-          <Text>Please sign in to add new sources</Text>
+        <Box sx={{ mb: 4 }}>
+          <InfoBox variant="info">Please sign in to add new sources</InfoBox>
         </Box>
       )}
 
       {/* Stats */}
-      <Flex sx={{ gap: 3, mb: 4, flexWrap: "wrap" }}>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Total Sources</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold" }}>{filteredSources.length}</Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Enabled</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold", color: "green" }}>
-            {filteredSources.filter((s) => s.scraping_enabled).length}
-          </Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Total Jobs Found</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold", color: "blue" }}>
-            {filteredSources.reduce((sum, s) => sum + (s.total_jobs_found || 0), 0)}
-          </Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Avg Priority Score</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold", color: "orange" }}>
-            {filteredSources.length > 0
-              ? Math.round(
-                  filteredSources.reduce((sum, s) => sum + (s.priority_score || 0), 0) / filteredSources.length
-                )
-              : 0}
-          </Text>
-        </Box>
-      </Flex>
+      <StatsGrid
+        columns={[2, 4]}
+        stats={[
+          {
+            label: "Total Sources",
+            value: filteredSources.length,
+          },
+          {
+            label: "Enabled",
+            value: filteredSources.filter((s) => s.scraping_enabled).length,
+            color: "green",
+          },
+          {
+            label: "Total Jobs Found",
+            value: filteredSources.reduce((sum, s) => sum + (s.total_jobs_found || 0), 0),
+            color: "blue",
+          },
+          {
+            label: "Avg Priority Score",
+            value:
+              filteredSources.length > 0
+                ? Math.round(
+                    filteredSources.reduce((sum, s) => sum + (s.priority_score || 0), 0) / filteredSources.length
+                  )
+                : 0,
+            color: "orange",
+          },
+        ]}
+      />
 
       {/* Sources List */}
       {loading && sources.length === 0 ? (
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <Spinner size={32} />
-        </Box>
+        <LoadingState message="Loading job sources..." />
       ) : filteredSources.length === 0 ? (
-        <Box sx={{ variant: "cards.primary", p: 4, textAlign: "center" }}>
-          <Text sx={{ color: "textMuted" }}>
-            {searchQuery ? "No sources match your search" : "No job sources found"}
-          </Text>
-        </Box>
+        <EmptyState icon="📭" message={searchQuery ? "No sources match your search" : "No job sources found"} />
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {filteredSources.map((source) => (

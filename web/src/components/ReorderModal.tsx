@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Box, Button, Flex, Heading, Text } from "theme-ui"
+import { Box, Text } from "theme-ui"
 import {
   DndContext,
   closestCenter,
@@ -17,6 +17,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { Modal, ModalHeader, ModalBody, ModalFooter, InfoBox } from "./ui"
 
 interface ReorderItem {
   id: string
@@ -157,93 +158,49 @@ export const ReorderModal: React.FC<ReorderModalProps> = ({ isOpen, title, items
     onClose()
   }
 
-  if (!isOpen) {
-    return null
-  }
-
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-        p: 3,
-      }}
-      onClick={handleCancel}
-    >
-      <Box
-        onClick={(e) => e.stopPropagation()}
-        sx={{
-          bg: "background",
-          borderRadius: 8,
-          maxWidth: "600px",
-          width: "100%",
-          maxHeight: "80vh",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+    <Modal isOpen={isOpen} onClose={handleCancel} size="sm" zIndex={9999}>
+      <ModalHeader
+        title={
+          <Box>
+            <Text as="h2" sx={{ fontSize: 4, fontWeight: "heading", mb: 1 }}>
+              {title}
+            </Text>
+            <Text sx={{ fontSize: 1, color: "textMuted", fontWeight: "normal" }}>
+              Drag items to reorder. Changes save immediately.
+            </Text>
+          </Box>
+        }
+        onClose={handleCancel}
+        noBorder
+      />
+
+      <ModalBody>
+        {localItems.length === 0 ? (
+          <InfoBox variant="info">No items to reorder</InfoBox>
+        ) : (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={localItems.map((item) => item.id)} strategy={verticalListSortingStrategy}>
+              {localItems.map((item, index) => (
+                <SortableItem key={item.id} item={item} index={index} />
+              ))}
+            </SortableContext>
+          </DndContext>
+        )}
+      </ModalBody>
+
+      <ModalFooter
+        primaryAction={{
+          label: "Save Order",
+          onClick: () => void handleSave(),
+          loading: isSaving,
         }}
-      >
-        {/* Header */}
-        <Box
-          sx={{
-            p: 4,
-            borderBottom: "1px solid",
-            borderColor: "gray",
-          }}
-        >
-          <Heading as="h2" sx={{ fontSize: 4, mb: 2 }}>
-            {title}
-          </Heading>
-          <Text sx={{ fontSize: 1, color: "textMuted" }}>Drag items to reorder. Changes save immediately.</Text>
-        </Box>
-
-        {/* Content */}
-        <Box
-          sx={{
-            flex: 1,
-            overflowY: "auto",
-            p: 4,
-          }}
-        >
-          {localItems.length === 0 ? (
-            <Text sx={{ textAlign: "center", color: "textMuted", py: 5 }}>No items to reorder</Text>
-          ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={localItems.map((item) => item.id)} strategy={verticalListSortingStrategy}>
-                {localItems.map((item, index) => (
-                  <SortableItem key={item.id} item={item} index={index} />
-                ))}
-              </SortableContext>
-            </DndContext>
-          )}
-        </Box>
-
-        {/* Footer */}
-        <Flex
-          sx={{
-            p: 4,
-            borderTop: "1px solid",
-            borderColor: "gray",
-            gap: 3,
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button variant="secondary" onClick={handleCancel} disabled={isSaving}>
-            Cancel
-          </Button>
-          <Button onClick={() => void handleSave()} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save Order"}
-          </Button>
-        </Flex>
-      </Box>
-    </Box>
+        secondaryAction={{
+          label: "Cancel",
+          onClick: handleCancel,
+          disabled: isSaving,
+        }}
+      />
+    </Modal>
   )
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
-import { Box, Button, Flex, Heading, Text, Label, Input, Select, Checkbox } from "theme-ui"
+import { Box, Button, Flex, Heading, Text, Label, Input, Checkbox } from "theme-ui"
 import type { ScrapeConfig } from "../types/job-queue"
+import { Modal, ModalBody, InfoBox } from "./ui"
 import { logger } from "../utils/logger"
 
 interface ScrapeConfigModalProps {
@@ -50,7 +51,6 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
   const [customTargetMatches, setCustomTargetMatches] = useState<number>(5)
   const [noTargetLimit, setNoTargetLimit] = useState(false)
 
-  const [maxSourcesPreset, setMaxSourcesPreset] = useState<"standard" | "fast" | "deep" | "custom" | "none">("standard")
   const [customMaxSources, setCustomMaxSources] = useState<number>(20)
   const [noSourceLimit, setNoSourceLimit] = useState(false)
 
@@ -84,15 +84,10 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
     setShowWarning(noTargetLimit && noSourceLimit)
   }, [noTargetLimit, noSourceLimit])
 
-  if (!isOpen) {
-    return null
-  }
-
   const handlePresetSelect = (preset: keyof typeof PRESET_CONFIGS) => {
     const config = PRESET_CONFIGS[preset]
     setTargetMatchesPreset(preset)
     setCustomTargetMatches(config.target_matches)
-    setMaxSourcesPreset("standard")
     setCustomMaxSources(config.max_sources)
     setNoTargetLimit(false)
     setNoSourceLimit(false)
@@ -105,7 +100,6 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
 
   const handleMaxSourcesChange = (value: number) => {
     setCustomMaxSources(value)
-    setMaxSourcesPreset("custom")
   }
 
   const handleSubmit = async () => {
@@ -170,34 +164,8 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
   })()
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-      }}
-      onClick={onClose}
-    >
-      <Box
-        sx={{
-          bg: "background",
-          p: 4,
-          borderRadius: "md",
-          maxWidth: "600px",
-          width: "90%",
-          maxHeight: "90vh",
-          overflow: "auto",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal isOpen={isOpen} onClose={onClose} size="md">
+      <ModalBody>
         <Heading as="h2" sx={{ mb: 4 }}>
           Custom Job Search
         </Heading>
@@ -304,10 +272,10 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
           </Label>
 
           {showWarning && (
-            <Box sx={{ mt: 3, p: 2, bg: "warning", borderRadius: "sm" }}>
-              <Text sx={{ fontSize: 1, color: "background" }}>
-                ⚠️ Warning: Both limits are disabled. This could be expensive and time-consuming.
-              </Text>
+            <Box sx={{ mt: 3 }}>
+              <InfoBox variant="warning" icon="⚠️">
+                Warning: Both limits are disabled. This could be expensive and time-consuming.
+              </InfoBox>
             </Box>
           )}
         </Box>
@@ -334,16 +302,17 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
         </Box>
 
         {/* Cost Estimate */}
-        <Box sx={{ mb: 4, p: 3, bg: "highlight", borderRadius: "sm" }}>
-          <Heading as="h3" sx={{ fontSize: 2, mb: 3 }}>
-            Estimated Cost & Time
-          </Heading>
-
-          <Flex sx={{ flexDirection: "column", gap: 2 }}>
-            <Text>🤖 AI Credits: ~{estimatedCost}</Text>
-            <Text>⏱️ Duration: {estimatedDuration}</Text>
-            <Text>📊 Expected Jobs: {estimatedJobs}</Text>
-          </Flex>
+        <Box sx={{ mb: 4 }}>
+          <InfoBox variant="info">
+            <Heading as="h3" sx={{ fontSize: 2, mb: 3 }}>
+              Estimated Cost & Time
+            </Heading>
+            <Flex sx={{ flexDirection: "column", gap: 2 }}>
+              <Text>🤖 AI Credits: ~{estimatedCost}</Text>
+              <Text>⏱️ Duration: {estimatedDuration}</Text>
+              <Text>📊 Expected Jobs: {estimatedJobs}</Text>
+            </Flex>
+          </InfoBox>
         </Box>
 
         {/* Actions */}
@@ -351,11 +320,11 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
+          <Button onClick={() => void handleSubmit()} disabled={isSubmitting}>
             {isSubmitting ? "Starting..." : "Start Custom Search"}
           </Button>
         </Flex>
-      </Box>
-    </Box>
+      </ModalBody>
+    </Modal>
   )
 }
