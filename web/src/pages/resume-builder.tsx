@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button, Flex, Spinner } from "theme-ui"
+import { Box, Heading, Text, Button, Flex, Spinner, useColorMode } from "theme-ui"
 import { Link, type HeadFC, navigate } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
@@ -40,6 +40,7 @@ import type { GenerationRequest } from "../types/generator"
  */
 const ResumeBuilderPage: React.FC = () => {
   const { user, isEditor, loading: authLoading } = useAuth()
+  const [colorMode, setColorMode] = useColorMode()
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
 
@@ -141,6 +142,13 @@ const ResumeBuilderPage: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setModalRequest(null)
+  }
+
+  const toggleColorMode = () => {
+    const isDark = colorMode === "dark"
+    const next = isDark ? "light" : "dark"
+    setColorMode(next)
+    document.documentElement.classList.value = `theme-ui-${next}`
   }
 
   // Build tab groups - all visible to everyone
@@ -355,7 +363,7 @@ const ResumeBuilderPage: React.FC = () => {
             </Text>
           </Box>
 
-          {/* Auth Button */}
+          {/* Auth Button & Dark Mode Toggle */}
           <Box>
             {authLoading ? (
               <Spinner size={24} />
@@ -368,6 +376,23 @@ const ResumeBuilderPage: React.FC = () => {
                     flexDirection: ["column", "row"],
                   }}
                 >
+                  {/* Dark Mode Toggle */}
+                  <Button
+                    onClick={toggleColorMode}
+                    variant="secondary.sm"
+                    aria-label="Toggle dark mode"
+                    sx={{
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                    }}
+                  >
+                    <span>{colorMode === "dark" ? "🌙" : "☀️"}</span>
+                    {colorMode === "dark" ? "Dark" : "Light"}
+                  </Button>
+
+                  {/* Auth Button */}
                   <Button
                     onClick={user ? handleSignOut : handleSignIn}
                     variant="secondary.sm"

@@ -299,10 +299,10 @@ const HamburgerMenu: React.FC = () => {
 
             <NavDivider />
 
-            {/* Resume Builder */}
+            {/* Job Finder */}
             <NavSection>
-              <NavLink to="/resume-builder" onClick={closeMenu} icon="📝">
-                Resume Builder
+              <NavLink to="/resume-builder?tab=how-it-works" onClick={closeMenu} icon="🔍">
+                Job Finder
               </NavLink>
             </NavSection>
 
