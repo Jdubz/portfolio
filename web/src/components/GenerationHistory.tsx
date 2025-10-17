@@ -15,6 +15,7 @@ import JSZip from "jszip"
 import type { GenerationRequest, FirestoreTimestamp } from "../types/generator"
 import { generatorClient } from "../api/generator-client"
 import { logger } from "../utils/logger"
+import { useAuth } from "../hooks/useAuth"
 
 interface GenerationHistoryProps {
   onViewDetails?: (request: GenerationRequest) => void
@@ -45,6 +46,7 @@ export const GenerationHistory: React.FC<GenerationHistoryProps> = ({ onViewDeta
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [downloadingBulk, setDownloadingBulk] = useState(false)
+  const { user, loading: authLoading } = useAuth()
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -55,8 +57,11 @@ export const GenerationHistory: React.FC<GenerationHistoryProps> = ({ onViewDeta
   const [providerFilter, setProviderFilter] = useState<ProviderFilter>("all")
 
   useEffect(() => {
-    void loadHistory()
-  }, [])
+    // Only load history if user is authenticated and auth is not loading
+    if (!authLoading && user) {
+      void loadHistory()
+    }
+  }, [authLoading, user])
 
   const loadHistory = async () => {
     try {
@@ -315,7 +320,7 @@ export const GenerationHistory: React.FC<GenerationHistoryProps> = ({ onViewDeta
     }
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <Box
         sx={{
@@ -325,6 +330,20 @@ export const GenerationHistory: React.FC<GenerationHistoryProps> = ({ onViewDeta
         }}
       >
         Loading history...
+      </Box>
+    )
+  }
+
+  if (!user) {
+    return (
+      <Box
+        sx={{
+          textAlign: "center",
+          py: 4,
+          color: "textMuted",
+        }}
+      >
+        Please sign in to view document history
       </Box>
     )
   }

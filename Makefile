@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging import-staging-to-local health-check health-check-local health-check-staging health-check-prod test-health-check editor-add editor-remove editor-list editor-check
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod seed-job-finder-config seed-job-finder-staging seed-job-finder-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging import-staging-to-local health-check health-check-local health-check-staging health-check-prod test-health-check editor-add editor-remove editor-list editor-check
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -70,6 +70,11 @@ help:
 	@echo "  make migrate-ai-prompts-emulator  - Update AI prompts (local emulator)"
 	@echo "  make migrate-ai-prompts-staging   - Update AI prompts (staging database)"
 	@echo "  make migrate-ai-prompts-prod      - Update AI prompts (production database)"
+	@echo ""
+	@echo "Job Finder Queue:"
+	@echo "  make seed-job-finder-config       - Seed job finder config (local emulator)"
+	@echo "  make seed-job-finder-staging      - Seed job finder config (staging database)"
+	@echo "  make seed-job-finder-prod         - Seed job finder config (production database)"
 	@echo ""
 	@echo "Editor Role Management:"
 	@echo "  make editor-add EMAIL=<email>    - Grant editor role to user"
@@ -394,6 +399,24 @@ migrate-ai-prompts-prod:
 	@echo "This will update the prompts with improved length controls"
 	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
 	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio npx tsx scripts/migrate-ai-prompts.ts
+
+# Job Finder Queue Commands
+seed-job-finder-config:
+	@echo "Seeding job finder configuration to local emulator..."
+	@echo "⚠️  Make sure emulators are running first!"
+	@FIRESTORE_EMULATOR_HOST="localhost:8080" FIRESTORE_DATABASE_ID="(default)" npx tsx scripts/seed-job-finder-config.ts
+
+seed-job-finder-staging:
+	@echo "Seeding job finder configuration to STAGING database..."
+	@echo "Database: portfolio-staging"
+	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	@GOOGLE_CLOUD_PROJECT=static-sites-257923 FIRESTORE_DATABASE_ID=portfolio-staging npx tsx scripts/seed-job-finder-config.ts
+
+seed-job-finder-prod:
+	@echo "⚠️  WARNING: Seeding job finder configuration to PRODUCTION database!"
+	@echo "Database: portfolio"
+	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
+	@GOOGLE_CLOUD_PROJECT=static-sites-257923 FIRESTORE_DATABASE_ID=portfolio npx tsx scripts/seed-job-finder-config.ts
 
 # Health Check Commands
 health-check:

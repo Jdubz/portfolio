@@ -92,3 +92,22 @@ export const RESUME_ERROR_CODES = {
   STORAGE_ERROR: { code: "RES_STOR_001", status: 503, message: "Storage service error" },
   INTERNAL_ERROR: { code: "RES_SYS_001", status: 500, message: "Internal server error" },
 } as const
+
+/**
+ * Job Queue Error Codes (JQ_*)
+ */
+export const JOB_QUEUE_ERROR_CODES = {
+  // Client errors (4xx)
+  VALIDATION_FAILED: { code: "JQ_VAL_001", status: 400, message: "Validation failed" },
+  INVALID_URL: { code: "JQ_VAL_002", status: 400, message: "Invalid URL format" },
+  DUPLICATE_JOB: { code: "JQ_DUP_001", status: 409, message: "Job already exists in queue" },
+  ALREADY_ANALYZED: { code: "JQ_DUP_002", status: 409, message: "Job already analyzed" },
+  STOP_LIST_MATCH: { code: "JQ_STOP_001", status: 400, message: "Job matches exclusion criteria" },
+  NOT_FOUND: { code: "JQ_REQ_001", status: 404, message: "Queue item not found" },
+  FORBIDDEN: { code: "JQ_REQ_002", status: 403, message: "Access denied - not queue item owner" },
+  METHOD_NOT_ALLOWED: { code: "JQ_REQ_003", status: 405, message: "Method not allowed" },
+
+  // Server errors (5xx)
+  FIRESTORE_ERROR: { code: "JQ_DB_001", status: 503, message: "Database error" },
+  INTERNAL_ERROR: { code: "JQ_SYS_001", status: 500, message: "Internal server error" },
+} as const

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Flex, Select } from "theme-ui"
+import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Flex, Select, Checkbox } from "theme-ui"
 import { logger } from "../../utils/logger"
 import { generatorClient } from "../../api/generator-client"
+import { jobQueueClient } from "../../api"
 import { useResumeForm } from "../../contexts/ResumeFormContext"
 import { GenerationProgress } from "../GenerationProgress"
+import { useAuth } from "../../hooks/useAuth"
 import type {
   GenerationType,
   GenerationMetadata,
@@ -16,6 +18,8 @@ interface DocumentBuilderTabProps {
 }
 
 export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor }) => {
+  const { user } = useAuth()
+
   // Get form state from context
   const {
     formState,
@@ -35,6 +39,7 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [submitToQueue, setSubmitToQueue] = useState(false)
 
   // Generation progress tracking
   const [generationStatus, setGenerationStatus] = useState<GenerationRequest["status"] | null>(null)
@@ -45,6 +50,9 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
     const savedProvider = localStorage.getItem("aiProvider") as AIProviderType | null
     if (savedProvider === "openai" || savedProvider === "gemini") {
       setAIProvider(savedProvider)
+    } else {
+      // Default to OpenAI if no preference saved
+      setAIProvider("openai")
     }
   }, [setAIProvider])
 
@@ -215,6 +223,25 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         setSuccess(true)
         setGenerating(false)
       }
+
+      // After successful generation, submit to queue if checkbox is checked
+      if (submitToQueue && user && formState.jobDescriptionUrl && startData.requestId) {
+        try {
+          const queueResult = await jobQueueClient.submitJob({
+            url: formState.jobDescriptionUrl.trim(),
+            companyName: formState.company.trim(),
+            generationId: startData.requestId, // Link to the generation request
+          })
+          logger.info("Job submitted to queue with generation ID", {
+            queueItemId: queueResult.queueItemId,
+            generationId: startData.requestId,
+          })
+        } catch (queueErr) {
+          const err = queueErr instanceof Error ? queueErr : new Error(String(queueErr))
+          logger.warn("Failed to submit to queue after generation", { error: err.message })
+          // Don't show error to user - queue submission is optional
+        }
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
       setError(errorMessage)
@@ -309,13 +336,13 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             disabled={generating}
             required
           >
-            <option value="gemini">Gemini (Recommended - 96% cheaper, $0.0006/generation)</option>
-            <option value="openai">OpenAI GPT-4o ($0.015/generation)</option>
+            <option value="openai">OpenAI GPT-4o (Recommended - $0.015/generation)</option>
+            <option value="gemini">Gemini 2.0 Flash (96% cheaper, but doesn't work well 😞)</option>
           </Select>
           <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>
-            {formState.aiProvider === "gemini"
-              ? "✨ Gemini 2.0 Flash: Fast, accurate, and cost-effective"
-              : "🚀 GPT-4o: Premium quality, higher cost"}
+            {formState.aiProvider === "openai"
+              ? "🚀 GPT-4o: Premium quality, reliable results"
+              : "⚠️ Gemini: Cost-effective but produces inferior results compared to GPT-4o"}
           </Text>
         </Box>
 
@@ -406,6 +433,23 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
           />
           <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>Comma-separated list of keywords</Text>
         </Box>
+
+        {/* Submit to Queue Checkbox (editor-only, requires job URL) */}
+        {isEditor && formState.jobDescriptionUrl && (
+          <Box sx={{ mb: 3 }}>
+            <Label sx={{ display: "flex", alignItems: "center", gap: 2, cursor: "pointer" }}>
+              <Checkbox
+                checked={submitToQueue}
+                onChange={(e) => setSubmitToQueue(e.target.checked)}
+                disabled={generating}
+              />
+              <Text sx={{ fontSize: 2 }}>Also submit to Job Finder queue for tracking</Text>
+            </Label>
+            <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1, ml: "28px" }}>
+              Job will be added to the queue for automated processing and tracking
+            </Text>
+          </Box>
+        )}
 
         {/* Action Buttons */}
         <Flex sx={{ gap: 2 }}>

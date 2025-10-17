@@ -16,6 +16,7 @@ import type { JobMatch } from "../../types/job-match"
 import type { GenerationRequest } from "../../types/generator"
 import { generatorClient } from "../../api/generator-client"
 import { logger } from "../../utils/logger"
+import { useAuth } from "../../hooks/useAuth"
 import { useDocumentGeneration, buildGenerationOptionsFromJobMatch } from "../../hooks/useDocumentGeneration"
 import { GenerationProgress } from "../GenerationProgress"
 
@@ -39,6 +40,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [togglingApplied, setTogglingApplied] = useState<Set<string>>(new Set())
+  const { user, loading: authLoading } = useAuth()
 
   // Sorting and filtering state
   const [sortField, setSortField] = useState<SortField>("age")
@@ -156,8 +158,11 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
   }, [jobMatches, sortField, sortDirection, filters])
 
   useEffect(() => {
-    void loadJobMatches()
-  }, [])
+    // Only load job matches if user is authenticated and auth is not loading
+    if (!authLoading && user) {
+      void loadJobMatches()
+    }
+  }, [authLoading, user])
 
   // Update job match after successful generation
   useEffect(() => {
@@ -293,7 +298,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
     return generated ? "#10b981" : "#6b7280" // green : gray
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <Box
         sx={{
@@ -303,6 +308,20 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
         }}
       >
         Loading job matches...
+      </Box>
+    )
+  }
+
+  if (!user) {
+    return (
+      <Box
+        sx={{
+          textAlign: "center",
+          py: 4,
+          color: "textMuted",
+        }}
+      >
+        Please sign in to view job applications
       </Box>
     )
   }

@@ -5,19 +5,148 @@
 import React, { useState } from "react"
 import { Box, Button, Flex, useColorMode, jsx } from "theme-ui"
 import { Link } from "gatsby"
+import { useAuth } from "../../hooks/useAuth"
+
+/**
+ * Navigation Section Component
+ */
+interface NavSectionProps {
+  title?: string
+  children: React.ReactNode
+  defaultExpanded?: boolean
+}
+
+const NavSection: React.FC<NavSectionProps> = ({ title, children, defaultExpanded = true }) => {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
+
+  if (!title) {
+    // No title = just render children without collapsible wrapper
+    return <>{children}</>
+  }
+
+  return (
+    <Box>
+      {/* Section Header (collapsible) */}
+      <Box
+        onClick={() => setIsExpanded(!isExpanded)}
+        sx={{
+          py: 2,
+          px: 4,
+          bg: "backgroundSecondary",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          transition: "all 0.2s ease",
+          "&:hover": {
+            bg: "divider",
+          },
+        }}
+      >
+        <span
+          sx={{
+            color: "textMuted",
+            fontSize: 1,
+            fontWeight: "bold",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+          }}
+        >
+          {title}
+        </span>
+        <span
+          sx={{
+            color: "textMuted",
+            fontSize: 2,
+            transition: "transform 0.2s ease",
+            transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        >
+          ▼
+        </span>
+      </Box>
+
+      {/* Section Content */}
+      {isExpanded && children}
+    </Box>
+  )
+}
+
+/**
+ * Navigation Link Component
+ */
+interface NavLinkProps {
+  to: string
+  onClick: () => void
+  children: React.ReactNode
+  icon?: string
+}
+
+const NavLink: React.FC<NavLinkProps> = ({ to, onClick, children, icon }) => {
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        borderBottom: "1px solid",
+        borderColor: "divider",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          bg: "divider",
+          "& a": {
+            color: "primary",
+          },
+        },
+      }}
+    >
+      <Link
+        to={to}
+        onClick={onClick}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          py: 3,
+          px: 4,
+          color: "text",
+          fontSize: 2,
+          fontWeight: "body",
+          textDecoration: "none",
+          transition: "color 0.2s ease",
+        }}
+      >
+        {icon && <span sx={{ fontSize: 3 }}>{icon}</span>}
+        {children}
+      </Link>
+    </Box>
+  )
+}
+
+/**
+ * Section Divider Component
+ */
+const NavDivider: React.FC = () => (
+  <Box
+    sx={{
+      height: "1px",
+      bg: "divider",
+      my: 1,
+    }}
+  />
+)
 
 /**
  * Hamburger Menu Component
  *
- * Navigation menu with:
- * - Experience (Work Experience tab)
- * - Builder (Document Builder tab)
- * - Contact
+ * Scalable navigation menu with:
+ * - Logical grouping of pages
+ * - Collapsible sections
+ * - Role-based visibility (Job Finder for editors only)
  * - Dark mode toggle
  */
 const HamburgerMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [colorMode, setColorMode] = useColorMode()
+  const { isEditor } = useAuth()
   const isDark = colorMode === `dark`
 
   const toggleMenu = () => {
@@ -132,7 +261,8 @@ const HamburgerMenu: React.FC = () => {
               position: "absolute",
               top: "56px",
               right: 0,
-              minWidth: "200px",
+              minWidth: "280px",
+              maxWidth: "320px",
               bg: "background",
               backdropFilter: "blur(20px)",
               borderRadius: "12px",
@@ -143,6 +273,8 @@ const HamburgerMenu: React.FC = () => {
               overflow: "hidden",
               zIndex: 999,
               animation: "slideIn 0.2s ease-out",
+              maxHeight: "80vh",
+              overflowY: "auto",
               "@keyframes slideIn": {
                 from: {
                   opacity: 0,
@@ -155,104 +287,26 @@ const HamburgerMenu: React.FC = () => {
               },
             }}
           >
-            {/* Experience */}
-            <Box
-              sx={{
-                width: "100%",
-                borderBottom: "1px solid",
-                borderColor: "divider",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  bg: "divider",
-                  "& a": {
-                    color: "primary",
-                  },
-                },
-              }}
-            >
-              <Link
-                to="/resume-builder?tab=work-experience"
-                onClick={closeMenu}
-                sx={{
-                  display: "block",
-                  py: 3,
-                  px: 4,
-                  color: "text",
-                  fontSize: 2,
-                  fontWeight: "body",
-                  textDecoration: "none",
-                  transition: "color 0.2s ease",
-                }}
-              >
-                Experience
-              </Link>
-            </Box>
-
-            {/* Builder */}
-            <Box
-              sx={{
-                width: "100%",
-                borderBottom: "1px solid",
-                borderColor: "divider",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  bg: "divider",
-                  "& a": {
-                    color: "primary",
-                  },
-                },
-              }}
-            >
-              <Link
-                to="/resume-builder?tab=document-builder"
-                onClick={closeMenu}
-                sx={{
-                  display: "block",
-                  py: 3,
-                  px: 4,
-                  color: "text",
-                  fontSize: 2,
-                  fontWeight: "body",
-                  textDecoration: "none",
-                  transition: "color 0.2s ease",
-                }}
-              >
-                Builder
-              </Link>
-            </Box>
-
-            {/* Contact */}
-            <Box
-              sx={{
-                width: "100%",
-                borderBottom: "1px solid",
-                borderColor: "divider",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  bg: "divider",
-                  "& a": {
-                    color: "primary",
-                  },
-                },
-              }}
-            >
-              <Link
-                to="/contact"
-                onClick={closeMenu}
-                sx={{
-                  display: "block",
-                  py: 3,
-                  px: 4,
-                  color: "text",
-                  fontSize: 2,
-                  fontWeight: "body",
-                  textDecoration: "none",
-                  transition: "color 0.2s ease",
-                }}
-              >
+            {/* Main Pages */}
+            <NavSection>
+              <NavLink to="/" onClick={closeMenu} icon="🏠">
+                Home
+              </NavLink>
+              <NavLink to="/contact" onClick={closeMenu} icon="✉️">
                 Contact
-              </Link>
-            </Box>
+              </NavLink>
+            </NavSection>
+
+            <NavDivider />
+
+            {/* Resume Builder */}
+            <NavSection>
+              <NavLink to="/resume-builder" onClick={closeMenu} icon="📝">
+                Resume Builder
+              </NavLink>
+            </NavSection>
+
+            <NavDivider />
 
             {/* Dark Mode Toggle */}
             <Box
@@ -273,11 +327,15 @@ const HamburgerMenu: React.FC = () => {
             >
               <span
                 sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
                   color: "text",
                   fontSize: 2,
                   fontWeight: "body",
                 }}
               >
+                <span sx={{ fontSize: 3 }}>🌙</span>
                 Dark Mode
               </span>
               <label

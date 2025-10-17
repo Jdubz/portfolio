@@ -228,7 +228,7 @@ export function useDocumentGeneration() {
  */
 export function buildGenerationOptionsFromJobMatch(
   jobMatch: JobMatch,
-  provider: AIProviderType = "gemini",
+  provider: AIProviderType = "openai", // Default to OpenAI (better quality)
   generateType: GenerationType = "both"
 ): GenerationOptions {
   // Build keywords/emphasize field from multiple sources

@@ -3,7 +3,7 @@ import { Box, Heading, Text, Button, Flex, Spinner } from "theme-ui"
 import { Link, type HeadFC, navigate } from "gatsby"
 import Seo from "../components/homepage/Seo"
 import { useAuth, signInWithGoogle, signOut } from "../hooks/useAuth"
-import { Tabs, type Tab } from "../components/Tabs"
+import { TabsGrouped, type Tab, type TabGroup } from "../components/TabsGrouped"
 import { HowItWorksTab } from "../components/tabs/HowItWorksTab"
 import { ContentItemsTab } from "../components/tabs/ContentItemsTab"
 import { DocumentBuilderTab } from "../components/tabs/DocumentBuilderTab"
@@ -11,6 +11,8 @@ import { AIPromptsTab } from "../components/tabs/AIPromptsTab"
 import { SettingsTab } from "../components/tabs/SettingsTab"
 import { DocumentHistoryTab } from "../components/tabs/DocumentHistoryTab"
 import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
+import { JobFinderTab } from "../components/tabs/JobFinderTab"
+import { JobFinderConfigTab } from "../components/tabs/JobFinderConfigTab"
 import { GenerationDetailsModal } from "../components/GenerationDetailsModal"
 import { ErrorBoundary } from "../components/ErrorBoundary"
 import { logger } from "../utils/logger"
@@ -57,6 +59,8 @@ const ResumeBuilderPage: React.FC = () => {
       "settings",
       "history",
       "job-applications",
+      "job-finder",
+      "job-finder-config",
     ]
     return tabParam && validTabs.includes(tabParam) ? tabParam : "how-it-works"
   }
@@ -93,9 +97,10 @@ const ResumeBuilderPage: React.FC = () => {
     return () => window.removeEventListener("popstate", handlePopState)
   }, [])
 
-  // Redirect non-editors away from history and job-applications tabs
+  // Redirect non-editors away from editor-only tabs
   useEffect(() => {
-    if (!authLoading && (activeTab === "history" || activeTab === "job-applications") && !isEditor) {
+    const editorOnlyTabs = ["history", "job-applications", "job-finder", "job-finder-config"]
+    if (!authLoading && editorOnlyTabs.includes(activeTab) && !isEditor) {
       logger.info("Non-editor attempted to access editor-only tab, redirecting to document-builder", {
         page: "resume-builder",
         tab: activeTab,
@@ -142,12 +147,22 @@ const ResumeBuilderPage: React.FC = () => {
     setModalRequest(null)
   }
 
+  // Build tab groups
+  const groups: TabGroup[] = [
+    { id: "resume", label: "Resume", icon: "📝" },
+    ...(isEditor ? [{ id: "job-finder", label: "Job Finder", icon: "🔍" }] : []),
+    ...(isEditor ? [{ id: "admin", label: "Admin", icon: "⚙️" }] : []),
+  ]
+
   // Build tabs array (conditionally include editor-only tabs)
   // Each tab wrapped in ErrorBoundary to prevent entire app crashes
   const tabs: Tab[] = [
+    // Resume Group
     {
       id: "how-it-works",
       label: "How It Works",
+      icon: "💡",
+      group: "resume",
       content: (
         <ErrorBoundary>
           <HowItWorksTab />
@@ -157,6 +172,8 @@ const ResumeBuilderPage: React.FC = () => {
     {
       id: "work-experience",
       label: "Work Experience",
+      icon: "💼",
+      group: "resume",
       content: (
         <ErrorBoundary>
           <ContentItemsTab isEditor={isEditor} user={user} />
@@ -166,6 +183,8 @@ const ResumeBuilderPage: React.FC = () => {
     {
       id: "document-builder",
       label: "Document Builder",
+      icon: "📄",
+      group: "resume",
       content: (
         <ErrorBoundary>
           <DocumentBuilderTab isEditor={isEditor} />
@@ -175,6 +194,8 @@ const ResumeBuilderPage: React.FC = () => {
     {
       id: "ai-prompts",
       label: "AI Prompts",
+      icon: "🤖",
+      group: "resume",
       content: (
         <ErrorBoundary>
           <AIPromptsTab />
@@ -184,18 +205,33 @@ const ResumeBuilderPage: React.FC = () => {
     {
       id: "settings",
       label: "Personal Info",
+      icon: "👤",
+      group: "resume",
       content: (
         <ErrorBoundary>
           <SettingsTab isEditor={isEditor} />
         </ErrorBoundary>
       ),
     },
-    // Only show editor-only tabs to editors
+    // Job Finder Group (editor-only)
     ...(isEditor
       ? [
           {
+            id: "job-finder",
+            label: "Submit Jobs",
+            icon: "➕",
+            group: "job-finder",
+            content: (
+              <ErrorBoundary>
+                <JobFinderTab />
+              </ErrorBoundary>
+            ),
+          },
+          {
             id: "job-applications",
             label: "Job Applications",
+            icon: "📋",
+            group: "job-finder",
             content: (
               <ErrorBoundary>
                 <JobApplicationsTab onViewGeneratedDocs={handleViewGeneratedDocs} />
@@ -203,8 +239,26 @@ const ResumeBuilderPage: React.FC = () => {
             ),
           },
           {
+            id: "job-finder-config",
+            label: "Configuration",
+            icon: "⚙️",
+            group: "job-finder",
+            content: (
+              <ErrorBoundary>
+                <JobFinderConfigTab />
+              </ErrorBoundary>
+            ),
+          },
+        ]
+      : []),
+    // Admin Group (editor-only)
+    ...(isEditor
+      ? [
+          {
             id: "history",
             label: "Document History",
+            icon: "📚",
+            group: "admin",
             content: (
               <ErrorBoundary>
                 <DocumentHistoryTab isEditor={isEditor} />
@@ -320,7 +374,7 @@ const ResumeBuilderPage: React.FC = () => {
         </Flex>
 
         {/* Tabs */}
-        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabsGrouped tabs={tabs} groups={groups} activeTab={activeTab} onTabChange={setActiveTab} />
       </Box>
 
       {/* Generation Details Modal */}

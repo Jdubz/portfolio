@@ -398,3 +398,9 @@ export { manageGenerator } from "./generator"
  */
 export { manageContentItems } from "./content-items"
 
+/**
+ * Job Queue endpoint
+ * Deployed via: firebase deploy --only functions:manageJobQueue
+ */
+export { manageJobQueue } from "./job-queue"
+
