@@ -3,14 +3,14 @@
  *
  * An elegant, mobile-friendly tab navigation system with:
  * - Grouped tabs by category
- * - Mobile dropdown for smaller screens
+ * - Mobile slide-out drawer menu for smaller screens
  * - Desktop sidebar navigation for larger screens
  * - Icons for visual clarity
  * - Smooth animations
  */
 
-import React, { useState } from "react"
-import { Box, Flex, Select, Text } from "theme-ui"
+import React, { useState, useEffect } from "react"
+import { Box, Flex, Button, Text } from "theme-ui"
 
 export interface Tab {
   id: string
@@ -36,6 +36,7 @@ interface TabsGroupedProps {
 
 export const TabsGrouped: React.FC<TabsGroupedProps> = ({ tabs, groups, activeTab, onTabChange }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const toggleGroup = (groupId: string) => {
     setCollapsedGroups((prev) => {
@@ -49,49 +50,234 @@ export const TabsGrouped: React.FC<TabsGroupedProps> = ({ tabs, groups, activeTa
     })
   }
 
+  const handleTabChange = (tabId: string) => {
+    onTabChange(tabId)
+    setMobileMenuOpen(false) // Close menu on mobile when tab is selected
+  }
+
+  // Close mobile menu on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mobileMenuOpen) {
+        setMobileMenuOpen(false)
+      }
+    }
+    window.addEventListener("keydown", handleEscape)
+    return () => window.removeEventListener("keydown", handleEscape)
+  }, [mobileMenuOpen])
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [mobileMenuOpen])
+
   const activeTabObj = tabs.find((t) => t.id === activeTab)
 
   return (
     <Box>
-      {/* Mobile: Dropdown Select */}
+      {/* Mobile: Hamburger Menu Button */}
       <Box
         sx={{
           display: ["block", "block", "none"],
           mb: 4,
         }}
       >
-        <Select
-          value={activeTab}
-          onChange={(e) => onTabChange(e.target.value)}
+        <Button
+          onClick={() => setMobileMenuOpen(true)}
           sx={{
-            variant: "forms.select",
-            fontSize: 2,
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
             py: 3,
             px: 3,
-            bg: "background",
+            bg: "muted",
+            color: "text",
             border: "1px solid",
             borderColor: "muted",
             borderRadius: "md",
             cursor: "pointer",
-            "&:focus": {
-              outline: "none",
-              borderColor: "primary",
+            fontSize: 2,
+            fontWeight: "normal",
+            "&:hover": {
+              bg: "highlight",
             },
           }}
         >
-          {groups.map((group) => {
-            const groupTabs = tabs.filter((t) => t.group === group.id)
-            return (
-              <optgroup key={group.id} label={`${group.icon || ""} ${group.label}`.trim()}>
-                {groupTabs.map((tab) => (
-                  <option key={tab.id} value={tab.id}>
-                    {tab.icon ? `${tab.icon} ${tab.label}` : tab.label}
-                  </option>
-                ))}
-              </optgroup>
-            )
-          })}
-        </Select>
+          <Flex sx={{ alignItems: "center", gap: 2 }}>
+            <Text sx={{ fontSize: 3 }}>☰</Text>
+            <Text>
+              {activeTabObj?.icon} {activeTabObj?.label || "Select Tab"}
+            </Text>
+          </Flex>
+          <Text sx={{ fontSize: 2, color: "textMuted" }}>▼</Text>
+        </Button>
+      </Box>
+
+      {/* Mobile: Slide-out Drawer Overlay */}
+      {mobileMenuOpen && (
+        <Box
+          onClick={() => setMobileMenuOpen(false)}
+          sx={{
+            display: ["block", "block", "none"],
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bg: "rgba(0, 0, 0, 0.5)",
+            zIndex: 999,
+            animation: "fadeIn 0.2s ease",
+            "@keyframes fadeIn": {
+              from: { opacity: 0 },
+              to: { opacity: 1 },
+            },
+          }}
+        />
+      )}
+
+      {/* Mobile: Slide-out Drawer Menu */}
+      <Box
+        sx={{
+          display: ["block", "block", "none"],
+          position: "fixed",
+          top: 0,
+          left: mobileMenuOpen ? 0 : "-100%",
+          bottom: 0,
+          width: ["85%", "400px"],
+          maxWidth: "400px",
+          bg: "background",
+          zIndex: 1000,
+          overflowY: "auto",
+          boxShadow: "0 0 20px rgba(0, 0, 0, 0.3)",
+          transition: "left 0.3s ease",
+          py: 4,
+          px: 3,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Drawer Header */}
+        <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 4, pb: 3, borderBottom: "1px solid", borderColor: "muted" }}>
+          <Text sx={{ fontSize: 3, fontWeight: "bold" }}>Navigation</Text>
+          <Button
+            onClick={() => setMobileMenuOpen(false)}
+            sx={{
+              bg: "transparent",
+              color: "text",
+              fontSize: 4,
+              p: 2,
+              cursor: "pointer",
+              "&:hover": {
+                bg: "highlight",
+              },
+            }}
+            aria-label="Close menu"
+          >
+            ×
+          </Button>
+        </Flex>
+
+        {/* Drawer Groups */}
+        {groups.map((group) => {
+          const groupTabs = tabs.filter((t) => t.group === group.id)
+          const isCollapsed = collapsedGroups.has(group.id)
+
+          return (
+            <Box key={group.id} sx={{ mb: 3 }}>
+              {/* Group Header */}
+              <Box
+                onClick={() => toggleGroup(group.id)}
+                sx={{
+                  py: 2,
+                  px: 3,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  bg: "muted",
+                  borderRadius: "md",
+                  mb: 1,
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    bg: "highlight",
+                  },
+                }}
+              >
+                <Flex sx={{ alignItems: "center", gap: 2 }}>
+                  {group.icon && <Text sx={{ fontSize: 3 }}>{group.icon}</Text>}
+                  <Text
+                    sx={{
+                      fontSize: 1,
+                      fontWeight: "bold",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "textMuted",
+                    }}
+                  >
+                    {group.label}
+                  </Text>
+                </Flex>
+                <Text
+                  sx={{
+                    fontSize: 2,
+                    color: "textMuted",
+                    transition: "transform 0.2s ease",
+                    transform: isCollapsed ? "rotate(-90deg)" : "rotate(0deg)",
+                  }}
+                >
+                  ▼
+                </Text>
+              </Box>
+
+              {/* Group Tabs */}
+              {!isCollapsed && (
+                <Box sx={{ pl: 2 }}>
+                  {groupTabs.map((tab) => (
+                    <Box
+                      key={tab.id}
+                      onClick={() => handleTabChange(tab.id)}
+                      sx={{
+                        py: 2,
+                        px: 3,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        borderLeft: "3px solid",
+                        borderColor: activeTab === tab.id ? "primary" : "transparent",
+                        bg: activeTab === tab.id ? "highlight" : "transparent",
+                        borderRadius: "0 4px 4px 0",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          bg: "highlight",
+                          borderColor: activeTab === tab.id ? "primary" : "muted",
+                        },
+                      }}
+                    >
+                      {tab.icon && <Text sx={{ fontSize: 3, flexShrink: 0 }}>{tab.icon}</Text>}
+                      <Text
+                        sx={{
+                          fontSize: 2,
+                          fontWeight: activeTab === tab.id ? "bold" : "normal",
+                          color: activeTab === tab.id ? "primary" : "text",
+                        }}
+                      >
+                        {tab.label}
+                      </Text>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          )
+        })}
       </Box>
 
       {/* Desktop: Sidebar + Content Layout */}
@@ -168,7 +354,7 @@ export const TabsGrouped: React.FC<TabsGroupedProps> = ({ tabs, groups, activeTa
                     {groupTabs.map((tab) => (
                       <Box
                         key={tab.id}
-                        onClick={() => onTabChange(tab.id)}
+                        onClick={() => handleTabChange(tab.id)}
                         sx={{
                           py: 2,
                           px: 3,
