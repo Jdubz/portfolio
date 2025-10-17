@@ -187,11 +187,12 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
         sx={{
           bg: "background",
           p: 4,
-          borderRadius: "8px",
+          borderRadius: "md",
           maxWidth: "600px",
           width: "90%",
           maxHeight: "90vh",
           overflow: "auto",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -217,7 +218,7 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
         </Box>
 
         {/* Search Scope */}
-        <Box sx={{ mb: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
+        <Box sx={{ mb: 4, p: 3, bg: "muted", borderRadius: "sm" }}>
           <Heading as="h3" sx={{ fontSize: 2, mb: 3 }}>
             What to Search
           </Heading>
@@ -231,7 +232,7 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
             />
             All Sources (default)
           </Label>
-          <Text sx={{ fontSize: 1, color: "textSecondary", ml: 4, mb: 3 }}>
+          <Text sx={{ fontSize: 1, color: "textMuted", ml: 4, mb: 3 }}>
             Searches all job boards in rotation
           </Text>
 
@@ -247,7 +248,7 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
           </Label>
           {searchScope === "specific" && (
             <Box sx={{ ml: 4, mt: 2 }}>
-              <Text sx={{ fontSize: 1, color: "textSecondary", mb: 2 }}>
+              <Text sx={{ fontSize: 1, color: "textMuted", mb: 2 }}>
                 Note: Source selection will be available in Phase 3. For now, all sources will be used.
               </Text>
             </Box>
@@ -255,7 +256,7 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
         </Box>
 
         {/* Search Limits */}
-        <Box sx={{ mb: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
+        <Box sx={{ mb: 4, p: 3, bg: "muted", borderRadius: "sm" }}>
           <Heading as="h3" sx={{ fontSize: 2, mb: 3 }}>
             When to Stop
           </Heading>
@@ -303,7 +304,7 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
           </Label>
 
           {showWarning && (
-            <Box sx={{ mt: 3, p: 2, bg: "warning", borderRadius: "4px" }}>
+            <Box sx={{ mt: 3, p: 2, bg: "warning", borderRadius: "sm" }}>
               <Text sx={{ fontSize: 1, color: "background" }}>
                 ⚠️ Warning: Both limits are disabled. This could be expensive and time-consuming.
               </Text>
@@ -312,7 +313,7 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
         </Box>
 
         {/* Match Quality */}
-        <Box sx={{ mb: 4, p: 3, bg: "muted", borderRadius: "4px" }}>
+        <Box sx={{ mb: 4, p: 3, bg: "muted", borderRadius: "sm" }}>
           <Heading as="h3" sx={{ fontSize: 2, mb: 3 }}>
             Match Threshold
           </Heading>
@@ -327,19 +328,13 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
             onChange={(e) => setMinMatchScore(parseInt(e.target.value))}
             sx={{ width: "100%", mb: 2 }}
           />
-          <Text sx={{ fontSize: 1, color: "textSecondary" }}>
-            Current default: {defaultMinScore}
-          </Text>
-          <Text sx={{ fontSize: 1, color: "textSecondary" }}>
-            Lower = more jobs, potentially less fit
-          </Text>
-          <Text sx={{ fontSize: 1, color: "textSecondary" }}>
-            Higher = fewer jobs, better fit
-          </Text>
+          <Text sx={{ fontSize: 1, color: "textMuted" }}>Current default: {defaultMinScore}</Text>
+          <Text sx={{ fontSize: 1, color: "textMuted" }}>Lower = more jobs, potentially less fit</Text>
+          <Text sx={{ fontSize: 1, color: "textMuted" }}>Higher = fewer jobs, better fit</Text>
         </Box>
 
         {/* Cost Estimate */}
-        <Box sx={{ mb: 4, p: 3, bg: "highlight", borderRadius: "4px" }}>
+        <Box sx={{ mb: 4, p: 3, bg: "highlight", borderRadius: "sm" }}>
           <Heading as="h3" sx={{ fontSize: 2, mb: 3 }}>
             Estimated Cost & Time
           </Heading>
