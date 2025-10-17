@@ -176,9 +176,6 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
-      - name: Deploy Firestore Rules to All Databases
+      - name: Deploy Firestore Rules and Indexes
         working-directory: portfolio
-        run: |
-          echo "Deploying Firestore security rules to all databases..."
-          npx firebase deploy --only firestore --force --non-interactive
-          echo "✅ Firestore rules deployed successfully"
+        run: bash scripts/deploy-firestore-safe.sh

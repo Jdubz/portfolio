@@ -231,13 +231,11 @@
     },
     {
       "database": "portfolio",
-      "rules": "firestore.rules",
-      "indexes": "firestore.indexes.json"
+      "rules": "firestore.rules"
     },
     {
       "database": "portfolio-staging",
-      "rules": "firestore.rules",
-      "indexes": "firestore.indexes.json"
+      "rules": "firestore.rules"
     }
   ]
 }

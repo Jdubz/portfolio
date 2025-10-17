@@ -191,9 +191,17 @@ export const JobFinderConfigTab: React.FC = () => {
 
       {/* Queue Settings */}
       <Box sx={{ variant: "cards.primary", p: 4, mb: 4 }}>
-        <Heading as="h3" sx={{ mb: 3, fontSize: 3 }}>
-          Queue Settings
-        </Heading>
+        <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+          <Heading as="h3" sx={{ fontSize: 3 }}>
+            Queue Settings
+          </Heading>
+          {queueSettings.updatedAt && (
+            <Text sx={{ fontSize: 0, color: "textMuted" }}>
+              Last updated: {new Date(queueSettings.updatedAt).toLocaleString()}
+              {queueSettings.updatedBy && ` by ${queueSettings.updatedBy}`}
+            </Text>
+          )}
+        </Flex>
         <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>
           Configuration for queue processing behavior
         </Text>
@@ -272,9 +280,17 @@ export const JobFinderConfigTab: React.FC = () => {
 
       {/* AI Settings */}
       <Box sx={{ variant: "cards.primary", p: 4, mb: 4 }}>
-        <Heading as="h3" sx={{ mb: 3, fontSize: 3 }}>
-          AI Settings
-        </Heading>
+        <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+          <Heading as="h3" sx={{ fontSize: 3 }}>
+            AI Settings
+          </Heading>
+          {aiSettings.updatedAt && (
+            <Text sx={{ fontSize: 0, color: "textMuted" }}>
+              Last updated: {new Date(aiSettings.updatedAt).toLocaleString()}
+              {aiSettings.updatedBy && ` by ${aiSettings.updatedBy}`}
+            </Text>
+          )}
+        </Flex>
         <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>
           Configure AI provider and job matching parameters
         </Text>
@@ -374,16 +390,33 @@ export const JobFinderConfigTab: React.FC = () => {
         </Grid>
       </Box>
 
-      {/* Stop List - Excluded Companies */}
+      {/* Stop List */}
       <Box sx={{ variant: "cards.primary", p: 4, mb: 4 }}>
-        <Heading as="h3" sx={{ mb: 3, fontSize: 3 }}>
-          Excluded Companies
-        </Heading>
+        <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+          <Heading as="h3" sx={{ fontSize: 3 }}>
+            Stop List (Exclusions)
+          </Heading>
+          {stopList.updatedAt && (
+            <Text sx={{ fontSize: 0, color: "textMuted" }}>
+              Last updated: {new Date(stopList.updatedAt).toLocaleString()}
+              {stopList.updatedBy && ` by ${stopList.updatedBy}`}
+            </Text>
+          )}
+        </Flex>
         <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>
-          Jobs from these companies will be automatically skipped
+          Manage excluded companies, keywords, and domains. Jobs matching these criteria will be automatically skipped.
         </Text>
 
-        <Flex sx={{ gap: 2, mb: 3 }}>
+        {/* Excluded Companies */}
+        <Box sx={{ mb: 4 }}>
+          <Heading as="h4" sx={{ fontSize: 2, mb: 2 }}>
+            Excluded Companies
+          </Heading>
+          <Text sx={{ color: "textMuted", mb: 3, fontSize: 1 }}>
+            Jobs from these companies will be automatically skipped
+          </Text>
+
+          <Flex sx={{ gap: 2, mb: 3 }}>
           <Input
             type="text"
             value={newCompany}
@@ -422,16 +455,16 @@ export const JobFinderConfigTab: React.FC = () => {
             ))
           )}
         </Box>
-      </Box>
+        </Box>
 
-      {/* Stop List - Excluded Keywords */}
-      <Box sx={{ variant: "cards.primary", p: 4, mb: 4 }}>
-        <Heading as="h3" sx={{ mb: 3, fontSize: 3 }}>
-          Excluded Keywords
-        </Heading>
-        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>
-          Jobs containing these keywords will be automatically skipped
-        </Text>
+        {/* Excluded Keywords */}
+        <Box sx={{ mb: 4 }}>
+          <Heading as="h4" sx={{ fontSize: 2, mb: 2 }}>
+            Excluded Keywords
+          </Heading>
+          <Text sx={{ color: "textMuted", mb: 3, fontSize: 1 }}>
+            Jobs containing these keywords will be automatically skipped
+          </Text>
 
         <Flex sx={{ gap: 2, mb: 3 }}>
           <Input
@@ -472,16 +505,16 @@ export const JobFinderConfigTab: React.FC = () => {
             ))
           )}
         </Box>
-      </Box>
+        </Box>
 
-      {/* Stop List - Excluded Domains */}
-      <Box sx={{ variant: "cards.primary", p: 4, mb: 4 }}>
-        <Heading as="h3" sx={{ mb: 3, fontSize: 3 }}>
-          Excluded Domains
-        </Heading>
-        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>
-          Jobs from these domains will be automatically skipped
-        </Text>
+        {/* Excluded Domains */}
+        <Box>
+          <Heading as="h4" sx={{ fontSize: 2, mb: 2 }}>
+            Excluded Domains
+          </Heading>
+          <Text sx={{ color: "textMuted", mb: 3, fontSize: 1 }}>
+            Jobs from these domains will be automatically skipped
+          </Text>
 
         <Flex sx={{ gap: 2, mb: 3 }}>
           <Input
@@ -521,6 +554,7 @@ export const JobFinderConfigTab: React.FC = () => {
               </Flex>
             ))
           )}
+        </Box>
         </Box>
       </Box>
 

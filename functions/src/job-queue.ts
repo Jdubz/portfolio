@@ -26,7 +26,7 @@ const updateStopListSchema = Joi.object({
 })
 
 const updateAISettingsSchema = Joi.object({
-  provider: Joi.string().valid("claude", "openai").required(),
+  provider: Joi.string().valid("claude", "openai", "gemini").required(),
   model: Joi.string().trim().max(100).required(),
   minMatchScore: Joi.number().min(0).max(100).required(),
   costBudgetDaily: Joi.number().min(0).required(),

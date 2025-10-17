@@ -549,7 +549,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
         </Box>
       )}
 
-      <Box sx={{ overflowX: "auto" }}>
+      <Box sx={{ overflowX: "auto", mt: 4 }}>
         <Box
           as="table"
           sx={{
@@ -557,19 +557,21 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
             borderCollapse: "collapse",
             "& th": {
               textAlign: "left",
-              py: 2,
-              px: 3,
+              py: 3,
+              px: 4,
               borderBottom: "2px solid",
               borderColor: "muted",
-              fontWeight: "heading",
-              fontSize: 1,
-              color: "textMuted",
+              fontWeight: "bold",
+              fontSize: 2,
+              color: "text",
+              letterSpacing: "0.5px",
             },
             "& td": {
-              py: 2,
-              px: 3,
+              py: 3,
+              px: 4,
               borderBottom: "1px solid",
               borderColor: "muted",
+              verticalAlign: "middle",
             },
             "& tbody tr": {
               transition: "background-color 0.2s",
@@ -608,18 +610,18 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
               return (
                 <Box as="tr" key={jobMatch.id} className={className} onClick={() => void handleJobMatchClick(jobMatch)}>
                   <Box as="td">
-                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{jobMatch.company}</Text>
+                    <Text sx={{ fontSize: 2, fontWeight: "medium", lineHeight: 1.4 }}>{jobMatch.company}</Text>
                   </Box>
                   <Box as="td">
-                    <Text sx={{ fontSize: 1, fontWeight: jobMatch.title ? "medium" : "normal" }}>
+                    <Text sx={{ fontSize: 2, fontWeight: jobMatch.title ? "medium" : "normal", lineHeight: 1.4 }}>
                       {jobMatch.title ?? jobMatch.role}
                     </Text>
                     {jobMatch.title && jobMatch.title !== jobMatch.role && (
-                      <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>{jobMatch.role}</Text>
+                      <Text sx={{ fontSize: 1, color: "textMuted", mt: 1, lineHeight: 1.4 }}>{jobMatch.role}</Text>
                     )}
                   </Box>
                   <Box as="td">
-                    <Text sx={{ fontSize: 1, color: "text" }}>{getJobAge(jobMatch.postedDate)}</Text>
+                    <Text sx={{ fontSize: 2, color: "text", lineHeight: 1.4 }}>{getJobAge(jobMatch.postedDate)}</Text>
                   </Box>
                   <Box as="td">
                     {jobMatch.matchScore !== undefined ? (
