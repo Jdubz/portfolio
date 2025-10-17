@@ -5,11 +5,12 @@
  */
 
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Flex, Spinner, Badge, Grid, Input, Select } from "theme-ui"
+import { Box, Heading, Text, Button, Flex, Spinner, Grid, Input, Select } from "theme-ui"
 import { useAuth } from "../../hooks/useAuth"
 import { useQueueManagement } from "../../hooks/useQueueManagement"
 import { jobQueueClient } from "../../api"
 import { logger } from "../../utils/logger"
+import { StatusBadge } from "../ui/StatusBadge"
 import type { QueueStatus } from "../../types/job-queue"
 
 export const QueueManagementTab: React.FC = () => {
@@ -83,22 +84,6 @@ export const QueueManagementTab: React.FC = () => {
     return true
   })
 
-  // Get status color
-  const getStatusColor = (status: QueueStatus) => {
-    switch (status) {
-      case "success":
-        return "green"
-      case "failed":
-        return "red"
-      case "processing":
-        return "orange"
-      case "skipped":
-        return "gray"
-      default:
-        return "blue"
-    }
-  }
-
   // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -128,7 +113,7 @@ export const QueueManagementTab: React.FC = () => {
         </Heading>
         <Flex sx={{ alignItems: "center", gap: 2 }}>
           {loading && <Spinner size={16} />}
-          <Badge sx={{ bg: "green", color: "white", px: 2, py: 1, borderRadius: "99px" }}>Live Updates</Badge>
+          <StatusBadge status="live">Live Updates</StatusBadge>
         </Flex>
       </Flex>
 
@@ -227,18 +212,7 @@ export const QueueManagementTab: React.FC = () => {
                 <Box sx={{ flex: 1 }}>
                   <Flex sx={{ alignItems: "center", gap: 2, mb: 2 }}>
                     <Text sx={{ fontSize: 3, fontWeight: "bold" }}>{item.company_name}</Text>
-                    <Badge
-                      sx={{
-                        bg: getStatusColor(item.status),
-                        color: "white",
-                        px: 2,
-                        py: 1,
-                        borderRadius: "99px",
-                        fontSize: 1,
-                      }}
-                    >
-                      {item.status}
-                    </Badge>
+                    <StatusBadge status={item.status} />
                   </Flex>
                   <a
                     href={item.url}
@@ -266,7 +240,6 @@ export const QueueManagementTab: React.FC = () => {
                       onClick={() => void handleRetry(item.id)}
                       disabled={retryingIds.has(item.id)}
                       variant="secondary"
-                      sx={{ fontSize: 1 }}
                     >
                       {retryingIds.has(item.id) ? <Spinner size={16} /> : "Retry"}
                     </Button>
@@ -275,7 +248,6 @@ export const QueueManagementTab: React.FC = () => {
                     onClick={() => void handleDelete(item.id)}
                     disabled={deletingIds.has(item.id)}
                     variant="danger"
-                    sx={{ fontSize: 1 }}
                   >
                     {deletingIds.has(item.id) ? <Spinner size={16} /> : "Delete"}
                   </Button>
