@@ -162,6 +162,12 @@ jobs:
           cache: "npm"
           cache-dependency-path: portfolio/package-lock.json
 
+      - name: Build shared-types package
+        run: |
+          npm ci
+          npm run build
+        working-directory: shared-types
+
       - name: Cache TypeScript build
         uses: actions/cache@v4
         with:

@@ -37,6 +37,12 @@ jobs:
             portfolio/package-lock.json
             portfolio/web/package-lock.json
 
+      - name: Build shared-types package
+        run: |
+          npm ci
+          npm run build
+        working-directory: shared-types
+
       - name: Install build dependencies
         run: |
           sudo apt-get update
