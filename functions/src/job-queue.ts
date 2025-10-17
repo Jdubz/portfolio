@@ -38,12 +38,23 @@ const updateQueueSettingsSchema = Joi.object({
   processingTimeout: Joi.number().integer().min(0).required(),
 })
 
+const submitScrapeSchema = Joi.object({
+  scrape_config: Joi.object({
+    target_matches: Joi.number().integer().min(1).max(999).allow(null).optional(),
+    max_sources: Joi.number().integer().min(1).max(999).allow(null).optional(),
+    source_ids: Joi.array().items(Joi.string()).allow(null).optional(),
+    min_match_score: Joi.number().integer().min(0).max(100).allow(null).optional(),
+  }).optional(),
+})
+
 /**
  * Cloud Function to manage job queue operations
  *
  * Routes:
  * - GET    /health                  - Health check (public)
  * - POST   /submit                  - Submit job to queue (public)
+ * - POST   /submit-scrape           - Submit scrape request (auth required)
+ * - GET    /has-pending-scrape      - Check for pending scrape (auth required)
  * - GET    /status/:id              - Get queue item status (public)
  * - GET    /stats                   - Get queue statistics (public)
  * - GET    /config/stop-list        - Get stop list (public, read-only)
@@ -131,6 +142,41 @@ const handleJobQueueRequest = async (req: Request, res: Response): Promise<void>
             // Route: GET /config/queue-settings - Get queue settings (public, read-only)
             if (req.method === "GET" && path === "/config/queue-settings") {
               await handleGetQueueSettings(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+          }
+
+          // Authenticated routes (require auth but not editor role)
+          const authRequiredRoutes = ["/submit-scrape", "/has-pending-scrape"]
+
+          if (authRequiredRoutes.some((route) => path === route)) {
+            // Verify authentication (but not editor role)
+            const authHeader = req.headers.authorization
+            if (!authHeader || !authHeader.startsWith("Bearer ")) {
+              const err = ERROR_CODES.UNAUTHORIZED
+              logger.warning("Missing or invalid auth header", { path, requestId })
+              res.status(err.status).json({
+                success: false,
+                error: "UNAUTHORIZED",
+                errorCode: err.code,
+                message: err.message,
+                requestId,
+              })
+              resolve()
+              return
+            }
+
+            // Route: POST /submit-scrape - Submit scrape request (auth required)
+            if (req.method === "POST" && path === "/submit-scrape") {
+              await handleSubmitScrape(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+
+            // Route: GET /has-pending-scrape - Check for pending scrape (auth required)
+            if (req.method === "GET" && path === "/has-pending-scrape") {
+              await handleHasPendingScrape(req as AuthenticatedRequest, res, requestId)
               resolve()
               return
             }
@@ -813,6 +859,158 @@ async function handleUpdateQueueSettings(req: AuthenticatedRequest, res: Respons
     res.status(err.status).json({
       success: false,
       error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * POST /submit-scrape - Submit scrape request (auth required)
+ */
+async function handleSubmitScrape(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Validate request body
+    const { error, value } = submitScrapeSchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for scrape submission", {
+        error: error.details,
+        requestId,
+        body: req.body,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    const userId = req.user?.uid || null
+
+    if (!userId) {
+      const err = ERROR_CODES.UNAUTHORIZED
+      logger.warning("User not authenticated for scrape submission", { requestId })
+      res.status(err.status).json({
+        success: false,
+        error: "UNAUTHORIZED",
+        errorCode: err.code,
+        message: err.message,
+        requestId,
+      })
+      return
+    }
+
+    logger.info("Processing scrape submission", {
+      requestId,
+      userId,
+      config: value.scrape_config,
+    })
+
+    // Check if user already has a pending scrape
+    const hasPending = await jobQueueService.hasPendingScrape(userId)
+    if (hasPending) {
+      logger.info("User already has pending scrape", { requestId, userId })
+
+      res.status(409).json({
+        success: false,
+        error: "SCRAPE_ALREADY_PENDING",
+        message: "You already have a scrape request in progress. Please wait for it to complete.",
+        requestId,
+      })
+      return
+    }
+
+    // Submit scrape request
+    const queueItem = await jobQueueService.submitScrape(userId, value.scrape_config)
+
+    logger.info("Scrape request submitted successfully", {
+      requestId,
+      queueItemId: queueItem.id,
+      userId,
+    })
+
+    res.status(200).json({
+      success: true,
+      data: {
+        status: "success",
+        message: "Scrape request submitted successfully",
+        queueItemId: queueItem.id,
+        queueItem,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to submit scrape request", {
+      error,
+      requestId,
+      userId: req.user?.uid,
+    })
+
+    const err = ERROR_CODES.INTERNAL_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "INTERNAL_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /has-pending-scrape - Check for pending scrape (auth required)
+ */
+async function handleHasPendingScrape(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    const userId = req.user?.uid || null
+
+    if (!userId) {
+      const err = ERROR_CODES.UNAUTHORIZED
+      logger.warning("User not authenticated for pending scrape check", { requestId })
+      res.status(err.status).json({
+        success: false,
+        error: "UNAUTHORIZED",
+        errorCode: err.code,
+        message: err.message,
+        requestId,
+      })
+      return
+    }
+
+    const hasPending = await jobQueueService.hasPendingScrape(userId)
+
+    logger.info("Checked for pending scrape", {
+      requestId,
+      userId,
+      hasPending,
+    })
+
+    res.status(200).json({
+      success: true,
+      data: {
+        hasPending,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to check for pending scrape", {
+      error,
+      requestId,
+      userId: req.user?.uid,
+    })
+
+    const err = ERROR_CODES.INTERNAL_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "INTERNAL_ERROR",
       errorCode: err.code,
       message: err.message,
       requestId,

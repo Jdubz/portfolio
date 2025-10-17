@@ -15,6 +15,8 @@ import type {
   QueueStats,
   SubmitJobRequest,
   SubmitJobResponse,
+  SubmitScrapeRequest,
+  SubmitScrapeResponse,
 } from "../types/job-queue"
 
 export class JobQueueClient extends ApiClient {
@@ -30,6 +32,22 @@ export class JobQueueClient extends ApiClient {
   async submitJob(request: SubmitJobRequest): Promise<SubmitJobResponse> {
     const response = await this.post<SubmitJobResponse>("/submit", request, true)
     return response
+  }
+
+  /**
+   * Submit a scrape request to the queue
+   */
+  async submitScrape(request: SubmitScrapeRequest = {}): Promise<SubmitScrapeResponse> {
+    const response = await this.post<SubmitScrapeResponse>("/submit-scrape", request, true)
+    return response
+  }
+
+  /**
+   * Check if there's a pending scrape request
+   */
+  async hasPendingScrape(): Promise<boolean> {
+    const response = await this.get<{ hasPending: boolean }>("/has-pending-scrape", true)
+    return response.hasPending
   }
 
   /**

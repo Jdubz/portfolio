@@ -13,6 +13,7 @@ import { DocumentHistoryTab } from "../components/tabs/DocumentHistoryTab"
 import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
 import { JobFinderTab } from "../components/tabs/JobFinderTab"
 import { JobFinderConfigTab } from "../components/tabs/JobFinderConfigTab"
+import { ScrapingTab } from "../components/tabs/ScrapingTab"
 import { QueueManagementTab } from "../components/tabs/QueueManagementTab"
 import { CompaniesTab } from "../components/tabs/CompaniesTab"
 import { SourcesTab } from "../components/tabs/SourcesTab"
@@ -65,6 +66,7 @@ const ResumeBuilderPage: React.FC = () => {
       "history",
       "job-applications",
       "job-finder",
+      "scraping",
       "queue-management",
       "job-finder-config",
       "companies",
@@ -240,6 +242,17 @@ const ResumeBuilderPage: React.FC = () => {
       content: (
         <ErrorBoundary>
           <JobApplicationsTab onViewGeneratedDocs={handleViewGeneratedDocs} />
+        </ErrorBoundary>
+      ),
+    },
+    {
+      id: "scraping",
+      label: "Job Scraping",
+      icon: "🔍",
+      group: "job-finder",
+      content: (
+        <ErrorBoundary>
+          <ScrapingTab />
         </ErrorBoundary>
       ),
     },

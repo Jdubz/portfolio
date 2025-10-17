@@ -15,6 +15,9 @@ export type {
   QueueStats,
   SubmitJobRequest,
   SubmitJobResponse,
+  ScrapeConfig,
+  SubmitScrapeRequest,
+  SubmitScrapeResponse,
 } from "@jdubz/shared-types"
 
 export { isQueueStatus, isQueueItemType } from "@jdubz/shared-types"
@@ -22,8 +25,8 @@ export { isQueueStatus, isQueueItemType } from "@jdubz/shared-types"
 // Frontend-specific QueueItem with string dates (serialized from Firestore)
 export interface QueueItem {
   id: string
-  type: "job" | "company"
-  status: "pending" | "processing" | "success" | "failed" | "skipped"
+  type: "job" | "company" | "scrape"
+  status: "pending" | "processing" | "success" | "failed" | "skipped" | "filtered"
   url: string
   company_name: string
   company_id: string | null
@@ -38,4 +41,10 @@ export interface QueueItem {
   completed_at?: string
   retry_count: number
   max_retries: number
+  scrape_config?: {
+    target_matches?: number | null
+    max_sources?: number | null
+    source_ids?: string[] | null
+    min_match_score?: number | null
+  } | null
 }

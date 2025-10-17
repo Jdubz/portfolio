@@ -87,6 +87,80 @@ export class JobQueueService {
   }
 
   /**
+   * Submit a scrape request to the queue
+   *
+   * Creates a queue item with type "scrape" and the provided configuration
+   */
+  async submitScrape(userId: string, scrapeConfig?: any): Promise<QueueItem> {
+    try {
+      // Get queue settings for max retries
+      const settings = await this.getQueueSettings()
+
+      const now = new Date()
+      const queueItem: Omit<QueueItem, "id"> = {
+        type: "scrape",
+        status: "pending",
+        url: "", // Empty for scrape type
+        company_name: "", // Empty for scrape type
+        company_id: null,
+        source: "user_submission",
+        submitted_by: userId,
+        retry_count: 0,
+        max_retries: settings.maxRetries,
+        created_at: now,
+        updated_at: now,
+        scrape_config: scrapeConfig || {
+          target_matches: 5,
+          max_sources: 20,
+        },
+      }
+
+      const docRef = await this.db.collection(this.queueCollection).add(queueItem)
+
+      this.logger.info("Scrape request submitted to queue", {
+        queueItemId: docRef.id,
+        userId,
+        config: scrapeConfig,
+      })
+
+      return {
+        id: docRef.id,
+        ...queueItem,
+      }
+    } catch (error) {
+      this.logger.error("Failed to submit scrape request to queue", {
+        error,
+        userId,
+        config: scrapeConfig,
+      })
+      throw error
+    }
+  }
+
+  /**
+   * Check if user has a pending scrape request
+   *
+   * Returns true if user has any queue item with type "scrape" and status "pending" or "processing"
+   */
+  async hasPendingScrape(userId: string): Promise<boolean> {
+    try {
+      const snapshot = await this.db
+        .collection(this.queueCollection)
+        .where("submitted_by", "==", userId)
+        .where("type", "==", "scrape")
+        .where("status", "in", ["pending", "processing"])
+        .limit(1)
+        .get()
+
+      return !snapshot.empty
+    } catch (error) {
+      this.logger.error("Failed to check for pending scrape", { error, userId })
+      // Return false on error to allow submission (fail open)
+      return false
+    }
+  }
+
+  /**
    * Get queue item status by ID
    */
   async getQueueStatus(queueItemId: string): Promise<QueueItem | null> {
