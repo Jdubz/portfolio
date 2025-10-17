@@ -65,7 +65,7 @@ export const AddCompanyModal: React.FC<AddCompanyModalProps> = ({ isOpen, onClos
       setSuccessMessage("Company submitted successfully! Check the Queue Management tab to monitor progress.")
 
       // Reset form after delay
-      setTimeout(() => {
+      window.setTimeout(() => {
         setCompanyName("")
         setWebsiteUrl("")
         setSource("manual_submission")
