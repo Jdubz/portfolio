@@ -165,30 +165,38 @@ export const QueueManagementTab: React.FC = () => {
       )}
 
       {/* Queue Stats */}
-      <Flex sx={{ gap: 3, mb: 4, flexWrap: "wrap" }}>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Total Items</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold" }}>{filteredItems.length}</Text>
+      <Grid columns={[2, 2, 4]} gap={3} sx={{ mb: 4 }}>
+        <Box sx={{ variant: "cards.primary", p: 4 }}>
+          <Text sx={{ fontSize: 1, color: "textMuted", mb: 2, fontWeight: "medium", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            Total Items
+          </Text>
+          <Text sx={{ fontSize: 5, fontWeight: "bold" }}>{filteredItems.length}</Text>
         </Box>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Pending</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold", color: "blue" }}>
+        <Box sx={{ variant: "cards.primary", p: 4 }}>
+          <Text sx={{ fontSize: 1, color: "textMuted", mb: 2, fontWeight: "medium", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            Pending
+          </Text>
+          <Text sx={{ fontSize: 5, fontWeight: "bold", color: "blue" }}>
             {filteredItems.filter((i) => i.status === "pending").length}
           </Text>
         </Box>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Processing</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold", color: "orange" }}>
+        <Box sx={{ variant: "cards.primary", p: 4 }}>
+          <Text sx={{ fontSize: 1, color: "textMuted", mb: 2, fontWeight: "medium", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            Processing
+          </Text>
+          <Text sx={{ fontSize: 5, fontWeight: "bold", color: "orange" }}>
             {filteredItems.filter((i) => i.status === "processing").length}
           </Text>
         </Box>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Failed</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold", color: "red" }}>
+        <Box sx={{ variant: "cards.primary", p: 4 }}>
+          <Text sx={{ fontSize: 1, color: "textMuted", mb: 2, fontWeight: "medium", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            Failed
+          </Text>
+          <Text sx={{ fontSize: 5, fontWeight: "bold", color: "red" }}>
             {filteredItems.filter((i) => i.status === "failed").length}
           </Text>
         </Box>
-      </Flex>
+      </Grid>
 
       {/* Queue Items List */}
       {loading && queueItems.length === 0 ? (

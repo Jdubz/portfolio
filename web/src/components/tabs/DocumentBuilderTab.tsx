@@ -311,14 +311,17 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         }}
       >
         {/* Generation Type */}
-        <Box sx={{ mb: 3 }}>
-          <Label htmlFor="generateType">What would you like to generate?</Label>
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="generateType" sx={{ mb: 2, display: "block", fontWeight: "medium" }}>
+            What would you like to generate?
+          </Label>
           <Select
             id="generateType"
             value={formState.generateType}
             onChange={(e) => setGenerateType(e.target.value as GenerationType)}
             disabled={generating}
             required
+            sx={{ fontSize: 2 }}
           >
             <option value="both">Resume + Cover Letter</option>
             <option value="resume">Resume Only</option>
@@ -327,28 +330,31 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
         </Box>
 
         {/* AI Provider Selection */}
-        <Box sx={{ mb: 3 }}>
-          <Label htmlFor="aiProvider">AI Provider</Label>
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="aiProvider" sx={{ mb: 2, display: "block", fontWeight: "medium" }}>
+            AI Provider
+          </Label>
           <Select
             id="aiProvider"
             value={formState.aiProvider}
             onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
             disabled={generating}
             required
+            sx={{ fontSize: 2 }}
           >
-            <option value="openai">OpenAI GPT-4o (Recommended - $0.015/generation)</option>
-            <option value="gemini">Gemini 2.0 Flash (96% cheaper, but doesn't work well 😞)</option>
+            <option value="openai">OpenAI GPT-4o (Recommended)</option>
+            <option value="gemini">Gemini 2.0 Flash</option>
           </Select>
-          <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>
+          <Text sx={{ fontSize: 1, color: "textMuted", mt: 2, lineHeight: 1.5 }}>
             {formState.aiProvider === "openai"
-              ? "🚀 GPT-4o: Premium quality, reliable results"
-              : "⚠️ Gemini: Cost-effective but produces inferior results compared to GPT-4o"}
+              ? "🚀 Premium quality, reliable results (~$0.015/generation)"
+              : "⚠️ Cost-effective but produces inferior results"}
           </Text>
         </Box>
 
         {/* Role */}
-        <Box sx={{ mb: 3 }}>
-          <Label htmlFor="role">
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="role" sx={{ mb: 2, display: "block", fontWeight: "medium" }}>
             Job Title / Role <Text sx={{ color: "error" }}>*</Text>
           </Label>
           <Input
@@ -359,12 +365,13 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             onChange={(e) => setRole(e.target.value)}
             disabled={generating}
             required
+            sx={{ fontSize: 2 }}
           />
         </Box>
 
         {/* Company */}
-        <Box sx={{ mb: 3 }}>
-          <Label htmlFor="company">
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="company" sx={{ mb: 2, display: "block", fontWeight: "medium" }}>
             Company <Text sx={{ color: "error" }}>*</Text>
           </Label>
           <Input
@@ -375,12 +382,15 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             onChange={(e) => setCompany(e.target.value)}
             disabled={generating}
             required
+            sx={{ fontSize: 2 }}
           />
         </Box>
 
         {/* Company Website (Optional) */}
-        <Box sx={{ mb: 3 }}>
-          <Label htmlFor="companyWebsite">Company Website (Optional)</Label>
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="companyWebsite" sx={{ mb: 2, display: "block", fontWeight: "medium" }}>
+            Company Website (Optional)
+          </Label>
           <Input
             id="companyWebsite"
             type="url"
@@ -388,12 +398,15 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             value={formState.companyWebsite}
             onChange={(e) => setCompanyWebsite(e.target.value)}
             disabled={generating}
+            sx={{ fontSize: 2 }}
           />
         </Box>
 
         {/* Job Description URL (Optional) */}
-        <Box sx={{ mb: 3 }}>
-          <Label htmlFor="jobDescriptionUrl">Job Description URL (Optional)</Label>
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="jobDescriptionUrl" sx={{ mb: 2, display: "block", fontWeight: "medium" }}>
+            Job Description URL (Optional)
+          </Label>
           <Input
             id="jobDescriptionUrl"
             type="url"
@@ -401,15 +414,18 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             value={formState.jobDescriptionUrl}
             onChange={(e) => setJobDescriptionUrl(e.target.value)}
             disabled={generating}
+            sx={{ fontSize: 2 }}
           />
-          <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>
+          <Text sx={{ fontSize: 1, color: "textMuted", mt: 2, lineHeight: 1.5 }}>
             The AI will fetch and analyze the job description from this URL
           </Text>
         </Box>
 
         {/* Job Description Text (Optional) */}
-        <Box sx={{ mb: 3 }}>
-          <Label htmlFor="jobDescriptionText">Or Paste Job Description (Optional)</Label>
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="jobDescriptionText" sx={{ mb: 2, display: "block", fontWeight: "medium" }}>
+            Or Paste Job Description (Optional)
+          </Label>
           <Textarea
             id="jobDescriptionText"
             placeholder="Paste the job description here..."
@@ -417,15 +433,19 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             value={formState.jobDescriptionText}
             onChange={(e) => setJobDescriptionText(e.target.value)}
             disabled={generating}
+            sx={{ fontSize: 2, lineHeight: 1.6 }}
           />
         </Box>
 
         {/* Keywords to Emphasize (Optional) */}
-        <Box sx={{ mb: 3 }}>
-          <Label htmlFor="emphasize">Keywords to Emphasize (Optional)</Label>
+        <Box sx={{ mb: 4 }}>
+          <Label htmlFor="emphasize" sx={{ mb: 2, display: "block", fontWeight: "medium" }}>
+            Keywords to Emphasize (Optional)
+          </Label>
           <Input
             id="emphasize"
             type="text"
+            sx={{ fontSize: 2 }}
             placeholder="TypeScript, React, Node.js, AWS"
             value={formState.emphasize}
             onChange={(e) => setEmphasize(e.target.value)}
