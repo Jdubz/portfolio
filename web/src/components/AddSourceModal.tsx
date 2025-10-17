@@ -1,5 +1,7 @@
 import React, { useState } from "react"
-import { Box, Button, Flex, Heading, Text, Label, Input } from "theme-ui"
+import { Box, Text, Label, Input } from "theme-ui"
+import { Modal, ModalHeader, ModalBody, ModalFooter, InfoBox } from "./ui"
+import { FormError } from "./FormError"
 import { logger } from "../utils/logger"
 
 interface AddSourceModalProps {
@@ -19,10 +21,6 @@ export const AddSourceModal: React.FC<AddSourceModalProps> = ({ isOpen, onClose,
   const [careersUrl, setCareersUrl] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  if (!isOpen) {
-    return null
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -77,122 +75,84 @@ export const AddSourceModal: React.FC<AddSourceModalProps> = ({ isOpen, onClose,
   }
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        p: 3,
-      }}
-      onClick={handleClose}
-    >
-      <Box
-        sx={{
-          bg: "background",
-          borderRadius: "md",
-          maxWidth: "500px",
-          width: "100%",
-          maxHeight: "90vh",
-          overflow: "auto",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <Flex
-          sx={{
-            justifyContent: "space-between",
-            alignItems: "center",
-            p: 4,
-            borderBottom: "1px solid",
-            borderColor: "muted",
-          }}
-        >
-          <Heading as="h2" sx={{ fontSize: 4 }}>
-            Add New Job Source
-          </Heading>
-          <Button variant="secondary" onClick={handleClose} sx={{ fontSize: 2 }} disabled={isSubmitting}>
-            ✕
-          </Button>
-        </Flex>
+    <Modal isOpen={isOpen} onClose={handleClose} size="sm">
+      <ModalHeader title="Add New Job Source" onClose={handleClose} disableClose={isSubmitting} />
 
-        {/* Content */}
-        <Box sx={{ p: 4 }}>
-          <Text sx={{ mb: 4, color: "textMuted", fontSize: 2 }}>
-            Add a new company career page to scrape for job opportunities. The job-finder will process this and add it
-            to the sources list.
-          </Text>
+      <ModalBody>
+        <Text sx={{ mb: 4, color: "textMuted", fontSize: 2 }}>
+          Add a new company career page to scrape for job opportunities. The job-finder will process this and add it to
+          the sources list.
+        </Text>
 
-          <form onSubmit={(e) => void handleSubmit(e)}>
-            {/* Company Name */}
+        <form onSubmit={(e) => void handleSubmit(e)}>
+          {/* Company Name */}
+          <Box sx={{ mb: 4 }}>
+            <Label htmlFor="companyName" sx={{ mb: 2, fontWeight: "medium" }}>
+              Company Name *
+            </Label>
+            <Input
+              id="companyName"
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="e.g., Acme Corporation"
+              disabled={isSubmitting}
+              sx={{ variant: "forms.input" }}
+            />
+          </Box>
+
+          {/* Careers URL */}
+          <Box sx={{ mb: 4 }}>
+            <Label htmlFor="careersUrl" sx={{ mb: 2, fontWeight: "medium" }}>
+              Careers Page URL *
+            </Label>
+            <Input
+              id="careersUrl"
+              type="url"
+              value={careersUrl}
+              onChange={(e) => setCareersUrl(e.target.value)}
+              placeholder="https://example.com/careers"
+              disabled={isSubmitting}
+              sx={{ variant: "forms.input" }}
+            />
+            <Text sx={{ fontSize: 1, color: "textMuted", mt: 1 }}>The URL to the company&apos;s career/jobs page</Text>
+          </Box>
+
+          {/* Error Message */}
+          {error && (
             <Box sx={{ mb: 4 }}>
-              <Label htmlFor="companyName" sx={{ mb: 2, fontWeight: "medium" }}>
-                Company Name *
-              </Label>
-              <Input
-                id="companyName"
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="e.g., Acme Corporation"
-                disabled={isSubmitting}
-                sx={{ variant: "forms.input" }}
-              />
+              <FormError message={error} />
             </Box>
+          )}
 
-            {/* Careers URL */}
-            <Box sx={{ mb: 4 }}>
-              <Label htmlFor="careersUrl" sx={{ mb: 2, fontWeight: "medium" }}>
-                Careers Page URL *
-              </Label>
-              <Input
-                id="careersUrl"
-                type="url"
-                value={careersUrl}
-                onChange={(e) => setCareersUrl(e.target.value)}
-                placeholder="https://example.com/careers"
-                disabled={isSubmitting}
-                sx={{ variant: "forms.input" }}
-              />
-              <Text sx={{ fontSize: 1, color: "textMuted", mt: 1 }}>
-                The URL to the company&apos;s career/jobs page
-              </Text>
-            </Box>
-
-            {/* Error Message */}
-            {error && (
-              <Box sx={{ mb: 4, p: 3, bg: "danger", color: "background", borderRadius: "sm" }}>
-                <Text sx={{ fontWeight: "medium" }}>{error}</Text>
-              </Box>
-            )}
-
-            {/* Info Box */}
-            <Box sx={{ mb: 4, p: 3, bg: "highlight", borderRadius: "sm" }}>
+          {/* Info Box */}
+          <Box sx={{ mb: 4 }}>
+            <InfoBox variant="info">
               <Text sx={{ fontSize: 1 }}>
                 <strong>Note:</strong> The job-finder will analyze this page, determine if it&apos;s scrapable, and add
                 it to the sources list if valid. You can track progress in the Queue Management tab.
               </Text>
-            </Box>
+            </InfoBox>
+          </Box>
+        </form>
+      </ModalBody>
 
-            {/* Actions */}
-            <Flex sx={{ justifyContent: "flex-end", gap: 2 }}>
-              <Button type="button" variant="secondary" onClick={handleClose} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Add Source"}
-              </Button>
-            </Flex>
-          </form>
-        </Box>
-      </Box>
-    </Box>
+      <ModalFooter
+        primaryAction={{
+          label: isSubmitting ? "Submitting" : "Add Source",
+          onClick: () => {
+            const form = document.querySelector("form")
+            if (form) {
+              form.requestSubmit()
+            }
+          },
+          loading: isSubmitting,
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: handleClose,
+        }}
+      />
+    </Modal>
   )
 }
