@@ -62,9 +62,9 @@ export const SourcesTab: React.FC = () => {
         const data = doc.data()
         sourcesData.push({
           id: doc.id,
-          company_name: data.company_name || "Unknown",
-          company_website: data.company_website,
-          careers_page_url: data.careers_page_url,
+          company_name: data.company_name || data.name || "Unknown",
+          company_website: data.company_website || data.website,
+          careers_page_url: data.careers_page_url || data.url,
           source_type: data.source_type,
           priority_score: data.priority_score,
           priority_tier: data.priority_tier,
