@@ -226,6 +226,7 @@ export class JobQueueService {
         success: 0,
         failed: 0,
         skipped: 0,
+        filtered: 0,
         total: snapshot.size,
       }
 
@@ -238,6 +239,7 @@ export class JobQueueService {
         else if (status === "success") stats.success++
         else if (status === "failed") stats.failed++
         else if (status === "skipped") stats.skipped++
+        else if (status === "filtered") stats.filtered++
       })
 
       return stats
