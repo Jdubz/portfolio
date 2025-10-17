@@ -339,4 +339,157 @@ export class JobQueueService {
       }
     }
   }
+
+  /**
+   * Update AI settings
+   */
+  async updateAISettings(settings: AISettings, userEmail: string): Promise<AISettings> {
+    try {
+      const docRef = this.db.collection(this.configCollection).doc("ai-settings")
+
+      await docRef.set(
+        {
+          ...settings,
+          updatedAt: new Date(),
+          updatedBy: userEmail,
+        },
+        { merge: true }
+      )
+
+      this.logger.info("AI settings updated", {
+        userEmail,
+        provider: settings.provider,
+        model: settings.model,
+        minMatchScore: settings.minMatchScore,
+      })
+
+      return settings
+    } catch (error) {
+      this.logger.error("Failed to update AI settings", {
+        error,
+        userEmail,
+      })
+      throw error
+    }
+  }
+
+  /**
+   * Update queue settings
+   */
+  async updateQueueSettings(settings: QueueSettings, userEmail: string): Promise<QueueSettings> {
+    try {
+      const docRef = this.db.collection(this.configCollection).doc("queue-settings")
+
+      await docRef.set(
+        {
+          ...settings,
+          updatedAt: new Date(),
+          updatedBy: userEmail,
+        },
+        { merge: true }
+      )
+
+      this.logger.info("Queue settings updated", {
+        userEmail,
+        maxRetries: settings.maxRetries,
+        retryDelaySeconds: settings.retryDelaySeconds,
+        processingTimeout: settings.processingTimeout,
+      })
+
+      return settings
+    } catch (error) {
+      this.logger.error("Failed to update queue settings", {
+        error,
+        userEmail,
+      })
+      throw error
+    }
+  }
+
+  /**
+   * Retry a failed queue item by resetting it to pending status
+   *
+   * This matches the Python backend method: queue_manager.retry_item()
+   */
+  async retryQueueItem(queueItemId: string): Promise<boolean> {
+    try {
+      const docRef = this.db.collection(this.queueCollection).doc(queueItemId)
+      const doc = await docRef.get()
+
+      if (!doc.exists) {
+        this.logger.warning("Cannot retry: Queue item not found", { queueItemId })
+        return false
+      }
+
+      const queueItem = doc.data() as QueueItem
+
+      // Only retry failed items
+      if (queueItem.status !== "failed") {
+        this.logger.warning("Cannot retry item: status is not failed", {
+          queueItemId,
+          currentStatus: queueItem.status,
+        })
+        return false
+      }
+
+      // Reset to pending and clear error fields
+      await docRef.update({
+        status: "pending",
+        updated_at: new Date(),
+        processed_at: null,
+        completed_at: null,
+        error_details: null,
+      })
+
+      this.logger.info("Reset queue item to pending for retry", { queueItemId })
+      return true
+    } catch (error) {
+      this.logger.error("Failed to retry queue item", {
+        error,
+        queueItemId,
+      })
+      return false
+    }
+  }
+
+  /**
+   * Delete a queue item from Firestore
+   *
+   * This matches the Python backend method: queue_manager.delete_item()
+   */
+  async deleteQueueItem(queueItemId: string): Promise<boolean> {
+    try {
+      const docRef = this.db.collection(this.queueCollection).doc(queueItemId)
+      const doc = await docRef.get()
+
+      if (!doc.exists) {
+        this.logger.warning("Cannot delete: Queue item not found", { queueItemId })
+        return false
+      }
+
+      const queueItem = doc.data() as QueueItem
+
+      // Delete the document
+      await docRef.delete()
+
+      this.logger.info("Deleted queue item", {
+        queueItemId,
+        previousStatus: queueItem.status,
+      })
+      return true
+    } catch (error) {
+      this.logger.error("Failed to delete queue item", {
+        error,
+        queueItemId,
+      })
+      return false
+    }
+  }
+
+  /**
+   * Make getQueueSettings public for API access
+   */
+  async getPublicQueueSettings(): Promise<QueueSettings> {
+    return this.getQueueSettings()
+  }
 }
