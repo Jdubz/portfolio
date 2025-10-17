@@ -109,6 +109,37 @@ Portfolio is missing critical indexes for shared collections:
 - It's a best practice but not strictly required
 - Can help with pagination and consistent ordering
 
+## Important: Firestore Index Behavior
+
+**Key Understanding:** Firestore indexes are **collection-level**, not database-level. When you create an index for a collection (e.g., `job-queue`), it automatically applies to that collection across **ALL databases** in the project.
+
+This means:
+- Indexes defined in `firestore.indexes.json` apply globally
+- You only need to deploy indexes once (to the default database)
+- The same indexes work for `(default)`, `portfolio`, and `portfolio-staging` databases
+- You cannot have different indexes for the same collection in different databases
+
+**In firebase.json:**
+```json
+{
+  "firestore": [
+    {
+      "database": "(default)",
+      "rules": "firestore.rules",
+      "indexes": "firestore.indexes.json"  // Only here
+    },
+    {
+      "database": "portfolio",
+      "rules": "firestore.rules"  // No indexes - they're global
+    },
+    {
+      "database": "portfolio-staging",
+      "rules": "firestore.rules"  // No indexes - they're global
+    }
+  ]
+}
+```
+
 ## Proposed Solution: Single Source of Truth
 
 ### Option 1: Portfolio as Primary (RECOMMENDED)
