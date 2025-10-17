@@ -83,11 +83,7 @@ jobs:
           WEB_VERSION=$(cat web/package.json | jq -r '.version')
           FUNCTIONS_VERSION=$(cat functions/package.json | jq -r '.version')
 
-          PR_URL=$(gh pr create \
-            --base main \
-            --head "$BRANCH_NAME" \
-            --title "chore: version bump - consumed ${CHANGESET_COUNT} changeset(s)" \
-            --body "## Version Bump
+          PR_BODY="## Version Bump
 
 Automatically consumed changesets and updated versions.
 
@@ -103,7 +99,13 @@ Automatically consumed changesets and updated versions.
 - Functions: ${FUNCTIONS_VERSION}
 
 ---
-🤖 This PR was automatically created by the changeset version workflow")
+🤖 This PR was automatically created by the changeset version workflow"
+
+          PR_URL=$(gh pr create \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --title "chore: version bump - consumed ${CHANGESET_COUNT} changeset(s)" \
+            --body "$PR_BODY")
 
           echo "Created PR: $PR_URL"
 
