@@ -14,6 +14,8 @@ import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
 import { JobFinderTab } from "../components/tabs/JobFinderTab"
 import { JobFinderConfigTab } from "../components/tabs/JobFinderConfigTab"
 import { QueueManagementTab } from "../components/tabs/QueueManagementTab"
+import { CompaniesTab } from "../components/tabs/CompaniesTab"
+import { SourcesTab } from "../components/tabs/SourcesTab"
 import { GenerationDetailsModal } from "../components/GenerationDetailsModal"
 import { ErrorBoundary } from "../components/ErrorBoundary"
 import { logger } from "../utils/logger"
@@ -63,6 +65,8 @@ const ResumeBuilderPage: React.FC = () => {
       "job-finder",
       "queue-management",
       "job-finder-config",
+      "companies",
+      "sources",
     ]
     return tabParam && validTabs.includes(tabParam) ? tabParam : "how-it-works"
   }
@@ -101,7 +105,7 @@ const ResumeBuilderPage: React.FC = () => {
 
   // Redirect non-editors away from editor-only tabs
   useEffect(() => {
-    const editorOnlyTabs = ["history", "job-applications", "job-finder", "queue-management", "job-finder-config"]
+    const editorOnlyTabs = ["history", "job-applications", "job-finder", "queue-management", "job-finder-config", "companies", "sources"]
     if (!authLoading && editorOnlyTabs.includes(activeTab) && !isEditor) {
       logger.info("Non-editor attempted to access editor-only tab, redirecting to document-builder", {
         page: "resume-builder",
@@ -259,6 +263,28 @@ const ResumeBuilderPage: React.FC = () => {
             content: (
               <ErrorBoundary>
                 <JobFinderConfigTab />
+              </ErrorBoundary>
+            ),
+          },
+          {
+            id: "companies",
+            label: "Companies",
+            icon: "🏢",
+            group: "job-finder",
+            content: (
+              <ErrorBoundary>
+                <CompaniesTab />
+              </ErrorBoundary>
+            ),
+          },
+          {
+            id: "sources",
+            label: "Sources",
+            icon: "📡",
+            group: "job-finder",
+            content: (
+              <ErrorBoundary>
+                <SourcesTab />
               </ErrorBoundary>
             ),
           },
