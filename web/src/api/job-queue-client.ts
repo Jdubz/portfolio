@@ -7,7 +7,15 @@
 
 import { ApiClient } from "./client"
 import { getJobQueueApiUrl } from "../config/api"
-import type { QueueItem, StopList, QueueStats, SubmitJobRequest, SubmitJobResponse } from "../types/job-queue"
+import type {
+  QueueItem,
+  StopList,
+  QueueSettings,
+  AISettings,
+  QueueStats,
+  SubmitJobRequest,
+  SubmitJobResponse,
+} from "../types/job-queue"
 
 export class JobQueueClient extends ApiClient {
   constructor() {
@@ -45,6 +53,38 @@ export class JobQueueClient extends ApiClient {
    */
   async updateStopList(stopList: StopList): Promise<StopList> {
     const response = await this.put<StopList>("/config/stop-list", stopList, true)
+    return response
+  }
+
+  /**
+   * Get queue settings configuration
+   */
+  async getQueueSettings(): Promise<QueueSettings> {
+    const response = await this.get<QueueSettings>("/config/queue-settings", true)
+    return response
+  }
+
+  /**
+   * Update queue settings configuration
+   */
+  async updateQueueSettings(settings: QueueSettings): Promise<QueueSettings> {
+    const response = await this.put<QueueSettings>("/config/queue-settings", settings, true)
+    return response
+  }
+
+  /**
+   * Get AI settings configuration
+   */
+  async getAISettings(): Promise<AISettings> {
+    const response = await this.get<AISettings>("/config/ai-settings", true)
+    return response
+  }
+
+  /**
+   * Update AI settings configuration
+   */
+  async updateAISettings(settings: AISettings): Promise<AISettings> {
+    const response = await this.put<AISettings>("/config/ai-settings", settings, true)
     return response
   }
 
