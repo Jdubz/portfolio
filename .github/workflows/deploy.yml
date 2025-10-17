@@ -170,3 +170,12 @@ jobs:
           channelId: live
           target: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
           entryPoint: portfolio
+
+      - name: Deploy Firestore Rules to All Databases
+        working-directory: portfolio
+        run: |
+          echo "Deploying Firestore security rules to all databases..."
+          npx firebase deploy --only firestore --force --non-interactive
+          echo "✅ Firestore rules deployed successfully"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
