@@ -55,6 +55,29 @@ export class JobQueueClient extends ApiClient {
     const response = await this.get<QueueStats>("/stats", true)
     return response
   }
+
+  /**
+   * Get all queue items (admin only)
+   */
+  async getAllQueueItems(): Promise<QueueItem[]> {
+    const response = await this.get<QueueItem[]>("/queue", true)
+    return response
+  }
+
+  /**
+   * Retry a failed queue item (admin only)
+   */
+  async retryQueueItem(queueItemId: string): Promise<QueueItem> {
+    const response = await this.post<QueueItem>(`/retry/${queueItemId}`, {}, true)
+    return response
+  }
+
+  /**
+   * Delete a queue item (admin only)
+   */
+  async deleteQueueItem(queueItemId: string): Promise<void> {
+    await this.delete(`/queue/${queueItemId}`, true)
+  }
 }
 
 // Export singleton instance

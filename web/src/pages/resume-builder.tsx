@@ -13,6 +13,7 @@ import { DocumentHistoryTab } from "../components/tabs/DocumentHistoryTab"
 import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
 import { JobFinderTab } from "../components/tabs/JobFinderTab"
 import { JobFinderConfigTab } from "../components/tabs/JobFinderConfigTab"
+import { QueueManagementTab } from "../components/tabs/QueueManagementTab"
 import { GenerationDetailsModal } from "../components/GenerationDetailsModal"
 import { ErrorBoundary } from "../components/ErrorBoundary"
 import { logger } from "../utils/logger"
@@ -60,6 +61,7 @@ const ResumeBuilderPage: React.FC = () => {
       "history",
       "job-applications",
       "job-finder",
+      "queue-management",
       "job-finder-config",
     ]
     return tabParam && validTabs.includes(tabParam) ? tabParam : "how-it-works"
@@ -99,7 +101,7 @@ const ResumeBuilderPage: React.FC = () => {
 
   // Redirect non-editors away from editor-only tabs
   useEffect(() => {
-    const editorOnlyTabs = ["history", "job-applications", "job-finder", "job-finder-config"]
+    const editorOnlyTabs = ["history", "job-applications", "job-finder", "queue-management", "job-finder-config"]
     if (!authLoading && editorOnlyTabs.includes(activeTab) && !isEditor) {
       logger.info("Non-editor attempted to access editor-only tab, redirecting to document-builder", {
         page: "resume-builder",
@@ -235,6 +237,17 @@ const ResumeBuilderPage: React.FC = () => {
             content: (
               <ErrorBoundary>
                 <JobApplicationsTab onViewGeneratedDocs={handleViewGeneratedDocs} />
+              </ErrorBoundary>
+            ),
+          },
+          {
+            id: "queue-management",
+            label: "Queue Management",
+            icon: "📊",
+            group: "job-finder",
+            content: (
+              <ErrorBoundary>
+                <QueueManagementTab />
               </ErrorBoundary>
             ),
           },
