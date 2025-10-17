@@ -36,6 +36,7 @@ jobs:
       content-items: ${{ steps.changes.outputs.content-items }}
       generator: ${{ steps.changes.outputs.generator }}
       resume: ${{ steps.changes.outputs.resume }}
+      job-queue: ${{ steps.changes.outputs.job-queue }}
       any-changed: ${{ steps.changes.outputs.any-changed }}
     steps:
       - name: Checkout repository
@@ -70,6 +71,7 @@ jobs:
           CONTENT_ITEMS_CHANGED=false
           GENERATOR_CHANGED=false
           RESUME_CHANGED=false
+          JOB_QUEUE_CHANGED=false
           ANY_CHANGED=false
 
           # Check for shared code changes (affects all functions)
@@ -80,6 +82,7 @@ jobs:
             CONTENT_ITEMS_CHANGED=true
             GENERATOR_CHANGED=true
             RESUME_CHANGED=true
+            JOB_QUEUE_CHANGED=true
             ANY_CHANGED=true
           fi
 
@@ -109,6 +112,11 @@ jobs:
             ANY_CHANGED=true
           fi
 
+          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(job-queue\.ts|services/job-queue)"; then
+            JOB_QUEUE_CHANGED=true
+            ANY_CHANGED=true
+          fi
+
           # Check workflow changes (redeploy all)
           if echo "$CHANGED_FILES" | grep -qE "^\.github/workflows/deploy-cloud-functions\.yml"; then
             echo "Workflow changed - all functions need redeployment"
@@ -117,6 +125,7 @@ jobs:
             CONTENT_ITEMS_CHANGED=true
             GENERATOR_CHANGED=true
             RESUME_CHANGED=true
+            JOB_QUEUE_CHANGED=true
             ANY_CHANGED=true
           fi
 
@@ -125,6 +134,7 @@ jobs:
           echo "content-items=$CONTENT_ITEMS_CHANGED" >> $GITHUB_OUTPUT
           echo "generator=$GENERATOR_CHANGED" >> $GITHUB_OUTPUT
           echo "resume=$RESUME_CHANGED" >> $GITHUB_OUTPUT
+          echo "job-queue=$JOB_QUEUE_CHANGED" >> $GITHUB_OUTPUT
           echo "any-changed=$ANY_CHANGED" >> $GITHUB_OUTPUT
 
           echo "Results:"
@@ -133,6 +143,7 @@ jobs:
           echo "  content-items: $CONTENT_ITEMS_CHANGED"
           echo "  generator: $GENERATOR_CHANGED"
           echo "  resume: $RESUME_CHANGED"
+          echo "  job-queue: $JOB_QUEUE_CHANGED"
           echo "  any-changed: $ANY_CHANGED"
 
   # Build and test (runs once, cached)
@@ -260,6 +271,13 @@ jobs:
             max_instances: 5
             secrets: ""
             changed: ${{ needs.detect-changes.outputs.resume }}
+          - name: manageJobQueue
+            entry_point: manageJobQueue
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 256Mi
+            max_instances: 10
+            secrets: ""
+            changed: ${{ needs.detect-changes.outputs.job-queue }}
 
     steps:
       - name: Check if deployment needed
@@ -410,6 +428,13 @@ jobs:
             max_instances: 5
             secrets: ""
             changed: ${{ needs.detect-changes.outputs.resume }}
+          - name: manageJobQueue
+            entry_point: manageJobQueue
+            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
+            memory: 256Mi
+            max_instances: 10
+            secrets: ""
+            changed: ${{ needs.detect-changes.outputs.job-queue }}
 
     steps:
       - name: Check if deployment needed
