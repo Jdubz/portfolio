@@ -7,6 +7,8 @@
 import React, { useState } from "react"
 import { Box, Heading, Text, Button, Flex, Input, Spinner, Label } from "theme-ui"
 import { useAuth } from "../../hooks/useAuth"
+import { useAuthRequired } from "../../hooks/useAuthRequired"
+import { SignInModal } from "../SignInModal"
 import { jobQueueClient } from "../../api"
 import { useJobQueueStatus } from "../../hooks/useJobQueueStatus"
 import { logger } from "../../utils/logger"
@@ -14,6 +16,14 @@ import type { QueueItem } from "../../types/job-queue"
 
 export const JobFinderTab: React.FC = () => {
   const { user, loading: authLoading } = useAuth()
+
+  // Auth required hook for consistent sign-in UX
+  const { isModalOpen, signingIn, authError, hideSignInModal, handleSignIn, withAuth } = useAuthRequired({
+    message:
+      "Sign in to submit jobs to the automated processing queue. The system will analyze and match jobs against your resume.",
+    title: "Sign In to Submit Jobs",
+  })
+
   const [url, setUrl] = useState("")
   const [companyName, setCompanyName] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -30,37 +40,41 @@ export const JobFinderTab: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
 
-    if (!url.trim() || !companyName.trim()) {
-      setError("Please provide both URL and company name")
-      return
-    }
+    // Use withAuth to ensure user is signed in before proceeding
+    await withAuth(async () => {
+      setError(null)
 
-    try {
-      setSubmitting(true)
-      const result = await jobQueueClient.submitJob({
-        url: url.trim(),
-        companyName: companyName.trim(),
-      })
+      if (!url.trim() || !companyName.trim()) {
+        setError("Please provide both URL and company name")
+        return
+      }
 
-      const queueItemId = result.queueItem?.id || result.queueItemId
-      setSubmissionState({
-        queueItemId: queueItemId!,
-        submitted: true,
-      })
+      try {
+        setSubmitting(true)
+        const result = await jobQueueClient.submitJob({
+          url: url.trim(),
+          companyName: companyName.trim(),
+        })
 
-      logger.info("Job submitted to queue", { queueItemId })
+        const queueItemId = result.queueItem?.id || result.queueItemId
+        setSubmissionState({
+          queueItemId: queueItemId!,
+          submitted: true,
+        })
 
-      // Clear form
-      setUrl("")
-      setCompanyName("")
-    } catch (err) {
-      logger.error("Failed to submit job", err as Error)
-      setError(err instanceof Error ? err.message : "Failed to submit job")
-    } finally {
-      setSubmitting(false)
-    }
+        logger.info("Job submitted to queue", { queueItemId })
+
+        // Clear form
+        setUrl("")
+        setCompanyName("")
+      } catch (err) {
+        logger.error("Failed to submit job", err as Error)
+        setError(err instanceof Error ? err.message : "Failed to submit job")
+      } finally {
+        setSubmitting(false)
+      }
+    })
   }
 
   const getStatusColor = (status?: string) => {
@@ -78,16 +92,10 @@ export const JobFinderTab: React.FC = () => {
     }
   }
 
-  if (authLoading) {
-    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Loading...</Box>
-  }
-
-  if (!user) {
-    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Please sign in to use the job finder</Box>
-  }
-
   return (
     <Box sx={{ maxWidth: "800px", mx: "auto" }}>
+      {/* Auth loading state */}
+      {authLoading && <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Loading...</Box>}
       <Heading as="h2" sx={{ mb: 2, fontSize: 4 }}>
         Submit Job to Queue
       </Heading>
@@ -140,7 +148,7 @@ export const JobFinderTab: React.FC = () => {
           />
         </Box>
 
-        {error && (
+        {(error || authError) && (
           <Box
             sx={{
               p: 3,
@@ -150,7 +158,7 @@ export const JobFinderTab: React.FC = () => {
               mb: 3,
             }}
           >
-            <Text sx={{ fontWeight: "medium" }}>{error}</Text>
+            <Text sx={{ fontWeight: "medium" }}>{error || authError}</Text>
           </Box>
         )}
 
@@ -220,6 +228,16 @@ export const JobFinderTab: React.FC = () => {
           </Box>
         </Box>
       )}
+
+      {/* Sign In Modal */}
+      <SignInModal
+        isOpen={isModalOpen}
+        onClose={hideSignInModal}
+        onSignIn={handleSignIn}
+        title="Sign In to Submit Jobs"
+        message="Sign in to submit jobs to the automated processing queue. The system will analyze and match jobs against your resume."
+        signingIn={signingIn}
+      />
     </Box>
   )
 }

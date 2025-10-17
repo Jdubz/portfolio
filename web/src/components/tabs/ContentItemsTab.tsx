@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react"
 import { Box, Text, Button, Flex, Spinner, Alert, Link } from "theme-ui"
 import { useContentItems } from "../../hooks/useContentItems"
+import { useAuthRequired } from "../../hooks/useAuthRequired"
+import { SignInModal } from "../SignInModal"
 import { ContentItem } from "../ContentItem"
 import { ReorderModal } from "../ReorderModal"
 import { CreateContentItemModal } from "../CreateContentItemModal"
@@ -22,6 +24,14 @@ interface ContentItemsTabProps {
  * Replaces the old WorkExperienceTab with experiences + blurbs
  */
 export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user }) => {
+  // Auth required hook for editor actions
+  const { isModalOpen, signingIn, authError, hideSignInModal, handleSignIn, withAuth } = useAuthRequired({
+    message:
+      "Sign in as an editor to manage work experience and content items. Editors can create, edit, delete, and reorder content.",
+    title: "Editor Access Required",
+    requireEditor: true,
+  })
+
   const {
     hierarchy,
     items,
@@ -55,31 +65,37 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
   const otherRootItems = hierarchy.filter((item) => item.type !== "company" && item.type !== "profile-section")
 
   const handleUpdateItem = async (id: string, data: UpdateContentItemData) => {
-    const result = await updateItem(id, data)
-    if (!result) {
-      throw new Error("Update failed")
-    }
+    await withAuth(async () => {
+      const result = await updateItem(id, data)
+      if (!result) {
+        throw new Error("Update failed")
+      }
+    })
   }
 
   const handleDeleteItem = async (id: string) => {
-    const result = await deleteItem(id)
-    if (!result) {
-      throw new Error("Delete failed")
-    }
+    await withAuth(async () => {
+      const result = await deleteItem(id)
+      if (!result) {
+        throw new Error("Delete failed")
+      }
+    })
   }
 
   const handleCreateItem = async (data: CreateContentItemData) => {
-    // If creating a child, set the parentId
-    if (createChildContext) {
-      data.parentId = createChildContext.parentId
-    }
+    await withAuth(async () => {
+      // If creating a child, set the parentId
+      if (createChildContext) {
+        data.parentId = createChildContext.parentId
+      }
 
-    const result = await createItem(data)
-    if (!result) {
-      throw new Error("Create failed")
-    }
-    setShowCreateModal(false)
-    setCreateChildContext(null)
+      const result = await createItem(data)
+      if (!result) {
+        throw new Error("Create failed")
+      }
+      setShowCreateModal(false)
+      setCreateChildContext(null)
+    })
   }
 
   const handleAddChild = (parentId: string, childType: string) => {
@@ -88,28 +104,30 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
   }
 
   const handleReorderRootItems = async (reorderedItems: Array<{ id: string; title: string; order: number }>) => {
-    try {
-      const itemsToReorder = reorderedItems.map((item) => ({
-        id: item.id,
-        order: item.order,
-      }))
+    await withAuth(async () => {
+      try {
+        const itemsToReorder = reorderedItems.map((item) => ({
+          id: item.id,
+          order: item.order,
+        }))
 
-      const success = await reorderItems(itemsToReorder)
-      if (!success) {
-        throw new Error("Reorder failed")
+        const success = await reorderItems(itemsToReorder)
+        if (!success) {
+          throw new Error("Reorder failed")
+        }
+
+        logger.info("Root items reordered successfully", {
+          component: "ContentItemsTab",
+          action: "reorderRootItems",
+        })
+      } catch (error) {
+        logger.error("Failed to reorder root items", error as Error, {
+          component: "ContentItemsTab",
+          action: "reorderRootItems",
+        })
+        throw error
       }
-
-      logger.info("Root items reordered successfully", {
-        component: "ContentItemsTab",
-        action: "reorderRootItems",
-      })
-    } catch (error) {
-      logger.error("Failed to reorder root items", error as Error, {
-        component: "ContentItemsTab",
-        action: "reorderRootItems",
-      })
-      throw error
-    }
+    })
   }
 
   const handleUploadClick = () => {
@@ -139,52 +157,54 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
       return
     }
 
-    setUploadingResume(true)
-    setUploadError(null)
+    await withAuth(async () => {
+      setUploadingResume(true)
+      setUploadError(null)
 
-    try {
-      const token = await user?.getIdToken()
-      if (!token) {
-        throw new Error("Not authenticated")
+      try {
+        const token = await user?.getIdToken()
+        if (!token) {
+          throw new Error("Not authenticated")
+        }
+
+        const functionUrl = getUploadResumeUrl()
+
+        const formData = new FormData()
+        formData.append("file", file)
+
+        const response = await fetch(functionUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        })
+
+        const data = (await response.json()) as { success?: boolean; message?: string }
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message ?? "Upload failed")
+        }
+
+        // Clear the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+
+        logger.info("Resume uploaded successfully", {
+          component: "ContentItemsTab",
+          action: "handleResumeUpload",
+        })
+      } catch (error) {
+        logger.error("Resume upload failed", error as Error, {
+          component: "ContentItemsTab",
+          action: "handleResumeUpload",
+        })
+        setUploadError(error instanceof Error ? error.message : "Upload failed")
+      } finally {
+        setUploadingResume(false)
       }
-
-      const functionUrl = getUploadResumeUrl()
-
-      const formData = new FormData()
-      formData.append("file", file)
-
-      const response = await fetch(functionUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      })
-
-      const data = (await response.json()) as { success?: boolean; message?: string }
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message ?? "Upload failed")
-      }
-
-      // Clear the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-
-      logger.info("Resume uploaded successfully", {
-        component: "ContentItemsTab",
-        action: "handleResumeUpload",
-      })
-    } catch (error) {
-      logger.error("Resume upload failed", error as Error, {
-        component: "ContentItemsTab",
-        action: "handleResumeUpload",
-      })
-      setUploadError(error instanceof Error ? error.message : "Upload failed")
-    } finally {
-      setUploadingResume(false)
-    }
+    })
   }
 
   // Recursive render function for hierarchy with children
@@ -365,6 +385,23 @@ export const ContentItemsTab: React.FC<ContentItemsTabProps> = ({ isEditor, user
         onClose={() => setShowReorderModal(false)}
         onSave={handleReorderRootItems}
       />
+
+      {/* Sign In Modal */}
+      <SignInModal
+        isOpen={isModalOpen}
+        onClose={hideSignInModal}
+        onSignIn={handleSignIn}
+        title="Editor Access Required"
+        message="Sign in as an editor to manage work experience and content items. Editors can create, edit, delete, and reorder content."
+        signingIn={signingIn}
+      />
+
+      {/* Auth Error Display */}
+      {authError && (
+        <Alert variant="error" sx={{ mt: 3 }}>
+          {authError}
+        </Alert>
+      )}
     </Box>
   )
 }
