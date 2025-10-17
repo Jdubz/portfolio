@@ -35,10 +35,10 @@ export const CompaniesTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading) {
       void loadCompanies()
     }
-  }, [authLoading, user])
+  }, [authLoading])
 
   const loadCompanies = async () => {
     try {
@@ -129,10 +129,6 @@ export const CompaniesTab: React.FC = () => {
 
   if (authLoading) {
     return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Loading...</Box>
-  }
-
-  if (!user) {
-    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Please sign in to access companies</Box>
   }
 
   return (

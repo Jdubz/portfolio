@@ -36,31 +36,41 @@ service cloud.firestore {
       allow write: if isEditor();
     }
 
-    // Generator history - editor-only read/write
+    // Generator history - public read, editor-only write
     match /generator_history/{requestId} {
-      allow read, write: if isEditor();
+      allow read: if true;
+      allow write: if isEditor();
     }
 
-    // Job matches - editor-only read/write
+    // Job matches - public read, editor-only write
     match /job-matches/{jobMatchId} {
-      allow read, write: if isEditor();
+      allow read: if true;
+      allow write: if isEditor();
     }
 
-    // Job queue - viewers can read their own submissions, editors can read/write all
+    // Job queue - public read and create, editor-only update/delete
     match /job-queue/{queueItemId} {
-      // Viewers can read their own queue items
-      allow read: if isAuthenticated() && (
-        resource.data.submitted_by == request.auth.uid || isEditor()
-      );
-      // Viewers can create new queue items
-      allow create: if isAuthenticated() && request.resource.data.submitted_by == request.auth.uid;
-      // Only editors can update or delete
+      allow read: if true;
+      allow create: if true;
       allow update, delete: if isEditor();
     }
 
-    // Job finder configuration - editor-only read/write
+    // Job finder configuration - public read, editor-only write
     match /job-finder-config/{configId} {
-      allow read, write: if isEditor();
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Companies - public read, editor-only write
+    match /companies/{companyId} {
+      allow read: if true;
+      allow write: if isEditor();
+    }
+
+    // Job sources - public read, editor-only write
+    match /job-sources/{sourceId} {
+      allow read: if true;
+      allow write: if isEditor();
     }
 
     // Content items (unified experience system) - public read, editor write
