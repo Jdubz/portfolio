@@ -109,36 +109,56 @@ Portfolio is missing critical indexes for shared collections:
 - It's a best practice but not strictly required
 - Can help with pagination and consistent ordering
 
-## Important: Firestore Index Behavior
+## CRITICAL CORRECTION: Firestore Index Behavior
 
-**Key Understanding:** Firestore indexes are **collection-level**, not database-level. When you create an index for a collection (e.g., `job-queue`), it automatically applies to that collection across **ALL databases** in the project.
+**❌ PREVIOUS DOCUMENTATION WAS INCORRECT**
 
-This means:
-- Indexes defined in `firestore.indexes.json` apply globally
-- You only need to deploy indexes once (to the default database)
-- The same indexes work for `(default)`, `portfolio`, and `portfolio-staging` databases
-- You cannot have different indexes for the same collection in different databases
+**✅ ACTUAL BEHAVIOR:** Firestore indexes are **DATABASE-SPECIFIC**, not global/collection-level.
 
-**In firebase.json:**
+**Key Facts:**
+- Each named database requires its own indexes to be deployed
+- Indexes in `(default)` database do NOT apply to `portfolio` or `portfolio-staging` databases
+- You MUST deploy indexes to each database separately
+- Different databases CAN have different indexes (though we use the same set)
+
+**Evidence:**
+Running `firebase firestore:indexes --database=portfolio-staging` showed:
+- (default): Only generator indexes, NO job-queue indexes
+- portfolio: generator + ONE job-queue index (manually created)
+- portfolio-staging: Only generator indexes, NO job-queue indexes
+
+This database-specific behavior caused system crashes when job-finder tried to query
+`portfolio-staging` without the required indexes.
+
+**Correct firebase.json configuration:**
 ```json
 {
   "firestore": [
     {
       "database": "(default)",
       "rules": "firestore.rules",
-      "indexes": "firestore.indexes.json"  // Only here
+      "indexes": "firestore.indexes.json"  // Deploy to default
     },
     {
       "database": "portfolio",
-      "rules": "firestore.rules"  // No indexes - they're global
+      "rules": "firestore.rules",
+      "indexes": "firestore.indexes.json"  // Deploy to production
     },
     {
       "database": "portfolio-staging",
-      "rules": "firestore.rules"  // No indexes - they're global
+      "rules": "firestore.rules",
+      "indexes": "firestore.indexes.json"  // Deploy to staging
     }
   ]
 }
 ```
+
+**Impact of Previous Misconfiguration:**
+- Missing indexes in portfolio-staging caused continuous query failures
+- Job-finder worker crashed every few minutes
+- System was unusable until manually deploying missing indexes
+
+**Fixed in commit:** f4bbfbc (2025-10-17)
 
 ## Proposed Solution: Single Source of Truth
 

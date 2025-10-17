@@ -135,20 +135,6 @@
       ]
     },
     {
-      "collectionGroup": "job-queue",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "url",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
       "collectionGroup": "job-matches",
       "queryScope": "COLLECTION",
       "fields": [
