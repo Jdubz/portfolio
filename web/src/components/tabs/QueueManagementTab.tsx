@@ -144,6 +144,7 @@ export const QueueManagementTab: React.FC = () => {
               <option value="success">Success</option>
               <option value="failed">Failed</option>
               <option value="skipped">Skipped</option>
+              <option value="filtered">Filtered</option>
             </Select>
           </Box>
         </Grid>

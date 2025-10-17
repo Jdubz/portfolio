@@ -29,6 +29,7 @@ const getStatusVariant = (status: string): string => {
     case "in_progress":
       return "warning"
     case "skipped":
+    case "filtered":
       return "muted"
     case "live":
       return "success"
