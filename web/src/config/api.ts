@@ -12,6 +12,7 @@ export const API_CONFIG = {
   functionName: "manageExperience",
   contentItemsFunctionName: "manageContentItems",
   uploadResumeFunctionName: "uploadResume",
+  jobQueueFunctionName: "manageJobQueue",
   emulatorPort: 5001,
   defaultEmulatorHost: "localhost",
 } as const
@@ -125,5 +126,24 @@ export const getUploadResumeUrl = (): string => {
   return (
     envUrl ??
     `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.uploadResumeFunctionName}`
+  )
+}
+
+/**
+ * Get the job queue API base URL based on environment
+ *
+ * @returns Base URL for job queue API requests
+ */
+export const getJobQueueApiUrl = (): string => {
+  // Use emulator in local development (runtime hostname check)
+  if (isLocalhost()) {
+    const emulatorHost = process.env.GATSBY_EMULATOR_HOST ?? API_CONFIG.defaultEmulatorHost
+    return `http://${emulatorHost}:${API_CONFIG.emulatorPort}/${API_CONFIG.projectId}/${API_CONFIG.region}/${API_CONFIG.jobQueueFunctionName}`
+  }
+
+  // Production/staging URL from env var (baked in at build time)
+  return (
+    process.env.GATSBY_JOB_QUEUE_API_URL ??
+    `https://${API_CONFIG.region}-${API_CONFIG.projectId}.cloudfunctions.net/${API_CONFIG.jobQueueFunctionName}`
   )
 }
