@@ -145,47 +145,57 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          path: portfolio
+
+      - name: Checkout shared-types
+        uses: actions/checkout@v4
+        with:
+          repository: Jdubz/shared-types
+          path: shared-types
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: portfolio/package-lock.json
 
       - name: Cache TypeScript build
         uses: actions/cache@v4
         with:
           path: |
-            functions/dist
-            functions/node_modules/.cache
-          key: functions-build-${{ runner.os }}-${{ hashFiles('functions/src/**/*.ts', 'functions/tsconfig.json', 'functions/package-lock.json') }}
+            portfolio/functions/dist
+            portfolio/functions/node_modules/.cache
+          key: functions-build-${{ runner.os }}-${{ hashFiles('portfolio/functions/src/**/*.ts', 'portfolio/functions/tsconfig.json', 'portfolio/functions/package-lock.json') }}
           restore-keys: |
             functions-build-${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci
+        working-directory: portfolio
 
       - name: Run linting
         run: npm run lint
-        working-directory: functions
+        working-directory: portfolio/functions
 
       - name: Run tests
         run: npm test
-        working-directory: functions
+        working-directory: portfolio/functions
 
       - name: Build TypeScript
         run: npm run build
-        working-directory: functions
+        working-directory: portfolio/functions
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: functions-build
           path: |
-            functions/dist/
-            functions/package.json
-            functions/package-lock.json
+            portfolio/functions/dist/
+            portfolio/functions/package.json
+            portfolio/functions/package-lock.json
           retention-days: 1
 
   # Deploy to staging
