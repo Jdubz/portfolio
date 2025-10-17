@@ -2,7 +2,7 @@ import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
 import Joi from "joi"
 import { JobQueueService } from "./services/job-queue.service"
-import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
+import { verifyAuthenticatedEditor, verifyAuthenticatedUser, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import { logger } from "./utils/logger"
 import { generateRequestId } from "./utils/request-id"
 import { corsHandler } from "./config/cors"
@@ -151,21 +151,13 @@ const handleJobQueueRequest = async (req: Request, res: Response): Promise<void>
           const authRequiredRoutes = ["/submit-scrape", "/has-pending-scrape"]
 
           if (authRequiredRoutes.some((route) => path === route)) {
-            // Verify authentication (but not editor role)
-            const authHeader = req.headers.authorization
-            if (!authHeader || !authHeader.startsWith("Bearer ")) {
-              const err = ERROR_CODES.UNAUTHORIZED
-              logger.warning("Missing or invalid auth header", { path, requestId })
-              res.status(err.status).json({
-                success: false,
-                error: "UNAUTHORIZED",
-                errorCode: err.code,
-                message: err.message,
-                requestId,
+            // Verify authentication using the verifyAuthenticatedUser middleware
+            await new Promise<void>((resolveAuth, rejectAuth) => {
+              verifyAuthenticatedUser(logger)(req as AuthenticatedRequest, res, (err) => {
+                if (err) rejectAuth(err)
+                else resolveAuth()
               })
-              resolve()
-              return
-            }
+            })
 
             // Route: POST /submit-scrape - Submit scrape request (auth required)
             if (req.method === "POST" && path === "/submit-scrape") {
