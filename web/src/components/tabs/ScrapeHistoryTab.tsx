@@ -59,13 +59,14 @@ export const ScrapeHistoryTab: React.FC = () => {
       return `${diffHours}h ago`
     } else if (diffDays < 7) {
       return `${diffDays}d ago`
-    } else {
-      return date.toLocaleDateString()
     }
+    return date.toLocaleDateString()
   }
 
   const formatDuration = (start: string, end?: string) => {
-    if (!end) return null
+    if (!end) {
+      return null
+    }
     const startTime = new Date(start).getTime()
     const endTime = new Date(end).getTime()
     const seconds = Math.floor((endTime - startTime) / 1000)
@@ -89,11 +90,7 @@ export const ScrapeHistoryTab: React.FC = () => {
   }
 
   if (!user) {
-    return (
-      <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>
-        Please sign in to view scrape history
-      </Box>
-    )
+    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Please sign in to view scrape history</Box>
   }
 
   return (
@@ -236,9 +233,8 @@ export const ScrapeHistoryTab: React.FC = () => {
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {sortedItems.map((item) => {
-            const duration = item.processed_at && item.completed_at
-              ? formatDuration(item.processed_at, item.completed_at)
-              : null
+            const duration =
+              item.processed_at && item.completed_at ? formatDuration(item.processed_at, item.completed_at) : null
 
             return (
               <Box key={item.id} sx={{ variant: "cards.primary", p: 4 }}>
@@ -247,9 +243,7 @@ export const ScrapeHistoryTab: React.FC = () => {
                     <Flex sx={{ alignItems: "center", gap: 2, mb: 2 }}>
                       <StatusBadge status={item.status} />
                       <Text sx={{ fontSize: 1, color: "textMuted" }}>{formatDate(item.created_at)}</Text>
-                      {duration && (
-                        <Text sx={{ fontSize: 1, color: "textMuted" }}>• {duration}</Text>
-                      )}
+                      {duration && <Text sx={{ fontSize: 1, color: "textMuted" }}>• {duration}</Text>}
                     </Flex>
                     <Text sx={{ fontSize: 0, color: "textMuted", fontFamily: "monospace", wordBreak: "break-all" }}>
                       {item.id}
@@ -264,15 +258,11 @@ export const ScrapeHistoryTab: React.FC = () => {
                 <Grid columns={[1, 2, 4]} gap={3}>
                   <Box>
                     <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Target Matches</Text>
-                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>
-                      {item.scrape_config?.target_matches ?? "5"}
-                    </Text>
+                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{item.scrape_config?.target_matches ?? "5"}</Text>
                   </Box>
                   <Box>
                     <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Max Sources</Text>
-                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>
-                      {item.scrape_config?.max_sources ?? "20"}
-                    </Text>
+                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{item.scrape_config?.max_sources ?? "20"}</Text>
                   </Box>
                   <Box>
                     <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Min Score</Text>

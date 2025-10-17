@@ -51,6 +51,22 @@ export class JobQueueClient extends ApiClient {
   }
 
   /**
+   * Submit a company source to the queue
+   * Creates a queue item with type "company" for job-finder to process
+   */
+  async submitCompanySource(companyName: string, careersUrl: string): Promise<SubmitJobResponse> {
+    const response = await this.post<SubmitJobResponse>(
+      "/submit",
+      {
+        url: careersUrl,
+        companyName: companyName,
+      },
+      true
+    )
+    return response
+  }
+
+  /**
    * Get queue item status
    */
   async getQueueStatus(queueItemId: string): Promise<QueueItem> {

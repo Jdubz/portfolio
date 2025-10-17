@@ -146,13 +146,12 @@ export const TroubleshootingTab: React.FC = () => {
           message: `Service is healthy (${responseTime}ms)`,
           responseTime,
         }
-      } else {
-        return {
-          name: service.name,
-          status: "unhealthy",
-          message: data.message || "Service returned non-healthy status",
-          responseTime,
-        }
+      }
+      return {
+        name: service.name,
+        status: "unhealthy",
+        message: data.message || "Service returned non-healthy status",
+        responseTime,
       }
     } catch (error) {
       const responseTime = Date.now() - startTime
@@ -246,9 +245,7 @@ export const TroubleshootingTab: React.FC = () => {
             {checkingAll ? "Checking..." : "Check All Services"}
           </Button>
         </Flex>
-        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>
-          Check the health status of all Cloud Functions
-        </Text>
+        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>Check the health status of all Cloud Functions</Text>
 
         <Grid columns={[1, 1, 2]} gap={3}>
           {SERVICES.map((service) => {
@@ -272,10 +269,8 @@ export const TroubleshootingTab: React.FC = () => {
                   {status && <Text sx={{ fontSize: 3 }}>{getStatusIcon(status.status)}</Text>}
                 </Flex>
 
-                {status && status.message && (
-                  <Text sx={{ fontSize: 1, color: getStatusColor(status.status), mb: 2 }}>
-                    {status.message}
-                  </Text>
+                {status?.message && (
+                  <Text sx={{ fontSize: 1, color: getStatusColor(status.status), mb: 2 }}>{status.message}</Text>
                 )}
 
                 <Flex sx={{ gap: 2, flexWrap: "wrap" }}>
@@ -317,9 +312,7 @@ export const TroubleshootingTab: React.FC = () => {
         <Heading as="h3" sx={{ mb: 3, fontSize: 3 }}>
           Google Cloud Console
         </Heading>
-        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>
-          Quick access to Google Cloud Platform resources
-        </Text>
+        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>Quick access to Google Cloud Platform resources</Text>
 
         <Grid columns={[1, 2, 3]} gap={3}>
           {QUICK_LINKS.map((link) => (
@@ -368,20 +361,12 @@ export const TroubleshootingTab: React.FC = () => {
 
           <Box>
             <Text sx={{ color: "textMuted", fontSize: 1, mb: 1 }}>Production Domain</Text>
-            <ThemeLink
-              href="https://joshwentworth.com"
-              target="_blank"
-              sx={{ display: "block", fontSize: 2, mb: 3 }}
-            >
+            <ThemeLink href="https://joshwentworth.com" target="_blank" sx={{ display: "block", fontSize: 2, mb: 3 }}>
               joshwentworth.com
             </ThemeLink>
 
             <Text sx={{ color: "textMuted", fontSize: 1, mb: 1 }}>Staging Domain</Text>
-            <ThemeLink
-              href="https://staging.joshwentworth.com"
-              target="_blank"
-              sx={{ display: "block", fontSize: 2 }}
-            >
+            <ThemeLink href="https://staging.joshwentworth.com" target="_blank" sx={{ display: "block", fontSize: 2 }}>
               staging.joshwentworth.com
             </ThemeLink>
           </Box>

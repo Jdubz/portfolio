@@ -10,6 +10,9 @@ import { Box, Heading, Text, Button, Flex, Spinner, Grid, Input } from "theme-ui
 import { useAuth } from "../../hooks/useAuth"
 import { logger } from "../../utils/logger"
 import { StatusBadge } from "../ui/StatusBadge"
+import { AddSourceModal } from "../AddSourceModal"
+import { SourceDetailModal } from "../SourceDetailModal"
+import { jobQueueClient } from "../../api/job-queue-client"
 
 interface JobSource {
   id: string
@@ -30,11 +33,15 @@ interface JobSource {
 }
 
 export const SourcesTab: React.FC = () => {
-  const { loading: authLoading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [sources, setSources] = useState<JobSource[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [selectedSource, setSelectedSource] = useState<JobSource | null>(null)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     // Wait for auth to initialize (Firebase app initialization happens in AuthContext)
@@ -143,6 +150,43 @@ export const SourcesTab: React.FC = () => {
     }
   }
 
+  const handleAddSource = async (companyName: string, careersUrl: string) => {
+    if (!user) {
+      setError("You must be signed in to add a source")
+      return
+    }
+
+    try {
+      setError(null)
+      setSubmitSuccess(null)
+
+      const response = await jobQueueClient.submitCompanySource(companyName, careersUrl)
+      setSubmitSuccess(`Source submission successful! Queue ID: ${response.queueItemId || "N/A"}`)
+      logger.info("Source added to queue", {
+        queueItemId: response.queueItemId,
+        companyName,
+        careersUrl,
+      })
+
+      setIsAddModalOpen(false)
+
+      // Refresh sources after a delay to allow processing
+      setTimeout(() => {
+        void loadSources()
+      }, 2000)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to submit source"
+      setError(errorMessage)
+      logger.error("Failed to add source", err as Error, { companyName, careersUrl })
+    }
+  }
+
+  const handleViewDetails = (source: JobSource) => {
+    setSelectedSource(source)
+    setIsDetailModalOpen(true)
+    logger.info("Viewing source details", { sourceId: source.id })
+  }
+
   if (authLoading) {
     return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Loading...</Box>
   }
@@ -155,6 +199,9 @@ export const SourcesTab: React.FC = () => {
         </Heading>
         <Flex sx={{ alignItems: "center", gap: 2 }}>
           {loading && <Spinner size={16} />}
+          <Button onClick={() => setIsAddModalOpen(true)} disabled={!user}>
+            Add Source
+          </Button>
           <Button onClick={() => void loadSources()} variant="secondary.sm">
             Refresh
           </Button>
@@ -177,7 +224,7 @@ export const SourcesTab: React.FC = () => {
         />
       </Box>
 
-      {/* Error Display */}
+      {/* Status Messages */}
       {error && (
         <Box
           sx={{
@@ -189,6 +236,21 @@ export const SourcesTab: React.FC = () => {
           }}
         >
           <Text sx={{ fontWeight: "medium" }}>{error}</Text>
+        </Box>
+      )}
+
+      {submitSuccess && (
+        <Box sx={{ variant: "cards.primary", p: 3, mb: 4, borderLeft: "4px solid", borderColor: "success" }}>
+          <Text sx={{ fontWeight: "medium", mb: 2 }}>{submitSuccess}</Text>
+          <Text sx={{ fontSize: 1, color: "textMuted" }}>
+            The job-finder application will process this source and add it to the database.
+          </Text>
+        </Box>
+      )}
+
+      {!user && (
+        <Box sx={{ variant: "cards.primary", p: 3, mb: 4, borderLeft: "4px solid", borderColor: "highlight" }}>
+          <Text>Please sign in to add new sources</Text>
         </Box>
       )}
 
@@ -292,6 +354,10 @@ export const SourcesTab: React.FC = () => {
                     </a>
                   )}
                 </Box>
+
+                <Button onClick={() => handleViewDetails(source)} variant="secondary">
+                  View Details
+                </Button>
               </Flex>
 
               <Grid columns={[1, 2, 4]} gap={3} sx={{ mb: source.notes ? 3 : 0 }}>
@@ -343,6 +409,15 @@ export const SourcesTab: React.FC = () => {
           ))}
         </Box>
       )}
+
+      {/* Modals */}
+      <AddSourceModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleAddSource} />
+
+      <SourceDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        source={selectedSource}
+      />
     </Box>
   )
 }

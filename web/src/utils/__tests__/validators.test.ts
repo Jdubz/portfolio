@@ -216,14 +216,13 @@ describe("validators", () => {
     })
 
     it("should work with complex custom logic", () => {
-      const validator = validators.custom(
-        (val) => {
-          if (typeof val !== "string") return false
-          const words = val.split(" ")
-          return words.length >= 2
-        },
-        "Must contain at least two words"
-      )
+      const validator = validators.custom((val) => {
+        if (typeof val !== "string") {
+          return false
+        }
+        const words = val.split(" ")
+        return words.length >= 2
+      }, "Must contain at least two words")
       expect(validator("OneWord")).toBe("Must contain at least two words")
       expect(validator("Two Words")).toBeNull()
       expect(validator("Three Word Phrase")).toBeNull()
@@ -314,7 +313,9 @@ describe("createValidator", () => {
       {
         field: "website",
         validator: (val) => {
-          if (val === undefined || val === null || val === "") return null
+          if (val === undefined || val === null || val === "") {
+            return null
+          }
           return validators.url(val)
         },
       },

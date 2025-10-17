@@ -158,18 +158,12 @@ export const ScrapingTab: React.FC = () => {
           <Text sx={{ fontSize: 2 }}>
             <strong>5. Save:</strong> Jobs above match threshold are saved to Job Applications
           </Text>
-          <Text sx={{ mt: 2, fontSize: 1, color: "textMuted" }}>
-            Typical scrape duration: 5-15 minutes
-          </Text>
+          <Text sx={{ mt: 2, fontSize: 1, color: "textMuted" }}>Typical scrape duration: 5-15 minutes</Text>
         </Flex>
       </Box>
 
       {/* Modal */}
-      <ScrapeConfigModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCustomScrape}
-      />
+      <ScrapeConfigModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleCustomScrape} />
     </Box>
   )
 }

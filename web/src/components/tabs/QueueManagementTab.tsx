@@ -43,7 +43,6 @@ export const QueueManagementTab: React.FC = () => {
 
   // Delete a queue item
   const handleDelete = async (queueItemId: string) => {
-    // eslint-disable-next-line no-restricted-globals
     if (!confirm("Are you sure you want to delete this queue item?")) {
       return
     }
@@ -168,13 +167,31 @@ export const QueueManagementTab: React.FC = () => {
       {/* Queue Stats */}
       <Grid columns={[2, 2, 4]} gap={3} sx={{ mb: 4 }}>
         <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 2, fontWeight: "medium", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <Text
+            sx={{
+              fontSize: 1,
+              color: "textMuted",
+              mb: 2,
+              fontWeight: "medium",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
             Total Items
           </Text>
           <Text sx={{ fontSize: 5, fontWeight: "bold" }}>{filteredItems.length}</Text>
         </Box>
         <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 2, fontWeight: "medium", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <Text
+            sx={{
+              fontSize: 1,
+              color: "textMuted",
+              mb: 2,
+              fontWeight: "medium",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
             Pending
           </Text>
           <Text sx={{ fontSize: 5, fontWeight: "bold", color: "blue" }}>
@@ -182,7 +199,16 @@ export const QueueManagementTab: React.FC = () => {
           </Text>
         </Box>
         <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 2, fontWeight: "medium", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <Text
+            sx={{
+              fontSize: 1,
+              color: "textMuted",
+              mb: 2,
+              fontWeight: "medium",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
             Processing
           </Text>
           <Text sx={{ fontSize: 5, fontWeight: "bold", color: "orange" }}>
@@ -190,7 +216,16 @@ export const QueueManagementTab: React.FC = () => {
           </Text>
         </Box>
         <Box sx={{ variant: "cards.primary", p: 4 }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 2, fontWeight: "medium", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <Text
+            sx={{
+              fontSize: 1,
+              color: "textMuted",
+              mb: 2,
+              fontWeight: "medium",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
             Failed
           </Text>
           <Text sx={{ fontSize: 5, fontWeight: "bold", color: "red" }}>

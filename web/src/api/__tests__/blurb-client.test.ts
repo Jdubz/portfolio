@@ -399,9 +399,7 @@ describe("BlurbClient API Contract", () => {
 
       mockGetIdToken.mockResolvedValueOnce("invalid-token")
 
-      await expect(
-        client.createBlurb({ name: "test", title: "Test", content: "test" })
-      ).rejects.toThrow()
+      await expect(client.createBlurb({ name: "test", title: "Test", content: "test" })).rejects.toThrow()
     })
 
     it("should throw on 500 server errors", async () => {

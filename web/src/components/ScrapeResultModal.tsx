@@ -23,7 +23,9 @@ export const ScrapeResultModal: React.FC<ScrapeResultModalProps> = ({ isOpen, on
   }
 
   const formatDuration = (start: string, end?: string) => {
-    if (!end) return "N/A"
+    if (!end) {
+      return "N/A"
+    }
     const startTime = new Date(start).getTime()
     const endTime = new Date(end).getTime()
     const seconds = Math.floor((endTime - startTime) / 1000)
@@ -97,15 +99,11 @@ export const ScrapeResultModal: React.FC<ScrapeResultModalProps> = ({ isOpen, on
             <Grid columns={[1, 2]} gap={3} sx={{ variant: "cards.primary", p: 3 }}>
               <Box>
                 <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Target Matches</Text>
-                <Text sx={{ fontSize: 2, fontWeight: "medium" }}>
-                  {config?.target_matches ?? "Default (5)"}
-                </Text>
+                <Text sx={{ fontSize: 2, fontWeight: "medium" }}>{config?.target_matches ?? "Default (5)"}</Text>
               </Box>
               <Box>
                 <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Max Sources</Text>
-                <Text sx={{ fontSize: 2, fontWeight: "medium" }}>
-                  {config?.max_sources ?? "Default (20)"}
-                </Text>
+                <Text sx={{ fontSize: 2, fontWeight: "medium" }}>{config?.max_sources ?? "Default (20)"}</Text>
               </Box>
               <Box>
                 <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Min Match Score</Text>

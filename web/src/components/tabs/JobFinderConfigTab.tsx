@@ -202,9 +202,7 @@ export const JobFinderConfigTab: React.FC = () => {
             </Text>
           )}
         </Flex>
-        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>
-          Configuration for queue processing behavior
-        </Text>
+        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>Configuration for queue processing behavior</Text>
 
         <Grid columns={[1, 2, 3]} gap={3}>
           <Box>
@@ -225,9 +223,7 @@ export const JobFinderConfigTab: React.FC = () => {
               }
               sx={{ variant: "forms.input" }}
             />
-            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>
-              Number of times to retry failed jobs
-            </Text>
+            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>Number of times to retry failed jobs</Text>
           </Box>
 
           <Box>
@@ -248,9 +244,7 @@ export const JobFinderConfigTab: React.FC = () => {
               }
               sx={{ variant: "forms.input" }}
             />
-            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>
-              Wait time before retrying failed jobs
-            </Text>
+            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>Wait time before retrying failed jobs</Text>
           </Box>
 
           <Box>
@@ -271,9 +265,7 @@ export const JobFinderConfigTab: React.FC = () => {
               }
               sx={{ variant: "forms.input" }}
             />
-            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>
-              Max time to process a single job
-            </Text>
+            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>Max time to process a single job</Text>
           </Box>
         </Grid>
       </Box>
@@ -291,9 +283,7 @@ export const JobFinderConfigTab: React.FC = () => {
             </Text>
           )}
         </Flex>
-        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>
-          Configure AI provider and job matching parameters
-        </Text>
+        <Text sx={{ color: "textMuted", mb: 4, fontSize: 1 }}>Configure AI provider and job matching parameters</Text>
 
         <Grid columns={[1, 2]} gap={3}>
           <Box>
@@ -315,9 +305,7 @@ export const JobFinderConfigTab: React.FC = () => {
               <option value="openai">OpenAI</option>
               <option value="gemini">Gemini (Google)</option>
             </Select>
-            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>
-              AI provider for job matching
-            </Text>
+            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>AI provider for job matching</Text>
           </Box>
 
           <Box>
@@ -337,9 +325,7 @@ export const JobFinderConfigTab: React.FC = () => {
               sx={{ variant: "forms.input" }}
               placeholder="claude-3-haiku-20240307"
             />
-            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>
-              Specific model version to use
-            </Text>
+            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>Specific model version to use</Text>
           </Box>
 
           <Box>
@@ -360,9 +346,7 @@ export const JobFinderConfigTab: React.FC = () => {
               }
               sx={{ variant: "forms.input" }}
             />
-            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>
-              Minimum score (0-100) to save a match
-            </Text>
+            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>Minimum score (0-100) to save a match</Text>
           </Box>
 
           <Box>
@@ -383,9 +367,7 @@ export const JobFinderConfigTab: React.FC = () => {
               }
               sx={{ variant: "forms.input" }}
             />
-            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>
-              Maximum daily AI API cost
-            </Text>
+            <Text sx={{ fontSize: 0, color: "textMuted", mt: 1 }}>Maximum daily AI API cost</Text>
           </Box>
         </Grid>
       </Box>
@@ -417,44 +399,42 @@ export const JobFinderConfigTab: React.FC = () => {
           </Text>
 
           <Flex sx={{ gap: 2, mb: 3 }}>
-          <Input
-            type="text"
-            value={newCompany}
-            onChange={(e) => setNewCompany(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && addCompany()}
-            placeholder="Enter company name"
-            sx={{ flex: 1, variant: "forms.input" }}
-          />
-          <Button onClick={addCompany} variant="secondary">
-            Add
-          </Button>
-        </Flex>
+            <Input
+              type="text"
+              value={newCompany}
+              onChange={(e) => setNewCompany(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && addCompany()}
+              placeholder="Enter company name"
+              sx={{ flex: 1, variant: "forms.input" }}
+            />
+            <Button onClick={addCompany} variant="secondary">
+              Add
+            </Button>
+          </Flex>
 
-        <Box sx={{ display: "grid", gap: 2 }}>
-          {stopList.excludedCompanies.length === 0 ? (
-            <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>
-              No companies excluded yet
-            </Text>
-          ) : (
-            stopList.excludedCompanies.map((company, index) => (
-              <Flex
-                key={index}
-                sx={{
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  p: 2,
-                  bg: "backgroundSecondary",
-                  borderRadius: "sm",
-                }}
-              >
-                <Text>{company}</Text>
-                <Button variant="text" onClick={() => removeCompany(index)} sx={{ color: "danger", fontSize: 1 }}>
-                  Remove
-                </Button>
-              </Flex>
-            ))
-          )}
-        </Box>
+          <Box sx={{ display: "grid", gap: 2 }}>
+            {stopList.excludedCompanies.length === 0 ? (
+              <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>No companies excluded yet</Text>
+            ) : (
+              stopList.excludedCompanies.map((company, index) => (
+                <Flex
+                  key={index}
+                  sx={{
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    p: 2,
+                    bg: "backgroundSecondary",
+                    borderRadius: "sm",
+                  }}
+                >
+                  <Text>{company}</Text>
+                  <Button variant="text" onClick={() => removeCompany(index)} sx={{ color: "danger", fontSize: 1 }}>
+                    Remove
+                  </Button>
+                </Flex>
+              ))
+            )}
+          </Box>
         </Box>
 
         {/* Excluded Keywords */}
@@ -466,45 +446,43 @@ export const JobFinderConfigTab: React.FC = () => {
             Jobs containing these keywords will be automatically skipped
           </Text>
 
-        <Flex sx={{ gap: 2, mb: 3 }}>
-          <Input
-            type="text"
-            value={newKeyword}
-            onChange={(e) => setNewKeyword(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && addKeyword()}
-            placeholder="Enter keyword or phrase"
-            sx={{ flex: 1, variant: "forms.input" }}
-          />
-          <Button onClick={addKeyword} variant="secondary">
-            Add
-          </Button>
-        </Flex>
+          <Flex sx={{ gap: 2, mb: 3 }}>
+            <Input
+              type="text"
+              value={newKeyword}
+              onChange={(e) => setNewKeyword(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && addKeyword()}
+              placeholder="Enter keyword or phrase"
+              sx={{ flex: 1, variant: "forms.input" }}
+            />
+            <Button onClick={addKeyword} variant="secondary">
+              Add
+            </Button>
+          </Flex>
 
-        <Box sx={{ display: "grid", gap: 2 }}>
-          {stopList.excludedKeywords.length === 0 ? (
-            <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>
-              No keywords excluded yet
-            </Text>
-          ) : (
-            stopList.excludedKeywords.map((keyword, index) => (
-              <Flex
-                key={index}
-                sx={{
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  p: 2,
-                  bg: "backgroundSecondary",
-                  borderRadius: "sm",
-                }}
-              >
-                <Text>{keyword}</Text>
-                <Button variant="text" onClick={() => removeKeyword(index)} sx={{ color: "danger", fontSize: 1 }}>
-                  Remove
-                </Button>
-              </Flex>
-            ))
-          )}
-        </Box>
+          <Box sx={{ display: "grid", gap: 2 }}>
+            {stopList.excludedKeywords.length === 0 ? (
+              <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>No keywords excluded yet</Text>
+            ) : (
+              stopList.excludedKeywords.map((keyword, index) => (
+                <Flex
+                  key={index}
+                  sx={{
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    p: 2,
+                    bg: "backgroundSecondary",
+                    borderRadius: "sm",
+                  }}
+                >
+                  <Text>{keyword}</Text>
+                  <Button variant="text" onClick={() => removeKeyword(index)} sx={{ color: "danger", fontSize: 1 }}>
+                    Remove
+                  </Button>
+                </Flex>
+              ))
+            )}
+          </Box>
         </Box>
 
         {/* Excluded Domains */}
@@ -516,45 +494,43 @@ export const JobFinderConfigTab: React.FC = () => {
             Jobs from these domains will be automatically skipped
           </Text>
 
-        <Flex sx={{ gap: 2, mb: 3 }}>
-          <Input
-            type="text"
-            value={newDomain}
-            onChange={(e) => setNewDomain(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && addDomain()}
-            placeholder="Enter domain (e.g., spam-site.com)"
-            sx={{ flex: 1, variant: "forms.input" }}
-          />
-          <Button onClick={addDomain} variant="secondary">
-            Add
-          </Button>
-        </Flex>
+          <Flex sx={{ gap: 2, mb: 3 }}>
+            <Input
+              type="text"
+              value={newDomain}
+              onChange={(e) => setNewDomain(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && addDomain()}
+              placeholder="Enter domain (e.g., spam-site.com)"
+              sx={{ flex: 1, variant: "forms.input" }}
+            />
+            <Button onClick={addDomain} variant="secondary">
+              Add
+            </Button>
+          </Flex>
 
-        <Box sx={{ display: "grid", gap: 2 }}>
-          {stopList.excludedDomains.length === 0 ? (
-            <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>
-              No domains excluded yet
-            </Text>
-          ) : (
-            stopList.excludedDomains.map((domain, index) => (
-              <Flex
-                key={index}
-                sx={{
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  p: 2,
-                  bg: "backgroundSecondary",
-                  borderRadius: "sm",
-                }}
-              >
-                <Text>{domain}</Text>
-                <Button variant="text" onClick={() => removeDomain(index)} sx={{ color: "danger", fontSize: 1 }}>
-                  Remove
-                </Button>
-              </Flex>
-            ))
-          )}
-        </Box>
+          <Box sx={{ display: "grid", gap: 2 }}>
+            {stopList.excludedDomains.length === 0 ? (
+              <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>No domains excluded yet</Text>
+            ) : (
+              stopList.excludedDomains.map((domain, index) => (
+                <Flex
+                  key={index}
+                  sx={{
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    p: 2,
+                    bg: "backgroundSecondary",
+                    borderRadius: "sm",
+                  }}
+                >
+                  <Text>{domain}</Text>
+                  <Button variant="text" onClick={() => removeDomain(index)} sx={{ color: "danger", fontSize: 1 }}>
+                    Remove
+                  </Button>
+                </Flex>
+              ))
+            )}
+          </Box>
         </Box>
       </Box>
 

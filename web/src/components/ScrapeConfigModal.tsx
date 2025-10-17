@@ -44,7 +44,9 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
   const [selectedSources, setSelectedSources] = useState<string[]>([])
 
   // Search limits
-  const [targetMatchesPreset, setTargetMatchesPreset] = useState<keyof typeof PRESET_CONFIGS | "custom" | "none">("SMART")
+  const [targetMatchesPreset, setTargetMatchesPreset] = useState<keyof typeof PRESET_CONFIGS | "custom" | "none">(
+    "SMART"
+  )
   const [customTargetMatches, setCustomTargetMatches] = useState<number>(5)
   const [noTargetLimit, setNoTargetLimit] = useState(false)
 
@@ -232,9 +234,7 @@ export const ScrapeConfigModal: React.FC<ScrapeConfigModalProps> = ({
             />
             All Sources (default)
           </Label>
-          <Text sx={{ fontSize: 1, color: "textMuted", ml: 4, mb: 3 }}>
-            Searches all job boards in rotation
-          </Text>
+          <Text sx={{ fontSize: 1, color: "textMuted", ml: 4, mb: 3 }}>Searches all job boards in rotation</Text>
 
           <Label sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <input
