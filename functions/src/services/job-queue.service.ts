@@ -33,8 +33,9 @@ export class JobQueueService {
    * Submit a job to the queue
    *
    * If generationId is provided, the job will be marked as having documents already generated
+   * userId can be null for anonymous submissions
    */
-  async submitJob(url: string, companyName: string, userId: string, generationId?: string): Promise<QueueItem> {
+  async submitJob(url: string, companyName: string, userId: string | null, generationId?: string): Promise<QueueItem> {
     try {
       // Get queue settings for max retries
       const settings = await this.getQueueSettings()

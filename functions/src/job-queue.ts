@@ -2,11 +2,7 @@ import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
 import Joi from "joi"
 import { JobQueueService } from "./services/job-queue.service"
-import {
-  verifyAuthenticatedEditor,
-  verifyAuthenticatedUser,
-  type AuthenticatedRequest,
-} from "./middleware/auth.middleware"
+import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import { logger } from "./utils/logger"
 import { generateRequestId } from "./utils/request-id"
 import { corsHandler } from "./config/cors"
