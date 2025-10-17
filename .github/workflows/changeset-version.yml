@@ -55,11 +55,17 @@ jobs:
           cat web/package.json | jq '.version'
           cat functions/package.json | jq '.version'
 
-      - name: Commit and push version bump
+      - name: Create and merge version bump PR
         if: steps.check-changesets.outputs.has_changesets == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.CHANGESET_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create a new branch for the version bump
+          BRANCH_NAME="changeset/version-bump-$(date +%s)"
+          git checkout -b "$BRANCH_NAME"
 
           git add .
           git commit -m "chore: consume changesets and bump versions [skip ci]
@@ -69,7 +75,38 @@ jobs:
           - Updated CHANGELOG.md files
           - Removed consumed changeset files"
 
-          git push
+          git push origin "$BRANCH_NAME"
+
+          # Create pull request and auto-merge
+          PR_URL=$(gh pr create \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --title "chore: version bump - consumed ${{ steps.check-changesets.outputs.changeset_count }} changeset(s)" \
+            --body "$(cat <<'EOF'
+## Version Bump
+
+Automatically consumed changesets and updated versions.
+
+### Changes
+- Consumed ${{ steps.check-changesets.outputs.changeset_count }} changeset(s)
+- Updated package.json versions
+- Updated CHANGELOG.md files
+- Removed consumed changeset files
+
+### Versions
+- Root: $(cat package.json | jq -r '.version')
+- Web: $(cat web/package.json | jq -r '.version')
+- Functions: $(cat functions/package.json | jq -r '.version')
+
+---
+🤖 This PR was automatically created by the changeset version workflow
+EOF
+)")
+
+          echo "Created PR: $PR_URL"
+
+          # Enable auto-merge and merge the PR
+          gh pr merge "$PR_URL" --auto --squash --delete-branch
 
       - name: Summary
         run: |
