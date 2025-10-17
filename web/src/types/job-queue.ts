@@ -8,6 +8,7 @@ export type {
   QueueStatus,
   QueueItemType,
   QueueSource,
+  CompanySubTask,
   StopList,
   QueueSettings,
   AISettings,
@@ -15,6 +16,8 @@ export type {
   QueueStats,
   SubmitJobRequest,
   SubmitJobResponse,
+  SubmitCompanyRequest,
+  SubmitCompanyResponse,
   ScrapeConfig,
   SubmitScrapeRequest,
   SubmitScrapeResponse,
@@ -30,7 +33,7 @@ export interface QueueItem {
   url: string
   company_name: string
   company_id: string | null
-  source: "user_submission" | "automated_scan" | "scraper" | "webhook" | "email"
+  source: "user_submission" | "automated_scan" | "scraper" | "webhook" | "email" | "manual_submission" | "user_request"
   submitted_by: string | null
   result_message?: string
   error_message?: string
@@ -47,4 +50,5 @@ export interface QueueItem {
     source_ids?: string[] | null
     min_match_score?: number | null
   } | null
+  company_sub_task?: "fetch" | "extract" | "analyze" | "save" | null
 }

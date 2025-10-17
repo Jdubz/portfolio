@@ -10,6 +10,9 @@ import { Box, Text, Button, Flex, Spinner, Grid, Input } from "theme-ui"
 import { useAuth } from "../../hooks/useAuth"
 import { logger } from "../../utils/logger"
 import { TabHeader, LoadingState, EmptyState, InfoBox, StatusBadge } from "../ui"
+import { AddCompanyModal } from "../AddCompanyModal"
+import { jobQueueClient } from "../../api"
+import type { SubmitCompanyRequest } from "../../types/job-queue"
 
 interface Company {
   id: string
@@ -28,11 +31,12 @@ interface Company {
 }
 
 export const CompaniesTab: React.FC = () => {
-  const { loading: authLoading } = useAuth()
+  const { loading: authLoading, isEditor } = useAuth()
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   useEffect(() => {
     // Wait for auth to initialize (Firebase app initialization happens in AuthContext)
@@ -129,6 +133,17 @@ export const CompaniesTab: React.FC = () => {
     }
   }
 
+  // Handle company submission
+  const handleSubmitCompany = async (request: SubmitCompanyRequest) => {
+    try {
+      await jobQueueClient.submitCompany(request)
+      logger.info("Company submitted to queue", { companyName: request.companyName })
+    } catch (err) {
+      logger.error("Failed to submit company", err as Error)
+      throw err
+    }
+  }
+
   if (authLoading) {
     return <LoadingState />
   }
@@ -141,6 +156,11 @@ export const CompaniesTab: React.FC = () => {
         actions={
           <>
             {loading && <Spinner size={16} />}
+            {isEditor && (
+              <Button onClick={() => setIsAddModalOpen(true)} variant="primary.sm" sx={{ mr: 2 }}>
+                Add Company
+              </Button>
+            )}
             <Button onClick={() => void loadCompanies()} variant="secondary.sm">
               Refresh
             </Button>
@@ -286,6 +306,13 @@ export const CompaniesTab: React.FC = () => {
           ))}
         </Box>
       )}
+
+      {/* Add Company Modal */}
+      <AddCompanyModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleSubmitCompany}
+      />
     </Box>
   )
 }

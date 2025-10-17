@@ -87,6 +87,63 @@ export class JobQueueService {
   }
 
   /**
+   * Submit a company to the queue
+   *
+   * Creates a queue item with type "company" for company analysis pipeline
+   */
+  async submitCompany(
+    companyName: string,
+    websiteUrl: string,
+    source: "manual_submission" | "user_request" | "automated_scan",
+    userId: string | null
+  ): Promise<QueueItem> {
+    try {
+      // Get queue settings for max retries
+      const settings = await this.getQueueSettings()
+
+      const now = new Date()
+      const queueItem: Omit<QueueItem, "id"> = {
+        type: "company",
+        status: "pending",
+        url: websiteUrl,
+        company_name: companyName,
+        company_id: null,
+        source,
+        submitted_by: userId,
+        retry_count: 0,
+        max_retries: settings.maxRetries,
+        created_at: now,
+        updated_at: now,
+        company_sub_task: "fetch", // Start at first pipeline step
+      }
+
+      const docRef = await this.db.collection(this.queueCollection).add(queueItem)
+
+      this.logger.info("Company submitted to queue", {
+        queueItemId: docRef.id,
+        companyName,
+        websiteUrl,
+        source,
+        userId,
+      })
+
+      return {
+        id: docRef.id,
+        ...queueItem,
+      }
+    } catch (error) {
+      this.logger.error("Failed to submit company to queue", {
+        error,
+        companyName,
+        websiteUrl,
+        source,
+        userId,
+      })
+      throw error
+    }
+  }
+
+  /**
    * Submit a scrape request to the queue
    *
    * Creates a queue item with type "scrape" and the provided configuration

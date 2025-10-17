@@ -17,6 +17,8 @@ import type {
   SubmitJobResponse,
   SubmitScrapeRequest,
   SubmitScrapeResponse,
+  SubmitCompanyRequest,
+  SubmitCompanyResponse,
 } from "../types/job-queue"
 
 export class JobQueueClient extends ApiClient {
@@ -31,6 +33,15 @@ export class JobQueueClient extends ApiClient {
    */
   async submitJob(request: SubmitJobRequest): Promise<SubmitJobResponse> {
     const response = await this.post<SubmitJobResponse>("/submit", request, true)
+    return response
+  }
+
+  /**
+   * Submit a company to the queue
+   * Requires editor authentication
+   */
+  async submitCompany(request: SubmitCompanyRequest): Promise<SubmitCompanyResponse> {
+    const response = await this.post<SubmitCompanyResponse>("/submit-company", request, true)
     return response
   }
 
