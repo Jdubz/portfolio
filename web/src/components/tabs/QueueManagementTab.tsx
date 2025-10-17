@@ -43,6 +43,7 @@ export const QueueManagementTab: React.FC = () => {
 
   // Delete a queue item
   const handleDelete = async (queueItemId: string) => {
+    // eslint-disable-next-line no-restricted-globals
     if (!confirm("Are you sure you want to delete this queue item?")) {
       return
     }
@@ -95,15 +96,11 @@ export const QueueManagementTab: React.FC = () => {
   }
 
   if (!user) {
-    return (
-      <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>
-        Please sign in to access queue management
-      </Box>
-    )
+    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Please sign in to access queue management</Box>
   }
 
   // Display combined error from Firestore or operations
-  const displayError = error || firestoreError
+  const displayError = error ?? firestoreError
 
   return (
     <Box sx={{ maxWidth: "1200px", mx: "auto" }}>
@@ -228,6 +225,8 @@ export const QueueManagementTab: React.FC = () => {
                     }}
                     onMouseOver={(e) => (e.currentTarget.style.textDecoration = "underline")}
                     onMouseOut={(e) => (e.currentTarget.style.textDecoration = "none")}
+                    onFocus={(e) => (e.currentTarget.style.textDecoration = "underline")}
+                    onBlur={(e) => (e.currentTarget.style.textDecoration = "none")}
                   >
                     {item.url}
                   </a>

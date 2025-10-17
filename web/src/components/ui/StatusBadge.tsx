@@ -10,7 +10,7 @@ import { Badge } from "theme-ui"
 import type { QueueStatus } from "../../types/job-queue"
 
 interface StatusBadgeProps {
-  status: QueueStatus | "live" | string
+  status: string
   children?: React.ReactNode
 }
 
@@ -46,7 +46,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, children }) =>
 
   return (
     <Badge variant={variant} sx={{ textTransform: "capitalize" }}>
-      {children || status}
+      {children ?? status}
     </Badge>
   )
 }
