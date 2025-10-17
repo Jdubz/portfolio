@@ -43,9 +43,7 @@ describe("ScrapeResultModal", () => {
   })
 
   it("does not render when scrapeItem is null", () => {
-    const { container } = render(
-      <ScrapeResultModal isOpen={true} onClose={mockOnClose} scrapeItem={null} />
-    )
+    const { container } = render(<ScrapeResultModal isOpen={true} onClose={mockOnClose} scrapeItem={null} />)
     expect(container.firstChild).toBeNull()
   })
 

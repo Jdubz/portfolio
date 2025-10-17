@@ -20,9 +20,7 @@ describe("SignInModal", () => {
   })
 
   it("does not render when isOpen is false", () => {
-    const { container } = render(
-      <SignInModal isOpen={false} onClose={mockOnClose} onSignIn={mockOnSignIn} />
-    )
+    const { container } = render(<SignInModal isOpen={false} onClose={mockOnClose} onSignIn={mockOnSignIn} />)
     expect(container.firstChild).toBeNull()
   })
 
@@ -32,14 +30,7 @@ describe("SignInModal", () => {
   })
 
   it("displays custom title when provided", () => {
-    render(
-      <SignInModal
-        isOpen={true}
-        onClose={mockOnClose}
-        onSignIn={mockOnSignIn}
-        title="Editor Access Required"
-      />
-    )
+    render(<SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} title="Editor Access Required" />)
     expect(screen.getByText("Editor Access Required")).toBeInTheDocument()
   })
 
@@ -50,14 +41,7 @@ describe("SignInModal", () => {
 
   it("displays custom message when provided", () => {
     const customMessage = "Sign in to manage content items."
-    render(
-      <SignInModal
-        isOpen={true}
-        onClose={mockOnClose}
-        onSignIn={mockOnSignIn}
-        message={customMessage}
-      />
-    )
+    render(<SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} message={customMessage} />)
     expect(screen.getByText(customMessage)).toBeInTheDocument()
   })
 
@@ -74,9 +58,7 @@ describe("SignInModal", () => {
   })
 
   it("calls onClose when clicking backdrop", () => {
-    const { container } = render(
-      <SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} />
-    )
+    const { container } = render(<SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} />)
     const backdrop = container.firstChild as HTMLElement
     fireEvent.click(backdrop)
     expect(mockOnClose).toHaveBeenCalledTimes(1)
@@ -100,17 +82,13 @@ describe("SignInModal", () => {
   })
 
   it("shows loading state when signingIn is true", () => {
-    render(
-      <SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} signingIn={true} />
-    )
+    render(<SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} signingIn={true} />)
     expect(screen.getByText("Signing in...")).toBeInTheDocument()
     expect(screen.queryByText("Sign In with Google")).not.toBeInTheDocument()
   })
 
   it("disables buttons when signingIn is true", () => {
-    render(
-      <SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} signingIn={true} />
-    )
+    render(<SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} signingIn={true} />)
     const cancelButton = screen.getByText("Cancel")
     const signInButton = screen.getByText("Signing in...").closest("button") as HTMLButtonElement
     expect(cancelButton).toBeDisabled()
@@ -134,9 +112,7 @@ describe("SignInModal", () => {
   })
 
   it("renders spinner when signing in", () => {
-    render(
-      <SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} signingIn={true} />
-    )
+    render(<SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} signingIn={true} />)
     // Check that signing in text is present (spinner is rendered alongside it)
     expect(screen.getByText("Signing in...")).toBeInTheDocument()
   })
@@ -149,9 +125,7 @@ describe("SignInModal", () => {
   })
 
   it("prevents default behavior when signingIn and clicking disabled button", () => {
-    render(
-      <SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} signingIn={true} />
-    )
+    render(<SignInModal isOpen={true} onClose={mockOnClose} onSignIn={mockOnSignIn} signingIn={true} />)
     const cancelButton = screen.getByText("Cancel")
     fireEvent.click(cancelButton)
     // onClose should not be called when button is disabled
