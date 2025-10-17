@@ -30,13 +30,15 @@ interface JobSource {
 }
 
 export const SourcesTab: React.FC = () => {
-  const { user, loading: authLoading } = useAuth()
+  const { loading: authLoading } = useAuth()
   const [sources, setSources] = useState<JobSource[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
+    // Wait for auth to initialize (Firebase app initialization happens in AuthContext)
+    // Even though we don't need auth for public data, we need Firebase to be initialized
     if (!authLoading) {
       void loadSources()
     }
