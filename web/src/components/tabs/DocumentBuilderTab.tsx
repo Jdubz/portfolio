@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Flex, Select, Checkbox } from "theme-ui"
+import { Box, Heading, Text, Button, Input, Label, Textarea, Spinner, Alert, Flex, Select } from "theme-ui"
 import { logger } from "../../utils/logger"
 import { generatorClient } from "../../api/generator-client"
 import { jobQueueClient } from "../../api"
@@ -48,7 +48,6 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [submitToQueue, setSubmitToQueue] = useState(false)
 
   // Generation progress tracking
   const [generationStatus, setGenerationStatus] = useState<GenerationRequest["status"] | null>(null)
@@ -236,22 +235,23 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
           setGenerating(false)
         }
 
-        // After successful generation, submit to queue if checkbox is checked
-        if (submitToQueue && user && formState.jobDescriptionUrl && startData.requestId) {
+        // After successful generation, automatically submit to queue if job URL is provided
+        if (user && formState.jobDescriptionUrl && formState.companyWebsite && startData.requestId) {
           try {
             const queueResult = await jobQueueClient.submitJob({
               url: formState.jobDescriptionUrl.trim(),
               companyName: formState.company.trim(),
+              companyUrl: formState.companyWebsite.trim(),
               generationId: startData.requestId, // Link to the generation request
             })
-            logger.info("Job submitted to queue with generation ID", {
+            logger.info("Job automatically submitted to queue with generation ID", {
               queueItemId: queueResult.queueItemId,
               generationId: startData.requestId,
             })
           } catch (queueErr) {
             const err = queueErr instanceof Error ? queueErr : new Error(String(queueErr))
-            logger.warn("Failed to submit to queue after generation", { error: err.message })
-            // Don't show error to user - queue submission is optional
+            logger.warn("Failed to auto-submit to queue after generation", { error: err.message })
+            // Don't show error to user - queue submission is automatic but not critical
           }
         }
       } catch (err) {
@@ -397,10 +397,10 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
           />
         </Box>
 
-        {/* Company Website (Optional) */}
+        {/* Company Website (Required) */}
         <Box sx={{ mb: 4 }}>
           <Label htmlFor="companyWebsite" sx={{ mb: 2, display: "block", fontWeight: "medium" }}>
-            Company Website (Optional)
+            Company Website <Text sx={{ color: "error" }}>*</Text>
           </Label>
           <Input
             id="companyWebsite"
@@ -409,8 +409,12 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
             value={formState.companyWebsite}
             onChange={(e) => setCompanyWebsite(e.target.value)}
             disabled={generating}
+            required
             sx={{ fontSize: 2 }}
           />
+          <Text sx={{ fontSize: 1, color: "textMuted", mt: 2, lineHeight: 1.5 }}>
+            Required for company intake pipeline and job tracking
+          </Text>
         </Box>
 
         {/* Job Description URL (Optional) */}
@@ -465,19 +469,11 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
           <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1 }}>Comma-separated list of keywords</Text>
         </Box>
 
-        {/* Submit to Queue Checkbox (editor-only, requires job URL) */}
-        {isEditor && formState.jobDescriptionUrl && (
-          <Box sx={{ mb: 3 }}>
-            <Label sx={{ display: "flex", alignItems: "center", gap: 2, cursor: "pointer" }}>
-              <Checkbox
-                checked={submitToQueue}
-                onChange={(e) => setSubmitToQueue(e.target.checked)}
-                disabled={generating}
-              />
-              <Text sx={{ fontSize: 2 }}>Also submit to Job Finder queue for tracking</Text>
-            </Label>
-            <Text sx={{ fontSize: 0, color: "text", opacity: 0.6, mt: 1, ml: "28px" }}>
-              Job will be added to the queue for automated processing and tracking
+        {/* Info about automatic queue submission */}
+        {formState.jobDescriptionUrl && formState.companyWebsite && (
+          <Box sx={{ mb: 3, p: 2, bg: "muted", borderRadius: "sm" }}>
+            <Text sx={{ fontSize: 1, color: "textMuted" }}>
+              ℹ️ This job will be automatically added to the Job Finder queue for tracking and analysis
             </Text>
           </Box>
         )}

@@ -11,7 +11,6 @@ import { AIPromptsTab } from "../components/tabs/AIPromptsTab"
 import { SettingsTab } from "../components/tabs/SettingsTab"
 import { DocumentHistoryTab } from "../components/tabs/DocumentHistoryTab"
 import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
-import { JobFinderTab } from "../components/tabs/JobFinderTab"
 import { JobFinderConfigTab } from "../components/tabs/JobFinderConfigTab"
 import { ScrapingTab } from "../components/tabs/ScrapingTab"
 import { QueueManagementTab } from "../components/tabs/QueueManagementTab"
@@ -65,7 +64,6 @@ const ResumeBuilderPage: React.FC = () => {
       "settings",
       "history",
       "job-applications",
-      "job-finder",
       "scraping",
       "queue-management",
       "job-finder-config",
@@ -223,17 +221,6 @@ const ResumeBuilderPage: React.FC = () => {
       ),
     },
     // Job Finder Group (all visible, edit controls hidden for non-editors)
-    {
-      id: "job-finder",
-      label: "Submit Jobs",
-      icon: "➕",
-      group: "job-finder",
-      content: (
-        <ErrorBoundary>
-          <JobFinderTab />
-        </ErrorBoundary>
-      ),
-    },
     {
       id: "job-applications",
       label: "Job Applications",

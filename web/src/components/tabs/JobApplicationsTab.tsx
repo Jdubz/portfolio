@@ -11,7 +11,7 @@
 
 import React, { useState, useEffect, useMemo } from "react"
 import { Box, Text, Button, Flex, Checkbox, Label, Spinner, Select, Input, Heading } from "theme-ui"
-import { jobMatchClient } from "../../api"
+import { jobMatchClient, jobQueueClient } from "../../api"
 import type { JobMatch } from "../../types/job-match"
 import type { GenerationRequest } from "../../types/generator"
 import { generatorClient } from "../../api/generator-client"
@@ -20,6 +20,7 @@ import { useAuth } from "../../hooks/useAuth"
 import { useDocumentGeneration, buildGenerationOptionsFromJobMatch } from "../../hooks/useDocumentGeneration"
 import { GenerationProgress } from "../GenerationProgress"
 import { TabHeader, LoadingState, EmptyState } from "../ui"
+import { SubmitJobModal } from "../SubmitJobModal"
 
 interface JobApplicationsTabProps {
   onViewGeneratedDocs: (request: GenerationRequest) => void
@@ -57,6 +58,9 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
   // Generation state
   const [generatingJobId, setGeneratingJobId] = useState<string | null>(null)
   const { generating, steps, result, startGeneration, reset } = useDocumentGeneration()
+
+  // Submit Job Modal state
+  const [isSubmitJobModalOpen, setIsSubmitJobModalOpen] = useState(false)
 
   // Helper function to calculate job age
   const getJobAge = (postedDate?: string): string => {
@@ -320,14 +324,32 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
     )
   }
 
+  const handleSubmitJob = async (data: { url: string; companyName: string; companyUrl: string }) => {
+    await jobQueueClient.submitJob({
+      url: data.url,
+      companyName: data.companyName,
+      companyUrl: data.companyUrl,
+    })
+    logger.info("Job submitted from Job Applications tab", data)
+    // Refresh job matches after a short delay to allow processing
+    window.setTimeout(() => {
+      void loadJobMatches()
+    }, 2000)
+  }
+
   return (
     <Box sx={{ mt: 4 }}>
       <TabHeader
         title="Job Applications"
         actions={
-          <Button onClick={() => void loadJobMatches()} variant="secondary">
-            Refresh
-          </Button>
+          <Flex sx={{ gap: 2 }}>
+            <Button onClick={() => setIsSubmitJobModalOpen(true)} variant="primary">
+              Submit Job
+            </Button>
+            <Button onClick={() => void loadJobMatches()} variant="secondary">
+              Refresh
+            </Button>
+          </Flex>
         }
       />
 
@@ -703,6 +725,13 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
           {jobMatches.filter((jm) => jm.applied).length}
         </Text>
       </Box>
+
+      {/* Submit Job Modal */}
+      <SubmitJobModal
+        isOpen={isSubmitJobModalOpen}
+        onClose={() => setIsSubmitJobModalOpen(false)}
+        onSubmit={handleSubmitJob}
+      />
     </Box>
   )
 }
