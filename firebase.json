@@ -99,7 +99,7 @@
       "ignore": [
         "__/auth/**"
       ],
-      "predeploy": ["cd web && npm run build"]
+      "predeploy": ["cd web && GATSBY_ACTIVE_ENV=production npm run build"]
     },
     {
       "target": "staging",
