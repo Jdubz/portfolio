@@ -14,18 +14,24 @@ export const HowItWorksTab: React.FC = () => {
             color: "primary",
           }}
         >
-          An Intelligent Job Application Pipeline
+          An End-to-End Job Application System
         </Heading>
         <Text sx={{ fontSize: [2, 3], color: "text", lineHeight: 1.6, mb: 3 }}>
-          This isn&apos;t just a resume builder—it&apos;s an integrated system that combines AI-powered job discovery,
-          intelligent matching, and hyper-personalized document generation to create the best applications possible.
+          This is a fully integrated platform that automates the entire job search workflow—from discovering
+          opportunities to generating tailored applications. It combines automated job scraping, AI-powered matching,
+          hyper-personalized document generation, and comprehensive application tracking in a single cohesive system.
+        </Text>
+        <Text sx={{ fontSize: [1, 2], color: "textMuted", lineHeight: 1.6, fontStyle: "italic" }}>
+          Built to solve my own job search challenges, this system processes hundreds of opportunities, identifies the
+          best matches, and creates professional applications—all while serving as a live demonstration of technical
+          capabilities.
         </Text>
       </Box>
 
-      {/* Architecture Overview */}
+      {/* System Architecture */}
       <Box sx={{ mb: 5 }}>
         <Heading as="h3" sx={{ fontSize: [3, 4], mb: 3, color: "primary" }}>
-          The Pipeline
+          Complete System Flow
         </Heading>
 
         <Flex
@@ -39,7 +45,7 @@ export const HowItWorksTab: React.FC = () => {
             borderColor: "divider",
           }}
         >
-          {/* Step 1 */}
+          {/* Step 1: Job Discovery */}
           <Flex sx={{ alignItems: "flex-start", gap: 3 }}>
             <Box
               sx={{
@@ -59,16 +65,31 @@ export const HowItWorksTab: React.FC = () => {
             </Box>
             <Box sx={{ flex: 1 }}>
               <Heading as="h4" sx={{ fontSize: 2, mb: 2 }}>
-                Job Discovery & Analysis
+                🔍 Automated Job Discovery
               </Heading>
               <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
                 The{" "}
                 <Link href="https://github.com/Jdubz/job-finder" target="_blank" sx={{ color: "primary" }}>
                   job-finder
                 </Link>{" "}
-                tool continuously scans job boards, scrapes postings, and uses AI to analyze each opportunity. It
-                extracts key information like required skills, company culture, and role responsibilities.
+                Python service continuously monitors company career pages and job boards. It scrapes new postings in
+                real-time, extracts structured data (title, description, requirements, location, salary), and
+                automatically adds them to the processing queue.
               </Text>
+              <Box as="ul" sx={{ pl: 4, mb: 2, fontSize: 1 }}>
+                <Box as="li" sx={{ mb: 1 }}>
+                  Configurable job sources tracked in the <strong>Sources</strong> tab
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  Company blocklist to filter unwanted employers
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  Automated scraping schedules with retry logic
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  Manual job submission via the <strong>Job Applications</strong> tab
+                </Box>
+              </Box>
               <Text
                 sx={{
                   fontSize: 0,
@@ -79,15 +100,14 @@ export const HowItWorksTab: React.FC = () => {
                   borderRadius: "sm",
                 }}
               >
-                Technologies: Python, web scraping, OpenAI GPT-4, Firestore
+                Tech: Python, BeautifulSoup, Selenium, Playwright, Firestore queue
               </Text>
             </Box>
           </Flex>
 
-          {/* Arrow */}
           <Box sx={{ textAlign: "center", fontSize: 3, color: "primary" }}>↓</Box>
 
-          {/* Step 2 */}
+          {/* Step 2: Queue Processing */}
           <Flex sx={{ alignItems: "flex-start", gap: 3 }}>
             <Box
               sx={{
@@ -107,13 +127,27 @@ export const HowItWorksTab: React.FC = () => {
             </Box>
             <Box sx={{ flex: 1 }}>
               <Heading as="h4" sx={{ fontSize: 2, mb: 2 }}>
-                Intelligent Matching
+                ⚙️ Queue Management & Processing
               </Heading>
               <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
-                Each job is scored against my experience portfolio using semantic analysis. The system identifies
-                matched skills, key strengths to emphasize, and potential gaps—providing strategic insights for
-                customization.
+                Jobs enter a Firestore-based queue with configurable retry logic, timeout handling, and status tracking.
+                The queue processor validates URLs, extracts job data, and prepares them for AI analysis. Real-time
+                status updates are visible in the <strong>Queue Management</strong> tab.
               </Text>
+              <Box as="ul" sx={{ pl: 4, mb: 2, fontSize: 1 }}>
+                <Box as="li" sx={{ mb: 1 }}>
+                  Status tracking: pending → processing → success/failed
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  Automatic retry with exponential backoff (configurable)
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  Error logging with detailed failure reasons
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  Priority queue support for urgent applications
+                </Box>
+              </Box>
               <Text
                 sx={{
                   fontSize: 0,
@@ -124,15 +158,14 @@ export const HowItWorksTab: React.FC = () => {
                   borderRadius: "sm",
                 }}
               >
-                Match scoring, skill extraction, semantic analysis
+                Tech: Firestore transactions, async queue processing, state management
               </Text>
             </Box>
           </Flex>
 
-          {/* Arrow */}
           <Box sx={{ textAlign: "center", fontSize: 3, color: "primary" }}>↓</Box>
 
-          {/* Step 3 */}
+          {/* Step 3: AI Analysis */}
           <Flex sx={{ alignItems: "flex-start", gap: 3 }}>
             <Box
               sx={{
@@ -152,13 +185,31 @@ export const HowItWorksTab: React.FC = () => {
             </Box>
             <Box sx={{ flex: 1 }}>
               <Heading as="h4" sx={{ fontSize: 2, mb: 2 }}>
-                AI-Powered Document Generation
+                🤖 AI-Powered Job Matching
               </Heading>
               <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
-                This tool (the portfolio builder) receives rich context from job-finder and generates hyper-customized
-                resumes and cover letters. The AI is instructed to emphasize matched skills, address potential concerns,
-                and highlight relevant achievements—all while maintaining complete factual accuracy.
+                OpenAI GPT-4 analyzes each job against my complete experience portfolio using semantic understanding.
+                The AI extracts required skills, evaluates match quality, identifies strengths to emphasize, and flags
+                potential gaps or concerns. Only high-quality matches (configurable threshold) proceed to the next
+                stage.
               </Text>
+              <Box as="ul" sx={{ pl: 4, mb: 2, fontSize: 1 }}>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Match Score</strong>: 0-100% based on skills, experience, and culture fit
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Matched Skills</strong>: Specific technologies and competencies aligned with the role
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Key Strengths</strong>: What to emphasize in the application
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Potential Gaps</strong>: Skills to address or downplay
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Strategic Notes</strong>: AI-generated insights for customization
+                </Box>
+              </Box>
               <Text
                 sx={{
                   fontSize: 0,
@@ -169,15 +220,14 @@ export const HowItWorksTab: React.FC = () => {
                   borderRadius: "sm",
                 }}
               >
-                Multi-provider AI (OpenAI GPT-4o, Google Gemini 2.0), Firebase Cloud Functions, Puppeteer PDF rendering
+                Tech: OpenAI GPT-4, semantic analysis, structured JSON extraction
               </Text>
             </Box>
           </Flex>
 
-          {/* Arrow */}
           <Box sx={{ textAlign: "center", fontSize: 3, color: "primary" }}>↓</Box>
 
-          {/* Step 4 */}
+          {/* Step 4: Document Generation */}
           <Flex sx={{ alignItems: "flex-start", gap: 3 }}>
             <Box
               sx={{
@@ -197,13 +247,31 @@ export const HowItWorksTab: React.FC = () => {
             </Box>
             <Box sx={{ flex: 1 }}>
               <Heading as="h4" sx={{ fontSize: 2, mb: 2 }}>
-                Professional Delivery
+                📄 Hyper-Personalized Document Generation
               </Heading>
               <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
-                Generated PDFs are stored in Google Cloud Storage with automatic lifecycle management (archived to
-                COLDLINE after 90 days for cost optimization). Public URLs never expire, and all generations are tracked
-                with full metadata for continuous improvement.
+                This portfolio tool receives rich match context and generates custom resumes and cover letters. The AI
+                selects the most relevant experiences, emphasizes matched skills, addresses potential concerns, and
+                optimizes for ATS parsing—all while maintaining complete factual accuracy.
               </Text>
+              <Box as="ul" sx={{ pl: 4, mb: 2, fontSize: 1 }}>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Multi-Provider AI</strong>: Choose between OpenAI GPT-4o (premium) or Google Gemini 2.0
+                  (cost-optimized)
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Customizable Prompts</strong>: Edit AI instructions in the <strong>AI Prompts</strong> tab
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Progressive Generation</strong>: Real-time progress updates for each step
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Professional PDF Export</strong>: Puppeteer-rendered documents with custom branding
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Cloud Storage</strong>: Automatic GCS upload with public URLs
+                </Box>
+              </Box>
               <Text
                 sx={{
                   fontSize: 0,
@@ -214,21 +282,175 @@ export const HowItWorksTab: React.FC = () => {
                   borderRadius: "sm",
                 }}
               >
-                Google Cloud Storage, lifecycle policies, Firestore tracking
+                Tech: Firebase Cloud Functions, OpenAI/Gemini, Puppeteer, GCS, Theme UI templates
+              </Text>
+            </Box>
+          </Flex>
+
+          <Box sx={{ textAlign: "center", fontSize: 3, color: "primary" }}>↓</Box>
+
+          {/* Step 5: Application Tracking */}
+          <Flex sx={{ alignItems: "flex-start", gap: 3 }}>
+            <Box
+              sx={{
+                minWidth: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                bg: "primary",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "bold",
+                fontSize: 2,
+              }}
+            >
+              5
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Heading as="h4" sx={{ fontSize: 2, mb: 2 }}>
+                📊 Application Tracking & Management
+              </Heading>
+              <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
+                The <strong>Job Applications</strong> tab provides a comprehensive view of all matched jobs with
+                advanced filtering, sorting, and status tracking. One-click document generation for new matches,
+                instant access to previously generated documents, and application status management—all in a
+                mobile-responsive interface.
+              </Text>
+              <Box as="ul" sx={{ pl: 4, mb: 2, fontSize: 1 }}>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Advanced Filters</strong>: Applied status, document generation, match score threshold
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Multi-Sort</strong>: Sort by age, match score, company, or role
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Quick Actions</strong>: Mark applied, view job posting, generate documents
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Mobile-First Design</strong>: Responsive table/card layouts
+                </Box>
+                <Box as="li" sx={{ mb: 1 }}>
+                  <strong>Document Preview</strong>: Click generated jobs to view PDFs
+                </Box>
+              </Box>
+              <Text
+                sx={{
+                  fontSize: 0,
+                  fontFamily: "monospace",
+                  color: "textMuted",
+                  bg: "background",
+                  p: 2,
+                  borderRadius: "sm",
+                }}
+              >
+                Tech: React hooks, optimistic UI updates, Firestore real-time sync
               </Text>
             </Box>
           </Flex>
         </Flex>
       </Box>
 
+      {/* Cross-System Integration */}
+      <Box sx={{ mb: 5 }}>
+        <Heading as="h3" sx={{ fontSize: [3, 4], mb: 3, color: "primary" }}>
+          🔗 Seamless Integration Architecture
+        </Heading>
+
+        <Box
+          sx={{
+            p: 4,
+            bg: "muted",
+            borderRadius: "md",
+            border: "1px solid",
+            borderColor: "divider",
+            mb: 3,
+          }}
+        >
+          <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
+            Shared TypeScript Types via Local Package
+          </Heading>
+          <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
+            Both systems share a single source of truth for data structures through the{" "}
+            <Text as="code" sx={{ fontFamily: "monospace", bg: "background", px: 1, py: 0.5, borderRadius: "sm" }}>
+              @jdubz/shared-types
+            </Text>{" "}
+            local package. TypeScript types are mirrored as Python Pydantic models, ensuring perfect data consistency
+            across the entire pipeline.
+          </Text>
+          <Box as="ul" sx={{ pl: 4, mb: 0, fontSize: 1 }}>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>QueueItem</strong>: Job queue structure with status, retry logic, and metadata
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>JobMatch</strong>: AI analysis results with match scores and strategic insights
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>Configuration Types</strong>: QueueSettings, StopList, AISettings
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>API Contracts</strong>: Request/response types for all endpoints
+            </Box>
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            p: 4,
+            bg: "muted",
+            borderRadius: "md",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
+            Firestore as Integration Layer
+          </Heading>
+          <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
+            Firestore serves as the real-time data bridge between the Python job-finder and TypeScript portfolio tool.
+            Both systems read and write to shared collections, enabling seamless data flow without direct coupling.
+          </Text>
+          <Box as="ul" sx={{ pl: 4, mb: 0, fontSize: 1 }}>
+            <Box as="li" sx={{ mb: 1 }}>
+              <Text as="code" sx={{ fontFamily: "monospace", bg: "background", px: 1, borderRadius: "sm" }}>
+                job-queue
+              </Text>
+              : Written by both systems, read by job-finder worker
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <Text as="code" sx={{ fontFamily: "monospace", bg: "background", px: 1, borderRadius: "sm" }}>
+                job-matches
+              </Text>
+              : Written by job-finder, read/updated by portfolio
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <Text as="code" sx={{ fontFamily: "monospace", bg: "background", px: 1, borderRadius: "sm" }}>
+                job-finder-config
+              </Text>
+              : Configuration shared between both systems
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <Text as="code" sx={{ fontFamily: "monospace", bg: "background", px: 1, borderRadius: "sm" }}>
+                companies
+              </Text>
+              ,{" "}
+              <Text as="code" sx={{ fontFamily: "monospace", bg: "background", px: 1, borderRadius: "sm" }}>
+                job-sources
+              </Text>
+              : Reference data for scraping
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+
       {/* Technical Highlights */}
       <Box sx={{ mb: 5 }}>
         <Heading as="h3" sx={{ fontSize: [3, 4], mb: 3, color: "primary" }}>
-          Technical Highlights
+          💡 Technical Highlights
         </Heading>
 
         <Flex sx={{ flexDirection: "column", gap: 3 }}>
-          {/* Multi-Provider AI */}
+          {/* Cost Optimization */}
           <Box
             sx={{
               p: 3,
@@ -239,18 +461,28 @@ export const HowItWorksTab: React.FC = () => {
             }}
           >
             <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
-              💰 Cost-Optimized Multi-Provider AI
+              💰 96% Cost Reduction with Multi-Provider AI
             </Heading>
             <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
-              The system supports both OpenAI GPT-4o and Google Gemini 2.0 Flash. By defaulting to Gemini for most
-              generations, the cost per document is reduced by 96%—from $0.015 to $0.0006—without sacrificing quality.
+              The system supports both OpenAI GPT-4o ($0.015/generation) and Google Gemini 2.0 Flash
+              ($0.0006/generation). By defaulting to Gemini for standard jobs and reserving OpenAI for critical
+              applications, costs are dramatically reduced without sacrificing quality.
             </Text>
-            <Text sx={{ fontSize: 0, color: "textMuted" }}>
-              Real-world savings: Generating 100 applications costs $0.06 with Gemini vs. $1.50 with OpenAI
+            <Text
+              sx={{
+                fontSize: 0,
+                fontFamily: "monospace",
+                color: "textMuted",
+                bg: "background",
+                p: 2,
+                borderRadius: "sm",
+              }}
+            >
+              Real savings: 100 applications = $0.06 (Gemini) vs $1.50 (OpenAI)
             </Text>
           </Box>
 
-          {/* Architecture */}
+          {/* Serverless Scale */}
           <Box
             sx={{
               p: 3,
@@ -261,15 +493,25 @@ export const HowItWorksTab: React.FC = () => {
             }}
           >
             <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
-              🏗️ Scalable Serverless Architecture
+              ⚡ Serverless Architecture with Auto-Scaling
             </Heading>
             <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
-              Built on Firebase Cloud Functions (Gen 2) with a Gatsby static frontend. The system scales automatically
-              from zero to thousands of requests without managing servers. Firestore serves as the integration layer
-              between job-finder and the portfolio tool.
+              Built entirely on serverless infrastructure: Gatsby static site (instant global CDN delivery), Firebase
+              Cloud Functions Gen 2 (auto-scaling from 0 to thousands of requests), and Firestore (managed NoSQL with
+              real-time sync). Zero server management, infinite horizontal scale.
             </Text>
-            <Text sx={{ fontSize: 0, color: "textMuted" }}>
-              Stack: Gatsby + React 18, TypeScript, Firebase (Cloud Functions Gen 2, Firestore, Auth, Storage), Theme UI
+            <Text
+              sx={{
+                fontSize: 0,
+                fontFamily: "monospace",
+                color: "textMuted",
+                bg: "background",
+                p: 2,
+                borderRadius: "sm",
+              }}
+            >
+              Stack: Gatsby + React 18 + TypeScript, Firebase (Functions Gen 2, Firestore, Auth, Storage), Python
+              workers
             </Text>
           </Box>
 
@@ -284,19 +526,29 @@ export const HowItWorksTab: React.FC = () => {
             }}
           >
             <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
-              🔒 Security & Access Control
+              🔒 Defense-in-Depth Security
             </Heading>
             <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
-              Firebase Authentication with custom claims enforces role-based access (editor vs. viewer). Rate limiting
-              prevents abuse (20 requests per 15 minutes for editors, 10 for viewers). All API endpoints require valid
-              JWT tokens, and Cloud Functions validate requests server-side.
+              Multiple security layers protect the system: Firebase Auth with custom claims for role-based access
+              (editor vs viewer), rate limiting per user role (20/15min for editors, 10/15min for viewers), JWT
+              validation on all API endpoints, CORS policies per function, and Firestore security rules enforcing
+              server-side authorization.
             </Text>
-            <Text sx={{ fontSize: 0, color: "textMuted" }}>
-              Defense-in-depth: Firebase Auth, custom claims, rate limiting, JWT validation, CORS policies
+            <Text
+              sx={{
+                fontSize: 0,
+                fontFamily: "monospace",
+                color: "textMuted",
+                bg: "background",
+                p: 2,
+                borderRadius: "sm",
+              }}
+            >
+              Security stack: Firebase Auth, custom claims, express-rate-limit, JWT validation, Firestore rules, CORS
             </Text>
           </Box>
 
-          {/* Progressive Generation */}
+          {/* Progressive UX */}
           <Box
             sx={{
               p: 3,
@@ -307,19 +559,28 @@ export const HowItWorksTab: React.FC = () => {
             }}
           >
             <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
-              ⚡ Progressive Generation with Real-Time Updates
+              🎯 Progressive Generation with Real-Time Feedback
             </Heading>
             <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
-              Document generation is broken into discrete steps (fetch data → generate content → render PDF → upload).
-              Each step reports progress in real-time, allowing early access to completed documents without waiting for
-              the entire batch to finish.
+              Document generation breaks into discrete steps (fetch defaults → generate resume → generate cover letter
+              → render PDFs → upload to storage). Each step reports progress in real-time via WebSocket-like streaming,
+              allowing users to access completed documents immediately without waiting for the entire batch.
             </Text>
-            <Text sx={{ fontSize: 0, color: "textMuted" }}>
-              Multi-step API design, optimistic UI updates, state management, async/await patterns
+            <Text
+              sx={{
+                fontSize: 0,
+                fontFamily: "monospace",
+                color: "textMuted",
+                bg: "background",
+                p: 2,
+                borderRadius: "sm",
+              }}
+            >
+              UX patterns: Multi-step state machine, optimistic updates, async/await, React hooks
             </Text>
           </Box>
 
-          {/* Data Integration */}
+          {/* Mobile-First */}
           <Box
             sx={{
               p: 3,
@@ -330,16 +591,161 @@ export const HowItWorksTab: React.FC = () => {
             }}
           >
             <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
-              🔗 Seamless Tool Integration
+              📱 Mobile-First Responsive Design
             </Heading>
             <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
-              Firestore acts as the shared data layer between job-finder (Python) and the portfolio tool
-              (TypeScript/JavaScript). Job matches flow automatically from discovery to generation, with both tools
-              reading and writing to the same collections for maximum efficiency.
+              Every interface adapts seamlessly from mobile to desktop. Tables transform into cards on small screens,
+              filters collapse to save space, and all interactions are touch-optimized. The Job Applications tab alone
+              has separate desktop (data table) and mobile (card) layouts for optimal usability.
             </Text>
-            <Text sx={{ fontSize: 0, color: "textMuted" }}>
-              Cross-language integration, shared schema design, eventual consistency, real-time sync
+            <Text
+              sx={{
+                fontSize: 0,
+                fontFamily: "monospace",
+                color: "textMuted",
+                bg: "background",
+                p: 2,
+                borderRadius: "sm",
+              }}
+            >
+              Design system: Theme UI, responsive breakpoints, CSS Grid/Flexbox, collapsible sections
             </Text>
+          </Box>
+
+          {/* Testing */}
+          <Box
+            sx={{
+              p: 3,
+              bg: "muted",
+              borderRadius: "md",
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
+              ✅ Comprehensive Testing Strategy
+            </Heading>
+            <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
+              Both web and functions have extensive Jest test suites (319 total tests). Playwright E2E tests validate
+              critical user flows. Pre-commit hooks enforce linting and type-checking. GitHub Actions CI/CD runs all
+              tests before deployment to staging and production.
+            </Text>
+            <Text
+              sx={{
+                fontSize: 0,
+                fontFamily: "monospace",
+                color: "textMuted",
+                bg: "background",
+                p: 2,
+                borderRadius: "sm",
+              }}
+            >
+              Testing stack: Jest, Playwright, ESLint, TypeScript, Prettier, Husky hooks, GitHub Actions
+            </Text>
+          </Box>
+        </Flex>
+      </Box>
+
+      {/* Feature Tabs Overview */}
+      <Box sx={{ mb: 5 }}>
+        <Heading as="h3" sx={{ fontSize: [3, 4], mb: 3, color: "primary" }}>
+          📑 Available Features
+        </Heading>
+
+        <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
+          This platform is organized into three main sections, each with specialized tabs for managing different
+          aspects of the job search workflow:
+        </Text>
+
+        <Flex sx={{ flexDirection: "column", gap: 3 }}>
+          {/* Resume Section */}
+          <Box
+            sx={{
+              p: 3,
+              bg: "muted",
+              borderRadius: "md",
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
+              📝 Resume Tools
+            </Heading>
+            <Box as="ul" sx={{ pl: 4, mb: 0, fontSize: 1 }}>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>How It Works</strong>: System overview and architecture (this tab)
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Work Experience</strong>: Manage experience entries and content blurbs
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Document Builder</strong>: Generate custom resumes and cover letters
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>AI Prompts</strong>: Customize AI generation instructions
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Personal Info</strong>: Default contact info and personal details
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Job Finder Section */}
+          <Box
+            sx={{
+              p: 3,
+              bg: "muted",
+              borderRadius: "md",
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
+              🔍 Job Finder Tools
+            </Heading>
+            <Box as="ul" sx={{ pl: 4, mb: 0, fontSize: 1 }}>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Job Applications</strong>: View matched jobs, generate documents, track applications
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Job Scraping</strong>: Monitor scraping activity and view scrape history
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Queue Management</strong>: Real-time queue status with retry and error handling
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Configuration</strong>: Queue settings, stop lists, and AI matching configuration
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Companies</strong>: Manage company blocklist and preferences
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Sources</strong>: Configure job sources and career page tracking
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Admin Section */}
+          <Box
+            sx={{
+              p: 3,
+              bg: "muted",
+              borderRadius: "md",
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
+              ⚙️ Admin Tools
+            </Heading>
+            <Box as="ul" sx={{ pl: 4, mb: 0, fontSize: 1 }}>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Document History</strong>: View all generated documents with metadata
+              </Box>
+              <Box as="li" sx={{ mb: 1 }}>
+                <strong>Troubleshooting</strong>: System health checks and diagnostics
+              </Box>
+            </Box>
           </Box>
         </Flex>
       </Box>
@@ -347,7 +753,7 @@ export const HowItWorksTab: React.FC = () => {
       {/* Quality Philosophy */}
       <Box sx={{ mb: 5 }}>
         <Heading as="h3" sx={{ fontSize: [3, 4], mb: 3, color: "primary" }}>
-          Quality Philosophy
+          🎯 Quality Philosophy
         </Heading>
 
         <Box
@@ -361,56 +767,160 @@ export const HowItWorksTab: React.FC = () => {
         >
           <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
             The AI is explicitly instructed to prioritize <strong>factual accuracy</strong> over embellishment. It
-            cannot add metrics, accomplishments, or technologies that aren&apos;t in the source data. Instead, it
-            focuses on:
+            cannot invent metrics, add accomplishments, or claim skills that aren&apos;t in the source data. Instead,
+            it optimizes applications through:
           </Text>
 
           <Box as="ul" sx={{ pl: 4, mb: 3 }}>
             <Box as="li" sx={{ mb: 2 }}>
               <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6 }}>
-                <strong>Selection</strong>: Choosing the most relevant experiences for each role
+                <strong>Intelligent Selection</strong>: Choosing the most relevant experiences and accomplishments for
+                each specific role
               </Text>
             </Box>
             <Box as="li" sx={{ mb: 2 }}>
               <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6 }}>
-                <strong>Emphasis</strong>: Highlighting matched skills and achievements through ordering and placement
+                <strong>Strategic Emphasis</strong>: Highlighting matched skills and achievements through careful
+                ordering, placement, and phrasing
               </Text>
             </Box>
             <Box as="li" sx={{ mb: 2 }}>
               <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6 }}>
-                <strong>Clarity</strong>: Reformatting content for readability while preserving all facts
+                <strong>Clear Communication</strong>: Reformatting content for readability and impact while preserving
+                all factual details
               </Text>
             </Box>
             <Box as="li" sx={{ mb: 2 }}>
               <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6 }}>
-                <strong>ATS Optimization</strong>: Ensuring documents parse correctly in applicant tracking systems
+                <strong>ATS Optimization</strong>: Ensuring documents parse correctly in applicant tracking systems with
+                proper keyword placement
+              </Text>
+            </Box>
+            <Box as="li" sx={{ mb: 2 }}>
+              <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6 }}>
+                <strong>Gap Addressing</strong>: Acknowledging potential skill gaps honestly while framing existing
+                experience positively
               </Text>
             </Box>
           </Box>
 
           <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6 }}>
             The result: authentic, accurate documents that showcase real qualifications while being perfectly tailored
-            to each opportunity.
+            to each opportunity. No lies, no exaggeration—just intelligent presentation of genuine experience.
           </Text>
         </Box>
       </Box>
 
-      {/* Portfolio Piece */}
+      {/* Development Workflow */}
       <Box sx={{ mb: 5 }}>
         <Heading as="h3" sx={{ fontSize: [3, 4], mb: 3, color: "primary" }}>
-          This Tool is the Portfolio
+          🚀 Production-Ready Development Workflow
         </Heading>
 
-        <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
-          Every resume generated by this system includes a subtle footer:{" "}
-          <Text as="em">&quot;Generated by a custom AI resume builder built by the candidate&quot;</Text> with a link to
-          this tool. The resume itself becomes a demonstration of technical capability.
-        </Text>
+        <Box
+          sx={{
+            p: 4,
+            bg: "muted",
+            borderRadius: "md",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
+            This project follows professional development practices with automated testing, CI/CD, and multi-environment
+            deployment:
+          </Text>
 
-        <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6 }}>
-          This project showcases full-stack development, AI integration, cloud architecture, cost optimization, security
-          best practices, and system design—all while solving a real problem in my own job search.
-        </Text>
+          <Box as="ul" sx={{ pl: 4, mb: 3, fontSize: 1 }}>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>Git Workflow</strong>: feature → staging → main with PR reviews
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>Local Development</strong>: Firebase emulators for offline testing
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>Staging Environment</strong>: Full production replica at staging.joshwentworth.com
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>Production</strong>: Auto-deploy to joshwentworth.com on main merge
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>Version Management</strong>: Changesets for semantic versioning
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>Pre-Commit Hooks</strong>: Linting, type-checking, and test validation
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              <strong>GitHub Actions</strong>: Automated testing and deployment
+            </Box>
+          </Box>
+
+          <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6 }}>
+            All code is linted, type-checked, and tested before deployment. The staging environment allows full testing
+            before production releases.
+          </Text>
+        </Box>
+      </Box>
+
+      {/* Portfolio Meta */}
+      <Box sx={{ mb: 5 }}>
+        <Heading as="h3" sx={{ fontSize: [3, 4], mb: 3, color: "primary" }}>
+          🎨 This Tool is the Portfolio
+        </Heading>
+
+        <Box
+          sx={{
+            p: 4,
+            bg: "muted",
+            borderRadius: "md",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
+            Every resume generated by this system includes a footer:{" "}
+            <Text
+              as="em"
+              sx={{ fontStyle: "italic", bg: "background", px: 2, py: 1, borderRadius: "sm", display: "inline-block" }}
+            >
+              &quot;Generated by a custom AI resume builder built by the candidate&quot;
+            </Text>{" "}
+            with a link to this tool. The resume itself becomes a demonstration of technical capability.
+          </Text>
+
+          <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
+            This project showcases:
+          </Text>
+
+          <Box as="ul" sx={{ pl: 4, mb: 3, fontSize: 1 }}>
+            <Box as="li" sx={{ mb: 1 }}>
+              Full-stack development (React, TypeScript, Python, Firebase)
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              AI/ML integration (OpenAI, Google Gemini)
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              Cloud architecture and serverless design (GCP, Firebase)
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              Cost optimization strategies (96% AI cost reduction)
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              Security best practices (Auth, rate limiting, RBAC)
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              System integration and cross-language data sharing
+            </Box>
+            <Box as="li" sx={{ mb: 1 }}>
+              Real-world problem solving (automating my job search)
+            </Box>
+          </Box>
+
+          <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6 }}>
+            It&apos;s not just a project—it&apos;s a working solution to a real problem that demonstrates practical
+            engineering skills across the entire stack.
+          </Text>
+        </Box>
       </Box>
 
       {/* Source Code */}
@@ -425,11 +935,11 @@ export const HowItWorksTab: React.FC = () => {
         }}
       >
         <Heading as="h4" sx={{ fontSize: 2, mb: 2, color: "primary" }}>
-          Want to see the code?
+          📂 Explore the Code
         </Heading>
         <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
-          Both the portfolio tool and job-finder are open source. Explore the implementation, architecture decisions,
-          and technical details on GitHub.
+          Both the portfolio tool and job-finder are open source. Review the implementation, architecture decisions,
+          API design, testing strategies, and deployment configuration on GitHub.
         </Text>
         <Flex sx={{ gap: 3, justifyContent: "center", flexWrap: "wrap" }}>
           <Link
@@ -451,7 +961,7 @@ export const HowItWorksTab: React.FC = () => {
               },
             }}
           >
-            View Portfolio Tool →
+            📝 Portfolio Tool →
           </Link>
           <Link
             href="https://github.com/Jdubz/job-finder"
@@ -472,7 +982,7 @@ export const HowItWorksTab: React.FC = () => {
               },
             }}
           >
-            View Job Finder →
+            🔍 Job Finder →
           </Link>
         </Flex>
       </Box>
