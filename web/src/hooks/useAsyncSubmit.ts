@@ -109,7 +109,7 @@ export const useAsyncSubmit = (options: UseAsyncSubmitOptions = {}): AsyncSubmit
         return result
       } catch (err) {
         const error = err instanceof Error ? err : new Error("Unknown error")
-        const errorMessage = error.message ?? "An error occurred"
+        const errorMessage = error.message && error.message.trim() !== "" ? error.message : "An error occurred"
 
         setErrorState(errorMessage)
 
