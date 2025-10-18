@@ -164,7 +164,16 @@ export const TabsGrouped: React.FC<TabsGroupedProps> = ({ tabs, groups, activeTa
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header */}
-        <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 4, pb: 3, borderBottom: "1px solid", borderColor: "muted" }}>
+        <Flex
+          sx={{
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+            pb: 3,
+            borderBottom: "1px solid",
+            borderColor: "muted",
+          }}
+        >
           <Text sx={{ fontSize: 3, fontWeight: "bold" }}>Navigation</Text>
           <Button
             onClick={() => setMobileMenuOpen(false)}

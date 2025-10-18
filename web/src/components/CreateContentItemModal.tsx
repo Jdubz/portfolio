@@ -1,7 +1,8 @@
 import React, { useState } from "react"
-import { Box, Button, Flex, Heading, Text, Label, Select } from "theme-ui"
+import { Box, Button, Flex, Heading } from "theme-ui"
 import { FormField } from "./FormField"
 import { FormActions } from "./FormActions"
+import { Modal, ModalHeader, ModalBody, InfoBox } from "./ui"
 import type { CreateContentItemData, ContentItemType } from "../types/content-item"
 import { logger } from "../utils/logger"
 
@@ -80,10 +81,6 @@ export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({
     title: "",
     description: "",
   })
-
-  if (!isOpen) {
-    return null
-  }
 
   const handleTypeSelect = (type: ContentItemType) => {
     setSelectedType(type)
@@ -210,43 +207,20 @@ export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({
   }
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        p: 4,
-      }}
-      onClick={onClose}
-    >
-      <Box
-        sx={{
-          bg: "background",
-          p: 5,
-          borderRadius: "8px",
-          maxWidth: "600px",
-          width: "100%",
-          maxHeight: "90vh",
-          overflow: "auto",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Heading as="h2" sx={{ mb: 4 }}>
-          {step === MODAL_STEPS.SELECT_TYPE ? "Select Content Type" : `Create ${selectedType}`}
-        </Heading>
+    <Modal isOpen={isOpen} onClose={onClose} size="md">
+      <ModalHeader
+        title={step === MODAL_STEPS.SELECT_TYPE ? "Select Content Type" : `Create ${selectedType}`}
+        onClose={onClose}
+      />
 
+      <ModalBody>
         {step === MODAL_STEPS.SELECT_TYPE ? (
           <Box>
-            <Text sx={{ mb: 4, color: "textMuted" }}>Choose the type of content you want to add:</Text>
+            <InfoBox variant="info" icon="ℹ️">
+              Choose the type of content you want to add:
+            </InfoBox>
 
-            <Flex sx={{ flexDirection: "column", gap: 3 }}>
+            <Flex sx={{ flexDirection: "column", gap: 3, mt: 4 }}>
               <Button variant="secondary" onClick={() => handleTypeSelect("company")}>
                 Company / Work Experience
               </Button>
@@ -272,12 +246,6 @@ export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({
                 Timeline Event
               </Button>
             </Flex>
-
-            <Box sx={{ mt: 4 }}>
-              <Button variant="ghost" onClick={onClose}>
-                Cancel
-              </Button>
-            </Box>
           </Box>
         ) : (
           <Box>
@@ -488,7 +456,7 @@ export const CreateContentItemModal: React.FC<CreateContentItemModalProps> = ({
             <FormActions onCancel={handleBack} onSave={handleSubmit} isSubmitting={isSubmitting} saveText="Create" />
           </Box>
         )}
-      </Box>
-    </Box>
+      </ModalBody>
+    </Modal>
   )
 }

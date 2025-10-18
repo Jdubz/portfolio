@@ -6,10 +6,13 @@
  */
 
 import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button, Flex, Spinner, Grid, Input } from "theme-ui"
+import { Box, Text, Button, Flex, Grid, Input } from "theme-ui"
 import { useAuth } from "../../hooks/useAuth"
 import { logger } from "../../utils/logger"
-import { StatusBadge } from "../ui/StatusBadge"
+import { TabHeader, LoadingState, EmptyState, StatsGrid, InfoBox, StatusBadge } from "../ui"
+import { AddSourceModal } from "../AddSourceModal"
+import { SourceDetailModal } from "../SourceDetailModal"
+import { jobQueueClient } from "../../api/job-queue-client"
 
 interface JobSource {
   id: string
@@ -30,11 +33,15 @@ interface JobSource {
 }
 
 export const SourcesTab: React.FC = () => {
-  const { loading: authLoading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [sources, setSources] = useState<JobSource[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [selectedSource, setSelectedSource] = useState<JobSource | null>(null)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     // Wait for auth to initialize (Firebase app initialization happens in AuthContext)
@@ -143,27 +150,63 @@ export const SourcesTab: React.FC = () => {
     }
   }
 
+  const handleAddSource = async (companyName: string, careersUrl: string) => {
+    if (!user) {
+      setError("You must be signed in to add a source")
+      return
+    }
+
+    try {
+      setError(null)
+      setSubmitSuccess(null)
+
+      const response = await jobQueueClient.submitCompanySource(companyName, careersUrl)
+      setSubmitSuccess(`Source submission successful! Queue ID: ${response.queueItemId || "N/A"}`)
+      logger.info("Source added to queue", {
+        queueItemId: response.queueItemId,
+        companyName,
+        careersUrl,
+      })
+
+      setIsAddModalOpen(false)
+
+      // Refresh sources after a delay to allow processing
+      setTimeout(() => {
+        void loadSources()
+      }, 2000)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to submit source"
+      setError(errorMessage)
+      logger.error("Failed to add source", err as Error, { companyName, careersUrl })
+    }
+  }
+
+  const handleViewDetails = (source: JobSource) => {
+    setSelectedSource(source)
+    setIsDetailModalOpen(true)
+    logger.info("Viewing source details", { sourceId: source.id })
+  }
+
   if (authLoading) {
-    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Loading...</Box>
+    return <LoadingState message="Loading authentication..." />
   }
 
   return (
     <Box sx={{ maxWidth: "1200px", mx: "auto" }}>
-      <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Heading as="h2" sx={{ fontSize: 4 }}>
-          Job Sources
-        </Heading>
-        <Flex sx={{ alignItems: "center", gap: 2 }}>
-          {loading && <Spinner size={16} />}
-          <Button onClick={() => void loadSources()} variant="secondary.sm">
-            Refresh
-          </Button>
-        </Flex>
-      </Flex>
-
-      <Text sx={{ color: "textMuted", mb: 4, fontSize: 2 }}>
-        Job board and company career page sources tracked by the job-finder application.
-      </Text>
+      <TabHeader
+        title="Job Sources"
+        description="Job board and company career page sources tracked by the job-finder application."
+        actions={
+          <>
+            <Button onClick={() => setIsAddModalOpen(true)} disabled={!user}>
+              Add Source
+            </Button>
+            <Button onClick={() => void loadSources()} variant="secondary.sm">
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {/* Search */}
       <Box sx={{ variant: "cards.primary", p: 3, mb: 4 }}>
@@ -177,62 +220,66 @@ export const SourcesTab: React.FC = () => {
         />
       </Box>
 
-      {/* Error Display */}
+      {/* Status Messages */}
       {error && (
-        <Box
-          sx={{
-            p: 3,
-            bg: "danger",
-            color: "background",
-            borderRadius: "md",
-            mb: 3,
-          }}
-        >
-          <Text sx={{ fontWeight: "medium" }}>{error}</Text>
+        <Box sx={{ mb: 3 }}>
+          <InfoBox variant="danger">{error}</InfoBox>
+        </Box>
+      )}
+
+      {submitSuccess && (
+        <Box sx={{ mb: 4 }}>
+          <InfoBox variant="success">
+            <Text sx={{ fontWeight: "medium", mb: 2 }}>{submitSuccess}</Text>
+            <Text sx={{ fontSize: 1 }}>
+              The job-finder application will process this source and add it to the database.
+            </Text>
+          </InfoBox>
+        </Box>
+      )}
+
+      {!user && (
+        <Box sx={{ mb: 4 }}>
+          <InfoBox variant="info">Please sign in to add new sources</InfoBox>
         </Box>
       )}
 
       {/* Stats */}
-      <Flex sx={{ gap: 3, mb: 4, flexWrap: "wrap" }}>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Total Sources</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold" }}>{filteredSources.length}</Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Enabled</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold", color: "green" }}>
-            {filteredSources.filter((s) => s.scraping_enabled).length}
-          </Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Total Jobs Found</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold", color: "blue" }}>
-            {filteredSources.reduce((sum, s) => sum + (s.total_jobs_found || 0), 0)}
-          </Text>
-        </Box>
-        <Box sx={{ variant: "cards.primary", p: 3, flex: "1 1 150px" }}>
-          <Text sx={{ fontSize: 1, color: "textMuted", mb: 1 }}>Avg Priority Score</Text>
-          <Text sx={{ fontSize: 4, fontWeight: "bold", color: "orange" }}>
-            {filteredSources.length > 0
-              ? Math.round(
-                  filteredSources.reduce((sum, s) => sum + (s.priority_score || 0), 0) / filteredSources.length
-                )
-              : 0}
-          </Text>
-        </Box>
-      </Flex>
+      <StatsGrid
+        columns={[2, 4]}
+        stats={[
+          {
+            label: "Total Sources",
+            value: filteredSources.length,
+          },
+          {
+            label: "Enabled",
+            value: filteredSources.filter((s) => s.scraping_enabled).length,
+            color: "green",
+          },
+          {
+            label: "Total Jobs Found",
+            value: filteredSources.reduce((sum, s) => sum + (s.total_jobs_found || 0), 0),
+            color: "blue",
+          },
+          {
+            label: "Avg Priority Score",
+            value:
+              filteredSources.length > 0
+                ? Math.round(
+                    filteredSources.reduce((sum, s) => sum + (s.priority_score || 0), 0) / filteredSources.length
+                  )
+                : 0,
+            color: "orange",
+          },
+        ]}
+      />
 
       {/* Sources List */}
       {loading && sources.length === 0 ? (
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <Spinner size={32} />
-        </Box>
+        <LoadingState message="Loading job sources..." />
       ) : filteredSources.length === 0 ? (
-        <Box sx={{ variant: "cards.primary", p: 4, textAlign: "center" }}>
-          <Text sx={{ color: "textMuted" }}>
-            {searchQuery ? "No sources match your search" : "No job sources found"}
-          </Text>
-        </Box>
+        <EmptyState icon="📭" message={searchQuery ? "No sources match your search" : "No job sources found"} />
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {filteredSources.map((source) => (
@@ -292,6 +339,10 @@ export const SourcesTab: React.FC = () => {
                     </a>
                   )}
                 </Box>
+
+                <Button onClick={() => handleViewDetails(source)} variant="secondary">
+                  View Details
+                </Button>
               </Flex>
 
               <Grid columns={[1, 2, 4]} gap={3} sx={{ mb: source.notes ? 3 : 0 }}>
@@ -343,6 +394,15 @@ export const SourcesTab: React.FC = () => {
           ))}
         </Box>
       )}
+
+      {/* Modals */}
+      <AddSourceModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleAddSource} />
+
+      <SourceDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        source={selectedSource}
+      />
     </Box>
   )
 }

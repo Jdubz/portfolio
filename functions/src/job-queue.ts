@@ -2,7 +2,7 @@ import { https } from "firebase-functions/v2"
 import type { Request, Response } from "express"
 import Joi from "joi"
 import { JobQueueService } from "./services/job-queue.service"
-import { verifyAuthenticatedEditor, type AuthenticatedRequest } from "./middleware/auth.middleware"
+import { verifyAuthenticatedEditor, verifyAuthenticatedUser, type AuthenticatedRequest } from "./middleware/auth.middleware"
 import { logger } from "./utils/logger"
 import { generateRequestId } from "./utils/request-id"
 import { corsHandler } from "./config/cors"
@@ -17,6 +17,12 @@ const submitJobSchema = Joi.object({
   url: Joi.string().uri().trim().required(),
   companyName: Joi.string().trim().max(200).optional().allow(""),
   generationId: Joi.string().trim().optional(), // Optional generation ID for pre-generated documents
+})
+
+const submitCompanySchema = Joi.object({
+  companyName: Joi.string().trim().min(2).max(200).required(),
+  websiteUrl: Joi.string().uri().trim().required(),
+  source: Joi.string().valid("manual_submission", "user_request", "automated_scan").required(),
 })
 
 const updateStopListSchema = Joi.object({
@@ -38,12 +44,24 @@ const updateQueueSettingsSchema = Joi.object({
   processingTimeout: Joi.number().integer().min(0).required(),
 })
 
+const submitScrapeSchema = Joi.object({
+  scrape_config: Joi.object({
+    target_matches: Joi.number().integer().min(1).max(999).allow(null).optional(),
+    max_sources: Joi.number().integer().min(1).max(999).allow(null).optional(),
+    source_ids: Joi.array().items(Joi.string()).allow(null).optional(),
+    min_match_score: Joi.number().integer().min(0).max(100).allow(null).optional(),
+  }).optional(),
+})
+
 /**
  * Cloud Function to manage job queue operations
  *
  * Routes:
  * - GET    /health                  - Health check (public)
  * - POST   /submit                  - Submit job to queue (public)
+ * - POST   /submit-company          - Submit company to queue (editor only)
+ * - POST   /submit-scrape           - Submit scrape request (auth required)
+ * - GET    /has-pending-scrape      - Check for pending scrape (auth required)
  * - GET    /status/:id              - Get queue item status (public)
  * - GET    /stats                   - Get queue statistics (public)
  * - GET    /config/stop-list        - Get stop list (public, read-only)
@@ -136,6 +154,33 @@ const handleJobQueueRequest = async (req: Request, res: Response): Promise<void>
             }
           }
 
+          // Authenticated routes (require auth but not editor role)
+          const authRequiredRoutes = ["/submit-scrape", "/has-pending-scrape"]
+
+          if (authRequiredRoutes.some((route) => path === route)) {
+            // Verify authentication using the verifyAuthenticatedUser middleware
+            await new Promise<void>((resolveAuth, rejectAuth) => {
+              verifyAuthenticatedUser(logger)(req as AuthenticatedRequest, res, (err) => {
+                if (err) rejectAuth(err)
+                else resolveAuth()
+              })
+            })
+
+            // Route: POST /submit-scrape - Submit scrape request (auth required)
+            if (req.method === "POST" && path === "/submit-scrape") {
+              await handleSubmitScrape(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+
+            // Route: GET /has-pending-scrape - Check for pending scrape (auth required)
+            if (req.method === "GET" && path === "/has-pending-scrape") {
+              await handleHasPendingScrape(req as AuthenticatedRequest, res, requestId)
+              resolve()
+              return
+            }
+          }
+
           // All other routes require editor role
           await new Promise<void>((resolveAuth, rejectAuth) => {
             verifyAuthenticatedEditor(logger)(req as AuthenticatedRequest, res, (err) => {
@@ -143,6 +188,13 @@ const handleJobQueueRequest = async (req: Request, res: Response): Promise<void>
               else resolveAuth()
             })
           })
+
+          // Route: POST /submit-company - Submit company to queue (editor only)
+          if (req.method === "POST" && path === "/submit-company") {
+            await handleSubmitCompany(req as AuthenticatedRequest, res, requestId)
+            resolve()
+            return
+          }
 
           // Route: PUT /config/stop-list - Update stop list (editor only)
           if (req.method === "PUT" && path === "/config/stop-list") {
@@ -804,6 +856,243 @@ async function handleUpdateQueueSettings(req: AuthenticatedRequest, res: Respons
     })
   } catch (error) {
     logger.error("Failed to update queue settings", {
+      error,
+      requestId,
+      userEmail: req.user?.email,
+    })
+
+    const err = ERROR_CODES.FIRESTORE_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "FIRESTORE_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * POST /submit-scrape - Submit scrape request (auth required)
+ */
+async function handleSubmitScrape(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Validate request body
+    const { error, value } = submitScrapeSchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for scrape submission", {
+        error: error.details,
+        requestId,
+        body: req.body,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    const userId = req.user?.uid || null
+
+    if (!userId) {
+      const err = ERROR_CODES.UNAUTHORIZED
+      logger.warning("User not authenticated for scrape submission", { requestId })
+      res.status(err.status).json({
+        success: false,
+        error: "UNAUTHORIZED",
+        errorCode: err.code,
+        message: err.message,
+        requestId,
+      })
+      return
+    }
+
+    logger.info("Processing scrape submission", {
+      requestId,
+      userId,
+      config: value.scrape_config,
+    })
+
+    // Check if user already has a pending scrape
+    const hasPending = await jobQueueService.hasPendingScrape(userId)
+    if (hasPending) {
+      logger.info("User already has pending scrape", { requestId, userId })
+
+      res.status(409).json({
+        success: false,
+        error: "SCRAPE_ALREADY_PENDING",
+        message: "You already have a scrape request in progress. Please wait for it to complete.",
+        requestId,
+      })
+      return
+    }
+
+    // Submit scrape request
+    const queueItem = await jobQueueService.submitScrape(userId, value.scrape_config)
+
+    logger.info("Scrape request submitted successfully", {
+      requestId,
+      queueItemId: queueItem.id,
+      userId,
+    })
+
+    res.status(200).json({
+      success: true,
+      data: {
+        status: "success",
+        message: "Scrape request submitted successfully",
+        queueItemId: queueItem.id,
+        queueItem,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to submit scrape request", {
+      error,
+      requestId,
+      userId: req.user?.uid,
+    })
+
+    const err = ERROR_CODES.INTERNAL_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "INTERNAL_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * GET /has-pending-scrape - Check for pending scrape (auth required)
+ */
+async function handleHasPendingScrape(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    const userId = req.user?.uid || null
+
+    if (!userId) {
+      const err = ERROR_CODES.UNAUTHORIZED
+      logger.warning("User not authenticated for pending scrape check", { requestId })
+      res.status(err.status).json({
+        success: false,
+        error: "UNAUTHORIZED",
+        errorCode: err.code,
+        message: err.message,
+        requestId,
+      })
+      return
+    }
+
+    const hasPending = await jobQueueService.hasPendingScrape(userId)
+
+    logger.info("Checked for pending scrape", {
+      requestId,
+      userId,
+      hasPending,
+    })
+
+    res.status(200).json({
+      success: true,
+      data: {
+        hasPending,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to check for pending scrape", {
+      error,
+      requestId,
+      userId: req.user?.uid,
+    })
+
+    const err = ERROR_CODES.INTERNAL_ERROR
+    res.status(err.status).json({
+      success: false,
+      error: "INTERNAL_ERROR",
+      errorCode: err.code,
+      message: err.message,
+      requestId,
+    })
+  }
+}
+
+/**
+ * POST /submit-company - Submit company to queue (editor only)
+ */
+async function handleSubmitCompany(req: AuthenticatedRequest, res: Response, requestId: string): Promise<void> {
+  try {
+    // Validate request body
+    const { error, value } = submitCompanySchema.validate(req.body)
+
+    if (error) {
+      logger.warning("Validation failed for company submission", {
+        error: error.details,
+        requestId,
+        body: req.body,
+      })
+
+      const err = ERROR_CODES.VALIDATION_FAILED
+      res.status(err.status).json({
+        success: false,
+        error: "VALIDATION_FAILED",
+        errorCode: err.code,
+        message: error.details[0].message,
+        details: error.details,
+        requestId,
+      })
+      return
+    }
+
+    const { companyName, websiteUrl, source } = value
+    const userId = req.user?.uid || null
+
+    logger.info("Processing company submission", {
+      requestId,
+      companyName,
+      websiteUrl,
+      source,
+      userEmail: req.user?.email,
+    })
+
+    // Check for duplicates in queue (by URL)
+    const queueDuplicate = await jobQueueService.checkQueueDuplicate(websiteUrl)
+    if (queueDuplicate) {
+      logger.info("Company already in queue", { requestId, websiteUrl })
+
+      res.status(200).json({
+        success: true,
+        data: {
+          status: "skipped",
+          message: "Company already in processing queue",
+        },
+        requestId,
+      })
+      return
+    }
+
+    // Add to queue
+    const queueItem = await jobQueueService.submitCompany(companyName, websiteUrl, source, userId)
+
+    res.status(201).json({
+      success: true,
+      data: {
+        status: "success",
+        message: "Company submitted for processing",
+        queueItemId: queueItem.id,
+        queueItem,
+      },
+      requestId,
+    })
+  } catch (error) {
+    logger.error("Failed to submit company", {
       error,
       requestId,
       userEmail: req.user?.email,

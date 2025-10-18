@@ -100,6 +100,7 @@ export const JOB_QUEUE_ERROR_CODES = {
   // Client errors (4xx)
   VALIDATION_FAILED: { code: "JQ_VAL_001", status: 400, message: "Validation failed" },
   INVALID_URL: { code: "JQ_VAL_002", status: 400, message: "Invalid URL format" },
+  UNAUTHORIZED: { code: "JQ_AUTH_001", status: 401, message: "Authentication required" },
   DUPLICATE_JOB: { code: "JQ_DUP_001", status: 409, message: "Job already exists in queue" },
   ALREADY_ANALYZED: { code: "JQ_DUP_002", status: 409, message: "Job already analyzed" },
   STOP_LIST_MATCH: { code: "JQ_STOP_001", status: 400, message: "Job matches exclusion criteria" },

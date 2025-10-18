@@ -778,12 +778,12 @@ const theme: CustomTheme = {
       borderColor: "divider",
       borderRadius: "4px",
       px: 3,
-      py: 2,  // Reduced from 3 to 2 to prevent text cutoff
+      py: 2, // Reduced from 3 to 2 to prevent text cutoff
       fontSize: 2,
       fontFamily: "body",
-      lineHeight: 1.5,  // Ensure proper line height for dropdown text
-      height: "auto",  // Allow height to be determined by content
-      minHeight: [44, 46],  // Minimum height for consistency
+      lineHeight: 1.5, // Ensure proper line height for dropdown text
+      height: "auto", // Allow height to be determined by content
+      minHeight: [44, 46], // Minimum height for consistency
       transition: "border-color 200ms cubic-bezier(.22,.61,.36,1), box-shadow 200ms cubic-bezier(.22,.61,.36,1)",
       cursor: "pointer",
       "&:focus": {

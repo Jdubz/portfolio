@@ -6,10 +6,13 @@
  */
 
 import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button, Flex, Spinner, Grid, Input } from "theme-ui"
+import { Box, Text, Button, Flex, Spinner, Grid, Input } from "theme-ui"
 import { useAuth } from "../../hooks/useAuth"
 import { logger } from "../../utils/logger"
-import { StatusBadge } from "../ui/StatusBadge"
+import { TabHeader, LoadingState, EmptyState, InfoBox, StatusBadge } from "../ui"
+import { AddCompanyModal } from "../AddCompanyModal"
+import { jobQueueClient } from "../../api"
+import type { SubmitCompanyRequest } from "../../types/job-queue"
 
 interface Company {
   id: string
@@ -28,11 +31,12 @@ interface Company {
 }
 
 export const CompaniesTab: React.FC = () => {
-  const { loading: authLoading } = useAuth()
+  const { loading: authLoading, isEditor } = useAuth()
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   useEffect(() => {
     // Wait for auth to initialize (Firebase app initialization happens in AuthContext)
@@ -129,27 +133,40 @@ export const CompaniesTab: React.FC = () => {
     }
   }
 
+  // Handle company submission
+  const handleSubmitCompany = async (request: SubmitCompanyRequest) => {
+    try {
+      await jobQueueClient.submitCompany(request)
+      logger.info("Company submitted to queue", { companyName: request.companyName })
+    } catch (err) {
+      logger.error("Failed to submit company", err as Error)
+      throw err
+    }
+  }
+
   if (authLoading) {
-    return <Box sx={{ textAlign: "center", py: 4, color: "textMuted" }}>Loading...</Box>
+    return <LoadingState />
   }
 
   return (
     <Box sx={{ maxWidth: "1200px", mx: "auto" }}>
-      <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Heading as="h2" sx={{ fontSize: 4 }}>
-          Companies
-        </Heading>
-        <Flex sx={{ alignItems: "center", gap: 2 }}>
-          {loading && <Spinner size={16} />}
-          <Button onClick={() => void loadCompanies()} variant="secondary.sm">
-            Refresh
-          </Button>
-        </Flex>
-      </Flex>
-
-      <Text sx={{ color: "textMuted", mb: 4, fontSize: 2 }}>
-        Company information scraped and cached by the job-finder application.
-      </Text>
+      <TabHeader
+        title="Companies"
+        description="Company information scraped and cached by the job-finder application."
+        actions={
+          <>
+            {loading && <Spinner size={16} />}
+            {isEditor && (
+              <Button onClick={() => setIsAddModalOpen(true)} variant="primary.sm" sx={{ mr: 2 }}>
+                Add Company
+              </Button>
+            )}
+            <Button onClick={() => void loadCompanies()} variant="secondary.sm">
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {/* Search */}
       <Box sx={{ variant: "cards.primary", p: 3, mb: 4 }}>
@@ -165,16 +182,8 @@ export const CompaniesTab: React.FC = () => {
 
       {/* Error Display */}
       {error && (
-        <Box
-          sx={{
-            p: 3,
-            bg: "danger",
-            color: "background",
-            borderRadius: "md",
-            mb: 3,
-          }}
-        >
-          <Text sx={{ fontWeight: "medium" }}>{error}</Text>
+        <Box sx={{ mb: 3 }}>
+          <InfoBox variant="danger">{error}</InfoBox>
         </Box>
       )}
 
@@ -206,15 +215,9 @@ export const CompaniesTab: React.FC = () => {
 
       {/* Companies List */}
       {loading && companies.length === 0 ? (
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <Spinner size={32} />
-        </Box>
+        <LoadingState />
       ) : filteredCompanies.length === 0 ? (
-        <Box sx={{ variant: "cards.primary", p: 4, textAlign: "center" }}>
-          <Text sx={{ color: "textMuted" }}>
-            {searchQuery ? "No companies match your search" : "No companies found"}
-          </Text>
-        </Box>
+        <EmptyState icon="📭" message={searchQuery ? "No companies match your search" : "No companies found"} />
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {filteredCompanies.map((company) => (
@@ -303,6 +306,13 @@ export const CompaniesTab: React.FC = () => {
           ))}
         </Box>
       )}
+
+      {/* Add Company Modal */}
+      <AddCompanyModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleSubmitCompany}
+      />
     </Box>
   )
 }

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react"
 import { Box, Heading, Text, Label, Input, Button, Flex, Alert, Spinner, Image } from "theme-ui"
 import { generatorClient } from "../../api/generator-client"
+import { useAuthRequired } from "../../hooks/useAuthRequired"
+import { SignInModal } from "../SignInModal"
 import type { UpdatePersonalInfoData } from "../../types/generator"
 import { logger } from "../../utils/logger"
 
@@ -9,6 +11,14 @@ interface SettingsTabProps {
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
+  // Auth required hook for editor actions
+  const { isModalOpen, signingIn, authError, hideSignInModal, handleSignIn, withAuth } = useAuthRequired({
+    message:
+      "Sign in as an editor to modify personal information settings. These defaults are used when generating resumes and cover letters.",
+    title: "Editor Access Required",
+    requireEditor: true,
+  })
+
   // Form state
   const [formData, setFormData] = useState<UpdatePersonalInfoData>({
     name: "",
@@ -88,29 +98,32 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
       return
     }
 
-    try {
-      setSaving(true)
-      setError(null)
-      setSuccess(false)
+    // Use withAuth to ensure user has editor role
+    await withAuth(async () => {
+      try {
+        setSaving(true)
+        setError(null)
+        setSuccess(false)
 
-      await generatorClient.updatePersonalInfo(formData)
+        await generatorClient.updatePersonalInfo(formData)
 
-      setSaving(false)
-      setSuccess(true)
-      setHasChanges(false)
+        setSaving(false)
+        setSuccess(true)
+        setHasChanges(false)
 
-      logger.info("Settings saved successfully", {
-        component: "SettingsTab",
-        action: "saveSettings",
-      })
-    } catch (err) {
-      logger.error("Failed to save settings", err as Error, {
-        component: "SettingsTab",
-        action: "saveSettings",
-      })
-      setError(err instanceof Error ? err.message : "Failed to save settings")
-      setSaving(false)
-    }
+        logger.info("Settings saved successfully", {
+          component: "SettingsTab",
+          action: "saveSettings",
+        })
+      } catch (err) {
+        logger.error("Failed to save settings", err as Error, {
+          component: "SettingsTab",
+          action: "saveSettings",
+        })
+        setError(err instanceof Error ? err.message : "Failed to save settings")
+        setSaving(false)
+      }
+    })
   }
 
   // Handle avatar upload
@@ -132,29 +145,32 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
       return
     }
 
-    try {
-      setUploadingAvatar(true)
-      setError(null)
+    // Use withAuth to ensure user has editor role
+    await withAuth(async () => {
+      try {
+        setUploadingAvatar(true)
+        setError(null)
 
-      const result = await generatorClient.uploadImage(file, "avatar")
+        const result = await generatorClient.uploadImage(file, "avatar")
 
-      setFormData((prev) => ({ ...prev, avatar: result.url }))
-      setSuccess(true)
-      setUploadingAvatar(false)
+        setFormData((prev) => ({ ...prev, avatar: result.url }))
+        setSuccess(true)
+        setUploadingAvatar(false)
 
-      logger.info("Avatar uploaded successfully", {
-        component: "SettingsTab",
-        action: "uploadAvatar",
-        size: result.size,
-      })
-    } catch (err) {
-      logger.error("Failed to upload avatar", err as Error, {
-        component: "SettingsTab",
-        action: "uploadAvatar",
-      })
-      setError(err instanceof Error ? err.message : "Failed to upload avatar")
-      setUploadingAvatar(false)
-    }
+        logger.info("Avatar uploaded successfully", {
+          component: "SettingsTab",
+          action: "uploadAvatar",
+          size: result.size,
+        })
+      } catch (err) {
+        logger.error("Failed to upload avatar", err as Error, {
+          component: "SettingsTab",
+          action: "uploadAvatar",
+        })
+        setError(err instanceof Error ? err.message : "Failed to upload avatar")
+        setUploadingAvatar(false)
+      }
+    })
   }
 
   // Handle logo upload
@@ -176,29 +192,32 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
       return
     }
 
-    try {
-      setUploadingLogo(true)
-      setError(null)
+    // Use withAuth to ensure user has editor role
+    await withAuth(async () => {
+      try {
+        setUploadingLogo(true)
+        setError(null)
 
-      const result = await generatorClient.uploadImage(file, "logo")
+        const result = await generatorClient.uploadImage(file, "logo")
 
-      setFormData((prev) => ({ ...prev, logo: result.url }))
-      setSuccess(true)
-      setUploadingLogo(false)
+        setFormData((prev) => ({ ...prev, logo: result.url }))
+        setSuccess(true)
+        setUploadingLogo(false)
 
-      logger.info("Logo uploaded successfully", {
-        component: "SettingsTab",
-        action: "uploadLogo",
-        size: result.size,
-      })
-    } catch (err) {
-      logger.error("Failed to upload logo", err as Error, {
-        component: "SettingsTab",
-        action: "uploadLogo",
-      })
-      setError(err instanceof Error ? err.message : "Failed to upload logo")
-      setUploadingLogo(false)
-    }
+        logger.info("Logo uploaded successfully", {
+          component: "SettingsTab",
+          action: "uploadLogo",
+          size: result.size,
+        })
+      } catch (err) {
+        logger.error("Failed to upload logo", err as Error, {
+          component: "SettingsTab",
+          action: "uploadLogo",
+        })
+        setError(err instanceof Error ? err.message : "Failed to upload logo")
+        setUploadingLogo(false)
+      }
+    })
   }
 
   // Loading state
@@ -224,9 +243,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
       </Box>
 
       {/* Error Alert */}
-      {error && (
+      {(error || authError) && (
         <Alert variant="error" sx={{ mb: 3 }}>
-          {error}
+          {error || authError}
         </Alert>
       )}
 
@@ -560,6 +579,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ isEditor }) => {
           .
         </Text>
       </Box>
+
+      {/* Sign In Modal */}
+      <SignInModal
+        isOpen={isModalOpen}
+        onClose={hideSignInModal}
+        onSignIn={handleSignIn}
+        title="Editor Access Required"
+        message="Sign in as an editor to modify personal information settings. These defaults are used when generating resumes and cover letters."
+        signingIn={signingIn}
+      />
     </Box>
   )
 }

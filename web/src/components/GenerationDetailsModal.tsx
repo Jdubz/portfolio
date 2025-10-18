@@ -7,9 +7,10 @@
  */
 
 import React, { useState, useEffect } from "react"
-import { Box, Heading, Text, Button, Flex } from "theme-ui"
+import { Box, Text, Button, Flex } from "theme-ui"
 import JSZip from "jszip"
 import type { GenerationRequest, FirestoreTimestamp } from "../types/generator"
+import { Modal, ModalHeader, ModalBody } from "./ui"
 
 // Dynamically import react-json-view to avoid SSR issues
 let ReactJson: typeof import("react-json-view").default | null = null
@@ -198,53 +199,21 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
   }
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        p: 3,
-      }}
-      onClick={onClose}
-    >
-      <Box
-        sx={{
-          bg: "background",
-          borderRadius: "8px",
-          maxWidth: "1200px",
-          width: "100%",
-          maxHeight: "90vh",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <Box
-          sx={{
-            p: 4,
-            borderBottom: "1px solid",
-            borderColor: "muted",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+    <Modal isOpen={!!request} onClose={onClose} size="full">
+      <ModalHeader
+        title={
           <Box>
-            <Heading as="h2" sx={{ fontSize: 3, fontWeight: "heading", mb: 1 }}>
+            <Text as="h2" sx={{ fontSize: 3, fontWeight: "heading", mb: 1 }}>
               {request.job.role} @ {request.job.company}
-            </Heading>
-            <Text sx={{ fontSize: 1, color: "textMuted" }}>Generated on {formatTimestamp(request.createdAt)}</Text>
+            </Text>
+            <Text sx={{ fontSize: 1, color: "textMuted", fontWeight: "normal" }}>
+              Generated on {formatTimestamp(request.createdAt)}
+            </Text>
           </Box>
-          <Flex sx={{ gap: 2, alignItems: "center" }}>
+        }
+        onClose={onClose}
+        actions={
+          <>
             <Button
               onClick={() => {
                 void handleDownloadZip()
@@ -259,7 +228,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
               }}
               title="Download zip file with PDFs and JSON"
             >
-              {downloadingZip ? "📦 Packaging..." : "📦 Download ZIP"}
+              {downloadingZip ? "Packaging..." : "Download ZIP"}
             </Button>
             <Button
               onClick={handleDownloadJSON}
@@ -272,174 +241,157 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({ 
               }}
               title="Download complete JSON document"
             >
-              📥 JSON Only
+              JSON Only
             </Button>
-            <Button
-              onClick={onClose}
-              variant="close"
-              sx={{
-                border: "none",
-                bg: "transparent",
-                fontSize: 4,
-                cursor: "pointer",
-                color: "textMuted",
-                "&:hover": {
-                  color: "text",
-                },
-              }}
-            >
-              ×
-            </Button>
-          </Flex>
-        </Box>
+          </>
+        }
+      />
 
-        {/* View mode toggle */}
-        <Box
+      {/* View mode toggle */}
+      <Box
+        sx={{
+          px: 4,
+          pt: 3,
+          pb: 2,
+          borderBottom: "1px solid",
+          borderColor: "muted",
+          display: "flex",
+          gap: 2,
+        }}
+      >
+        <Button
+          onClick={() => setViewMode("pdf")}
+          variant={viewMode === "pdf" ? "primary" : "secondary"}
           sx={{
-            px: 4,
-            pt: 3,
-            pb: 2,
-            borderBottom: "1px solid",
-            borderColor: "muted",
-            display: "flex",
-            gap: 2,
+            px: 3,
+            py: 2,
           }}
         >
-          <Button
-            onClick={() => setViewMode("pdf")}
-            variant={viewMode === "pdf" ? "primary" : "secondary"}
-            sx={{
-              px: 3,
-              py: 2,
-            }}
-          >
-            PDF Preview
-          </Button>
-          <Button
-            onClick={() => setViewMode("json")}
-            variant={viewMode === "json" ? "primary" : "secondary"}
-            sx={{
-              px: 3,
-              py: 2,
-            }}
-          >
-            JSON Data
-          </Button>
-        </Box>
+          PDF Preview
+        </Button>
+        <Button
+          onClick={() => setViewMode("json")}
+          variant={viewMode === "json" ? "primary" : "secondary"}
+          sx={{
+            px: 3,
+            py: 2,
+          }}
+        >
+          JSON Data
+        </Button>
+      </Box>
 
-        {/* Content */}
-        <Box sx={{ flex: 1, overflowY: "auto", p: 4 }}>
-          {viewMode === "pdf" ? (
-            <Box>
-              {/* Document type toggle (only show if both documents exist) */}
-              {hasBothDocuments && (
-                <Box sx={{ mb: 3, display: "flex", gap: 2 }}>
-                  <Button
-                    onClick={() => setDocumentType("resume")}
-                    variant={documentType === "resume" ? "primary" : "outline"}
-                    sx={{
-                      px: 3,
-                      py: 2,
-                    }}
-                  >
-                    Resume
-                  </Button>
-                  <Button
-                    onClick={() => setDocumentType("coverLetter")}
-                    variant={documentType === "coverLetter" ? "primary" : "outline"}
-                    sx={{
-                      px: 3,
-                      py: 2,
-                    }}
-                  >
-                    Cover Letter
-                  </Button>
-                </Box>
-              )}
-
-              {/* PDF embed */}
-              {documentType === "resume" && resumeUrl ? (
-                <Box>
-                  <iframe
-                    src={resumeUrl}
-                    title="Resume PDF"
-                    allow="fullscreen"
-                    style={{
-                      width: "100%",
-                      height: "600px",
-                      border: "1px solid #ddd",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </Box>
-              ) : documentType === "coverLetter" && coverLetterUrl ? (
-                <Box>
-                  <iframe
-                    src={coverLetterUrl}
-                    title="Cover Letter PDF"
-                    allow="fullscreen"
-                    style={{
-                      width: "100%",
-                      height: "600px",
-                      border: "1px solid #ddd",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </Box>
-              ) : (
-                <Box
+      <ModalBody>
+        {viewMode === "pdf" ? (
+          <Box>
+            {/* Document type toggle (only show if both documents exist) */}
+            {hasBothDocuments && (
+              <Box sx={{ mb: 3, display: "flex", gap: 2 }}>
+                <Button
+                  onClick={() => setDocumentType("resume")}
+                  variant={documentType === "resume" ? "primary" : "outline"}
                   sx={{
-                    textAlign: "center",
-                    py: 5,
-                    color: "textMuted",
+                    px: 3,
+                    py: 2,
                   }}
                 >
-                  {documentType === "resume" ? "Resume" : "Cover Letter"} PDF not available
-                </Box>
-              )}
-            </Box>
-          ) : (
-            // JSON view with collapsible nodes
-            <Box
-              sx={{
-                bg: "muted",
-                p: 3,
-                borderRadius: "8px",
-                overflowX: "auto",
-              }}
-            >
-              {isClient && ReactJson ? (
-                <ReactJson
-                  src={request}
-                  theme="rjv-default"
-                  collapsed={1}
-                  displayDataTypes={false}
-                  displayObjectSize={true}
-                  enableClipboard={true}
-                  name="generation-request"
-                  indentWidth={2}
+                  Resume
+                </Button>
+                <Button
+                  onClick={() => setDocumentType("coverLetter")}
+                  variant={documentType === "coverLetter" ? "primary" : "outline"}
+                  sx={{
+                    px: 3,
+                    py: 2,
+                  }}
+                >
+                  Cover Letter
+                </Button>
+              </Box>
+            )}
+
+            {/* PDF embed */}
+            {documentType === "resume" && resumeUrl ? (
+              <Box>
+                <iframe
+                  src={resumeUrl}
+                  title="Resume PDF"
+                  allow="fullscreen"
                   style={{
-                    fontSize: "13px",
-                    fontFamily: "monospace",
+                    width: "100%",
+                    height: "600px",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
                   }}
                 />
-              ) : (
-                <Box
-                  as="pre"
-                  sx={{
-                    fontSize: 0,
-                    fontFamily: "monospace",
-                    lineHeight: 1.6,
-                    color: "text",
+              </Box>
+            ) : documentType === "coverLetter" && coverLetterUrl ? (
+              <Box>
+                <iframe
+                  src={coverLetterUrl}
+                  title="Cover Letter PDF"
+                  allow="fullscreen"
+                  style={{
+                    width: "100%",
+                    height: "600px",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
                   }}
-                >
-                  {JSON.stringify(request, null, 2)}
-                </Box>
-              )}
-            </Box>
-          )}
-        </Box>
-      </Box>
-    </Box>
+                />
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 5,
+                  color: "textMuted",
+                }}
+              >
+                {documentType === "resume" ? "Resume" : "Cover Letter"} PDF not available
+              </Box>
+            )}
+          </Box>
+        ) : (
+          // JSON view with collapsible nodes
+          <Box
+            sx={{
+              bg: "muted",
+              p: 3,
+              borderRadius: "8px",
+              overflowX: "auto",
+            }}
+          >
+            {isClient && ReactJson ? (
+              <ReactJson
+                src={request}
+                theme="rjv-default"
+                collapsed={1}
+                displayDataTypes={false}
+                displayObjectSize={true}
+                enableClipboard={true}
+                name="generation-request"
+                indentWidth={2}
+                style={{
+                  fontSize: "13px",
+                  fontFamily: "monospace",
+                }}
+              />
+            ) : (
+              <Box
+                as="pre"
+                sx={{
+                  fontSize: 0,
+                  fontFamily: "monospace",
+                  lineHeight: 1.6,
+                  color: "text",
+                }}
+              >
+                {JSON.stringify(request, null, 2)}
+              </Box>
+            )}
+          </Box>
+        )}
+      </ModalBody>
+    </Modal>
   )
 }

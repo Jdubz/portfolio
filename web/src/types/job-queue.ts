@@ -8,6 +8,7 @@ export type {
   QueueStatus,
   QueueItemType,
   QueueSource,
+  CompanySubTask,
   StopList,
   QueueSettings,
   AISettings,
@@ -15,6 +16,11 @@ export type {
   QueueStats,
   SubmitJobRequest,
   SubmitJobResponse,
+  SubmitCompanyRequest,
+  SubmitCompanyResponse,
+  ScrapeConfig,
+  SubmitScrapeRequest,
+  SubmitScrapeResponse,
 } from "@jdubz/shared-types"
 
 export { isQueueStatus, isQueueItemType } from "@jdubz/shared-types"
@@ -22,12 +28,12 @@ export { isQueueStatus, isQueueItemType } from "@jdubz/shared-types"
 // Frontend-specific QueueItem with string dates (serialized from Firestore)
 export interface QueueItem {
   id: string
-  type: "job" | "company"
-  status: "pending" | "processing" | "success" | "failed" | "skipped"
+  type: "job" | "company" | "scrape"
+  status: "pending" | "processing" | "success" | "failed" | "skipped" | "filtered"
   url: string
   company_name: string
   company_id: string | null
-  source: "user_submission" | "automated_scan" | "scraper" | "webhook" | "email"
+  source: "user_submission" | "automated_scan" | "scraper" | "webhook" | "email" | "manual_submission" | "user_request"
   submitted_by: string | null
   result_message?: string
   error_message?: string
@@ -38,4 +44,11 @@ export interface QueueItem {
   completed_at?: string
   retry_count: number
   max_retries: number
+  scrape_config?: {
+    target_matches?: number | null
+    max_sources?: number | null
+    source_ids?: string[] | null
+    min_match_score?: number | null
+  } | null
+  company_sub_task?: "fetch" | "extract" | "analyze" | "save" | null
 }

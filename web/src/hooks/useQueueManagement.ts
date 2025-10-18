@@ -49,6 +49,7 @@ function convertFirestoreDoc(doc: any): QueueItem {
         ? data.completed_at.toDate().toISOString()
         : data.completed_at
       : undefined,
+    scrape_config: data.scrape_config ?? undefined,
   }
 }
 
@@ -61,50 +62,59 @@ export function useQueueManagement(): UseQueueManagementResult {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Skip during SSR
+    if (typeof window === "undefined") {
+      return
+    }
+
     let unsubscribe: (() => void) | null = null
 
-    try {
-      const db = getFirestoreInstance()
-      const queueRef = collection(db, "job-queue")
+    // Add a small delay to ensure Firebase is initialized
+    const timeoutId = setTimeout(() => {
+      try {
+        const db = getFirestoreInstance()
+        const queueRef = collection(db, "job-queue")
 
-      // Query queue items ordered by creation date (newest first)
-      const queueQuery = query(queueRef, orderBy("created_at", "desc"))
+        // Query queue items ordered by creation date (newest first)
+        const queueQuery = query(queueRef, orderBy("created_at", "desc"))
 
-      // Set up real-time listener
-      unsubscribe = onSnapshot(
-        queueQuery,
-        (snapshot) => {
-          const items: QueueItem[] = []
+        // Set up real-time listener
+        unsubscribe = onSnapshot(
+          queueQuery,
+          (snapshot) => {
+            const items: QueueItem[] = []
 
-          snapshot.forEach((doc) => {
-            try {
-              const item = convertFirestoreDoc(doc)
-              items.push(item)
-            } catch (err) {
-              logger.error("Error converting queue item", err as Error, { docId: doc.id })
-            }
-          })
+            snapshot.forEach((doc) => {
+              try {
+                const item = convertFirestoreDoc(doc)
+                items.push(item)
+              } catch (err) {
+                logger.error("Error converting queue item", err as Error, { docId: doc.id })
+              }
+            })
 
-          setQueueItems(items)
-          setLoading(false)
-          setError(null)
+            setQueueItems(items)
+            setLoading(false)
+            setError(null)
 
-          logger.info("Queue items updated via real-time listener", { count: items.length })
-        },
-        (err) => {
-          logger.error("Firestore listener error", err as Error)
-          setError(err.message)
-          setLoading(false)
-        }
-      )
-    } catch (err) {
-      logger.error("Failed to set up Firestore listener", err as Error)
-      setError(err instanceof Error ? err.message : "Failed to connect to Firestore")
-      setLoading(false)
-    }
+            logger.info("Queue items updated via real-time listener", { count: items.length })
+          },
+          (err) => {
+            logger.error("Firestore listener error", err as Error)
+            setError(err.message)
+            setLoading(false)
+          }
+        )
+      } catch (err) {
+        logger.error("Failed to set up Firestore listener", err as Error)
+        setError(err instanceof Error ? err.message : "Failed to connect to Firestore")
+        setLoading(false)
+      }
+    }, 100)
 
     // Cleanup listener on unmount
     return () => {
+      clearTimeout(timeoutId)
       if (unsubscribe) {
         unsubscribe()
         logger.info("Queue management listener unsubscribed")

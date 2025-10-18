@@ -6,6 +6,8 @@ import { jobQueueClient } from "../../api"
 import { useResumeForm } from "../../contexts/ResumeFormContext"
 import { GenerationProgress } from "../GenerationProgress"
 import { useAuth } from "../../hooks/useAuth"
+import { useAuthRequired } from "../../hooks/useAuthRequired"
+import { SignInModal } from "../SignInModal"
 import type {
   GenerationType,
   GenerationMetadata,
@@ -19,6 +21,13 @@ interface DocumentBuilderTabProps {
 
 export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor }) => {
   const { user } = useAuth()
+
+  // Auth required hook for consistent sign-in UX
+  const { isModalOpen, signingIn, authError, hideSignInModal, handleSignIn, withAuth } = useAuthRequired({
+    message:
+      "Sign in to generate AI-powered documents. Authenticated users get higher rate limits (20 vs 10 requests/15min), 7-day download links, and document history.",
+    title: "Sign In to Generate Documents",
+  })
 
   // Get form state from context
   const {
@@ -71,184 +80,188 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setGenerating(true)
-    setError(null)
-    setSuccess(false)
-    setResumeUrl(null)
-    setCoverLetterUrl(null)
-    setUrlExpiresIn(null)
-    setMetadata(null)
-    setGenerationStatus("pending")
 
-    // Initialize steps immediately based on generateType
-    const initialSteps: GenerationStep[] = [
-      {
-        id: "fetch_data",
-        name: "Fetch Experience Data",
-        description: "Loading your experience entries and professional blurbs",
-        status: "pending",
-      },
-    ]
+    // Use withAuth to ensure user is signed in before proceeding
+    await withAuth(async () => {
+      setGenerating(true)
+      setError(null)
+      setSuccess(false)
+      setResumeUrl(null)
+      setCoverLetterUrl(null)
+      setUrlExpiresIn(null)
+      setMetadata(null)
+      setGenerationStatus("pending")
 
-    if (formState.generateType === "resume" || formState.generateType === "both") {
-      initialSteps.push({
-        id: "generate_resume",
-        name: "Generate Resume Content",
-        description: "Creating tailored resume content with AI",
-        status: "pending",
-      })
-    }
-
-    if (formState.generateType === "coverLetter" || formState.generateType === "both") {
-      initialSteps.push({
-        id: "generate_cover_letter",
-        name: "Generate Cover Letter",
-        description: "Writing personalized cover letter with AI",
-        status: "pending",
-      })
-    }
-
-    if (formState.generateType === "resume" || formState.generateType === "both") {
-      initialSteps.push({
-        id: "create_resume_pdf",
-        name: "Create Resume PDF",
-        description: "Rendering your resume as a professional PDF",
-        status: "pending",
-      })
-    }
-
-    if (formState.generateType === "coverLetter" || formState.generateType === "both") {
-      initialSteps.push({
-        id: "create_cover_letter_pdf",
-        name: "Create Cover Letter PDF",
-        description: "Rendering your cover letter as a PDF",
-        status: "pending",
-      })
-    }
-
-    initialSteps.push({
-      id: "upload_documents",
-      name: "Upload Documents",
-      description: "Securely uploading PDFs to cloud storage",
-      status: "pending",
-    })
-
-    setGenerationSteps(initialSteps)
-
-    try {
-      // Prepare request payload using formState
-      const payload = {
-        generateType: formState.generateType,
-        provider: formState.aiProvider,
-        job: {
-          role: formState.role.trim(),
-          company: formState.company.trim(),
-          companyWebsite: formState.companyWebsite.trim() || undefined,
-          jobDescriptionUrl: formState.jobDescriptionUrl.trim() || undefined,
-          jobDescriptionText: formState.jobDescriptionText.trim() || undefined,
+      // Initialize steps immediately based on generateType
+      const initialSteps: GenerationStep[] = [
+        {
+          id: "fetch_data",
+          name: "Fetch Experience Data",
+          description: "Loading your experience entries and professional blurbs",
+          status: "pending",
         },
-        preferences: {
-          emphasize: formState.emphasize
-            .split(",")
-            .map((s) => s.trim())
-            .filter((s) => s.length > 0),
-        },
+      ]
+
+      if (formState.generateType === "resume" || formState.generateType === "both") {
+        initialSteps.push({
+          id: "generate_resume",
+          name: "Generate Resume Content",
+          description: "Creating tailored resume content with AI",
+          status: "pending",
+        })
       }
 
-      logger.info("Submitting multi-step generation request", payload)
-
-      // Step 1: Initialize generation
-      const startData = await generatorClient.startGeneration(payload)
-      logger.info("Generation initialized", startData)
-
-      if (!startData?.requestId) {
-        throw new Error("Failed to initialize generation: no request ID returned")
+      if (formState.generateType === "coverLetter" || formState.generateType === "both") {
+        initialSteps.push({
+          id: "generate_cover_letter",
+          name: "Generate Cover Letter",
+          description: "Writing personalized cover letter with AI",
+          status: "pending",
+        })
       }
 
-      logger.info("Generation request initialized", { requestId: startData.requestId })
+      if (formState.generateType === "resume" || formState.generateType === "both") {
+        initialSteps.push({
+          id: "create_resume_pdf",
+          name: "Create Resume PDF",
+          description: "Rendering your resume as a professional PDF",
+          status: "pending",
+        })
+      }
 
-      // Step 2: Execute steps one by one until complete or failed
-      let nextStep = startData.nextStep
-      while (nextStep) {
-        logger.info("Executing step", { step: nextStep })
+      if (formState.generateType === "coverLetter" || formState.generateType === "both") {
+        initialSteps.push({
+          id: "create_cover_letter_pdf",
+          name: "Create Cover Letter PDF",
+          description: "Rendering your cover letter as a PDF",
+          status: "pending",
+        })
+      }
 
-        // Optimistically set step to in_progress before calling API
-        // This ensures the user sees the spinner immediately
-        setGenerationSteps((prevSteps) =>
-          prevSteps.map((s) => (s.id === nextStep ? { ...s, status: "in_progress" as const } : s))
-        )
+      initialSteps.push({
+        id: "upload_documents",
+        name: "Upload Documents",
+        description: "Securely uploading PDFs to cloud storage",
+        status: "pending",
+      })
 
-        const stepResult = await generatorClient.executeStep(startData.requestId)
-        logger.info("Step completed", stepResult)
+      setGenerationSteps(initialSteps)
 
-        // Extract download URLs from step result
-        if (stepResult.resumeUrl) {
-          setResumeUrl(stepResult.resumeUrl)
-          setUrlExpiresIn("7 days")
-          logger.info("Resume URL received from API", { url: stepResult.resumeUrl })
+      try {
+        // Prepare request payload using formState
+        const payload = {
+          generateType: formState.generateType,
+          provider: formState.aiProvider,
+          job: {
+            role: formState.role.trim(),
+            company: formState.company.trim(),
+            companyWebsite: formState.companyWebsite.trim() || undefined,
+            jobDescriptionUrl: formState.jobDescriptionUrl.trim() || undefined,
+            jobDescriptionText: formState.jobDescriptionText.trim() || undefined,
+          },
+          preferences: {
+            emphasize: formState.emphasize
+              .split(",")
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0),
+          },
         }
-        if (stepResult.coverLetterUrl) {
-          setCoverLetterUrl(stepResult.coverLetterUrl)
-          setUrlExpiresIn("7 days")
-          logger.info("Cover letter URL received from API", { url: stepResult.coverLetterUrl })
+
+        logger.info("Submitting multi-step generation request", payload)
+
+        // Step 1: Initialize generation
+        const startData = await generatorClient.startGeneration(payload)
+        logger.info("Generation initialized", startData)
+
+        if (!startData?.requestId) {
+          throw new Error("Failed to initialize generation: no request ID returned")
         }
 
-        // Update step progress in UI
-        if (stepResult.steps) {
-          setGenerationSteps(stepResult.steps)
+        logger.info("Generation request initialized", { requestId: startData.requestId })
+
+        // Step 2: Execute steps one by one until complete or failed
+        let nextStep = startData.nextStep
+        while (nextStep) {
+          logger.info("Executing step", { step: nextStep })
+
+          // Optimistically set step to in_progress before calling API
+          // This ensures the user sees the spinner immediately
+          setGenerationSteps((prevSteps) =>
+            prevSteps.map((s) => (s.id === nextStep ? { ...s, status: "in_progress" as const } : s))
+          )
+
+          const stepResult = await generatorClient.executeStep(startData.requestId)
+          logger.info("Step completed", stepResult)
+
+          // Extract download URLs from step result
+          if (stepResult.resumeUrl) {
+            setResumeUrl(stepResult.resumeUrl)
+            setUrlExpiresIn("7 days")
+            logger.info("Resume URL received from API", { url: stepResult.resumeUrl })
+          }
+          if (stepResult.coverLetterUrl) {
+            setCoverLetterUrl(stepResult.coverLetterUrl)
+            setUrlExpiresIn("7 days")
+            logger.info("Cover letter URL received from API", { url: stepResult.coverLetterUrl })
+          }
+
+          // Update step progress in UI
+          if (stepResult.steps) {
+            setGenerationSteps(stepResult.steps)
+          }
+
+          // Check status
+          if (stepResult.status === "completed") {
+            logger.info("All steps completed")
+            setGenerationStatus("completed")
+            setSuccess(true)
+            setGenerating(false)
+            break
+          } else if (stepResult.status === "failed") {
+            logger.error("Generation failed", new Error("Step execution failed"))
+            setGenerationStatus("failed")
+            setError("Generation failed. Please try again.")
+            setGenerating(false)
+            break
+          }
+
+          // Move to next step
+          nextStep = stepResult.nextStep
         }
 
-        // Check status
-        if (stepResult.status === "completed") {
-          logger.info("All steps completed")
+        // If loop exits without setting status, generation is complete
+        if (nextStep === undefined) {
           setGenerationStatus("completed")
           setSuccess(true)
           setGenerating(false)
-          break
-        } else if (stepResult.status === "failed") {
-          logger.error("Generation failed", new Error("Step execution failed"))
-          setGenerationStatus("failed")
-          setError("Generation failed. Please try again.")
-          setGenerating(false)
-          break
         }
 
-        // Move to next step
-        nextStep = stepResult.nextStep
-      }
-
-      // If loop exits without setting status, generation is complete
-      if (nextStep === undefined) {
-        setGenerationStatus("completed")
-        setSuccess(true)
+        // After successful generation, submit to queue if checkbox is checked
+        if (submitToQueue && user && formState.jobDescriptionUrl && startData.requestId) {
+          try {
+            const queueResult = await jobQueueClient.submitJob({
+              url: formState.jobDescriptionUrl.trim(),
+              companyName: formState.company.trim(),
+              generationId: startData.requestId, // Link to the generation request
+            })
+            logger.info("Job submitted to queue with generation ID", {
+              queueItemId: queueResult.queueItemId,
+              generationId: startData.requestId,
+            })
+          } catch (queueErr) {
+            const err = queueErr instanceof Error ? queueErr : new Error(String(queueErr))
+            logger.warn("Failed to submit to queue after generation", { error: err.message })
+            // Don't show error to user - queue submission is optional
+          }
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
+        setError(errorMessage)
+        logger.error("Generation failed", err as Error)
         setGenerating(false)
+        setGenerationStatus("failed")
       }
-
-      // After successful generation, submit to queue if checkbox is checked
-      if (submitToQueue && user && formState.jobDescriptionUrl && startData.requestId) {
-        try {
-          const queueResult = await jobQueueClient.submitJob({
-            url: formState.jobDescriptionUrl.trim(),
-            companyName: formState.company.trim(),
-            generationId: startData.requestId, // Link to the generation request
-          })
-          logger.info("Job submitted to queue with generation ID", {
-            queueItemId: queueResult.queueItemId,
-            generationId: startData.requestId,
-          })
-        } catch (queueErr) {
-          const err = queueErr instanceof Error ? queueErr : new Error(String(queueErr))
-          logger.warn("Failed to submit to queue after generation", { error: err.message })
-          // Don't show error to user - queue submission is optional
-        }
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to generate documents"
-      setError(errorMessage)
-      logger.error("Generation failed", err as Error)
-      setGenerating(false)
-      setGenerationStatus("failed")
-    }
+    })
   }
 
   const downloadFromUrl = (url: string, filename: string) => {
@@ -282,9 +295,9 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
       )}
 
       {/* Error Alert */}
-      {error && (
+      {(error || authError) && (
         <Alert variant="error" sx={{ mb: 3 }}>
-          {error}
+          {error || authError}
         </Alert>
       )}
 
@@ -566,6 +579,16 @@ export const DocumentBuilderTab: React.FC<DocumentBuilderTabProps> = ({ isEditor
           {urlExpiresIn ?? "1 hour (viewers) or 7 days (authenticated editors)"}.
         </Text>
       </Box>
+
+      {/* Sign In Modal */}
+      <SignInModal
+        isOpen={isModalOpen}
+        onClose={hideSignInModal}
+        onSignIn={handleSignIn}
+        title="Sign In to Generate Documents"
+        message="Sign in to generate AI-powered documents. Authenticated users get higher rate limits (20 vs 10 requests/15min), 7-day download links, and document history."
+        signingIn={signingIn}
+      />
     </Box>
   )
 }
