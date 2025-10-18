@@ -10,6 +10,8 @@ import { logger } from "../../utils/logger"
 
 const PROJECT_ID = "static-sites-257923"
 const REGION = "us-central1"
+const ENVIRONMENT = process.env.GATSBY_ENVIRONMENT || "development"
+const CONTAINER_NAME = ENVIRONMENT === "production" ? "job-finder-production" : "job-finder-staging"
 
 interface ServiceStatus {
   name: string
@@ -87,15 +89,9 @@ const QUICK_LINKS = [
     icon: "🔴",
   },
   {
-    title: "Job Finder (Production)",
-    url: `https://console.cloud.google.com/logs/query;query=logName%3D%22projects%2Fstatic-sites-257923%2Flogs%2Fjob-finder%22%0Aresource.labels.container_name%3D%22job-finder-production%22;timeRange=PT1H?project=${PROJECT_ID}`,
-    description: "Portainer container logs (last hour)",
-    icon: "🐳",
-  },
-  {
-    title: "Job Finder (Staging)",
-    url: `https://console.cloud.google.com/logs/query;query=logName%3D%22projects%2Fstatic-sites-257923%2Flogs%2Fjob-finder%22%0Aresource.labels.container_name%3D%22job-finder-staging%22;timeRange=PT1H?project=${PROJECT_ID}`,
-    description: "Portainer container logs (last hour)",
+    title: "Job Finder Container",
+    url: `https://console.cloud.google.com/logs/query;query=logName%3D%22projects%2Fstatic-sites-257923%2Flogs%2Fjob-finder%22%0Aresource.labels.container_name%3D%22${CONTAINER_NAME}%22;timeRange=PT1H?project=${PROJECT_ID}`,
+    description: `${ENVIRONMENT.charAt(0).toUpperCase() + ENVIRONMENT.slice(1)} container logs (last hour)`,
     icon: "🐳",
   },
   {
