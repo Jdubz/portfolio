@@ -83,23 +83,26 @@ jobs:
           WEB_VERSION=$(cat web/package.json | jq -r '.version')
           FUNCTIONS_VERSION=$(cat functions/package.json | jq -r '.version')
 
-          PR_BODY="## Version Bump
+          PR_BODY=$(cat <<EOF
+          ## Version Bump
 
-Automatically consumed changesets and updated versions.
+          Automatically consumed changesets and updated versions.
 
-### Changes
-- Consumed ${CHANGESET_COUNT} changeset(s)
-- Updated package.json versions
-- Updated CHANGELOG.md files
-- Removed consumed changeset files
+          ### Changes
+          - Consumed ${CHANGESET_COUNT} changeset(s)
+          - Updated package.json versions
+          - Updated CHANGELOG.md files
+          - Removed consumed changeset files
 
-### Versions
-- Root: ${ROOT_VERSION}
-- Web: ${WEB_VERSION}
-- Functions: ${FUNCTIONS_VERSION}
+          ### Versions
+          - Root: ${ROOT_VERSION}
+          - Web: ${WEB_VERSION}
+          - Functions: ${FUNCTIONS_VERSION}
 
----
-🤖 This PR was automatically created by the changeset version workflow"
+          ---
+          🤖 This PR was automatically created by the changeset version workflow
+          EOF
+          )
 
           PR_URL=$(gh pr create \
             --base main \
