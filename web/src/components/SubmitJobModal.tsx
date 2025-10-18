@@ -111,7 +111,7 @@ export const SubmitJobModal: React.FC<SubmitJobModalProps> = ({ isOpen, onClose,
   }
 
   const handlePrimaryAction = () => {
-    const form = document.querySelector("form") as HTMLFormElement | null
+    const form = document.querySelector("form")
     if (form) {
       form.requestSubmit()
     }

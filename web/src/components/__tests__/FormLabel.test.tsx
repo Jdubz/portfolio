@@ -91,9 +91,7 @@ describe("FormLabel", () => {
 
   describe("Custom Styling", () => {
     it("should accept sx prop for custom styles", () => {
-      const { container } = renderWithTheme(
-        <FormLabel sx={{ color: "red" }}>Custom Styled</FormLabel>
-      )
+      const { container } = renderWithTheme(<FormLabel sx={{ color: "red" }}>Custom Styled</FormLabel>)
 
       const label = container.querySelector("label")
       expect(label).toBeInTheDocument()
@@ -130,7 +128,7 @@ describe("FormLabel", () => {
     })
 
     it("should handle whitespace", () => {
-      renderWithTheme(<FormLabel>  Padded Text  </FormLabel>)
+      renderWithTheme(<FormLabel> Padded Text </FormLabel>)
 
       expect(screen.getByText("Padded Text", { exact: false })).toBeInTheDocument()
     })

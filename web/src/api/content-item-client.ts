@@ -2,9 +2,10 @@
  * Content Item API Client
  *
  * Handles all content-items CRUD operations for the unified content schema.
+ * Uses ExtendedCrudClient for standard operations plus custom methods.
  */
 
-import { ApiClient } from "./client"
+import { ExtendedCrudClient } from "./crud-factory"
 import { getContentItemsApiUrl } from "../config/api"
 import type {
   ContentItem,
@@ -27,11 +28,18 @@ export interface ReorderItem {
   order: number
 }
 
-export class ContentItemClient extends ApiClient {
+/**
+ * Content Item API Client with enhanced CRUD and custom hierarchy methods
+ */
+export class ContentItemClient extends ExtendedCrudClient<ContentItem, CreateContentItemData, UpdateContentItemData> {
   constructor() {
-    super()
-    // Override baseUrl to use content-items function
-    this.baseUrl = getContentItemsApiUrl()
+    super({
+      baseUrl: getContentItemsApiUrl(),
+      resourcePath: "/content-items",
+      resourceName: "item",
+      resourceNamePlural: "items",
+      requiresAuth: true,
+    })
   }
 
   /**
@@ -55,7 +63,7 @@ export class ContentItemClient extends ApiClient {
     const queryString = params.toString()
     const endpoint = queryString ? `/content-items?${queryString}` : "/content-items"
 
-    const response = await this.get<{ items: ContentItem[] }>(endpoint, false)
+    const response = await this.customGet<{ items: ContentItem[] }>(endpoint, false)
     return response.items
   }
 
@@ -63,7 +71,7 @@ export class ContentItemClient extends ApiClient {
    * Fetches content items organized in a hierarchical tree
    */
   async getHierarchy(): Promise<ContentItemWithChildren[]> {
-    const response = await this.get<{ hierarchy: ContentItemWithChildren[] }>("/content-items/hierarchy", false)
+    const response = await this.customGet<{ hierarchy: ContentItemWithChildren[] }>("/content-items/hierarchy", false)
     return response.hierarchy
   }
 
@@ -71,8 +79,7 @@ export class ContentItemClient extends ApiClient {
    * Fetches a single content item by ID
    */
   async getItem(id: string): Promise<ContentItem> {
-    const response = await this.get<{ item: ContentItem }>(`/content-items/${id}`, false)
-    return response.item
+    return this.getById(id)
   }
 
   /**
@@ -100,30 +107,28 @@ export class ContentItemClient extends ApiClient {
    * Creates a new content item
    */
   async createItem(data: CreateContentItemData): Promise<ContentItem> {
-    const response = await this.post<{ item: ContentItem }>("/content-items", data, true)
-    return response.item
+    return this.create(data)
   }
 
   /**
    * Updates an existing content item
    */
   async updateItem(id: string, data: UpdateContentItemData): Promise<ContentItem> {
-    const response = await this.put<{ item: ContentItem }>(`/content-items/${id}`, data, true)
-    return response.item
+    return this.update(id, data)
   }
 
   /**
    * Deletes a single content item (fails if item has children)
    */
   async deleteItem(id: string): Promise<void> {
-    await this.delete<void>(`/content-items/${id}`, true)
+    return this.delete(id)
   }
 
   /**
    * Deletes a content item and all its children recursively
    */
   async deleteWithChildren(id: string): Promise<number> {
-    const response = await this.delete<{ deletedCount: number }>(`/content-items/${id}/cascade`, true)
+    const response = await this.customDelete<{ deletedCount: number }>(`/content-items/${id}/cascade`, true)
     return response.deletedCount
   }
 
@@ -131,7 +136,7 @@ export class ContentItemClient extends ApiClient {
    * Reorders multiple content items in one operation
    */
   async reorderItems(items: ReorderItem[]): Promise<void> {
-    await this.post<void>("/content-items/reorder", { items }, true)
+    await this.customPost<void>("/content-items/reorder", { items }, true)
   }
 
   /**

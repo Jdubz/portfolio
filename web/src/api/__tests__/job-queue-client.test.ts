@@ -7,13 +7,7 @@
 
 import { JobQueueClient } from "../job-queue-client"
 import { getIdToken } from "../../utils/auth"
-import type {
-  QueueItem,
-  StopList,
-  QueueSettings,
-  AISettings,
-  SubmitJobResponse,
-} from "../../types/job-queue"
+import type { QueueItem, StopList, QueueSettings, AISettings, SubmitJobResponse } from "../../types/job-queue"
 
 // Mock fetch globally
 global.fetch = jest.fn()
@@ -44,7 +38,7 @@ describe("JobQueueClient", () => {
   describe("submitJob", () => {
     it("should submit job with all fields", async () => {
       const mockResponse: SubmitJobResponse = {
-        success: true,
+        status: "success",
         message: "Job submitted successfully",
         queueItemId: "queue-123",
       }
@@ -81,7 +75,7 @@ describe("JobQueueClient", () => {
 
     it("should submit job with minimal fields", async () => {
       const mockResponse: SubmitJobResponse = {
-        success: true,
+        status: "success",
         message: "Job submitted",
         queueItemId: "queue-456",
       }
@@ -103,7 +97,7 @@ describe("JobQueueClient", () => {
   describe("submitCompanySource", () => {
     it("should submit company source with correct format", async () => {
       const mockResponse: SubmitJobResponse = {
-        success: true,
+        status: "success",
         message: "Source submitted",
         queueItemId: "queue-789",
       }
@@ -168,9 +162,9 @@ describe("JobQueueClient", () => {
     describe("getStopList", () => {
       it("should fetch stop list configuration", async () => {
         const mockStopList: StopList = {
-          companies: ["Blocked Company"],
-          keywords: ["spam"],
-          domains: ["blocked.com"],
+          excludedCompanies: ["Blocked Company"],
+          excludedKeywords: ["spam"],
+          excludedDomains: ["blocked.com"],
         }
 
         mockFetch.mockResolvedValueOnce({
@@ -194,9 +188,9 @@ describe("JobQueueClient", () => {
     describe("updateStopList", () => {
       it("should update stop list configuration", async () => {
         const updatedStopList: StopList = {
-          companies: ["New Blocked Company"],
-          keywords: ["new-spam"],
-          domains: ["new-blocked.com"],
+          excludedCompanies: ["New Blocked Company"],
+          excludedKeywords: ["new-spam"],
+          excludedDomains: ["new-blocked.com"],
         }
 
         mockFetch.mockResolvedValueOnce({
@@ -262,8 +256,9 @@ describe("JobQueueClient", () => {
       it("should fetch AI settings", async () => {
         const mockAISettings: AISettings = {
           provider: "openai",
-          matchThreshold: 70,
-          maxCostPerMonth: 100,
+          model: "gpt-4",
+          minMatchScore: 70,
+          costBudgetDaily: 100,
         }
 
         mockFetch.mockResolvedValueOnce({
@@ -275,7 +270,7 @@ describe("JobQueueClient", () => {
         const result = await client.getAISettings()
 
         expect(result.provider).toBe("openai")
-        expect(result.matchThreshold).toBe(70)
+        expect(result.minMatchScore).toBe(70)
       })
     })
 
@@ -283,8 +278,9 @@ describe("JobQueueClient", () => {
       it("should update AI settings", async () => {
         const updatedAISettings: AISettings = {
           provider: "gemini",
-          matchThreshold: 75,
-          maxCostPerMonth: 50,
+          model: "gemini-2.0-flash-exp",
+          minMatchScore: 75,
+          costBudgetDaily: 50,
         }
 
         mockFetch.mockResolvedValueOnce({
@@ -464,7 +460,7 @@ describe("JobQueueClient", () => {
           json: async () => ({ success: true, data: mockResponse }),
         } as Response)
 
-        const result = await client.submitScrape({ priority: "high" })
+        const result = await client.submitScrape({ scrape_config: { target_matches: 10 } })
 
         expect(result.status).toBe("success")
       })

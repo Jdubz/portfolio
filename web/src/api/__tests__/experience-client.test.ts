@@ -166,19 +166,29 @@ describe("ExperienceClient API Contract", () => {
         requestId: "req_test_789",
       }
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 503,
-        statusText: "Service Unavailable",
-        url: "https://api.example.com/experience/entries",
-        json: () => Promise.resolve(mockErrorResponse),
-      } as Response)
+      // Mock needs to respond to retries - return same error twice (original + 1 retry in test env)
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 503,
+          statusText: "Service Unavailable",
+          url: "https://api.example.com/experience/entries",
+          json: () => Promise.resolve(mockErrorResponse),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 503,
+          statusText: "Service Unavailable",
+          url: "https://api.example.com/experience/entries",
+          json: () => Promise.resolve(mockErrorResponse),
+        } as Response)
 
       await expect(client.getEntries()).rejects.toThrow("Database error")
     })
 
     it("should handle network errors", async () => {
-      mockFetch.mockRejectedValueOnce(new Error("Network error"))
+      // Network errors will be retried - mock returns same error for all attempts
+      mockFetch.mockRejectedValue(new Error("Network error"))
 
       await expect(client.getEntries()).rejects.toThrow("Network error")
     })

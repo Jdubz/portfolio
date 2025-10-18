@@ -49,7 +49,7 @@ describe("useAsyncSubmit", () => {
 
     it("should set isSubmitting to true during submission", async () => {
       const { result } = renderHook(() => useAsyncSubmit())
-      let submittingStateValues: boolean[] = []
+      const submittingStateValues: boolean[] = []
 
       const mockSubmitFn = jest.fn().mockImplementation(async () => {
         // Capture the isSubmitting state during submission

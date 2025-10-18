@@ -1,42 +1,57 @@
 /**
  * Experience API Client
  *
- * Handles all experience entry CRUD operations.
+ * Handles all experience entry CRUD operations using the generic CRUD factory.
+ * Dramatically reduces boilerplate while maintaining type safety.
  */
 
-import { ApiClient } from "./client"
+import { createCrudClient } from "./crud-factory"
+import { getApiUrl } from "../config/api"
 import type { ExperienceEntry, CreateExperienceData, UpdateExperienceData } from "../types/experience"
 
-export class ExperienceClient extends ApiClient {
+/**
+ * Experience client with automatic retry logic and error handling
+ */
+const crudClient = createCrudClient<ExperienceEntry, CreateExperienceData, UpdateExperienceData>({
+  baseUrl: getApiUrl(),
+  resourcePath: "/experience/entries",
+  resourceName: "entry",
+  resourceNamePlural: "entries",
+  requiresAuth: true,
+})
+
+/**
+ * Experience API client interface
+ *
+ * Provides backward-compatible method names while using the enhanced CRUD factory
+ */
+export class ExperienceClient {
   /**
    * Fetches all experience entries
    */
   async getEntries(): Promise<ExperienceEntry[]> {
-    const response = await this.get<{ entries: ExperienceEntry[] }>("/experience/entries", false)
-    return response.entries
+    return crudClient.getAll()
   }
 
   /**
    * Creates a new experience entry
    */
   async createEntry(data: CreateExperienceData): Promise<ExperienceEntry> {
-    const response = await this.post<{ entry: ExperienceEntry }>("/experience/entries", data, true)
-    return response.entry
+    return crudClient.create(data)
   }
 
   /**
    * Updates an existing experience entry
    */
   async updateEntry(id: string, data: UpdateExperienceData): Promise<ExperienceEntry> {
-    const response = await this.put<{ entry: ExperienceEntry }>(`/experience/entries/${id}`, data, true)
-    return response.entry
+    return crudClient.update(id, data)
   }
 
   /**
    * Deletes an experience entry
    */
   async deleteEntry(id: string): Promise<void> {
-    await this.delete<void>(`/experience/entries/${id}`, true)
+    return crudClient.delete(id)
   }
 }
 

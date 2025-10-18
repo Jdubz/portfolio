@@ -618,9 +618,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
             >
               {/* Company & Title */}
               <Box sx={{ mb: 3 }}>
-                <Text sx={{ fontSize: 2, fontWeight: "bold", color: "text", mb: 1 }}>
-                  {jobMatch.company}
-                </Text>
+                <Text sx={{ fontSize: 2, fontWeight: "bold", color: "text", mb: 1 }}>{jobMatch.company}</Text>
                 <Text sx={{ fontSize: 2, fontWeight: "medium", color: "primary" }}>
                   {jobMatch.title ?? jobMatch.role}
                 </Text>
@@ -649,17 +647,11 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
                             width: `${jobMatch.matchScore}%`,
                             height: "100%",
                             bg:
-                              jobMatch.matchScore >= 80
-                                ? "#10b981"
-                                : jobMatch.matchScore >= 60
-                                  ? "#f59e0b"
-                                  : "#ef4444",
+                              jobMatch.matchScore >= 80 ? "#10b981" : jobMatch.matchScore >= 60 ? "#f59e0b" : "#ef4444",
                           }}
                         />
                       </Box>
-                      <Text sx={{ fontSize: 1, fontWeight: "medium", minWidth: "40px" }}>
-                        {jobMatch.matchScore}%
-                      </Text>
+                      <Text sx={{ fontSize: 1, fontWeight: "medium", minWidth: "40px" }}>{jobMatch.matchScore}%</Text>
                     </Flex>
                   ) : (
                     <Text sx={{ fontSize: 1 }}>—</Text>

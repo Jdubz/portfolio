@@ -55,6 +55,8 @@ function convertFirestoreDoc(doc: any): QueueItem {
 
 /**
  * Hook to manage queue items with real-time Firestore updates
+ *
+ * IMPORTANT: Prevents memory leaks by tracking mounted state and cleanup function
  */
 export function useQueueManagement(): UseQueueManagementResult {
   const [queueItems, setQueueItems] = useState<QueueItem[]>([])
@@ -68,9 +70,15 @@ export function useQueueManagement(): UseQueueManagementResult {
     }
 
     let unsubscribe: (() => void) | null = null
+    let isMounted = true
 
     // Add a small delay to ensure Firebase is initialized
     const timeoutId = setTimeout(() => {
+      // Check if component is still mounted before setting up listener
+      if (!isMounted) {
+        return
+      }
+
       try {
         const db = getFirestoreInstance()
         const queueRef = collection(db, "job-queue")
@@ -82,6 +90,11 @@ export function useQueueManagement(): UseQueueManagementResult {
         unsubscribe = onSnapshot(
           queueQuery,
           (snapshot) => {
+            // Only update state if component is still mounted
+            if (!isMounted) {
+              return
+            }
+
             const items: QueueItem[] = []
 
             snapshot.forEach((doc) => {
@@ -100,20 +113,25 @@ export function useQueueManagement(): UseQueueManagementResult {
             logger.info("Queue items updated via real-time listener", { count: items.length })
           },
           (err) => {
-            logger.error("Firestore listener error", err as Error)
-            setError(err.message)
-            setLoading(false)
+            if (isMounted) {
+              logger.error("Firestore listener error", err as Error)
+              setError(err.message)
+              setLoading(false)
+            }
           }
         )
       } catch (err) {
-        logger.error("Failed to set up Firestore listener", err as Error)
-        setError(err instanceof Error ? err.message : "Failed to connect to Firestore")
-        setLoading(false)
+        if (isMounted) {
+          logger.error("Failed to set up Firestore listener", err as Error)
+          setError(err instanceof Error ? err.message : "Failed to connect to Firestore")
+          setLoading(false)
+        }
       }
     }, 100)
 
     // Cleanup listener on unmount
     return () => {
+      isMounted = false
       clearTimeout(timeoutId)
       if (unsubscribe) {
         unsubscribe()

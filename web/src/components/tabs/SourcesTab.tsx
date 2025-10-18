@@ -517,11 +517,30 @@ export const SourcesTab: React.FC = () => {
                     ) : source.scrapeHistory && source.scrapeHistory.length > 0 ? (
                       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                         {source.scrapeHistory.map((item) => (
-                          <Box key={item.id} sx={{ p: 2, bg: "background", borderRadius: "sm", border: "1px solid", borderColor: "muted" }}>
-                            <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 1, flexWrap: "wrap", gap: 2 }}>
+                          <Box
+                            key={item.id}
+                            sx={{
+                              p: 2,
+                              bg: "background",
+                              borderRadius: "sm",
+                              border: "1px solid",
+                              borderColor: "muted",
+                            }}
+                          >
+                            <Flex
+                              sx={{
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                mb: 1,
+                                flexWrap: "wrap",
+                                gap: 2,
+                              }}
+                            >
                               <Flex sx={{ alignItems: "center", gap: 2 }}>
                                 <StatusBadge status={item.status} />
-                                <Text sx={{ fontSize: 0, color: "textMuted" }}>{formatRelativeDate(item.created_at)}</Text>
+                                <Text sx={{ fontSize: 0, color: "textMuted" }}>
+                                  {formatRelativeDate(item.created_at)}
+                                </Text>
                               </Flex>
                               <Text sx={{ fontSize: 0, fontFamily: "monospace", color: "textMuted" }}>{item.type}</Text>
                             </Flex>

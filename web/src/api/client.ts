@@ -132,7 +132,6 @@ export class ApiClient {
     if (!response.ok || !data.success) {
       const errorMessage = data.message ?? data.error ?? "Request failed"
 
-      // Enhanced console logging for debugging
       const errorDetails = {
         url: response.url,
         status: response.status,
@@ -140,17 +139,9 @@ export class ApiClient {
         errorCode: data.errorCode,
         errorMessage,
         requestId: data.requestId,
-        fullResponse: data,
       }
 
-      // Log to console with clear formatting
-      // eslint-disable-next-line no-console
-      console.group(`🚨 API Error: ${response.status} ${response.statusText}`)
-      console.error(errorDetails)
-      // eslint-disable-next-line no-console
-      console.groupEnd()
-
-      // Also use logger for production logging
+      // Use structured logger instead of console
       logger.error("API request failed", new Error(errorMessage), errorDetails)
 
       throw new Error(errorMessage)

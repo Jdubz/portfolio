@@ -313,9 +313,9 @@ export const HowItWorksTab: React.FC = () => {
               </Heading>
               <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
                 The <strong>Job Applications</strong> tab provides a comprehensive view of all matched jobs with
-                advanced filtering, sorting, and status tracking. One-click document generation for new matches,
-                instant access to previously generated documents, and application status management—all in a
-                mobile-responsive interface.
+                advanced filtering, sorting, and status tracking. One-click document generation for new matches, instant
+                access to previously generated documents, and application status management—all in a mobile-responsive
+                interface.
               </Text>
               <Box as="ul" sx={{ pl: 4, mb: 2, fontSize: 1 }}>
                 <Box as="li" sx={{ mb: 1 }}>
@@ -373,7 +373,7 @@ export const HowItWorksTab: React.FC = () => {
           <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
             Both systems share a single source of truth for data structures through the{" "}
             <Text as="code" sx={{ fontFamily: "monospace", bg: "background", px: 1, py: 0.5, borderRadius: "sm" }}>
-              @jdubz/shared-types
+              @jdubz/job-finder-shared-types
             </Text>{" "}
             local package. TypeScript types are mirrored as Python Pydantic models, ensuring perfect data consistency
             across the entire pipeline.
@@ -562,8 +562,8 @@ export const HowItWorksTab: React.FC = () => {
               🎯 Progressive Generation with Real-Time Feedback
             </Heading>
             <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 2 }}>
-              Document generation breaks into discrete steps (fetch defaults → generate resume → generate cover letter
-              → render PDFs → upload to storage). Each step reports progress in real-time via WebSocket-like streaming,
+              Document generation breaks into discrete steps (fetch defaults → generate resume → generate cover letter →
+              render PDFs → upload to storage). Each step reports progress in real-time via WebSocket-like streaming,
               allowing users to access completed documents immediately without waiting for the entire batch.
             </Text>
             <Text
@@ -653,8 +653,8 @@ export const HowItWorksTab: React.FC = () => {
         </Heading>
 
         <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
-          This platform is organized into three main sections, each with specialized tabs for managing different
-          aspects of the job search workflow:
+          This platform is organized into three main sections, each with specialized tabs for managing different aspects
+          of the job search workflow:
         </Text>
 
         <Flex sx={{ flexDirection: "column", gap: 3 }}>
@@ -767,8 +767,8 @@ export const HowItWorksTab: React.FC = () => {
         >
           <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
             The AI is explicitly instructed to prioritize <strong>factual accuracy</strong> over embellishment. It
-            cannot invent metrics, add accomplishments, or claim skills that aren&apos;t in the source data. Instead,
-            it optimizes applications through:
+            cannot invent metrics, add accomplishments, or claim skills that aren&apos;t in the source data. Instead, it
+            optimizes applications through:
           </Text>
 
           <Box as="ul" sx={{ pl: 4, mb: 3 }}>
@@ -888,9 +888,7 @@ export const HowItWorksTab: React.FC = () => {
             with a link to this tool. The resume itself becomes a demonstration of technical capability.
           </Text>
 
-          <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
-            This project showcases:
-          </Text>
+          <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>This project showcases:</Text>
 
           <Box as="ul" sx={{ pl: 4, mb: 3, fontSize: 1 }}>
             <Box as="li" sx={{ mb: 1 }}>
@@ -938,8 +936,8 @@ export const HowItWorksTab: React.FC = () => {
           📂 Explore the Code
         </Heading>
         <Text sx={{ fontSize: 1, color: "text", lineHeight: 1.6, mb: 3 }}>
-          Both the portfolio tool and job-finder are open source. Review the implementation, architecture decisions,
-          API design, testing strategies, and deployment configuration on GitHub.
+          Both the portfolio tool and job-finder are open source. Review the implementation, architecture decisions, API
+          design, testing strategies, and deployment configuration on GitHub.
         </Text>
         <Flex sx={{ gap: 3, justifyContent: "center", flexWrap: "wrap" }}>
           <Link
