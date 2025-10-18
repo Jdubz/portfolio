@@ -87,6 +87,18 @@ const QUICK_LINKS = [
     icon: "🔴",
   },
   {
+    title: "Job Finder (Production)",
+    url: `https://console.cloud.google.com/logs/query;query=logName%3D%22projects%2Fstatic-sites-257923%2Flogs%2Fjob-finder%22%0Aresource.labels.container_name%3D%22job-finder-production%22;timeRange=PT1H?project=${PROJECT_ID}`,
+    description: "Portainer container logs (last hour)",
+    icon: "🐳",
+  },
+  {
+    title: "Job Finder (Staging)",
+    url: `https://console.cloud.google.com/logs/query;query=logName%3D%22projects%2Fstatic-sites-257923%2Flogs%2Fjob-finder%22%0Aresource.labels.container_name%3D%22job-finder-staging%22;timeRange=PT1H?project=${PROJECT_ID}`,
+    description: "Portainer container logs (last hour)",
+    icon: "🐳",
+  },
+  {
     title: "Firestore Database",
     url: `https://console.firebase.google.com/project/${PROJECT_ID}/firestore`,
     description: "View Firestore collections and documents",
