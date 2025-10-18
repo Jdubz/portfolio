@@ -5,14 +5,16 @@
  * Shows job board/source information used for scraping.
  */
 
-import React, { useState, useEffect } from "react"
-import { Box, Text, Button, Flex, Grid, Input } from "theme-ui"
+import React, { useState, useEffect, useCallback } from "react"
+import { Box, Text, Button, Flex, Grid, Input, Heading } from "theme-ui"
+import { collection, query, where, orderBy, limit as firestoreLimit, getDocs } from "firebase/firestore"
 import { useAuth } from "../../hooks/useAuth"
 import { logger } from "../../utils/logger"
 import { TabHeader, LoadingState, EmptyState, StatsGrid, InfoBox, StatusBadge } from "../ui"
 import { AddSourceModal } from "../AddSourceModal"
-import { SourceDetailModal } from "../SourceDetailModal"
 import { jobQueueClient } from "../../api/job-queue-client"
+import { getFirestoreInstance } from "../../utils/firestore"
+import type { QueueItem } from "../../types/job-queue"
 
 interface JobSource {
   id: string
@@ -32,15 +34,19 @@ interface JobSource {
   updated_at: string
 }
 
+interface SourceWithHistory extends JobSource {
+  scrapeHistory?: QueueItem[]
+  historyLoading?: boolean
+  historyExpanded?: boolean
+}
+
 export const SourcesTab: React.FC = () => {
   const { user, loading: authLoading } = useAuth()
-  const [sources, setSources] = useState<JobSource[]>([])
+  const [sources, setSources] = useState<SourceWithHistory[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [selectedSource, setSelectedSource] = useState<JobSource | null>(null)
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
 
   useEffect(() => {
@@ -69,7 +75,7 @@ export const SourcesTab: React.FC = () => {
         const data = doc.data()
         sourcesData.push({
           id: doc.id,
-          company_name: data.company_name || data.name || "Unknown",
+          company_name: (data.company_name ?? data.name) || "Unknown",
           company_website: data.company_website || data.website,
           careers_page_url: data.careers_page_url || data.url,
           source_type: data.source_type,
@@ -181,10 +187,100 @@ export const SourcesTab: React.FC = () => {
     }
   }
 
-  const handleViewDetails = (source: JobSource) => {
-    setSelectedSource(source)
-    setIsDetailModalOpen(true)
-    logger.info("Viewing source details", { sourceId: source.id })
+  const loadScrapeHistory = useCallback(async (source: SourceWithHistory) => {
+    if (!source.careers_page_url || source.scrapeHistory) {
+      return
+    }
+
+    // Update source to show loading
+    setSources((prev) =>
+      prev.map((s) => (s.id === source.id ? { ...s, historyLoading: true, historyExpanded: true } : s))
+    )
+
+    try {
+      const db = getFirestoreInstance()
+      const queueRef = collection(db, "job-queue")
+
+      // Query for queue items that match this source's URL
+      const historyQuery = query(
+        queueRef,
+        where("url", "==", source.careers_page_url),
+        where("type", "in", ["company", "scrape"]),
+        orderBy("created_at", "desc"),
+        firestoreLimit(10)
+      )
+
+      const snapshot = await getDocs(historyQuery)
+      const items: QueueItem[] = []
+
+      snapshot.forEach((doc) => {
+        const data = doc.data() as Record<string, unknown>
+        items.push({
+          id: doc.id,
+          type: data.type as QueueItem["type"],
+          status: data.status as QueueItem["status"],
+          url: data.url as string,
+          company_name: data.company_name as string,
+          company_id: (data.company_id as string | undefined) ?? null,
+          source: (data.source as QueueItem["source"] | undefined) ?? "automated_scan",
+          submitted_by: (data.submitted_by as string | undefined) ?? null,
+          retry_count: (data.retry_count as number | undefined) ?? 0,
+          max_retries: (data.max_retries as number | undefined) ?? 3,
+          result_message: data.result_message as string | undefined,
+          error_details: data.error_details as string | undefined,
+          created_at:
+            (data.created_at as { toDate?: () => Date })?.toDate?.()?.toISOString() || (data.created_at as string),
+          updated_at:
+            (data.updated_at as { toDate?: () => Date })?.toDate?.()?.toISOString() || (data.updated_at as string),
+          processed_at: (data.processed_at as { toDate?: () => Date } | undefined)?.toDate?.()?.toISOString(),
+          completed_at: (data.completed_at as { toDate?: () => Date } | undefined)?.toDate?.()?.toISOString(),
+          scrape_config: data.scrape_config as QueueItem["scrape_config"] | undefined,
+        })
+      })
+
+      // Update source with history
+      setSources((prev) =>
+        prev.map((s) => (s.id === source.id ? { ...s, scrapeHistory: items, historyLoading: false } : s))
+      )
+
+      logger.info("Scrape history loaded", { sourceId: source.id, count: items.length })
+    } catch (err) {
+      logger.error("Failed to load scrape history", err as Error, { sourceId: source.id })
+      setSources((prev) => prev.map((s) => (s.id === source.id ? { ...s, historyLoading: false } : s)))
+    }
+  }, [])
+
+  const toggleHistory = (source: SourceWithHistory) => {
+    if (!source.historyExpanded) {
+      void loadScrapeHistory(source)
+    } else {
+      setSources((prev) => prev.map((s) => (s.id === source.id ? { ...s, historyExpanded: false } : s)))
+    }
+  }
+
+  const formatRelativeDate = (dateString?: string) => {
+    if (!dateString) {
+      return "—"
+    }
+    try {
+      const date = new Date(dateString)
+      const now = new Date()
+      const diffMs = now.getTime() - date.getTime()
+      const diffDays = Math.floor(diffMs / 86400000)
+
+      if (diffDays === 0) {
+        return "Today"
+      } else if (diffDays === 1) {
+        return "Yesterday"
+      } else if (diffDays < 7) {
+        return `${diffDays} days ago`
+      } else if (diffDays < 30) {
+        return `${Math.floor(diffDays / 7)} weeks ago`
+      }
+      return date.toLocaleDateString()
+    } catch {
+      return "—"
+    }
   }
 
   if (authLoading) {
@@ -282,127 +378,176 @@ export const SourcesTab: React.FC = () => {
         <EmptyState icon="📭" message={searchQuery ? "No sources match your search" : "No job sources found"} />
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {filteredSources.map((source) => (
-            <Box key={source.id} sx={{ variant: "cards.primary", p: 4 }}>
-              <Flex sx={{ justifyContent: "space-between", alignItems: "flex-start", mb: 3 }}>
-                <Box sx={{ flex: 1 }}>
-                  <Flex sx={{ alignItems: "center", gap: 2, mb: 2, flexWrap: "wrap" }}>
-                    <Text sx={{ fontSize: 3, fontWeight: "bold" }}>{source.company_name}</Text>
-                    {source.priority_tier && (
-                      <StatusBadge status={getTierColor(source.priority_tier)}>
-                        Tier {source.priority_tier.toUpperCase()}
-                      </StatusBadge>
+          {filteredSources.map((source) => {
+            const totalScrapes = source.scrapeHistory?.length || 0
+            const successfulScrapes = source.scrapeHistory?.filter((item) => item.status === "success").length || 0
+            const failedScrapes = source.scrapeHistory?.filter((item) => item.status === "failed").length || 0
+            const successRate = totalScrapes > 0 ? Math.round((successfulScrapes / totalScrapes) * 100) : 0
+
+            return (
+              <Box key={source.id} sx={{ variant: "cards.primary", p: 3 }}>
+                {/* Header */}
+                <Flex sx={{ alignItems: "flex-start", gap: 2, mb: 3, flexWrap: "wrap" }}>
+                  <Box sx={{ flex: 1, minWidth: "200px" }}>
+                    <Flex sx={{ alignItems: "center", gap: 2, mb: 1, flexWrap: "wrap" }}>
+                      <Text sx={{ fontSize: 2, fontWeight: "bold" }}>{source.company_name}</Text>
+                      {source.priority_tier && (
+                        <StatusBadge status={getTierColor(source.priority_tier)}>
+                          Tier {source.priority_tier.toUpperCase()}
+                        </StatusBadge>
+                      )}
+                      {source.scraping_enabled ? (
+                        <StatusBadge status="green">Enabled</StatusBadge>
+                      ) : (
+                        <StatusBadge status="red">Disabled</StatusBadge>
+                      )}
+                    </Flex>
+                    {source.careers_page_url && (
+                      <a
+                        href={source.careers_page_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          fontSize: "13px",
+                          color: "var(--theme-ui-colors-primary)",
+                          textDecoration: "none",
+                          display: "block",
+                          wordBreak: "break-all",
+                        }}
+                        onMouseOver={(e) => (e.currentTarget.style.textDecoration = "underline")}
+                        onMouseOut={(e) => (e.currentTarget.style.textDecoration = "none")}
+                        onFocus={(e) => (e.currentTarget.style.textDecoration = "underline")}
+                        onBlur={(e) => (e.currentTarget.style.textDecoration = "none")}
+                      >
+                        {source.careers_page_url}
+                      </a>
                     )}
-                    {source.scraping_enabled ? (
-                      <StatusBadge status="green">Enabled</StatusBadge>
-                    ) : (
-                      <StatusBadge status="red">Disabled</StatusBadge>
-                    )}
+                  </Box>
+                </Flex>
+
+                {/* Stats Grid */}
+                <Grid columns={[2, 3, 6]} gap={2} sx={{ mb: 3 }}>
+                  {source.source_type && (
+                    <Box>
+                      <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Type</Text>
+                      <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{source.source_type}</Text>
+                    </Box>
+                  )}
+                  {source.priority_score !== undefined && (
+                    <Box>
+                      <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Score</Text>
+                      <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{source.priority_score}</Text>
+                    </Box>
+                  )}
+                  {source.scrape_frequency_days !== undefined && (
+                    <Box>
+                      <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Frequency</Text>
+                      <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{source.scrape_frequency_days}d</Text>
+                    </Box>
+                  )}
+                  <Box>
+                    <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Jobs Found</Text>
+                    <Text sx={{ fontSize: 1, fontWeight: "medium", color: "primary" }}>
+                      {source.total_jobs_found || 0}
+                    </Text>
+                  </Box>
+                  {source.last_scraped_at && (
+                    <Box>
+                      <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Last Scraped</Text>
+                      <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{formatDate(source.last_scraped_at)}</Text>
+                    </Box>
+                  )}
+                  {source.next_scrape_at && (
+                    <Box>
+                      <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Next Scrape</Text>
+                      <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{formatDate(source.next_scrape_at)}</Text>
+                    </Box>
+                  )}
+                </Grid>
+
+                {/* Scraping Statistics */}
+                <Box sx={{ mb: 3, p: 2, bg: "muted", borderRadius: "sm" }}>
+                  <Flex sx={{ alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+                    <Text sx={{ fontSize: 1, fontWeight: "bold" }}>Scraping Statistics</Text>
+                    <Button
+                      onClick={() => toggleHistory(source)}
+                      variant="link"
+                      sx={{ fontSize: 0, p: 1, color: "primary" }}
+                    >
+                      {source.historyExpanded ? "Hide History ▲" : "Show History ▼"}
+                    </Button>
                   </Flex>
-                  {source.careers_page_url && (
-                    <a
-                      href={source.careers_page_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        fontSize: "14px",
-                        color: "var(--theme-ui-colors-primary)",
-                        textDecoration: "none",
-                        display: "block",
-                        marginBottom: "4px",
-                      }}
-                      onMouseOver={(e) => (e.currentTarget.style.textDecoration = "underline")}
-                      onMouseOut={(e) => (e.currentTarget.style.textDecoration = "none")}
-                      onFocus={(e) => (e.currentTarget.style.textDecoration = "underline")}
-                      onBlur={(e) => (e.currentTarget.style.textDecoration = "none")}
-                    >
-                      {source.careers_page_url}
-                    </a>
-                  )}
-                  {source.company_website && (
-                    <a
-                      href={source.company_website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        fontSize: "12px",
-                        color: "var(--theme-ui-colors-textMuted)",
-                        textDecoration: "none",
-                        display: "block",
-                      }}
-                      onMouseOver={(e) => (e.currentTarget.style.textDecoration = "underline")}
-                      onMouseOut={(e) => (e.currentTarget.style.textDecoration = "none")}
-                      onFocus={(e) => (e.currentTarget.style.textDecoration = "underline")}
-                      onBlur={(e) => (e.currentTarget.style.textDecoration = "none")}
-                    >
-                      {source.company_website}
-                    </a>
-                  )}
+                  <Grid columns={[2, 4]} gap={2}>
+                    <Box>
+                      <Text sx={{ fontSize: 0, color: "textMuted" }}>Total Scrapes</Text>
+                      <Text sx={{ fontSize: 2, fontWeight: "bold" }}>{totalScrapes}</Text>
+                    </Box>
+                    <Box>
+                      <Text sx={{ fontSize: 0, color: "textMuted" }}>Success Rate</Text>
+                      <Text sx={{ fontSize: 2, fontWeight: "bold", color: "success" }}>{successRate}%</Text>
+                    </Box>
+                    <Box>
+                      <Text sx={{ fontSize: 0, color: "textMuted" }}>Successful</Text>
+                      <Text sx={{ fontSize: 2, fontWeight: "bold", color: "success" }}>{successfulScrapes}</Text>
+                    </Box>
+                    <Box>
+                      <Text sx={{ fontSize: 0, color: "textMuted" }}>Failed</Text>
+                      <Text sx={{ fontSize: 2, fontWeight: "bold", color: "danger" }}>{failedScrapes}</Text>
+                    </Box>
+                  </Grid>
                 </Box>
 
-                <Button onClick={() => handleViewDetails(source)} variant="secondary">
-                  View Details
-                </Button>
-              </Flex>
+                {/* Scrape History (Expandable) */}
+                {source.historyExpanded && (
+                  <Box sx={{ mt: 3 }}>
+                    <Heading as="h4" sx={{ fontSize: 1, mb: 2, fontWeight: "bold" }}>
+                      Recent Scrape History
+                    </Heading>
+                    {source.historyLoading ? (
+                      <LoadingState message="Loading history..." />
+                    ) : source.scrapeHistory && source.scrapeHistory.length > 0 ? (
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        {source.scrapeHistory.map((item) => (
+                          <Box key={item.id} sx={{ p: 2, bg: "background", borderRadius: "sm", border: "1px solid", borderColor: "muted" }}>
+                            <Flex sx={{ justifyContent: "space-between", alignItems: "center", mb: 1, flexWrap: "wrap", gap: 2 }}>
+                              <Flex sx={{ alignItems: "center", gap: 2 }}>
+                                <StatusBadge status={item.status} />
+                                <Text sx={{ fontSize: 0, color: "textMuted" }}>{formatRelativeDate(item.created_at)}</Text>
+                              </Flex>
+                              <Text sx={{ fontSize: 0, fontFamily: "monospace", color: "textMuted" }}>{item.type}</Text>
+                            </Flex>
+                            {item.result_message && (
+                              <Text sx={{ fontSize: 0, color: "textMuted" }}>{item.result_message}</Text>
+                            )}
+                            {item.error_details && (
+                              <Text sx={{ fontSize: 0, color: "danger", fontFamily: "monospace", mt: 1 }}>
+                                {item.error_details}
+                              </Text>
+                            )}
+                          </Box>
+                        ))}
+                      </Box>
+                    ) : (
+                      <InfoBox variant="info">No scrape history found</InfoBox>
+                    )}
+                  </Box>
+                )}
 
-              <Grid columns={[1, 2, 4]} gap={3} sx={{ mb: source.notes ? 3 : 0 }}>
-                {source.source_type && (
-                  <Box>
-                    <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Source Type</Text>
-                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{source.source_type}</Text>
+                {/* Notes */}
+                {source.notes && (
+                  <Box sx={{ p: 2, bg: "muted", borderRadius: "sm", mt: 3 }}>
+                    <Text sx={{ fontSize: 0, color: "textMuted", mb: 1, fontWeight: "bold" }}>Notes</Text>
+                    <Text sx={{ fontSize: 1 }}>{source.notes}</Text>
                   </Box>
                 )}
-                {source.priority_score !== undefined && (
-                  <Box>
-                    <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Priority Score</Text>
-                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{source.priority_score}</Text>
-                  </Box>
-                )}
-                {source.scrape_frequency_days !== undefined && (
-                  <Box>
-                    <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Scrape Frequency</Text>
-                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>Every {source.scrape_frequency_days} days</Text>
-                  </Box>
-                )}
-                {source.total_jobs_found !== undefined && (
-                  <Box>
-                    <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Total Jobs Found</Text>
-                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{source.total_jobs_found}</Text>
-                  </Box>
-                )}
-                {source.last_scraped_at && (
-                  <Box>
-                    <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Last Scraped</Text>
-                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{formatDate(source.last_scraped_at)}</Text>
-                  </Box>
-                )}
-                {source.next_scrape_at && (
-                  <Box>
-                    <Text sx={{ fontSize: 0, color: "textMuted", mb: 1 }}>Next Scrape</Text>
-                    <Text sx={{ fontSize: 1, fontWeight: "medium" }}>{formatDate(source.next_scrape_at)}</Text>
-                  </Box>
-                )}
-              </Grid>
-
-              {source.notes && (
-                <Box sx={{ p: 2, bg: "muted", borderRadius: "sm", mt: 3 }}>
-                  <Text sx={{ fontSize: 0, color: "textMuted", mb: 1, fontWeight: "bold" }}>Notes</Text>
-                  <Text sx={{ fontSize: 1 }}>{source.notes}</Text>
-                </Box>
-              )}
-            </Box>
-          ))}
+              </Box>
+            )
+          })}
         </Box>
       )}
 
       {/* Modals */}
       <AddSourceModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleAddSource} />
-
-      <SourceDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        source={selectedSource}
-      />
     </Box>
   )
 }
