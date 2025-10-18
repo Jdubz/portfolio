@@ -392,6 +392,11 @@ ${options.emphasize && options.emphasize.length > 0 ? `   - If these keywords ap
 
 5. For education: Include ONLY if education information appears in the experience data or notes. Otherwise omit entirely.
 
+6. DATE FORMATTING:
+   - Convert all dates from YYYY-MM format to "MMM YYYY" format (e.g., "2020-01" → "Jan 2020", "2023-12" → "Dec 2023")
+   - Use 3-letter month abbreviations: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
+   - For null/missing end dates, use "Present"
+
 SELECTION STRATEGY:
 - Analyze job description for key requirements
 - Rank experience entries by relevance to those requirements
