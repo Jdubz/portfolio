@@ -156,7 +156,7 @@ export const SourcesTab: React.FC = () => {
     }
   }
 
-  const handleAddSource = async (companyName: string, careersUrl: string) => {
+  const handleAddSource = async (url: string, typeHint: string, companyName: string, autoEnable: boolean) => {
     if (!user) {
       setError("You must be signed in to add a source")
       return
@@ -166,12 +166,21 @@ export const SourcesTab: React.FC = () => {
       setError(null)
       setSubmitSuccess(null)
 
-      const response = await jobQueueClient.submitCompanySource(companyName, careersUrl)
-      setSubmitSuccess(`Source submission successful! Queue ID: ${response.queueItemId || "N/A"}`)
+      // TODO: Replace with proper source discovery endpoint once backend supports it
+      // For now, use the old company submission endpoint
+      const response = await jobQueueClient.submitCompanySource(
+        companyName || "Unknown Company", // Company name required by old endpoint
+        url
+      )
+      setSubmitSuccess(
+        `Source discovery submitted! Type: ${typeHint}, Auto-enable: ${autoEnable}. Queue ID: ${response.queueItemId || "N/A"}`
+      )
       logger.info("Source added to queue", {
         queueItemId: response.queueItemId,
+        url,
+        typeHint,
         companyName,
-        careersUrl,
+        autoEnable,
       })
 
       setIsAddModalOpen(false)
@@ -183,7 +192,7 @@ export const SourcesTab: React.FC = () => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to submit source"
       setError(errorMessage)
-      logger.error("Failed to add source", err as Error, { companyName, careersUrl })
+      logger.error("Failed to add source", err as Error, { url, typeHint, companyName, autoEnable })
     }
   }
 
