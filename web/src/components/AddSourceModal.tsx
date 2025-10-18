@@ -106,8 +106,8 @@ export const AddSourceModal: React.FC<AddSourceModalProps> = ({ isOpen, onClose,
 
       <ModalBody>
         <Text sx={{ mb: 4, color: "textMuted", fontSize: 2 }}>
-          Add a new job source for automated scraping. Sources can be company career pages, job boards, ATS systems,
-          RSS feeds, or APIs.
+          Add a new job source for automated scraping. Sources can be company career pages, job boards, ATS systems, RSS
+          feeds, or APIs.
         </Text>
 
         <form onSubmit={(e) => void handleSubmit(e)}>

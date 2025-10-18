@@ -9,7 +9,7 @@
  */
 
 // Re-export the shared JobMatch type for queue integration
-export type { JobMatch as JobQueueMatch } from "@jdubz/shared-types"
+export type { JobMatch as JobQueueMatch } from "@jdubz/job-finder-shared-types"
 
 /**
  * Extended JobMatch for portfolio application tracking

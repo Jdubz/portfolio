@@ -45,9 +45,7 @@ describe("FormActions", () => {
     })
 
     it("should render Delete button when onDelete is provided", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} />)
 
       expect(screen.getByText("Delete")).toBeInTheDocument()
       expect(screen.getByText("Cancel")).toBeInTheDocument()
@@ -88,9 +86,7 @@ describe("FormActions", () => {
       const user = userEvent.setup()
       const onDelete = jest.fn()
 
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={onDelete} />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={onDelete} />)
 
       await user.click(screen.getByText("Delete"))
 
@@ -100,32 +96,21 @@ describe("FormActions", () => {
 
   describe("Custom Button Text", () => {
     it("should display custom save text", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="Submit" />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="Submit" />)
 
       expect(screen.getByText("Submit")).toBeInTheDocument()
       expect(screen.queryByText("Save")).not.toBeInTheDocument()
     })
 
     it("should display custom cancel text", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} cancelText="Close" />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} cancelText="Close" />)
 
       expect(screen.getByText("Close")).toBeInTheDocument()
       expect(screen.queryByText("Cancel")).not.toBeInTheDocument()
     })
 
     it("should display custom delete text", () => {
-      renderWithTheme(
-        <FormActions
-          onCancel={jest.fn()}
-          onSave={jest.fn()}
-          onDelete={jest.fn()}
-          deleteText="Remove"
-        />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} deleteText="Remove" />)
 
       expect(screen.getByText("Remove")).toBeInTheDocument()
       expect(screen.queryByText("Delete")).not.toBeInTheDocument()
@@ -134,53 +119,41 @@ describe("FormActions", () => {
 
   describe("Submitting State", () => {
     it("should show 'Saving...' when isSubmitting is true", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} isSubmitting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} isSubmitting />)
 
       expect(screen.getByText("Saving...")).toBeInTheDocument()
     })
 
     it("should disable Save button when isSubmitting is true", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} isSubmitting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} isSubmitting />)
 
       const saveButton = screen.getByText("Saving...")
       expect(saveButton).toBeDisabled()
     })
 
     it("should disable Cancel button when isSubmitting is true", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} isSubmitting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} isSubmitting />)
 
       const cancelButton = screen.getByText("Cancel")
       expect(cancelButton).toBeDisabled()
     })
 
     it("should disable Delete button when isSubmitting is true", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} isSubmitting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} isSubmitting />)
 
       const deleteButton = screen.getByText("Delete")
       expect(deleteButton).toBeDisabled()
     })
 
     it("should show custom save text with -ing suffix when submitting", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="Submit" isSubmitting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="Submit" isSubmitting />)
 
       // Note: The implementation strips 'e' before adding 'ing', so 'Submit' becomes 'Submiting'
       expect(screen.getByText("Submiting...")).toBeInTheDocument()
     })
 
     it("should handle save text ending with 'e' when submitting", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="Create" isSubmitting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="Create" isSubmitting />)
 
       expect(screen.getByText("Creating...")).toBeInTheDocument()
     })
@@ -188,17 +161,13 @@ describe("FormActions", () => {
 
   describe("Deleting State", () => {
     it("should show 'Deleting...' when isDeleting is true", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} isDeleting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} isDeleting />)
 
       expect(screen.getByText("Deleting...")).toBeInTheDocument()
     })
 
     it("should disable Delete and Save buttons when isDeleting is true", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} isDeleting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} isDeleting />)
 
       expect(screen.getByText("Deleting...")).toBeDisabled()
       expect(screen.getByText("Save")).toBeDisabled()
@@ -208,13 +177,7 @@ describe("FormActions", () => {
 
     it("should show custom delete text with -ing suffix when deleting", () => {
       renderWithTheme(
-        <FormActions
-          onCancel={jest.fn()}
-          onSave={jest.fn()}
-          onDelete={jest.fn()}
-          deleteText="Remove"
-          isDeleting
-        />
+        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} deleteText="Remove" isDeleting />
       )
 
       expect(screen.getByText("Removing...")).toBeInTheDocument()
@@ -224,13 +187,7 @@ describe("FormActions", () => {
   describe("Combined States", () => {
     it("should disable all buttons when both isSubmitting and isDeleting are true", () => {
       renderWithTheme(
-        <FormActions
-          onCancel={jest.fn()}
-          onSave={jest.fn()}
-          onDelete={jest.fn()}
-          isSubmitting
-          isDeleting
-        />
+        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} isSubmitting isDeleting />
       )
 
       const buttons = screen.getAllByRole("button")
@@ -242,9 +199,7 @@ describe("FormActions", () => {
 
   describe("Button Types", () => {
     it("should render all buttons with type='button'", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} />)
 
       const buttons = screen.getAllByRole("button")
       buttons.forEach((button) => {
@@ -255,9 +210,7 @@ describe("FormActions", () => {
 
   describe("Button Order", () => {
     it("should render buttons in correct order: Delete, Cancel, Save", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={jest.fn()} />)
 
       const buttons = screen.getAllByRole("button")
       expect(buttons[0]).toHaveTextContent("Delete")
@@ -303,9 +256,7 @@ describe("FormActions", () => {
       const user = userEvent.setup()
       const onDelete = jest.fn()
 
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={onDelete} isDeleting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} onDelete={onDelete} isDeleting />)
 
       const deleteButton = screen.getByText("Deleting...")
       await user.click(deleteButton)
@@ -316,17 +267,13 @@ describe("FormActions", () => {
 
   describe("Edge Cases", () => {
     it("should handle saveText without ending 'e' when adding -ing", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="Add" isSubmitting />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="Add" isSubmitting />)
 
       expect(screen.getByText("Adding...")).toBeInTheDocument()
     })
 
     it("should handle empty custom text gracefully", () => {
-      renderWithTheme(
-        <FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="" />
-      )
+      renderWithTheme(<FormActions onCancel={jest.fn()} onSave={jest.fn()} saveText="" />)
 
       // Button should still render, just with empty text
       const buttons = screen.getAllByRole("button")

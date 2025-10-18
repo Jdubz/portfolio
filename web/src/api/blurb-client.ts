@@ -1,42 +1,59 @@
 /**
  * Blurb API Client
  *
- * Handles all blurb CRUD operations.
+ * Handles all blurb CRUD operations using the generic CRUD factory.
+ * Dramatically reduces boilerplate while maintaining type safety.
  */
 
-import { ApiClient } from "./client"
+import { createCrudClient } from "./crud-factory"
+import { getApiUrl } from "../config/api"
 import type { BlurbEntry, CreateBlurbData, UpdateBlurbData } from "../types/experience"
 
-export class BlurbClient extends ApiClient {
+/**
+ * Blurb client with automatic retry logic and error handling
+ */
+const crudClient = createCrudClient<BlurbEntry, CreateBlurbData, UpdateBlurbData>({
+  baseUrl: getApiUrl(),
+  resourcePath: "/experience/blurbs",
+  resourceName: "blurb",
+  resourceNamePlural: "blurbs",
+  requiresAuth: true,
+})
+
+/**
+ * Blurb API client interface
+ *
+ * Provides backward-compatible method names while using the enhanced CRUD factory
+ */
+export class BlurbClient {
   /**
    * Fetches all blurbs
    */
   async getBlurbs(): Promise<BlurbEntry[]> {
-    const response = await this.get<{ blurbs: BlurbEntry[] }>("/experience/blurbs", false)
-    return response.blurbs
+    return crudClient.getAll()
   }
 
   /**
    * Creates a new blurb
    */
   async createBlurb(data: CreateBlurbData): Promise<BlurbEntry> {
-    const response = await this.post<{ blurb: BlurbEntry }>("/experience/blurbs", data, true)
-    return response.blurb
+    return crudClient.create(data)
   }
 
   /**
    * Updates an existing blurb
+   * Note: Uses 'name' as identifier instead of 'id'
    */
   async updateBlurb(name: string, data: UpdateBlurbData): Promise<BlurbEntry> {
-    const response = await this.put<{ blurb: BlurbEntry }>(`/experience/blurbs/${name}`, data, true)
-    return response.blurb
+    return crudClient.update(name, data)
   }
 
   /**
    * Deletes a blurb
+   * Note: Uses 'name' as identifier instead of 'id'
    */
   async deleteBlurb(name: string): Promise<void> {
-    await this.delete<void>(`/experience/blurbs/${name}`, true)
+    return crudClient.delete(name)
   }
 }
 

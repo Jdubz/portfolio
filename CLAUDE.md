@@ -50,20 +50,22 @@ portfolio/
 
 ### Shared Types Architecture
 
-This project uses `@jdubz/shared-types` (located at `../shared-types`) as a local package dependency:
+This project uses `@jdubz/job-finder-shared-types` (located at `../../../shared-types`) as a local package dependency:
 
 ```
-../shared-types/           # Shared TypeScript types (separate repository)
+../../../shared-types/     # Shared TypeScript types (separate repository)
 ├── src/
 │   ├── index.ts          # Main exports
-│   └── queue.types.ts    # Queue and job matching types
+│   ├── queue.types.ts    # Queue and job matching types
+│   ├── job.types.ts      # Job-related types
+│   └── logger.types.ts   # Logging interfaces (NEW)
 ├── dist/                 # Compiled TypeScript
 ├── CONTEXT.md            # Architecture documentation
 └── README.md             # Usage guide
 ```
 
 **Integration:**
-- **Portfolio** imports as: `import { QueueItem, JobMatch } from '@jdubz/shared-types'`
+- **Portfolio** imports as: `import { QueueItem, JobMatch, LogContext } from '@jdubz/job-finder-shared-types'`
 - **Job-finder** (Python) mirrors these types in Pydantic models
 - Types are the **single source of truth** for cross-project data structures
 
@@ -72,6 +74,7 @@ This project uses `@jdubz/shared-types` (located at `../shared-types`) as a loca
 - `JobMatch` - AI-analyzed job match results
 - `QueueSettings`, `StopList`, `AISettings` - Configuration types
 - API request/response types: `SubmitJobRequest`, `SubmitJobResponse`
+- **Logger types** - `EnhancedLogger`, `SimpleLogger`, `LogContext`, `SENSITIVE_FIELDS`
 
 See `../shared-types/CONTEXT.md` for detailed architecture documentation.
 

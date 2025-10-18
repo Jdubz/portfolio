@@ -122,7 +122,7 @@ export const JobFinderConfigTab: React.FC = () => {
   const removeCompany = (index: number) => {
     setStopList({
       ...stopList,
-      excludedCompanies: stopList.excludedCompanies.filter((_, i) => i !== index),
+      excludedCompanies: stopList.excludedCompanies.filter((_: string, i: number) => i !== index),
     })
   }
 
@@ -139,7 +139,7 @@ export const JobFinderConfigTab: React.FC = () => {
   const removeKeyword = (index: number) => {
     setStopList({
       ...stopList,
-      excludedKeywords: stopList.excludedKeywords.filter((_, i) => i !== index),
+      excludedKeywords: stopList.excludedKeywords.filter((_: string, i: number) => i !== index),
     })
   }
 
@@ -156,7 +156,7 @@ export const JobFinderConfigTab: React.FC = () => {
   const removeDomain = (index: number) => {
     setStopList({
       ...stopList,
-      excludedDomains: stopList.excludedDomains.filter((_, i) => i !== index),
+      excludedDomains: stopList.excludedDomains.filter((_: string, i: number) => i !== index),
     })
   }
 
@@ -416,7 +416,7 @@ export const JobFinderConfigTab: React.FC = () => {
             {stopList.excludedCompanies.length === 0 ? (
               <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>No companies excluded yet</Text>
             ) : (
-              stopList.excludedCompanies.map((company, index) => (
+              stopList.excludedCompanies.map((company: string, index: number) => (
                 <Flex
                   key={index}
                   sx={{
@@ -464,7 +464,7 @@ export const JobFinderConfigTab: React.FC = () => {
             {stopList.excludedKeywords.length === 0 ? (
               <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>No keywords excluded yet</Text>
             ) : (
-              stopList.excludedKeywords.map((keyword, index) => (
+              stopList.excludedKeywords.map((keyword: string, index: number) => (
                 <Flex
                   key={index}
                   sx={{
@@ -512,7 +512,7 @@ export const JobFinderConfigTab: React.FC = () => {
             {stopList.excludedDomains.length === 0 ? (
               <Text sx={{ fontSize: 1, color: "textMuted", fontStyle: "italic" }}>No domains excluded yet</Text>
             ) : (
-              stopList.excludedDomains.map((domain, index) => (
+              stopList.excludedDomains.map((domain: string, index: number) => (
                 <Flex
                   key={index}
                   sx={{
