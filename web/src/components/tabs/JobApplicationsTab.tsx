@@ -19,7 +19,7 @@ import { logger } from "../../utils/logger"
 import { useAuth } from "../../hooks/useAuth"
 import { useDocumentGeneration, buildGenerationOptionsFromJobMatch } from "../../hooks/useDocumentGeneration"
 import { GenerationProgress } from "../GenerationProgress"
-import { TabHeader, LoadingState, EmptyState } from "../ui"
+import { TabHeader, LoadingState, EmptyState, StatsGrid, StatusBadge } from "../ui"
 import { SubmitJobModal } from "../SubmitJobModal"
 
 interface JobApplicationsTabProps {

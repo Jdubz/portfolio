@@ -21,6 +21,7 @@ import { GenerationDetailsModal } from "../components/GenerationDetailsModal"
 import { ErrorBoundary } from "../components/ErrorBoundary"
 import { logger } from "../utils/logger"
 import type { GenerationRequest } from "../types/generator"
+import { JobFinderThemeProvider } from "../components/job-finder"
 
 /**
  * Unified Resume Builder Page with Tabs
@@ -227,9 +228,11 @@ const ResumeBuilderPage: React.FC = () => {
       icon: "📋",
       group: "job-finder",
       content: (
-        <ErrorBoundary>
-          <JobApplicationsTab onViewGeneratedDocs={handleViewGeneratedDocs} />
-        </ErrorBoundary>
+        <JobFinderThemeProvider>
+          <ErrorBoundary>
+            <JobApplicationsTab onViewGeneratedDocs={handleViewGeneratedDocs} />
+          </ErrorBoundary>
+        </JobFinderThemeProvider>
       ),
     },
     {
@@ -238,9 +241,11 @@ const ResumeBuilderPage: React.FC = () => {
       icon: "🔍",
       group: "job-finder",
       content: (
-        <ErrorBoundary>
-          <ScrapingTab />
-        </ErrorBoundary>
+        <JobFinderThemeProvider>
+          <ErrorBoundary>
+            <ScrapingTab />
+          </ErrorBoundary>
+        </JobFinderThemeProvider>
       ),
     },
     {
@@ -249,9 +254,11 @@ const ResumeBuilderPage: React.FC = () => {
       icon: "📊",
       group: "job-finder",
       content: (
-        <ErrorBoundary>
-          <QueueManagementTab />
-        </ErrorBoundary>
+        <JobFinderThemeProvider>
+          <ErrorBoundary>
+            <QueueManagementTab />
+          </ErrorBoundary>
+        </JobFinderThemeProvider>
       ),
     },
     {
@@ -260,9 +267,11 @@ const ResumeBuilderPage: React.FC = () => {
       icon: "⚙️",
       group: "job-finder",
       content: (
-        <ErrorBoundary>
-          <JobFinderConfigTab />
-        </ErrorBoundary>
+        <JobFinderThemeProvider>
+          <ErrorBoundary>
+            <JobFinderConfigTab />
+          </ErrorBoundary>
+        </JobFinderThemeProvider>
       ),
     },
     {
@@ -271,9 +280,11 @@ const ResumeBuilderPage: React.FC = () => {
       icon: "🏢",
       group: "job-finder",
       content: (
-        <ErrorBoundary>
-          <CompaniesTab />
-        </ErrorBoundary>
+        <JobFinderThemeProvider>
+          <ErrorBoundary>
+            <CompaniesTab />
+          </ErrorBoundary>
+        </JobFinderThemeProvider>
       ),
     },
     {
@@ -282,9 +293,11 @@ const ResumeBuilderPage: React.FC = () => {
       icon: "📡",
       group: "job-finder",
       content: (
-        <ErrorBoundary>
-          <SourcesTab />
-        </ErrorBoundary>
+        <JobFinderThemeProvider>
+          <ErrorBoundary>
+            <SourcesTab />
+          </ErrorBoundary>
+        </JobFinderThemeProvider>
       ),
     },
     // Admin Group (all visible, edit controls hidden for non-editors)
