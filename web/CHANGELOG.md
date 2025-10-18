@@ -1,5 +1,13 @@
 # josh-wentworth-portfolio
 
+## 1.18.0
+
+### Minor Changes
+
+- [#78](https://github.com/Jdubz/portfolio/pull/78) [`c129909`](https://github.com/Jdubz/portfolio/commit/c129909297e1ad7100591665b34d63d3f0b71f03) Thanks [@Jdubz](https://github.com/Jdubz)! - feat: add job finder queue system with elegant grouped navigation
+
+  Auto-generated changeset for PR #78
+
 ## 1.17.1
 
 ### Patch Changes
