@@ -11,10 +11,8 @@ import { AIPromptsTab } from "../components/tabs/AIPromptsTab"
 import { SettingsTab } from "../components/tabs/SettingsTab"
 import { DocumentHistoryTab } from "../components/tabs/DocumentHistoryTab"
 import { JobApplicationsTab } from "../components/tabs/JobApplicationsTab"
-import { JobFinderTab } from "../components/tabs/JobFinderTab"
 import { JobFinderConfigTab } from "../components/tabs/JobFinderConfigTab"
 import { ScrapingTab } from "../components/tabs/ScrapingTab"
-import { ScrapeHistoryTab } from "../components/tabs/ScrapeHistoryTab"
 import { QueueManagementTab } from "../components/tabs/QueueManagementTab"
 import { CompaniesTab } from "../components/tabs/CompaniesTab"
 import { SourcesTab } from "../components/tabs/SourcesTab"
@@ -66,9 +64,7 @@ const ResumeBuilderPage: React.FC = () => {
       "settings",
       "history",
       "job-applications",
-      "job-finder",
       "scraping",
-      "scrape-history",
       "queue-management",
       "job-finder-config",
       "companies",
@@ -226,17 +222,6 @@ const ResumeBuilderPage: React.FC = () => {
     },
     // Job Finder Group (all visible, edit controls hidden for non-editors)
     {
-      id: "job-finder",
-      label: "Submit Jobs",
-      icon: "➕",
-      group: "job-finder",
-      content: (
-        <ErrorBoundary>
-          <JobFinderTab />
-        </ErrorBoundary>
-      ),
-    },
-    {
       id: "job-applications",
       label: "Job Applications",
       icon: "📋",
@@ -255,17 +240,6 @@ const ResumeBuilderPage: React.FC = () => {
       content: (
         <ErrorBoundary>
           <ScrapingTab />
-        </ErrorBoundary>
-      ),
-    },
-    {
-      id: "scrape-history",
-      label: "Scrape History",
-      icon: "📜",
-      group: "job-finder",
-      content: (
-        <ErrorBoundary>
-          <ScrapeHistoryTab />
         </ErrorBoundary>
       ),
     },
