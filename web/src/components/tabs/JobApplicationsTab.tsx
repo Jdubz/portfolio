@@ -306,6 +306,19 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
     return generated ? "#10b981" : "#6b7280" // green : gray
   }
 
+  const handleSubmitJob = async (data: { url: string; companyName: string; companyUrl: string }) => {
+    await jobQueueClient.submitJob({
+      url: data.url,
+      companyName: data.companyName,
+      companyUrl: data.companyUrl,
+    })
+    logger.info("Job submitted from Job Applications tab", data)
+    // Refresh job matches after a short delay to allow processing
+    window.setTimeout(() => {
+      void loadJobMatches()
+    }, 2000)
+  }
+
   if (authLoading || loading) {
     return <LoadingState message="Loading job matches..." />
   }
@@ -320,24 +333,31 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
 
   if (jobMatches.length === 0) {
     return (
-      <EmptyState
-        icon="📭"
-        message="No job matches yet. Add job matches to your Firestore database to see them here."
-      />
+      <>
+        <TabHeader
+          title="Job Applications"
+          actions={
+            <Flex sx={{ gap: 2 }}>
+              <Button onClick={() => setIsSubmitJobModalOpen(true)} variant="primary">
+                New Job
+              </Button>
+              <Button onClick={() => void loadJobMatches()} variant="secondary">
+                Refresh
+              </Button>
+            </Flex>
+          }
+        />
+        <EmptyState
+          icon="📭"
+          message="No job matches yet. Submit a job to get started or wait for job-finder to discover matches."
+        />
+        <SubmitJobModal
+          isOpen={isSubmitJobModalOpen}
+          onClose={() => setIsSubmitJobModalOpen(false)}
+          onSubmit={handleSubmitJob}
+        />
+      </>
     )
-  }
-
-  const handleSubmitJob = async (data: { url: string; companyName: string; companyUrl: string }) => {
-    await jobQueueClient.submitJob({
-      url: data.url,
-      companyName: data.companyName,
-      companyUrl: data.companyUrl,
-    })
-    logger.info("Job submitted from Job Applications tab", data)
-    // Refresh job matches after a short delay to allow processing
-    window.setTimeout(() => {
-      void loadJobMatches()
-    }, 2000)
   }
 
   return (
@@ -347,7 +367,7 @@ export const JobApplicationsTab: React.FC<JobApplicationsTabProps> = ({ onViewGe
         actions={
           <Flex sx={{ gap: 2 }}>
             <Button onClick={() => setIsSubmitJobModalOpen(true)} variant="primary">
-              Submit Job
+              New Job
             </Button>
             <Button onClick={() => void loadJobMatches()} variant="secondary">
               Refresh
