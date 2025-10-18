@@ -6,6 +6,50 @@ This document lists **prioritized outstanding work** for the portfolio project. 
 
 ---
 
+## Critical Issues
+
+### Firebase Authentication Error (BLOCKING PRODUCTION)
+
+**Status**: URGENT - Affects both staging and production
+**Estimated Effort**: 2-4 hours
+**Impact**: CRITICAL - Users cannot authenticate
+
+Google OAuth returns `auth/internal-error` on both staging and production environments.
+
+**Diagnostic Steps**:
+1. Check Firebase Console → Authentication → Settings → Authorized Domains
+   - Verify all domains present: `localhost`, `staging.joshwentworth.com`, `joshwentworth.com`, `www.joshwentworth.com`
+2. Check Google Cloud Console → APIs & Credentials → OAuth 2.0 Client ID
+   - Verify all redirect URIs: `https://*.joshwentworth.com/__/auth/handler`, etc.
+3. Check OAuth JavaScript Origins
+   - Verify all domains including `http://localhost:8000`, `http://localhost:9000`
+4. Review API Key HTTP Referrer Restrictions
+   - Ensure no blocking restrictions were added
+5. Verify Identity Toolkit API is enabled in GCP
+6. Review GCP Activity logs for recent unauthorized changes
+
+**Reference**: `/docs/setup/FIREBASE_CONFIG_CHECKLIST.md`
+
+---
+
+## Code Quality Issues
+
+### TODO Comments to Address
+
+**Status**: Ongoing cleanup
+**Estimated Effort**: 2-3 hours total
+
+**Items Found**:
+1. **ProfileSectionEdit Structured Data** (`/web/src/components/content-types/ProfileSectionEdit.tsx:6`)
+   - Add structured data fields when needed
+
+2. **Cursor-Based Pagination** (`/functions/src/services/content-item.service.ts`)
+   - Implement proper cursor-based pagination instead of limit/offset
+   - Use Firestore `startAfter()` for scalable pagination
+   - Update API to return `nextCursor` in response
+
+---
+
 ## Quick Wins: Usability Improvements
 
 **Context**: This tool works in concert with [job-finder](https://github.com/Jdubz/job-finder) to create the best job applications ever:
