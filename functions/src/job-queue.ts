@@ -16,6 +16,7 @@ const jobQueueService = new JobQueueService(logger)
 const submitJobSchema = Joi.object({
   url: Joi.string().uri().trim().required(),
   companyName: Joi.string().trim().max(200).optional().allow(""),
+  companyUrl: Joi.string().uri().trim().optional().allow(""), // Company website URL
   generationId: Joi.string().trim().optional(), // Optional generation ID for pre-generated documents
 })
 
@@ -295,13 +296,14 @@ async function handleSubmitJob(req: AuthenticatedRequest, res: Response, request
       return
     }
 
-    const { url, companyName = "", generationId } = value
+    const { url, companyName = "", companyUrl = "", generationId } = value
     const userId = req.user?.uid || null // Allow anonymous submissions
 
     logger.info("Processing job submission", {
       requestId,
       url,
       companyName,
+      companyUrl,
       userId: userId || "anonymous",
       hasGenerationId: !!generationId,
     })
