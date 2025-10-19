@@ -173,6 +173,7 @@ Use Terraform modules (extend `infrastructure/terraform`) to:
 - Add migration FAQ summarizing differences between Gatsby and React apps, routing patterns, and auth changes.
 - Refresh `docs/` content (architecture diagrams, onboarding guides) to reflect the split.
 - Provide runbooks for Terraform apply, Firebase deploy, and DNS switches.
+- Add `CLAUDE.md` context files in new or relocated directories (e.g., `job-finder-FE`, shared-types additions) summarizing intent, key files, and ownership to keep AI-assisted tooling effective after the split.
 
 ## Timeline (Suggested)
 
