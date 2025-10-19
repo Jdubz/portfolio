@@ -24,10 +24,12 @@ This document serves as the single source of truth for architectural decisions, 
 ### Monorepo Structure
 
 This is a minimal Firebase monorepo combining:
+
 - **Web**: Gatsby 5 static site (React 18 + Theme UI + TypeScript)
 - **Functions**: Single Cloud Function Gen 2 for contact form (Node.js 20)
 
 **Removed** (October 2025 cleanup):
+
 - Database (Firestore) - No longer needed
 - Storage (GCS) - No longer needed
 - AI Services - Removed
@@ -106,6 +108,7 @@ This is a minimal Firebase monorepo combining:
 ## Technology Stack
 
 ### Web Stack
+
 - **Gatsby 5** - Static site generator
 - **React 18** - UI framework
 - **TypeScript** - Type safety
@@ -114,6 +117,7 @@ This is a minimal Firebase monorepo combining:
 - **MDX** - Markdown with JSX
 
 ### Functions Stack
+
 - **Cloud Functions Gen 2** - Serverless compute
 - **TypeScript** - Type-safe functions
 - **Mailgun** - Email delivery
@@ -121,6 +125,7 @@ This is a minimal Firebase monorepo combining:
 - **Express Rate Limit** - Abuse prevention
 
 ### Development Tools
+
 - **Jest** - Unit testing
 - **Playwright** - E2E testing
 - **ESLint** - Code quality
@@ -172,6 +177,7 @@ portfolio/
 ### Security Measures
 
 **Contact Form Protection**:
+
 - Rate limiting (5 requests per 15 minutes per IP)
 - Joi validation for all inputs
 - Email address validation
@@ -180,6 +186,7 @@ portfolio/
 - Firebase Hosting security headers
 
 **Hosting Security Headers**:
+
 - X-Frame-Options: DENY
 - X-Content-Type-Options: nosniff
 - X-XSS-Protection: 1; mode=block
@@ -189,18 +196,21 @@ portfolio/
 ### Performance Optimizations
 
 **Build-Time**:
+
 - Static page generation
 - Image optimization
 - CSS minification
 - JavaScript bundling and code splitting
 
 **Runtime**:
+
 - CDN delivery via Firebase Hosting
 - Aggressive caching headers
 - Lazy loading for images
 - Parallax animations with React Spring
 
 **Bundle Size**:
+
 - Tree-shaking unused code
 - Minimal dependencies (~70% reduction after cleanup)
 - No runtime database queries
@@ -216,6 +226,7 @@ feature_branch → staging → main
 ```
 
 **Rules**:
+
 1. Create feature branches from `staging`
 2. Create PR: `feature → staging`
 3. Test on staging deployment
@@ -225,12 +236,14 @@ feature_branch → staging → main
 ### Testing Strategy
 
 **Unit Tests** (Jest):
+
 - Component testing (React Testing Library)
 - Utility function testing
 - Function service testing
 - Coverage: Forms, validation, utilities
 
 **E2E Tests** (Playwright):
+
 - Contact form submission
 - Page navigation
 - Responsive design
@@ -239,10 +252,12 @@ feature_branch → staging → main
 ### Deployment
 
 **Environments**:
+
 - **Staging**: `staging.joshwentworth.com`
 - **Production**: `joshwentworth.com`
 
 **CI/CD** (GitHub Actions):
+
 - Push to `staging` → auto-deploy to staging
 - Merge to `main` → auto-deploy to production
 - Pre-push hooks run tests
@@ -265,6 +280,7 @@ feature_branch → staging → main
 **Current Status**: Minimal technical debt after October 2025 cleanup
 
 **Remaining Cleanup**:
+
 - Makefile has some obsolete Job Finder targets (documented in migration plan)
 - Some scripts in `scripts/` directory are obsolete
 - Firebase emulator configuration includes unused services (Firestore, Storage)
@@ -278,6 +294,7 @@ These items are documented and tracked but don't affect production functionality
 ### October 2025: Major Simplification
 
 **What Was Removed**:
+
 - AI Resume Generator (OpenAI, Gemini integration)
 - PDF generation (Puppeteer)
 - Experience management system
@@ -289,6 +306,7 @@ These items are documented and tracked but don't affect production functionality
 - 40,000+ lines of code removed
 
 **What Remains**:
+
 - Portfolio showcase site
 - Contact form with Mailgun
 - Professional branding
@@ -296,6 +314,7 @@ These items are documented and tracked but don't affect production functionality
 - Minimal serverless infrastructure
 
 **Why**:
+
 - Focus on core portfolio functionality
 - Reduce maintenance burden
 - Simplify deployment
@@ -309,5 +328,6 @@ These items are documented and tracked but don't affect production functionality
 ## Contact
 
 For questions about this architecture:
+
 - **Email**: hello@joshwentworth.com
 - **Developer**: Josh Wentworth

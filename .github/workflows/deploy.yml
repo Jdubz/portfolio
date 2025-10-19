@@ -157,12 +157,3 @@ jobs:
           channelId: live
           target: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
           entryPoint: portfolio
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-
-      - name: Deploy Firestore Rules and Indexes
-        working-directory: portfolio
-        run: bash scripts/deploy-firestore-safe.sh

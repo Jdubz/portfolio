@@ -18,7 +18,7 @@ This project is organized as a minimal Firebase hosting setup:
 ```
 portfolio/
 ├── web/                    # Gatsby static site
-│   ├── src/               
+│   ├── src/
 │   │   ├── pages/         # Site pages (homepage, contact, legal)
 │   │   ├── components/    # React components
 │   │   └── sections/      # Homepage sections
@@ -26,9 +26,9 @@ portfolio/
 │   └── package.json       # Web dependencies
 │
 ├── functions/             # Cloud Functions (contact form only)
-│   ├── contact-form/      
+│   ├── contact-form/
 │   │   └── index.ts       # Contact form handler
-│   ├── src/              
+│   ├── src/
 │   │   └── index.ts       # Function exports
 │   └── package.json       # Minimal function dependencies
 │
@@ -56,6 +56,7 @@ portfolio/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js >= 20.0.0
 - npm >= 10.0.0
 
@@ -156,6 +157,7 @@ npm run deploy:functions:production
 ## 🛠️ Available Commands
 
 ### Root Commands
+
 ```bash
 npm run dev                      # Start web dev server
 npm run dev:functions            # Start functions dev server
@@ -168,6 +170,7 @@ npm run clean                   # Clean web cache
 ```
 
 ### Makefile Commands
+
 ```bash
 make help                # Show all available commands
 make dev                 # Start web dev server
@@ -198,27 +201,33 @@ make deploy-prod         # Deploy to production
 All documentation has been consolidated in the [`docs/`](./docs/) folder:
 
 ### Setup & Configuration
+
 - [Firebase Configuration Checklist](./docs/setup/FIREBASE_CONFIG_CHECKLIST.md) - Complete setup guide
 - [Development Workflow](./docs/DEVELOPMENT_WORKFLOW.md) - Git workflow and best practices
 
 ### Development
+
 - **[Architecture](./docs/development/ARCHITECTURE.md)** - System design and patterns
 - [Known Issues](./docs/development/KNOWN_ISSUES.md) - Current known issues and workarounds
 
 ### Brand Assets
+
 - [Brand Guidelines](./docs/brand/README.md) - Complete brand identity and assets
 
 ### Changelog
+
 - [Changelog](./docs/CHANGELOG.md) - Version history and release notes
 
 ## 🔒 Environment Variables
 
 ### Web (.env in web/)
+
 ```
 GATSBY_CONTACT_FUNCTION_URL=https://...cloudfunctions.net/contact-form
 ```
 
 ### Functions (.env in functions/)
+
 See [functions/.env.example](./functions/.env.example)
 
 ## 📜 License
@@ -228,5 +237,6 @@ See [functions/.env.example](./functions/.env.example)
 ## 🤝 Contact
 
 For questions or collaborations:
+
 - Email: hello@joshwentworth.com
 - LinkedIn: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)
