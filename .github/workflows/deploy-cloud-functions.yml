@@ -32,11 +32,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       contact-form: ${{ steps.changes.outputs.contact-form }}
-      experience: ${{ steps.changes.outputs.experience }}
-      content-items: ${{ steps.changes.outputs.content-items }}
-      generator: ${{ steps.changes.outputs.generator }}
-      resume: ${{ steps.changes.outputs.resume }}
-      job-queue: ${{ steps.changes.outputs.job-queue }}
       any-changed: ${{ steps.changes.outputs.any-changed }}
     steps:
       - name: Checkout repository
@@ -67,53 +62,18 @@ jobs:
 
           # Check if shared code or specific function changed
           CONTACT_FORM_CHANGED=false
-          EXPERIENCE_CHANGED=false
-          CONTENT_ITEMS_CHANGED=false
-          GENERATOR_CHANGED=false
-          RESUME_CHANGED=false
-          JOB_QUEUE_CHANGED=false
           ANY_CHANGED=false
 
           # Check for shared code changes (affects all functions)
-          if echo "$CHANGED_FILES" | grep -qE "^functions/(src/(config|middleware|utils|types)|package\.json|tsconfig\.json)"; then
+          if echo "$CHANGED_FILES" | grep -qE "^functions/(src/(config|middleware|utils|types|services)|package\.json|tsconfig\.json)"; then
             echo "Shared code changed - all functions need redeployment"
             CONTACT_FORM_CHANGED=true
-            EXPERIENCE_CHANGED=true
-            CONTENT_ITEMS_CHANGED=true
-            GENERATOR_CHANGED=true
-            RESUME_CHANGED=true
-            JOB_QUEUE_CHANGED=true
             ANY_CHANGED=true
           fi
 
           # Check function-specific changes
-          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(index\.ts|services/contact)"; then
+          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(index\.ts|services/(contact|email|secret-manager))"; then
             CONTACT_FORM_CHANGED=true
-            ANY_CHANGED=true
-          fi
-
-          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(experience\.ts|services/experience)"; then
-            EXPERIENCE_CHANGED=true
-            ANY_CHANGED=true
-          fi
-
-          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(content-items\.ts|services/content-item)"; then
-            CONTENT_ITEMS_CHANGED=true
-            ANY_CHANGED=true
-          fi
-
-          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(generator\.ts|services/(generator|openai|gemini|ai-provider|pdf|blurb))"; then
-            GENERATOR_CHANGED=true
-            ANY_CHANGED=true
-          fi
-
-          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(resume\.ts|services/storage)"; then
-            RESUME_CHANGED=true
-            ANY_CHANGED=true
-          fi
-
-          if echo "$CHANGED_FILES" | grep -qE "^functions/src/(job-queue\.ts|services/job-queue)"; then
-            JOB_QUEUE_CHANGED=true
             ANY_CHANGED=true
           fi
 
@@ -121,29 +81,14 @@ jobs:
           if echo "$CHANGED_FILES" | grep -qE "^\.github/workflows/deploy-cloud-functions\.yml"; then
             echo "Workflow changed - all functions need redeployment"
             CONTACT_FORM_CHANGED=true
-            EXPERIENCE_CHANGED=true
-            CONTENT_ITEMS_CHANGED=true
-            GENERATOR_CHANGED=true
-            RESUME_CHANGED=true
-            JOB_QUEUE_CHANGED=true
             ANY_CHANGED=true
           fi
 
           echo "contact-form=$CONTACT_FORM_CHANGED" >> $GITHUB_OUTPUT
-          echo "experience=$EXPERIENCE_CHANGED" >> $GITHUB_OUTPUT
-          echo "content-items=$CONTENT_ITEMS_CHANGED" >> $GITHUB_OUTPUT
-          echo "generator=$GENERATOR_CHANGED" >> $GITHUB_OUTPUT
-          echo "resume=$RESUME_CHANGED" >> $GITHUB_OUTPUT
-          echo "job-queue=$JOB_QUEUE_CHANGED" >> $GITHUB_OUTPUT
           echo "any-changed=$ANY_CHANGED" >> $GITHUB_OUTPUT
 
           echo "Results:"
           echo "  contact-form: $CONTACT_FORM_CHANGED"
-          echo "  experience: $EXPERIENCE_CHANGED"
-          echo "  content-items: $CONTENT_ITEMS_CHANGED"
-          echo "  generator: $GENERATOR_CHANGED"
-          echo "  resume: $RESUME_CHANGED"
-          echo "  job-queue: $JOB_QUEUE_CHANGED"
           echo "  any-changed: $ANY_CHANGED"
 
   # Build and test (runs once, cached)
@@ -220,7 +165,6 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: 4  # Deploy functions in parallel
       matrix:
         function:
           - name: contact-form
@@ -230,41 +174,6 @@ jobs:
             max_instances: 10
             secrets: MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest
             changed: ${{ needs.detect-changes.outputs.contact-form }}
-          - name: manageExperience
-            entry_point: manageExperience
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 256Mi
-            max_instances: 10
-            secrets: ""
-            changed: ${{ needs.detect-changes.outputs.experience }}
-          - name: manageContentItems
-            entry_point: manageContentItems
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 256Mi
-            max_instances: 10
-            secrets: ""
-            changed: ${{ needs.detect-changes.outputs.content-items }}
-          - name: manageGenerator
-            entry_point: manageGenerator
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 1Gi
-            max_instances: 10
-            secrets: "OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
-            changed: ${{ needs.detect-changes.outputs.generator }}
-          - name: uploadResume
-            entry_point: uploadResume
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 512Mi
-            max_instances: 5
-            secrets: ""
-            changed: ${{ needs.detect-changes.outputs.resume }}
-          - name: manageJobQueue
-            entry_point: manageJobQueue
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 256Mi
-            max_instances: 10
-            secrets: ""
-            changed: ${{ needs.detect-changes.outputs.job-queue }}
 
     steps:
       - name: Check if deployment needed
@@ -299,8 +208,8 @@ jobs:
         if: steps.should-deploy.outputs.deploy == 'true'
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
-          service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
+          workload_identity_provider: "projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github"
+          service_account: "github-actions-deployer@static-sites-257923.iam.gserviceaccount.com"
 
       - name: Setup Cloud SDK
         if: steps.should-deploy.outputs.deploy == 'true'
@@ -377,7 +286,6 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: 4  # Deploy functions in parallel
       matrix:
         function:
           - name: contact-form
@@ -387,41 +295,6 @@ jobs:
             max_instances: 50
             secrets: MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest
             changed: ${{ needs.detect-changes.outputs.contact-form }}
-          - name: manageExperience
-            entry_point: manageExperience
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 256Mi
-            max_instances: 10
-            secrets: ""
-            changed: ${{ needs.detect-changes.outputs.experience }}
-          - name: manageContentItems
-            entry_point: manageContentItems
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 256Mi
-            max_instances: 10
-            secrets: ""
-            changed: ${{ needs.detect-changes.outputs.content-items }}
-          - name: manageGenerator
-            entry_point: manageGenerator
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 1Gi
-            max_instances: 10
-            secrets: "OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
-            changed: ${{ needs.detect-changes.outputs.generator }}
-          - name: uploadResume
-            entry_point: uploadResume
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 512Mi
-            max_instances: 5
-            secrets: ""
-            changed: ${{ needs.detect-changes.outputs.resume }}
-          - name: manageJobQueue
-            entry_point: manageJobQueue
-            runtime_service_account: 789847666726-compute@developer.gserviceaccount.com
-            memory: 256Mi
-            max_instances: 10
-            secrets: ""
-            changed: ${{ needs.detect-changes.outputs.job-queue }}
 
     steps:
       - name: Check if deployment needed
@@ -456,8 +329,8 @@ jobs:
         if: steps.should-deploy.outputs.deploy == 'true'
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
-          service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
+          workload_identity_provider: "projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github"
+          service_account: "github-actions-deployer@static-sites-257923.iam.gserviceaccount.com"
 
       - name: Setup Cloud SDK
         if: steps.should-deploy.outputs.deploy == 'true'

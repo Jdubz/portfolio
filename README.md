@@ -1,8 +1,8 @@
-# Josh Wentworth - Portfolio (Monorepo)
+# Josh Wentworth - Portfolio
 
 > **Software × Hardware × Fabrication**
 
-A professional portfolio showcasing multidisciplinary engineering projects that blend software development, electronics design, and digital fabrication.
+A professional portfolio showcasing multidisciplinary engineering projects that blend software development, electronics design, and digital fabrication. Built as a lightweight Gatsby static site with serverless contact form functionality.
 
 **Josh Wentworth**
 _Multidisciplinary Engineer_
@@ -11,52 +11,52 @@ _Multidisciplinary Engineer_
 - **LinkedIn**: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)
 - **GitHub**: [github.com/joshwentworth](https://github.com/joshwentworth)
 
-## 📁 Monorepo Structure
+## 📁 Project Structure
 
-This project is organized as a Firebase monorepo with the following structure:
+This project is organized as a minimal Firebase hosting setup:
 
 ```
 portfolio/
 ├── web/                    # Gatsby static site
-│   ├── src/               # React components and pages
+│   ├── src/
+│   │   ├── pages/         # Site pages (homepage, contact, legal)
+│   │   ├── components/    # React components
+│   │   └── sections/      # Homepage sections
 │   ├── static/            # Static assets
-│   ├── gatsby-*.ts        # Gatsby configuration
 │   └── package.json       # Web dependencies
 │
-├── functions/             # Cloud Functions
-│   ├── src/              # Function source code
-│   │   ├── index.ts      # Main entry point
-│   │   └── services/     # Business logic
-│   ├── package.json      # Function dependencies
-│   └── tsconfig.json     # TypeScript config
+├── functions/             # Cloud Functions (contact form only)
+│   ├── contact-form/
+│   │   └── index.ts       # Contact form handler
+│   ├── src/
+│   │   └── index.ts       # Function exports
+│   └── package.json       # Minimal function dependencies
 │
-├── firebase.json         # Firebase configuration
-├── .firebaserc          # Firebase project targets
-└── package.json         # Root workspace config
+├── firebase.json          # Firebase hosting configuration
+└── package.json           # Root workspace config
 ```
 
 ## 🔧 Built With
 
 ### Web Stack
+
 - **Gatsby** - React-based static site generator
 - **Theme UI** - Constraint-based styling system
 - **React Spring** - Smooth parallax animations
-- **Firebase Authentication** - Google sign-in with custom claims
-- **Custom Brand System** - Implementing Josh Wentworth's professional brand guidelines
+- **MDX** - Markdown with JSX for content
 
 ### Functions Stack
-- **Cloud Functions Gen 2** - Serverless compute
+
+- **Cloud Functions Gen 2** - Serverless contact form handler
 - **TypeScript** - Type-safe function development
-- **Firestore** - NoSQL database for content and generation tracking
-- **Google Cloud Storage** - PDF document storage with signed URLs
-- **OpenAI GPT-4o** - AI resume/cover letter generation
-- **Google Gemini 2.0 Flash** - Cost-effective AI generation (96% cheaper)
-- **Puppeteer** - PDF generation from HTML templates
-- **Joi** - Request validation
+- **Mailgun** - Email delivery service
+- **Joi & Zod** - Request validation
+- **Express Rate Limit** - Rate limiting protection
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js >= 20.0.0
 - npm >= 10.0.0
 
@@ -125,9 +125,8 @@ npm run test:e2e:report    # View test report
 This portfolio implements Josh's complete brand identity:
 
 - **Typography**: Poppins (headings) and Inter (body text)
-- **Color Palette**: Premium surfaces with accent blue (#0EA5E9) and gradient (#1B1F2B → #00C9A7)
-- **Engineering Icons**: Custom technical iconography representing software, hardware, and fabrication
-- **Professional Content**: Focused on multidisciplinary engineering expertise
+- **Color Palette**: Premium surfaces with accent blue (#0EA5E9)
+- **Engineering Icons**: Custom technical iconography
 
 ## 📦 Deployment
 
@@ -158,6 +157,7 @@ npm run deploy:functions:production
 ## 🛠️ Available Commands
 
 ### Root Commands
+
 ```bash
 npm run dev                      # Start web dev server
 npm run dev:functions            # Start functions dev server
@@ -170,6 +170,7 @@ npm run clean                   # Clean web cache
 ```
 
 ### Makefile Commands
+
 ```bash
 make help                # Show all available commands
 make dev                 # Start web dev server
@@ -185,58 +186,48 @@ make deploy-prod         # Deploy to production
 
 ## ✨ Features
 
-### AI Resume Builder
-Complete AI-powered resume and cover letter generation system:
-- **Multi-Provider AI**: Choose between OpenAI GPT-4o or Google Gemini 2.0 Flash
-- **Cost Optimization**: Gemini is 96% cheaper than OpenAI with excellent quality
-- **Professional PDF Export**: Modern template with custom branding
-- **Cloud Storage**: Automatic GCS upload with signed URLs
-- **Experience Management**: Structured database for work history
-- **AI Prompt Customization**: Editors can customize AI generation prompts
-- **Document History**: Track all generated documents (editor-only)
-- **Settings Management**: Centralized default personal information
-
-See [AI Resume Generator Documentation](./docs/development/generator/README.md) for complete details.
-
 ### Portfolio Showcase
-- Responsive design with smooth animations
-- Project case studies with technical details
-- Contact form with email integration
-- Professional branding implementation
+
+- **Homepage**: Animated parallax sections showcasing engineering projects
+- **Case Studies**: Detailed technical project breakdowns
+- **Contact Form**: Secure serverless email delivery with rate limiting
+- **Legal Pages**: Privacy policy and terms of service
+- **Performance Optimized**: Static site generation for fast loading
+- **SEO Friendly**: Optimized meta tags and structured data
+- **Responsive Design**: Mobile-first with smooth animations
 
 ## 📝 Documentation
 
 All documentation has been consolidated in the [`docs/`](./docs/) folder:
 
-### AI Resume Generator (NEW!)
-- **[Generator Overview](./docs/development/generator/README.md)** - Complete documentation
-- **[Firestore Schema](./docs/development/generator/SCHEMA.md)** - Database structure
-- **[GCS Setup](./docs/development/generator/GCS_ENVIRONMENT_SETUP.md)** - Storage configuration
-- **[Quick Start](./docs/development/generator/QUICKSTART.md)** - Get started in 5 minutes
-
 ### Setup & Configuration
+
 - [Firebase Configuration Checklist](./docs/setup/FIREBASE_CONFIG_CHECKLIST.md) - Complete setup guide
-- [Firebase Emulators](./docs/setup/FIREBASE_EMULATORS.md) - Local development
+- [Development Workflow](./docs/DEVELOPMENT_WORKFLOW.md) - Git workflow and best practices
 
 ### Development
+
 - **[Architecture](./docs/development/ARCHITECTURE.md)** - System design and patterns
-- **[Development Workflow](./docs/DEVELOPMENT_WORKFLOW.md)** - Git workflow and best practices
 - [Known Issues](./docs/development/KNOWN_ISSUES.md) - Current known issues and workarounds
 
 ### Brand Assets
+
 - [Brand Guidelines](./docs/brand/README.md) - Complete brand identity and assets
 
 ### Changelog
+
 - [Changelog](./docs/CHANGELOG.md) - Version history and release notes
 
 ## 🔒 Environment Variables
 
 ### Web (.env in web/)
+
 ```
 GATSBY_CONTACT_FUNCTION_URL=https://...cloudfunctions.net/contact-form
 ```
 
 ### Functions (.env in functions/)
+
 See [functions/.env.example](./functions/.env.example)
 
 ## 📜 License
@@ -246,5 +237,6 @@ See [functions/.env.example](./functions/.env.example)
 ## 🤝 Contact
 
 For questions or collaborations:
+
 - Email: hello@joshwentworth.com
 - LinkedIn: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)

@@ -147,6 +147,12 @@ const HamburgerMenu: React.FC = () => {
   const [colorMode, setColorMode] = useColorMode()
   const isDark = colorMode === `dark`
 
+  // Determine Job Finder URL based on environment
+  const isProduction = (process.env.GATSBY_ACTIVE_ENV ?? process.env.NODE_ENV) === "production"
+  const jobFinderUrl = isProduction
+    ? "https://job-finder.joshwentworth.com"
+    : "https://job-finder-staging.joshwentworth.com"
+
   const toggleMenu = () => {
     setIsOpen(!isOpen)
   }
@@ -155,10 +161,11 @@ const HamburgerMenu: React.FC = () => {
     setIsOpen(false)
   }
 
-  const toggleColorMode = () => {
+  const toggleColorMode = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     const next = isDark ? `light` : `dark`
     setColorMode(next)
-    document.documentElement.classList.value = `theme-ui-${next}`
   }
 
   return (
@@ -297,17 +304,54 @@ const HamburgerMenu: React.FC = () => {
 
             <NavDivider />
 
-            {/* Job Finder */}
+            {/* Job Finder - External Link */}
             <NavSection>
-              <NavLink to="/app" onClick={closeMenu} icon="🔍">
-                Job Finder
-              </NavLink>
+              <Box
+                sx={{
+                  width: "100%",
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    bg: "divider",
+                    "& a": {
+                      color: "primary",
+                    },
+                  },
+                }}
+              >
+                <a
+                  href={jobFinderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    py: 3,
+                    px: 4,
+                    color: "text",
+                    fontSize: 2,
+                    fontWeight: "body",
+                    textDecoration: "none",
+                    transition: "color 0.2s ease",
+                  }}
+                >
+                  <span sx={{ fontSize: 3 }}>🔍</span>
+                  Job Finder
+                  <span sx={{ fontSize: 1, ml: "auto" }}>↗</span>
+                </a>
+              </Box>
             </NavSection>
 
             <NavDivider />
 
             {/* Dark Mode Toggle */}
-            <Box
+            <Button
+              onClick={toggleColorMode}
+              role="switch"
+              aria-checked={isDark}
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               sx={{
                 width: "100%",
                 py: 3,
@@ -317,11 +361,12 @@ const HamburgerMenu: React.FC = () => {
                 justifyContent: "space-between",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
+                border: "none",
+                bg: "transparent",
                 "&:hover": {
                   bg: "divider",
                 },
               }}
-              onClick={toggleColorMode}
             >
               <span
                 sx={{
@@ -333,53 +378,32 @@ const HamburgerMenu: React.FC = () => {
                   fontWeight: "body",
                 }}
               >
-                <span sx={{ fontSize: 3 }}>🌙</span>
-                Dark Mode
+                <span sx={{ fontSize: 3 }}>{isDark ? "☀️" : "🌙"}</span>
+                {isDark ? "Light Mode" : "Dark Mode"}
               </span>
-              <label
+              <Box
                 sx={{
                   position: "relative",
                   display: "inline-block",
                   width: "48px",
                   height: "24px",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={isDark}
-                  onChange={toggleColorMode}
-                  sx={{
-                    opacity: 0,
-                    width: 0,
-                    height: 0,
-                  }}
-                />
-                <Box
-                  sx={{
+                  bg: isDark ? "primary" : "divider",
+                  borderRadius: "24px",
+                  transition: "background-color 0.3s ease",
+                  "&::before": {
+                    content: '""',
                     position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    bg: isDark ? "primary" : "divider",
-                    borderRadius: "24px",
-                    transition: "background-color 0.3s ease",
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      height: "18px",
-                      width: "18px",
-                      left: isDark ? "26px" : "3px",
-                      bottom: "3px",
-                      bg: "white",
-                      borderRadius: "50%",
-                      transition: "left 0.3s ease",
-                    },
-                  }}
-                />
-              </label>
-            </Box>
+                    height: "18px",
+                    width: "18px",
+                    left: isDark ? "26px" : "3px",
+                    bottom: "3px",
+                    bg: "white",
+                    borderRadius: "50%",
+                    transition: "left 0.3s ease",
+                  },
+                }}
+              />
+            </Button>
           </Flex>
         </>
       )}

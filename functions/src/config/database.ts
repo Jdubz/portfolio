@@ -1,6 +1,7 @@
 /**
  * Database configuration constants
- * Centralized configuration for Firestore database settings
+ *
+ * Centralized configuration for Firestore database settings.
  *
  * Environment-based database selection:
  * - Emulator: (default)
@@ -60,26 +61,9 @@ function getDatabaseId(): string {
 export const DATABASE_ID = getDatabaseId()
 
 /**
- * Experience entries collection name
+ * Contact form submissions collection name
  */
-export const EXPERIENCE_COLLECTION = "experience-entries"
-
-/**
- * Blurb entries collection name
- */
-export const BLURBS_COLLECTION = "experience-blurbs"
-
-/**
- * Content items collection name
- * Unified collection for all portfolio content (replaces experience-entries and experience-blurbs)
- */
-export const CONTENT_ITEMS_COLLECTION = "content-items"
-
-/**
- * Generator collection name
- * Stores default settings, generation requests, and generation responses
- */
-export const GENERATOR_COLLECTION = "generator"
+export const CONTACT_SUBMISSIONS_COLLECTION = "contact-submissions"
 
 /**
  * Validate that DATABASE_ID is set correctly

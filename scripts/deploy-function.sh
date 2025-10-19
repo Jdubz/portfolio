@@ -22,8 +22,6 @@ if [ -z "$FUNCTION_NAME" ]; then
   echo "Legacy usage: $0 <function-name>"
   echo ""
   echo "Available functions:"
-  echo "  - uploadResume"
-  echo "  - manageExperience"
   echo "  - handleContactForm"
   exit 1
 fi
