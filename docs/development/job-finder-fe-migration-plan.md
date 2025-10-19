@@ -108,6 +108,7 @@ Use Terraform modules (extend `infrastructure/terraform`) to:
 
 - Deploy to `staging.job-finder.joshwentworth.com`; run QA checklist covering authentication, dashboards, queue management, scraping flows, etc.
 - Confirm GCP logs capture expected entries; adjust alerting thresholds if necessary.
+- Implement temporary redirects in staging (e.g., `/resume-builder`, Job Finder tab URLs) to the new domain to validate routing behavior before production cutover.
 - Update Cloudflare DNS to point production domain to Firebase Hosting once staging passes.
 - Perform smoke tests (automated + manual) immediately after cutover.
 - Monitor for 24–48 hours; prepare rollback procedure (switch DNS back, redeploy Gatsby pages if needed).
@@ -116,9 +117,42 @@ Use Terraform modules (extend `infrastructure/terraform`) to:
 
 - Remove Job Finder routes/components from Gatsby (`web/src/pages/**`, `components/tabs/**`, etc.) leaving only home/contact.
 - Update navigation/links to point to new domain.
+- Add permanent (301) redirects for legacy Job Finder URLs (e.g., `/resume-builder`, `/app/*`, tab deep links) to their equivalents on `job-finder.joshwentworth.com` to preserve bookmarks and SEO equity.
 - Simplify scripts, lint configs, and build commands to reflect reduced surface area.
 - Keep contact form Firebase Function and Firestore integrations unchanged.
 - Add regression tests ensuring `/` and `/contact` render and submit correctly.
+
+## Repository Gotchas & Improvement Opportunities
+
+### Front-End (Gatsby) Footprint
+
+- `web/src/pages/resume-builder.tsx` owns tabbed routing via query params (`?tab=`). Redirect mapping must cover every legacy tab slug to the new router.
+- Theme UI, custom hooks (`useAuth`, `TabsGrouped`, etc.), and the recently added `JobFinderThemeProvider` are tightly coupled; plan for adapters or shims while features move to shadcn.
+- `web/public/` contains built Gatsby assets that can mask redirect issues during local testing; clear the folder when verifying migration logic.
+- Patch scripts (`update:partytown`, `patch-package`) run on install/build—validate whether they are still needed after Job Finder removal to avoid dangling artifacts.
+
+### Shared Types & Dependencies
+
+- Current workspaces reference the shared types package inconsistently (`@jdubz/...` vs `@jsdubzw/...`). Standardize naming before splitting repos to prevent accidentally publishing multiple packages.
+- Ensure `@jdubz/job-finder-shared-types` remains the single source for queue, logging, and settings contracts; any schema change should flow through that package before app/function updates.
+
+### Firebase Functions Surface Area
+
+- `functions/src/` hosts both contact-form and Job Finder logic. When extracting, decide whether contact form stays in this repo or moves to a dedicated workspace to reduce lint/test noise.
+- Generated `.d.ts` files under `functions/deploy/` trigger ESLint parser errors (`parserOptions.project`). In the new layout, either exclude generated directories or supply a dedicated tsconfig.
+- Scripts such as `functions/setup-secrets.sh` assume the `static-sites-257923` project; parameterize or document if the new app introduces additional environments.
+
+### Scripts & Tooling
+
+- Root scripts (`scripts/import-staging-to-local.ts`, `scripts/copy-job-matches-to-emulator.ts`, etc.) rely on Job Finder collections and should migrate alongside the new app.
+- Firestore export snapshots under `firestore-exports/` and emulator data under `emulator-data/` reference the existing schema. Plan a cleanup/refresh step to avoid stale migrations after the split.
+- `Makefile`, `lhci`, and screenshot workflows may reference removed routes; audit these tasks to avoid CI failures post-migration.
+
+### CI/CD & Linting
+
+- Current lint runs flag hundreds of errors due to shared TypeScript configs. Stabilize linting in each repo before activating required checks for the new pipelines.
+- `npm run test --workspaces` executes both Gatsby and Functions suites; after extraction ensure CI still covers contact form tests from this repo and introduces equivalent coverage in `job-finder-FE`.
+- Verify existing GitHub Actions (deploy, screenshots, PR checks) to see which ones assume the presence of `/resume-builder` content and update them in tandem with redirects.
 
 ## Shared Types & Contracts
 
