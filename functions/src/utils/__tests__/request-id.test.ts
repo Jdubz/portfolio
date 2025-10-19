@@ -132,9 +132,10 @@ describe("generateRequestId", () => {
       const ids = Array.from({ length: 100 }, () => generateRequestId())
 
       // All IDs should be within a narrow length range
-      // Format: "req_" (4) + timestamp (13) + "_" (1) + random (9) = 27 chars
+      // Format: "req_" (4) + timestamp (12-13) + "_" (1) + random (9) = 26-27 chars
       ids.forEach((id) => {
-        expect(id.length).toBe(27)
+        expect(id.length).toBeGreaterThanOrEqual(26)
+        expect(id.length).toBeLessThanOrEqual(27)
       })
     })
   })
