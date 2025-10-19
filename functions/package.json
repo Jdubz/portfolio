@@ -31,7 +31,7 @@
     "@google-cloud/storage": "^7.17.2",
     "@google-cloud/vertexai": "^1.10.0",
     "@google/generative-ai": "^0.24.1",
-    "@jdubz/job-finder-shared-types": "file:../../../shared-types",
+    "@jdubz/job-finder-shared-types": "file:../../job-finder-shared-types",
     "@sparticuz/chromium": "^141.0.0",
     "@types/busboy": "^1.5.4",
     "busboy": "^1.6.0",
