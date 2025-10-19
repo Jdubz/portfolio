@@ -41,18 +41,13 @@ portfolio/
 - **Gatsby** - React-based static site generator
 - **Theme UI** - Constraint-based styling system
 - **React Spring** - Smooth parallax animations
-- **Firebase Authentication** - Google sign-in with custom claims
 - **Custom Brand System** - Implementing Josh Wentworth's professional brand guidelines
 
 ### Functions Stack
-- **Cloud Functions Gen 2** - Serverless compute
+- **Cloud Functions Gen 2** - Serverless contact form handler
 - **TypeScript** - Type-safe function development
-- **Firestore** - NoSQL database for content and generation tracking
-- **Google Cloud Storage** - PDF document storage with signed URLs
-- **OpenAI GPT-4o** - AI resume/cover letter generation
-- **Google Gemini 2.0 Flash** - Cost-effective AI generation (96% cheaper)
-- **Puppeteer** - PDF generation from HTML templates
-- **Joi** - Request validation
+- **Mailgun** - Email delivery service
+- **Joi** - Request validation and rate limiting
 
 ## 🚀 Quick Start
 
@@ -185,42 +180,24 @@ make deploy-prod         # Deploy to production
 
 ## ✨ Features
 
-### AI Resume Builder
-Complete AI-powered resume and cover letter generation system:
-- **Multi-Provider AI**: Choose between OpenAI GPT-4o or Google Gemini 2.0 Flash
-- **Cost Optimization**: Gemini is 96% cheaper than OpenAI with excellent quality
-- **Professional PDF Export**: Modern template with custom branding
-- **Cloud Storage**: Automatic GCS upload with signed URLs
-- **Experience Management**: Structured database for work history
-- **AI Prompt Customization**: Editors can customize AI generation prompts
-- **Document History**: Track all generated documents (editor-only)
-- **Settings Management**: Centralized default personal information
-
-See [AI Resume Generator Documentation](./docs/development/generator/README.md) for complete details.
-
 ### Portfolio Showcase
-- Responsive design with smooth animations
-- Project case studies with technical details
-- Contact form with email integration
-- Professional branding implementation
+- **Responsive Design**: Mobile-first with smooth parallax animations
+- **Project Case Studies**: Detailed technical breakdowns of engineering projects
+- **Contact Form**: Secure email delivery with rate limiting and validation
+- **Professional Branding**: Complete implementation of Josh Wentworth's brand identity
+- **Performance Optimized**: Static site generation for fast loading
+- **SEO Friendly**: Optimized meta tags and structured data
 
 ## 📝 Documentation
 
 All documentation has been consolidated in the [`docs/`](./docs/) folder:
 
-### AI Resume Generator (NEW!)
-- **[Generator Overview](./docs/development/generator/README.md)** - Complete documentation
-- **[Firestore Schema](./docs/development/generator/SCHEMA.md)** - Database structure
-- **[GCS Setup](./docs/development/generator/GCS_ENVIRONMENT_SETUP.md)** - Storage configuration
-- **[Quick Start](./docs/development/generator/QUICKSTART.md)** - Get started in 5 minutes
-
 ### Setup & Configuration
 - [Firebase Configuration Checklist](./docs/setup/FIREBASE_CONFIG_CHECKLIST.md) - Complete setup guide
-- [Firebase Emulators](./docs/setup/FIREBASE_EMULATORS.md) - Local development
+- [Development Workflow](./docs/DEVELOPMENT_WORKFLOW.md) - Git workflow and best practices
 
 ### Development
 - **[Architecture](./docs/development/ARCHITECTURE.md)** - System design and patterns
-- **[Development Workflow](./docs/DEVELOPMENT_WORKFLOW.md)** - Git workflow and best practices
 - [Known Issues](./docs/development/KNOWN_ISSUES.md) - Current known issues and workarounds
 
 ### Brand Assets

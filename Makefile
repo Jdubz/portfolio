@@ -1,4 +1,4 @@
-.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all test-experience-api test-generator-api seed-emulators seed-generator-defaults seed-generator-staging seed-generator-prod seed-job-finder-config seed-job-finder-staging seed-job-finder-prod screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix sync-prod-to-staging import-staging-to-local health-check health-check-local health-check-staging health-check-prod test-health-check editor-add editor-remove editor-list editor-check
+.PHONY: help dev dev-clean build serve clean kill status changeset deploy-staging deploy-prod deploy-function firebase-serve firebase-login firebase-emulators firebase-emulators-ui firebase-functions-shell test-contact-form test-contact-form-all seed-emulators screenshot screenshot-ci screenshot-quick dev-functions test test-functions lint lint-fix lint-web lint-web-fix lint-functions lint-functions-fix health-check health-check-local health-check-staging health-check-prod test-health-check editor-add editor-remove editor-list editor-check
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -57,24 +57,9 @@ help:
 	@echo "  make firebase-emulators-ui - Start emulators with UI dashboard (port 4000)"
 	@echo "  make firebase-functions-shell - Start interactive Functions shell for testing"
 	@echo "  make firebase-login        - Login to Firebase"
-	@echo "  make seed-emulators        - Seed emulators with test users and data"
+	@echo "  make seed-emulators        - Seed emulators with test users"
 	@echo "  make test-contact-form     - Test contact form function (single quick test)"
 	@echo "  make test-contact-form-all - Run comprehensive contact form test suite"
-	@echo "  make test-experience-api   - Test experience API with auth (auto-seeds data)"
-	@echo "  make test-generator-api    - Test AI resume generator API (local emulator)"
-	@echo ""
-	@echo "AI Resume Generator:"
-	@echo "  make seed-generator-defaults      - Seed generator defaults (local emulator)"
-	@echo "  make seed-generator-staging       - Seed generator defaults (staging database)"
-	@echo "  make seed-generator-prod          - Seed generator defaults (production database)"
-	@echo "  make migrate-ai-prompts-emulator  - Update AI prompts (local emulator)"
-	@echo "  make migrate-ai-prompts-staging   - Update AI prompts (staging database)"
-	@echo "  make migrate-ai-prompts-prod      - Update AI prompts (production database)"
-	@echo ""
-	@echo "Job Finder Queue:"
-	@echo "  make seed-job-finder-config       - Seed job finder config (local emulator)"
-	@echo "  make seed-job-finder-staging      - Seed job finder config (staging database)"
-	@echo "  make seed-job-finder-prod         - Seed job finder config (production database)"
 	@echo ""
 	@echo "Editor Role Management:"
 	@echo "  make editor-add EMAIL=<email>    - Grant editor role to user"
@@ -85,11 +70,7 @@ help:
 	@echo "Deployment:"
 	@echo "  make deploy-staging        - Build and deploy to staging"
 	@echo "  make deploy-prod           - Build and deploy to production"
-	@echo "  make deploy-function FUNC=<name> - Deploy single Cloud Function with correct build SA"
-	@echo ""
-	@echo "Database:"
-	@echo "  make sync-prod-to-staging      - Copy production data to staging database"
-	@echo "  make import-staging-to-local   - Copy staging database to local emulator"
+	@echo "  make deploy-function FUNC=<name> - Deploy single Cloud Function"
 	@echo ""
 	@echo "Health Checks:"
 	@echo "  make health-check          - Check health of all Cloud Functions"
@@ -225,13 +206,8 @@ test-contact-form-all:
 
 seed-emulators:
 	@echo "Seeding Firebase emulators with test data..."
-	@echo "This will create test users and sample experience entries"
+	@echo "This will create test users"
 	@node scripts/seed-emulator.js
-
-test-experience-api:
-	@echo "Testing Experience API with authenticated endpoints..."
-	@echo "This will auto-seed data and generate a test token"
-	@./test-experience-auth.sh --auto
 
 deploy-staging:
 	@echo "Deploying to staging..."
@@ -247,9 +223,6 @@ deploy-function:
 		echo "Usage: make deploy-function FUNC=<function-name>"; \
 		echo ""; \
 		echo "Available functions:"; \
-		echo "  - uploadResume"; \
-		echo "  - manageExperience"; \
-		echo "  - manageGenerator"; \
 		echo "  - handleContactForm"; \
 		exit 1; \
 	fi
@@ -302,121 +275,6 @@ lint-functions-fix:
 lint: lint-web lint-functions
 
 lint-fix: lint-web-fix lint-functions-fix
-
-# Database sync
-sync-prod-to-staging:
-	@echo "Syncing production data to staging database..."
-	@echo "Step 1: Exporting production database..."
-	@EXPORT_PATH=gs://static-sites-257923-firestore-backup/sync-$(shell date +%Y%m%d-%H%M%S); \
-	EXPORT_OP=$$(gcloud firestore export $$EXPORT_PATH \
-		--database=portfolio \
-		--project=static-sites-257923 \
-		--async --format="value(name)"); \
-	echo "Export operation: $$EXPORT_OP"; \
-	echo ""; \
-	echo "Waiting for export to complete (this may take a few minutes)..."; \
-	while true; do \
-		STATUS=$$(gcloud firestore operations describe $$EXPORT_OP --project=static-sites-257923 --format="value(done)"); \
-		if [ "$$STATUS" = "True" ]; then \
-			echo "✅ Export completed!"; \
-			break; \
-		else \
-			echo "Export still running..."; \
-			sleep 10; \
-		fi; \
-	done; \
-	EXPORT_DIR=$$(gcloud firestore operations describe $$EXPORT_OP --project=static-sites-257923 --format="value(metadata.outputUriPrefix)"); \
-	if [ -z "$$EXPORT_DIR" ]; then \
-		echo "❌ ERROR: Could not determine export directory."; \
-		exit 1; \
-	fi; \
-	gsutil ls "$$EXPORT_DIR" > /dev/null 2>&1 || { echo "❌ ERROR: Export directory does not exist."; exit 1; }; \
-	echo ""; \
-	echo "Step 2: Importing to staging database..."; \
-	echo "Using export: $$EXPORT_DIR"; \
-	IMPORT_OP=$$(gcloud firestore import $$EXPORT_DIR \
-		--database=portfolio-staging \
-		--project=static-sites-257923 \
-		--async --format="value(name)"); \
-	echo ""; \
-	echo "✅ Data import initiated!"; \
-	echo "   Import operation: $$IMPORT_OP"; \
-	echo "   Check status: gcloud firestore operations describe $$IMPORT_OP --project=static-sites-257923"
-
-# Database Export/Import Commands
-import-staging-to-local:
-	@echo "⚠️  Make sure Firebase emulators are running!"
-	@echo "   Start with: make firebase-emulators"
-	@echo ""
-	@read -p "Press Enter to continue or Ctrl+C to cancel..." dummy
-	@echo ""
-	@npx tsx scripts/import-staging-to-local.ts
-
-# AI Resume Generator Commands
-test-generator-api:
-	@echo "Testing AI Resume Generator API locally..."
-	@echo "Building function..."
-	@cd functions && npm run build
-	@echo ""
-	@echo "Testing resume generation..."
-	@curl -s -X POST http://localhost:5001/static-sites-257923/us-central1/manageGenerator/generator/generate \
-		-H "Content-Type: application/json" \
-		-d '{"generateType": "resume", "job": {"role": "Senior Software Engineer", "company": "Test Company", "jobDescription": "We are looking for an experienced software engineer."}, "preferences": {"emphasize": ["TypeScript", "React"]}}' \
-		| jq . || echo "\n⚠️  Emulators not running. Start with: make firebase-emulators"
-
-seed-generator-defaults:
-	@echo "Seeding generator defaults to local emulator..."
-	@echo "⚠️  Make sure emulators are running first!"
-	@cd functions && FIRESTORE_EMULATOR_HOST="localhost:8080" npx tsx scripts/seed-generator-defaults.ts
-
-seed-generator-staging:
-	@echo "Seeding generator defaults to STAGING database..."
-	@echo "Database: portfolio-staging"
-	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
-	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 FIRESTORE_DATABASE_ID=portfolio-staging npx tsx scripts/seed-generator-defaults.ts
-
-seed-generator-prod:
-	@echo "⚠️  WARNING: Seeding generator defaults to PRODUCTION database!"
-	@echo "Database: portfolio"
-	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
-	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 FIRESTORE_DATABASE_ID=portfolio npx tsx scripts/seed-generator-defaults.ts
-
-migrate-ai-prompts-emulator:
-	@echo "Migrating AI prompts to local emulator..."
-	@echo "⚠️  Make sure emulators are running first!"
-	@cd functions && FIRESTORE_EMULATOR_HOST="localhost:8080" DATABASE_ID="(default)" npx tsx scripts/migrate-ai-prompts.ts
-
-migrate-ai-prompts-staging:
-	@echo "Migrating AI prompts to STAGING database..."
-	@echo "Database: portfolio-staging"
-	@echo "This will update the prompts with improved length controls"
-	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
-	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio-staging npx tsx scripts/migrate-ai-prompts.ts
-
-migrate-ai-prompts-prod:
-	@echo "⚠️  WARNING: Migrating AI prompts to PRODUCTION database!"
-	@echo "Database: portfolio"
-	@echo "This will update the prompts with improved length controls"
-	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
-	@cd functions && GOOGLE_CLOUD_PROJECT=static-sites-257923 DATABASE_ID=portfolio npx tsx scripts/migrate-ai-prompts.ts
-
-# Job Finder Queue Commands
-seed-job-finder-config:
-	@echo "Seeding job finder configuration to local emulator..."
-	@echo "⚠️  Make sure emulators are running first!"
-	@FIRESTORE_EMULATOR_HOST="localhost:8080" FIRESTORE_DATABASE_ID="(default)" npx tsx scripts/seed-job-finder-config.ts
-
-seed-job-finder-staging:
-	@echo "Seeding job finder configuration to STAGING database..."
-	@echo "Database: portfolio-staging"
-	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
-	@GOOGLE_CLOUD_PROJECT=static-sites-257923 FIRESTORE_DATABASE_ID=portfolio-staging npx tsx scripts/seed-job-finder-config.ts
-
-seed-job-finder-prod:
-	@echo "⚠️  WARNING: Seeding job finder configuration to PRODUCTION database!"
-	@echo "Database: portfolio"
-	@read -p "Are you ABSOLUTELY sure? Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || exit 1
-	@GOOGLE_CLOUD_PROJECT=static-sites-257923 FIRESTORE_DATABASE_ID=portfolio npx tsx scripts/seed-job-finder-config.ts
 
 # Health Check Commands
 health-check:
