@@ -1,7 +1,7 @@
 /**
  * Job Queue Types (Frontend)
  *
- * Re-exports from @jdubz/job-finder-shared-types with frontend-specific extensions
+ * Re-exports from @jsdubzw/job-finder-shared-types with frontend-specific extensions
  */
 
 export type {
@@ -21,9 +21,9 @@ export type {
   ScrapeConfig,
   SubmitScrapeRequest,
   SubmitScrapeResponse,
-} from "@jdubz/job-finder-shared-types"
+} from "@jsdubzw/job-finder-shared-types"
 
-export { isQueueStatus, isQueueItemType } from "@jdubz/job-finder-shared-types"
+export { isQueueStatus, isQueueItemType } from "@jsdubzw/job-finder-shared-types"
 
 // Frontend-specific QueueItem with string dates (serialized from Firestore)
 export interface QueueItem {

@@ -1,7 +1,7 @@
 /**
  * Job Queue Domain Types
  *
- * Re-exports from @jdubz/job-finder-shared-types for backward compatibility
+ * Re-exports from @jsdubzw/job-finder-shared-types for backward compatibility
  * and additional portfolio-specific extensions
  */
 
@@ -19,6 +19,6 @@ export type {
   QueueStats,
   SubmitJobRequest,
   SubmitJobResponse,
-} from "@jdubz/job-finder-shared-types"
+} from "@jsdubzw/job-finder-shared-types"
 
-export { isQueueStatus, isQueueItemType } from "@jdubz/job-finder-shared-types"
+export { isQueueStatus, isQueueItemType } from "@jsdubzw/job-finder-shared-types"

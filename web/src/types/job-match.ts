@@ -3,13 +3,13 @@
  *
  * Types for tracking job applications and matching them with generated documents
  *
- * Note: The core JobMatch type from @jdubz/shared-types represents the structure
+ * Note: The core JobMatch type from @jsdubzw/shared-types represents the structure
  * written by job-finder (AI-analyzed results). This file extends it with portfolio-specific
  * fields for application tracking and document generation.
  */
 
 // Re-export the shared JobMatch type for queue integration
-export type { JobMatch as JobQueueMatch } from "@jdubz/job-finder-shared-types"
+export type { JobMatch as JobQueueMatch } from "@jsdubzw/job-finder-shared-types"
 
 /**
  * Extended JobMatch for portfolio application tracking
