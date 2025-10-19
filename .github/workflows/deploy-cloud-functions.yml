@@ -208,8 +208,8 @@ jobs:
         if: steps.should-deploy.outputs.deploy == 'true'
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
-          service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
+          workload_identity_provider: "projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github"
+          service_account: "github-actions-deployer@static-sites-257923.iam.gserviceaccount.com"
 
       - name: Setup Cloud SDK
         if: steps.should-deploy.outputs.deploy == 'true'
@@ -329,8 +329,8 @@ jobs:
         if: steps.should-deploy.outputs.deploy == 'true'
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: 'projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github'
-          service_account: 'github-actions-deployer@static-sites-257923.iam.gserviceaccount.com'
+          workload_identity_provider: "projects/789847666726/locations/global/workloadIdentityPools/github-actions/providers/github"
+          service_account: "github-actions-deployer@static-sites-257923.iam.gserviceaccount.com"
 
       - name: Setup Cloud SDK
         if: steps.should-deploy.outputs.deploy == 'true'

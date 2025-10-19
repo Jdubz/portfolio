@@ -163,10 +163,6 @@ async function main() {
     console.log('')
     console.log('🔍 Verify in browser console after re-login:')
     console.log('  Should see: isEditor: true, role: "editor"')
-    console.log('')
-    console.log('🔗 Test on:')
-    console.log('  Staging: https://staging.joshwentworth.com/experience')
-    console.log('  Production: https://joshwentworth.com/experience')
 
     process.exit(0)
   } catch (error) {

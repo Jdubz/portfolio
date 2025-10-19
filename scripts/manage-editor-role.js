@@ -3,7 +3,7 @@
 /**
  * Firebase Auth Editor Role Management Script
  *
- * Manages editor custom claims for the AI Resume Generator.
+ * Manages editor custom claims for portfolio administration.
  *
  * Usage:
  *   node scripts/manage-editor-role.js add user@example.com

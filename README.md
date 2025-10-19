@@ -1,8 +1,8 @@
-# Josh Wentworth - Portfolio (Monorepo)
+# Josh Wentworth - Portfolio
 
 > **Software × Hardware × Fabrication**
 
-A professional portfolio showcasing multidisciplinary engineering projects that blend software development, electronics design, and digital fabrication.
+A professional portfolio showcasing multidisciplinary engineering projects that blend software development, electronics design, and digital fabrication. Built as a lightweight Gatsby static site with serverless contact form functionality.
 
 **Josh Wentworth**
 _Multidisciplinary Engineer_
@@ -11,43 +11,47 @@ _Multidisciplinary Engineer_
 - **LinkedIn**: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)
 - **GitHub**: [github.com/joshwentworth](https://github.com/joshwentworth)
 
-## 📁 Monorepo Structure
+## 📁 Project Structure
 
-This project is organized as a Firebase monorepo with the following structure:
+This project is organized as a minimal Firebase hosting setup:
 
 ```
 portfolio/
 ├── web/                    # Gatsby static site
-│   ├── src/               # React components and pages
+│   ├── src/               
+│   │   ├── pages/         # Site pages (homepage, contact, legal)
+│   │   ├── components/    # React components
+│   │   └── sections/      # Homepage sections
 │   ├── static/            # Static assets
-│   ├── gatsby-*.ts        # Gatsby configuration
 │   └── package.json       # Web dependencies
 │
-├── functions/             # Cloud Functions
-│   ├── src/              # Function source code
-│   │   ├── index.ts      # Main entry point
-│   │   └── services/     # Business logic
-│   ├── package.json      # Function dependencies
-│   └── tsconfig.json     # TypeScript config
+├── functions/             # Cloud Functions (contact form only)
+│   ├── contact-form/      
+│   │   └── index.ts       # Contact form handler
+│   ├── src/              
+│   │   └── index.ts       # Function exports
+│   └── package.json       # Minimal function dependencies
 │
-├── firebase.json         # Firebase configuration
-├── .firebaserc          # Firebase project targets
-└── package.json         # Root workspace config
+├── firebase.json          # Firebase hosting configuration
+└── package.json           # Root workspace config
 ```
 
 ## 🔧 Built With
 
 ### Web Stack
+
 - **Gatsby** - React-based static site generator
 - **Theme UI** - Constraint-based styling system
 - **React Spring** - Smooth parallax animations
-- **Custom Brand System** - Implementing Josh Wentworth's professional brand guidelines
+- **MDX** - Markdown with JSX for content
 
 ### Functions Stack
+
 - **Cloud Functions Gen 2** - Serverless contact form handler
 - **TypeScript** - Type-safe function development
 - **Mailgun** - Email delivery service
-- **Joi** - Request validation and rate limiting
+- **Joi & Zod** - Request validation
+- **Express Rate Limit** - Rate limiting protection
 
 ## 🚀 Quick Start
 
@@ -120,9 +124,8 @@ npm run test:e2e:report    # View test report
 This portfolio implements Josh's complete brand identity:
 
 - **Typography**: Poppins (headings) and Inter (body text)
-- **Color Palette**: Premium surfaces with accent blue (#0EA5E9) and gradient (#1B1F2B → #00C9A7)
-- **Engineering Icons**: Custom technical iconography representing software, hardware, and fabrication
-- **Professional Content**: Focused on multidisciplinary engineering expertise
+- **Color Palette**: Premium surfaces with accent blue (#0EA5E9)
+- **Engineering Icons**: Custom technical iconography
 
 ## 📦 Deployment
 
@@ -181,12 +184,14 @@ make deploy-prod         # Deploy to production
 ## ✨ Features
 
 ### Portfolio Showcase
-- **Responsive Design**: Mobile-first with smooth parallax animations
-- **Project Case Studies**: Detailed technical breakdowns of engineering projects
-- **Contact Form**: Secure email delivery with rate limiting and validation
-- **Professional Branding**: Complete implementation of Josh Wentworth's brand identity
+
+- **Homepage**: Animated parallax sections showcasing engineering projects
+- **Case Studies**: Detailed technical project breakdowns
+- **Contact Form**: Secure serverless email delivery with rate limiting
+- **Legal Pages**: Privacy policy and terms of service
 - **Performance Optimized**: Static site generation for fast loading
 - **SEO Friendly**: Optimized meta tags and structured data
+- **Responsive Design**: Mobile-first with smooth animations
 
 ## 📝 Documentation
 

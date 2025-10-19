@@ -4,6 +4,8 @@
 
 > **Note**: This project recently underwent a major simplification. All Job Finder features (AI resume generation, experience management, job queue) have been removed. The codebase now focuses solely on the portfolio showcase site with a contact form.
 
+> **Migration Status**: Worker A (Configuration & Dependency Cleanup) completed October 19, 2025. All frontend and backend dependencies cleaned, builds passing, documentation updated. See `WORKER_A_PROGRESS.md` for details.
+
 This document serves as the single source of truth for architectural decisions, design patterns, and important context for the portfolio project.
 
 ## Table of Contents
