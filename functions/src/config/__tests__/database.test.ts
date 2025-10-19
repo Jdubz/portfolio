@@ -104,9 +104,7 @@ describe("Database Configuration", () => {
     it("should export collection names", async () => {
       process.env.ENVIRONMENT = "production"
       const config = await import("../database")
-      expect(config.EXPERIENCE_COLLECTION).toBe("experience-entries")
-      expect(config.BLURBS_COLLECTION).toBe("experience-blurbs")
-      expect(config.GENERATOR_COLLECTION).toBe("generator")
+      expect(config.CONTACT_SUBMISSIONS_COLLECTION).toBe("contact-submissions")
     })
   })
 
@@ -156,9 +154,7 @@ describe("Database Configuration", () => {
       process.env.ENVIRONMENT = "development"
       const { logger } = await import("../../utils/logger")
       await import("../database")
-      expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("[Database Config] Using database:")
-      )
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("[Database Config] Using database:"))
     })
 
     it("should NOT log database configuration in production", async () => {
