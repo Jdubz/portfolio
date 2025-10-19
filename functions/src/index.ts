@@ -41,7 +41,7 @@ interface ContactFormMetadata {
 }
 
 /**
-  * Cloud Function to handle contact form submissions
+ * Cloud Function to handle contact form submissions
  *
  * Features:
  * - Input validation and sanitization
@@ -360,47 +360,10 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
 export const handleContactForm = https.onRequest(
   {
     region: "us-central1",
-    secrets: [
-      "mailgun-api-key",
-      "mailgun-domain",
-      "from-email",
-      "to-email",
-      "reply-to-email",
-    ],
+    secrets: ["mailgun-api-key", "mailgun-domain", "from-email", "to-email", "reply-to-email"],
     memory: "256MiB",
     maxInstances: 10,
     timeoutSeconds: 60,
   },
   handleContactFormHandler
 )
-
-/**
- * Experience management endpoint
- * Deployed via: firebase deploy --only functions:manageExperience
- */
-export { manageExperience } from "./experience"
-
-/**
- * Resume upload endpoint
- * Deployed via: firebase deploy --only functions:uploadResume
- */
-export { uploadResume } from "./resume"
-
-/**
- * AI Resume Generator endpoint
- * Deployed via: firebase deploy --only functions:manageGenerator
- */
-export { manageGenerator } from "./generator"
-
-/**
- * Content Items endpoint (unified schema)
- * Deployed via: firebase deploy --only functions:manageContentItems
- */
-export { manageContentItems } from "./content-items"
-
-/**
- * Job Queue endpoint
- * Deployed via: firebase deploy --only functions:manageJobQueue
- */
-export { manageJobQueue } from "./job-queue"
-

@@ -5,7 +5,6 @@
 import React, { useState } from "react"
 import { Box, Button, Flex, useColorMode, jsx } from "theme-ui"
 import { Link } from "gatsby"
-import { useAuth } from "../../hooks/useAuth"
 
 /**
  * Navigation Section Component
@@ -146,7 +145,6 @@ const NavDivider: React.FC = () => (
 const HamburgerMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [colorMode, setColorMode] = useColorMode()
-  const { isEditor } = useAuth()
   const isDark = colorMode === `dark`
 
   const toggleMenu = () => {
@@ -301,7 +299,7 @@ const HamburgerMenu: React.FC = () => {
 
             {/* Job Finder */}
             <NavSection>
-              <NavLink to="/resume-builder?tab=how-it-works" onClick={closeMenu} icon="🔍">
+              <NavLink to="/app" onClick={closeMenu} icon="🔍">
                 Job Finder
               </NavLink>
             </NavSection>
