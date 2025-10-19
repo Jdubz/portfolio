@@ -180,6 +180,7 @@ Use Terraform modules (extend `infrastructure/terraform`) to:
   - Add a `docs/claude-context-index.md` (or equivalent) that enumerates every context file, last updated date, and owner so Claude Code can surface the right attachments quickly.
   - Fold repetitive prompt snippets (lint overrides, deploy commands, testing recipes) into short "How to ask" sections within the relevant context files to save tokens during interactive sessions.
   - Schedule context reviews alongside sprint retros so stale or noisy sections are pruned before they erode Claude Code relevance.
+- Maintain `docs/development/job-finder-discovery-inventory.md` as the authoritative tracker for routes, functions, and scripts while features migrate.
 
 ## Timeline (Suggested)
 
