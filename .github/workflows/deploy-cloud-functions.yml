@@ -159,25 +159,12 @@ jobs:
         with:
           path: portfolio
 
-      - name: Checkout shared-types
-        uses: actions/checkout@v4
-        with:
-          repository: Jdubz/job-finder-shared-types
-          path: shared-types
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "npm"
           cache-dependency-path: portfolio/package-lock.json
-
-      - name: Build shared-types package
-        run: |
-          npm ci
-          npm run build
-        working-directory: shared-types
 
       - name: Cache TypeScript build
         uses: actions/cache@v4

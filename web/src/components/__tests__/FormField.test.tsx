@@ -31,9 +31,7 @@ const renderWithTheme = (ui: React.ReactElement) => {
 describe("FormField", () => {
   describe("Basic Rendering", () => {
     it("should render input field with label", () => {
-      renderWithTheme(
-        <FormField label="Email" name="email" value="" onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Email" name="email" value="" onChange={() => {}} />)
 
       expect(screen.getByText("Email")).toBeInTheDocument()
       const input = screen.getByRole("textbox")
@@ -42,9 +40,7 @@ describe("FormField", () => {
     })
 
     it("should render textarea when type is textarea", () => {
-      renderWithTheme(
-        <FormField label="Message" name="message" value="" onChange={() => {}} type="textarea" />
-      )
+      renderWithTheme(<FormField label="Message" name="message" value="" onChange={() => {}} type="textarea" />)
 
       expect(screen.getByText("Message")).toBeInTheDocument()
       const textarea = screen.getByRole("textbox")
@@ -53,26 +49,20 @@ describe("FormField", () => {
     })
 
     it("should display current value", () => {
-      renderWithTheme(
-        <FormField label="Name" name="name" value="John Doe" onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value="John Doe" onChange={() => {}} />)
 
       const input = screen.getByRole("textbox")
       expect(input).toHaveValue("John Doe")
     })
 
     it("should show required indicator when required", () => {
-      renderWithTheme(
-        <FormField label="Email" name="email" value="" onChange={() => {}} required />
-      )
+      renderWithTheme(<FormField label="Email" name="email" value="" onChange={() => {}} required />)
 
       expect(screen.getByText("Email *")).toBeInTheDocument()
     })
 
     it("should not show required indicator when not required", () => {
-      renderWithTheme(
-        <FormField label="Email" name="email" value="" onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Email" name="email" value="" onChange={() => {}} />)
 
       expect(screen.getByText("Email")).toBeInTheDocument()
       expect(screen.queryByText("Email *")).not.toBeInTheDocument()
@@ -84,9 +74,7 @@ describe("FormField", () => {
       const user = userEvent.setup()
       const onChange = jest.fn()
 
-      renderWithTheme(
-        <FormField label="Name" name="name" value="" onChange={onChange} />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value="" onChange={onChange} />)
 
       const input = screen.getByRole("textbox")
       await user.type(input, "Test")
@@ -99,9 +87,7 @@ describe("FormField", () => {
       const user = userEvent.setup()
       const onChange = jest.fn()
 
-      renderWithTheme(
-        <FormField label="Message" name="message" value="" onChange={onChange} type="textarea" />
-      )
+      renderWithTheme(<FormField label="Message" name="message" value="" onChange={onChange} type="textarea" />)
 
       const textarea = screen.getByRole("textbox")
       await user.type(textarea, "Hello")
@@ -113,9 +99,7 @@ describe("FormField", () => {
       const user = userEvent.setup()
       const onChange = jest.fn()
 
-      renderWithTheme(
-        <FormField label="Name" name="name" value="" onChange={onChange} />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value="" onChange={onChange} />)
 
       const input = screen.getByRole("textbox")
       await user.type(input, "ABC")
@@ -126,23 +110,13 @@ describe("FormField", () => {
 
   describe("Error Handling", () => {
     it("should display error message when error prop is provided", () => {
-      renderWithTheme(
-        <FormField
-          label="Email"
-          name="email"
-          value=""
-          onChange={() => {}}
-          error="Email is required"
-        />
-      )
+      renderWithTheme(<FormField label="Email" name="email" value="" onChange={() => {}} error="Email is required" />)
 
       expect(screen.getByText("Email is required")).toBeInTheDocument()
     })
 
     it("should not display error message when error prop is undefined", () => {
-      renderWithTheme(
-        <FormField label="Email" name="email" value="" onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Email" name="email" value="" onChange={() => {}} />)
 
       expect(screen.queryByText(/required/i)).not.toBeInTheDocument()
     })
@@ -162,9 +136,7 @@ describe("FormField", () => {
 
   describe("Input Types", () => {
     it("should render input type text by default", () => {
-      renderWithTheme(
-        <FormField label="Name" name="name" value="" onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value="" onChange={() => {}} />)
 
       const input = screen.getByRole("textbox") as HTMLInputElement
       expect(input.type).toBe("text")
@@ -204,14 +176,7 @@ describe("FormField", () => {
   describe("Textarea Configuration", () => {
     it("should set rows attribute on textarea", () => {
       renderWithTheme(
-        <FormField
-          label="Message"
-          name="message"
-          value=""
-          onChange={() => {}}
-          type="textarea"
-          rows={10}
-        />
+        <FormField label="Message" name="message" value="" onChange={() => {}} type="textarea" rows={10} />
       )
 
       const textarea = screen.getByRole("textbox") as HTMLTextAreaElement
@@ -219,9 +184,7 @@ describe("FormField", () => {
     })
 
     it("should use default rows value of 4 for textarea", () => {
-      renderWithTheme(
-        <FormField label="Message" name="message" value="" onChange={() => {}} type="textarea" />
-      )
+      renderWithTheme(<FormField label="Message" name="message" value="" onChange={() => {}} type="textarea" />)
 
       const textarea = screen.getByRole("textbox") as HTMLTextAreaElement
       expect(textarea.rows).toBe(4)
@@ -231,13 +194,7 @@ describe("FormField", () => {
   describe("Placeholder", () => {
     it("should display placeholder on input", () => {
       renderWithTheme(
-        <FormField
-          label="Email"
-          name="email"
-          value=""
-          onChange={() => {}}
-          placeholder="you@example.com"
-        />
+        <FormField label="Email" name="email" value="" onChange={() => {}} placeholder="you@example.com" />
       )
 
       const input = screen.getByPlaceholderText("you@example.com")
@@ -263,9 +220,7 @@ describe("FormField", () => {
 
   describe("Disabled State", () => {
     it("should disable input when disabled prop is true", () => {
-      renderWithTheme(
-        <FormField label="Name" name="name" value="" onChange={() => {}} disabled />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value="" onChange={() => {}} disabled />)
 
       const input = screen.getByRole("textbox")
       expect(input).toBeDisabled()
@@ -281,9 +236,7 @@ describe("FormField", () => {
     })
 
     it("should not disable input by default", () => {
-      renderWithTheme(
-        <FormField label="Name" name="name" value="" onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value="" onChange={() => {}} />)
 
       const input = screen.getByRole("textbox")
       expect(input).not.toBeDisabled()
@@ -293,9 +246,7 @@ describe("FormField", () => {
       const user = userEvent.setup()
       const onChange = jest.fn()
 
-      renderWithTheme(
-        <FormField label="Name" name="name" value="" onChange={onChange} disabled />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value="" onChange={onChange} disabled />)
 
       const input = screen.getByRole("textbox")
       await user.type(input, "Test")
@@ -306,9 +257,7 @@ describe("FormField", () => {
 
   describe("Accessibility", () => {
     it("should set id and name on input element", () => {
-      renderWithTheme(
-        <FormField label="Email" name="email" value="" onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Email" name="email" value="" onChange={() => {}} />)
 
       const input = screen.getByRole("textbox") as HTMLInputElement
       expect(input.id).toBe("email")
@@ -316,9 +265,7 @@ describe("FormField", () => {
     })
 
     it("should set id and name on textarea element", () => {
-      renderWithTheme(
-        <FormField label="Message" name="message" value="" onChange={() => {}} type="textarea" />
-      )
+      renderWithTheme(<FormField label="Message" name="message" value="" onChange={() => {}} type="textarea" />)
 
       const textarea = screen.getByRole("textbox") as HTMLTextAreaElement
       expect(textarea.id).toBe("message")
@@ -328,9 +275,7 @@ describe("FormField", () => {
 
   describe("Edge Cases", () => {
     it("should handle empty string value", () => {
-      renderWithTheme(
-        <FormField label="Name" name="name" value="" onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value="" onChange={() => {}} />)
 
       const input = screen.getByRole("textbox")
       expect(input).toHaveValue("")
@@ -338,9 +283,7 @@ describe("FormField", () => {
 
     it("should handle long text values in input", () => {
       const longValue = "a".repeat(500)
-      renderWithTheme(
-        <FormField label="Name" name="name" value={longValue} onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value={longValue} onChange={() => {}} />)
 
       const input = screen.getByRole("textbox")
       expect(input).toHaveValue(longValue)
@@ -348,9 +291,7 @@ describe("FormField", () => {
 
     it("should handle special characters in value", () => {
       const specialValue = "Test <>&\"'"
-      renderWithTheme(
-        <FormField label="Name" name="name" value={specialValue} onChange={() => {}} />
-      )
+      renderWithTheme(<FormField label="Name" name="name" value={specialValue} onChange={() => {}} />)
 
       const input = screen.getByRole("textbox")
       expect(input).toHaveValue(specialValue)

@@ -7,11 +7,30 @@ import { FormField } from "./FormField"
 import { FormActions } from "./FormActions"
 import { MarkdownEditor } from "./MarkdownEditor"
 import { logger } from "../utils/logger"
-import { formatMonthYear } from "../utils/dateFormat"
 import { StructuredEntryView } from "./entry-types/StructuredEntryView"
 import { SimpleEntryView } from "./entry-types/SimpleEntryView"
 import { StructuredEntryEdit } from "./entry-types/StructuredEntryEdit"
 import { SimpleEntryEdit } from "./entry-types/SimpleEntryEdit"
+
+/**
+ * Format YYYY-MM date to "MMM YYYY" (e.g., "Jan 2023")
+ */
+const formatMonthYear = (dateStr: string | null | undefined): string => {
+  if (!dateStr) {
+    return "Present"
+  }
+  try {
+    const [year, month] = dateStr.split("-")
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    const monthNum = parseInt(month, 10)
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+      return "Present"
+    }
+    return `${monthNames[monthNum - 1]} ${year}`
+  } catch {
+    return "Present"
+  }
+}
 
 interface ExperienceEntryProps {
   entry: ExperienceEntryType

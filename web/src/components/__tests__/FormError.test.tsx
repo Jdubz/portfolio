@@ -58,8 +58,7 @@ describe("FormError", () => {
     })
 
     it("should display long error messages", () => {
-      const longMessage =
-        "This is a very long error message that provides detailed information about what went wrong"
+      const longMessage = "This is a very long error message that provides detailed information about what went wrong"
       renderWithTheme(<FormError message={longMessage} />)
 
       expect(screen.getByText(longMessage)).toBeInTheDocument()
@@ -124,9 +123,7 @@ describe("FormError", () => {
 
   describe("Custom Styling", () => {
     it("should accept sx prop for custom styles", () => {
-      const { container } = renderWithTheme(
-        <FormError message="Custom styled error" sx={{ mb: 4 }} />
-      )
+      const { container } = renderWithTheme(<FormError message="Custom styled error" sx={{ mb: 4 }} />)
 
       expect(screen.getByText("Custom styled error")).toBeInTheDocument()
       // sx styles are applied by theme-ui

@@ -21,13 +21,6 @@ jobs:
           fetch-depth: 1
           path: portfolio
 
-      - name: Checkout shared-types
-        uses: actions/checkout@v4
-        with:
-          repository: Jdubz/job-finder-shared-types
-          path: shared-types
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -36,12 +29,6 @@ jobs:
           cache-dependency-path: |
             portfolio/package-lock.json
             portfolio/web/package-lock.json
-
-      - name: Build shared-types package
-        run: |
-          npm ci
-          npm run build
-        working-directory: shared-types
 
       - name: Install build dependencies
         run: |
