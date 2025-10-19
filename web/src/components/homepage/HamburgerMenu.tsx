@@ -148,7 +148,7 @@ const HamburgerMenu: React.FC = () => {
   const isDark = colorMode === `dark`
 
   // Determine Job Finder URL based on environment
-  const isProduction = process.env.GATSBY_ENVIRONMENT === "production"
+  const isProduction = (process.env.GATSBY_ACTIVE_ENV ?? process.env.NODE_ENV) === "production"
   const jobFinderUrl = isProduction
     ? "https://job-finder.joshwentworth.com"
     : "https://job-finder-staging.joshwentworth.com"
@@ -294,6 +294,9 @@ const HamburgerMenu: React.FC = () => {
           >
             {/* Main Pages */}
             <NavSection>
+              <NavLink to="/" onClick={closeMenu} icon="🏠">
+                Home
+              </NavLink>
               <NavLink to="/contact" onClick={closeMenu} icon="✉️">
                 Contact
               </NavLink>
@@ -344,7 +347,11 @@ const HamburgerMenu: React.FC = () => {
             <NavDivider />
 
             {/* Dark Mode Toggle */}
-            <Box
+            <Button
+              onClick={toggleColorMode}
+              role="switch"
+              aria-checked={isDark}
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               sx={{
                 width: "100%",
                 py: 3,
@@ -354,11 +361,12 @@ const HamburgerMenu: React.FC = () => {
                 justifyContent: "space-between",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
+                border: "none",
+                bg: "transparent",
                 "&:hover": {
                   bg: "divider",
                 },
               }}
-              onClick={toggleColorMode}
             >
               <span
                 sx={{
@@ -395,7 +403,7 @@ const HamburgerMenu: React.FC = () => {
                   },
                 }}
               />
-            </Box>
+            </Button>
           </Flex>
         </>
       )}
