@@ -174,6 +174,12 @@ Use Terraform modules (extend `infrastructure/terraform`) to:
 - Refresh `docs/` content (architecture diagrams, onboarding guides) to reflect the split.
 - Provide runbooks for Terraform apply, Firebase deploy, and DNS switches.
 - Add `CLAUDE.md` context files in new or relocated directories (e.g., `job-finder-FE`, shared-types additions) summarizing intent, key files, and ownership to keep AI-assisted tooling effective after the split.
+- Establish a Claude context management checklist:
+  - Keep the root-level `CLAUDE.md` authoritative and trimmed to high-signal guidance, linking out to deeper docs instead of duplicating content.
+  - Create scoped `CLAUDE.md` files in high-churn areas of `job-finder-FE` (e.g., `src/features/<feature>/CLAUDE.md`) capped to ~200–300 lines focused on architecture, domain contracts, and common gotchas.
+  - Add a `docs/claude-context-index.md` (or equivalent) that enumerates every context file, last updated date, and owner so Claude Code can surface the right attachments quickly.
+  - Fold repetitive prompt snippets (lint overrides, deploy commands, testing recipes) into short "How to ask" sections within the relevant context files to save tokens during interactive sessions.
+  - Schedule context reviews alongside sprint retros so stale or noisy sections are pruned before they erode Claude Code relevance.
 
 ## Timeline (Suggested)
 
