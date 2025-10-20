@@ -11,7 +11,7 @@ import { Link } from "gatsby"
  *
  * This page now redirects to the Job Finder application hosted on Firebase.
  * Redirects are handled via Firebase Hosting configuration in firebase.json.
- * 
+ *
  * Production: https://job-finder.joshwentworth.com
  * Staging: https://job-finder-staging.joshwentworth.com
  */
