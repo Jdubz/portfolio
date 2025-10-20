@@ -7,10 +7,13 @@ import { Box, Heading, Text, Button, jsx } from "theme-ui"
 import { Link } from "gatsby"
 
 /**
- * App Placeholder Page
+ * App Redirect Page
  *
- * Temporary "Coming Soon" page for the future React application.
- * This will eventually be replaced with the job-finder-FE app.
+ * This page now redirects to the Job Finder application hosted on Firebase.
+ * Redirects are handled via Firebase Hosting configuration in firebase.json.
+ * 
+ * Production: https://job-finder.joshwentworth.com
+ * Staging: https://job-finder-staging.joshwentworth.com
  */
 const AppPage: React.FC = () => (
   <Box
@@ -36,7 +39,7 @@ const AppPage: React.FC = () => (
           backgroundClip: "text",
         }}
       >
-        Coming Soon
+        Redirecting...
       </Heading>
 
       <Text
@@ -47,7 +50,7 @@ const AppPage: React.FC = () => (
           lineHeight: 1.6,
         }}
       >
-        New application in development
+        The Job Finder app has moved to its own domain
       </Text>
 
       <Text
@@ -58,7 +61,7 @@ const AppPage: React.FC = () => (
           opacity: 0.8,
         }}
       >
-        The Job Finder application is being rebuilt with modern technology. Stay tuned for updates!
+        You should be automatically redirected. If not, the application is now hosted at job-finder.joshwentworth.com
       </Text>
 
       <Link to="/" sx={{ textDecoration: "none" }}>
@@ -85,4 +88,4 @@ const AppPage: React.FC = () => (
 
 export default AppPage
 
-export const Head = () => <title>Coming Soon | Josh Wentworth</title>
+export const Head = () => <title>Redirecting to Job Finder | Josh Wentworth</title>
