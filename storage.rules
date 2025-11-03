@@ -1,37 +1,11 @@
 rules_version = '2';
 
-// Firebase Storage Security Rules for Generated Resumes & Cover Letters
+// Firebase Storage Security Rules
+// Note: This portfolio project does not currently use Firebase Storage.
+// All rules deny access by default.
 service firebase.storage {
   match /b/{bucket}/o {
-
-    // Resumes folder
-    match /resumes/{date}/{filename} {
-      // Anyone can read (public access via signed URLs)
-      allow read: if true;
-
-      // Only Cloud Functions can write
-      allow write: if false;
-    }
-
-    // Cover letters folder
-    match /cover-letters/{date}/{filename} {
-      // Anyone can read (public access via signed URLs)
-      allow read: if true;
-
-      // Only Cloud Functions can write
-      allow write: if false;
-    }
-
-    // Images folder (avatars and logos)
-    match /images/{imageType}/{filename} {
-      // Anyone can read (public access for profile images)
-      allow read: if true;
-
-      // Only Cloud Functions can write
-      allow write: if false;
-    }
-
-    // Deny everything else
+    // Deny all access
     match /{allPaths=**} {
       allow read, write: if false;
     }

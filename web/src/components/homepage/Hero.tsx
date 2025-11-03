@@ -46,7 +46,7 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            mt: [6, 7, 8],
+            mt: [2, 3, 4],
             position: "relative",
             zIndex: 100,
           }}
