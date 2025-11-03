@@ -2,84 +2,14 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
+    // Contact submissions - only Cloud Functions can write
+    // Public cannot read (privacy)
+    match /contact-submissions/{submissionId} {
+      allow read: if false;
+      allow write: if false; // Only Cloud Functions can write via Admin SDK
     }
 
-    // Helper function to check if user is an editor
-    function isEditor() {
-      return isAuthenticated() && request.auth.token.role == 'editor';
-    }
-
-    // Experiences collection - public read, editor write
-    match /experiences/{experienceId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Blurbs collection - public read, editor write
-    match /blurbs/{blurbId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Generator defaults - public read, editor write
-    match /generator_defaults/{defaultId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Generator blurbs (AI prompts) - public read, editor write
-    match /generator_blurbs/{blurbId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Generator history - public read, editor-only write
-    match /generator_history/{requestId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Job matches - public read, editor-only write
-    match /job-matches/{jobMatchId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Job queue - public read and create, editor-only update/delete
-    match /job-queue/{queueItemId} {
-      allow read: if true;
-      allow create: if true;
-      allow update, delete: if isEditor();
-    }
-
-    // Job finder configuration - public read, editor-only write
-    match /job-finder-config/{configId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Companies - public read, editor-only write
-    match /companies/{companyId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Job sources - public read, editor-only write
-    match /job-sources/{sourceId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Content items (unified experience system) - public read, editor write
-    match /content-items/{itemId} {
-      allow read: if true;
-      allow write: if isEditor();
-    }
-
-    // Default deny all other collections
+    // Deny everything else
     match /{document=**} {
       allow read, write: if false;
     }
