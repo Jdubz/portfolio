@@ -165,7 +165,7 @@ jobs:
       fail-fast: false
       matrix:
         function:
-          - name: contact-form
+          - name: handleContactForm
             entry_point: handleContactForm
             runtime_service_account: contact-form-runtime@static-sites-257923.iam.gserviceaccount.com
             memory: 512Mi
