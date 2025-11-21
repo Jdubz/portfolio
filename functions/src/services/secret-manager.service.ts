@@ -9,7 +9,8 @@ export class SecretManagerService {
 
   constructor(projectId?: string) {
     this.client = new SecretManagerServiceClient()
-    this.projectId = projectId ?? process.env.GCP_PROJECT ?? "static-sites-257923"
+    this.projectId =
+      projectId ?? process.env.GCP_PROJECT ?? process.env.GCLOUD_PROJECT ?? process.env.GOOGLE_CLOUD_PROJECT ?? "static-sites-257923"
 
     // Use shared logger factory
     this.logger = createDefaultLogger()
@@ -57,9 +58,13 @@ export class SecretManagerService {
    * Check if running in local development environment
    */
   isLocalDevelopment(): boolean {
-    return (
-      process.env.NODE_ENV === "development" || process.env.FUNCTIONS_EMULATOR === "true" || !process.env.GCP_PROJECT
-    )
+    // Check for emulator or development mode
+    if (process.env.NODE_ENV === "development" || process.env.FUNCTIONS_EMULATOR === "true") {
+      return true
+    }
+    // In Cloud Functions, GCLOUD_PROJECT or GCP_PROJECT will be set
+    const hasProjectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT
+    return !hasProjectId
   }
 
   /**
