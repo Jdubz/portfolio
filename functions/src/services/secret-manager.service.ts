@@ -3,16 +3,26 @@ import { createDefaultLogger } from "../utils/logger"
 import type { SimpleLogger } from "../types/logger.types"
 
 export class SecretManagerService {
+  private static readonly DEFAULT_PROJECT_ID = "static-sites-257923"
+
   private client: SecretManagerServiceClient
   private projectId: string
   private logger: SimpleLogger
 
   constructor(projectId?: string) {
     this.client = new SecretManagerServiceClient()
-    this.projectId = projectId ?? process.env.GCP_PROJECT ?? "static-sites-257923"
+    this.projectId = projectId ?? SecretManagerService.getProjectIdFromEnv() ?? SecretManagerService.DEFAULT_PROJECT_ID
 
     // Use shared logger factory
     this.logger = createDefaultLogger()
+  }
+
+  /**
+   * Get GCP project ID from environment variables
+   * Cloud Functions Gen 2 uses GCLOUD_PROJECT, while other environments may use GCP_PROJECT
+   */
+  private static getProjectIdFromEnv(): string | undefined {
+    return process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT
   }
 
   /**
@@ -57,9 +67,12 @@ export class SecretManagerService {
    * Check if running in local development environment
    */
   isLocalDevelopment(): boolean {
-    return (
-      process.env.NODE_ENV === "development" || process.env.FUNCTIONS_EMULATOR === "true" || !process.env.GCP_PROJECT
-    )
+    // Check for emulator or development mode
+    if (process.env.NODE_ENV === "development" || process.env.FUNCTIONS_EMULATOR === "true") {
+      return true
+    }
+    // In Cloud Functions, a project ID env var will be set
+    return !SecretManagerService.getProjectIdFromEnv()
   }
 
   /**
