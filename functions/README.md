@@ -115,7 +115,7 @@ npm run lint:fix
 
 ## Deployment
 
-Deployment is handled automatically via GitHub Actions when pushing to `main` or `staging` branches. The workflow builds the TypeScript code, creates a deployment package, and deploys to Google Cloud Functions Gen2.
+Deployment is handled automatically via GitHub Actions when pushing to `main` branch. The workflow builds the TypeScript code, creates a deployment package, and deploys to Google Cloud Functions Gen2.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
@@ -137,15 +137,12 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
    npm run logs
    ```
 
-### Deployment Environments
+### Deployment Configuration
 
-- **Production**: `npm run deploy`
-  - Function name: `handleContactForm`
-  - Max instances: 10
-
-- **Staging**: `npm run deploy:staging`
-  - Function name: `handleContactForm-staging`
-  - Max instances: 5
+- **Function name**: `handleContactForm`
+- **Max instances**: 10
+- **Memory**: 256MB
+- **Timeout**: 60s
 
 ## Environment Variables
 
@@ -260,7 +257,6 @@ Both emails are sent in HTML and plain text formats.
 ### CORS Allowed Origins
 
 - `https://joshwentworth.com`
-- `https://staging.joshwentworth.com`
 - `http://localhost:8000`
 - `http://localhost:3000`
 

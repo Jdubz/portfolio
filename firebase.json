@@ -113,102 +113,6 @@
           "type": 301
         }
       ]
-    },
-    {
-      "target": "staging",
-      "public": "web/public",
-      "ignore": [
-        "__/auth/**"
-      ],
-      "cleanUrls": true,
-      "trailingSlash": false,
-      "headers": [
-        {
-          "source": "**",
-          "headers": [
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "1; mode=block"
-            },
-            {
-              "key": "Referrer-Policy",
-              "value": "strict-origin-when-cross-origin"
-            },
-            {
-              "key": "Permissions-Policy",
-              "value": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=()"
-            },
-            {
-              "key": "X-Robots-Tag",
-              "value": "noindex, nofollow"
-            },
-            {
-              "key": "Strict-Transport-Security",
-              "value": "max-age=31536000; includeSubDomains; preload"
-            },
-            {
-              "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com https://apis.google.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; img-src 'self' data: https:; font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; connect-src 'self' https://www.google-analytics.com https://www.google.com https://apis.google.com https://accounts.google.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://firebaseremoteconfig.googleapis.com https://firebaselogging.googleapis.com https://content-firebaseappcheck.googleapis.com https://firestore.googleapis.com https://storage.googleapis.com https://us-central1-static-sites-257923.cloudfunctions.net https://cloudflareinsights.com; frame-ancestors 'none'; frame-src 'self' https://www.google.com https://accounts.google.com https://storage.googleapis.com;"
-            }
-          ]
-        },
-        {
-          "source": "**/*.@(css|js|map)",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "public, max-age=3600"
-            }
-          ]
-        },
-        {
-          "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|ico|woff|woff2|ttf|eot)",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "public, max-age=86400"
-            }
-          ]
-        },
-        {
-          "source": "**/*.@(html|json|xml|txt)",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, must-revalidate"
-            }
-          ]
-        }
-      ],
-      "rewrites": [
-        {
-          "source": "!**/*.@(jpg|jpeg|png|gif|webp|avif|svg|ico|woff|woff2|ttf|eot|js|css|json|xml|txt|pdf|map|webmanifest)",
-          "destination": "/index.html"
-        }
-      ],
-      "predeploy": [
-        "cd web && GATSBY_ACTIVE_ENV=staging npm run build"
-      ],
-      "redirects": [
-        {
-          "source": "/resume-builder{,/**}",
-          "destination": "https://job-finder-staging.joshwentworth.com",
-          "type": 301
-        },
-        {
-          "source": "/app{,/**}",
-          "destination": "https://job-finder-staging.joshwentworth.com",
-          "type": 301
-        }
-      ]
     }
   ],
   "functions": {
@@ -257,11 +161,6 @@
     },
     {
       "database": "portfolio",
-      "rules": "firestore.rules",
-      "indexes": "firestore.indexes.json"
-    },
-    {
-      "database": "portfolio-staging",
       "rules": "firestore.rules",
       "indexes": "firestore.indexes.json"
     }

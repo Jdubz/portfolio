@@ -354,7 +354,8 @@ const handleContactFormHandler = async (req: Request, res: Response): Promise<vo
 }
 
 /**
- * Export as Firebase HTTP Function (v2)
+ * Contact Form Function
+ * Uses the 'portfolio' Firestore database
  * Deployed via: firebase deploy --only functions
  */
 export const handleContactForm = https.onRequest(
