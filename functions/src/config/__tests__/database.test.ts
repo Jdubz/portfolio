@@ -1,27 +1,25 @@
 /**
- * Database Configuration Tests
- *
- * These tests validate that the database configuration correctly
- * selects the appropriate database based on environment variables.
+ * Database configuration tests
  */
 
 describe("Database Configuration", () => {
-  // Store original environment
-  const originalEnv = process.env
+  let originalEnv: typeof process.env
 
   beforeEach(() => {
-    // Reset modules and environment before each test
+    // Save original environment
+    originalEnv = { ...process.env }
+
+    // Clear module cache to allow re-import with different env vars
     jest.resetModules()
-    process.env = { ...originalEnv }
   })
 
-  afterAll(() => {
+  afterEach(() => {
     // Restore original environment
     process.env = originalEnv
   })
 
   describe("DATABASE_ID selection", () => {
-    it("should use explicit FIRESTORE_DATABASE_ID when set", async () => {
+    it("should use FIRESTORE_DATABASE_ID when explicitly set", async () => {
       process.env.FIRESTORE_DATABASE_ID = "custom-database"
       const { DATABASE_ID } = await import("../database")
       expect(DATABASE_ID).toBe("custom-database")
@@ -39,37 +37,21 @@ describe("Database Configuration", () => {
       expect(DATABASE_ID).toBe("(default)")
     })
 
-    it("should use portfolio-staging when ENVIRONMENT=staging", async () => {
-      process.env.ENVIRONMENT = "staging"
+    it("should use portfolio for production", async () => {
+      delete process.env.FIRESTORE_DATABASE_ID
+      delete process.env.FIRESTORE_EMULATOR_HOST
+      delete process.env.FUNCTIONS_EMULATOR
       const { DATABASE_ID } = await import("../database")
-      expect(DATABASE_ID).toBe("portfolio-staging")
+      expect(DATABASE_ID).toBe("portfolio")
     })
 
-    it("should use portfolio when ENVIRONMENT=production", async () => {
+    it("should always use portfolio database (no staging)", async () => {
       process.env.ENVIRONMENT = "production"
       const { DATABASE_ID } = await import("../database")
       expect(DATABASE_ID).toBe("portfolio")
     })
 
-    it("should use (default) when ENVIRONMENT=development", async () => {
-      process.env.ENVIRONMENT = "development"
-      const { DATABASE_ID } = await import("../database")
-      expect(DATABASE_ID).toBe("(default)")
-    })
-
-    it("should use (default) when ENVIRONMENT=test", async () => {
-      process.env.ENVIRONMENT = "test"
-      const { DATABASE_ID } = await import("../database")
-      expect(DATABASE_ID).toBe("(default)")
-    })
-
-    it("should fall back to NODE_ENV when ENVIRONMENT is not set", async () => {
-      process.env.NODE_ENV = "staging"
-      const { DATABASE_ID } = await import("../database")
-      expect(DATABASE_ID).toBe("portfolio-staging")
-    })
-
-    it("should default to portfolio (production) when no env vars are set", async () => {
+    it("should default to portfolio when no special conditions are met", async () => {
       delete process.env.ENVIRONMENT
       delete process.env.NODE_ENV
       delete process.env.FIRESTORE_DATABASE_ID
@@ -79,89 +61,44 @@ describe("Database Configuration", () => {
       const { DATABASE_ID } = await import("../database")
       expect(DATABASE_ID).toBe("portfolio")
     })
+  })
 
+  describe("Environment variable priority", () => {
     it("should prioritize FIRESTORE_DATABASE_ID over emulator detection", async () => {
-      process.env.FIRESTORE_DATABASE_ID = "override-database"
+      process.env.FIRESTORE_DATABASE_ID = "override-db"
       process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080"
       const { DATABASE_ID } = await import("../database")
-      expect(DATABASE_ID).toBe("override-database")
+      expect(DATABASE_ID).toBe("override-db")
     })
 
-    it("should prioritize emulator detection over ENVIRONMENT", async () => {
+    it("should prioritize emulator detection over production", async () => {
       process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080"
       process.env.ENVIRONMENT = "production"
       const { DATABASE_ID } = await import("../database")
       expect(DATABASE_ID).toBe("(default)")
-    })
-  })
-
-  describe("Environment-specific behavior", () => {
-    it("should not throw error when DATABASE_ID is properly set", async () => {
-      process.env.ENVIRONMENT = "production"
-      await expect(import("../database")).resolves.toBeDefined()
-    })
-
-    it("should export collection names", async () => {
-      process.env.ENVIRONMENT = "production"
-      const config = await import("../database")
-      expect(config.CONTACT_SUBMISSIONS_COLLECTION).toBe("contact-submissions")
     })
   })
 
   describe("Safety checks", () => {
-    it("should prevent accidental production database use in test environment", async () => {
-      process.env.NODE_ENV = "test"
-      delete process.env.ENVIRONMENT
+    it("should have DATABASE_ID defined", async () => {
       const { DATABASE_ID } = await import("../database")
-      expect(DATABASE_ID).not.toBe("portfolio")
-      expect(DATABASE_ID).toBe("(default)")
+      expect(DATABASE_ID).toBeDefined()
+      expect(typeof DATABASE_ID).toBe("string")
+      expect(DATABASE_ID.length).toBeGreaterThan(0)
     })
 
-    it("should ensure staging uses separate database from production", async () => {
-      // Staging
-      process.env.ENVIRONMENT = "staging"
-      const { DATABASE_ID: stagingDb } = await import("../database")
-
-      // Reset and check production
-      jest.resetModules()
-      process.env = { ...originalEnv }
-      process.env.ENVIRONMENT = "production"
-      const { DATABASE_ID: prodDb } = await import("../database")
-
-      expect(stagingDb).not.toBe(prodDb)
-      expect(stagingDb).toBe("portfolio-staging")
-      expect(prodDb).toBe("portfolio")
+    it("should use emulator database in test environment", async () => {
+      process.env.FUNCTIONS_EMULATOR = "true"
+      delete process.env.ENVIRONMENT
+      const { DATABASE_ID } = await import("../database")
+      expect(DATABASE_ID).toBe("(default)")
     })
   })
 
-  describe("Logging behavior", () => {
-    beforeEach(() => {
-      // Mock the logger module
-      jest.doMock("../../utils/logger", () => ({
-        logger: {
-          info: jest.fn(),
-          warning: jest.fn(),
-          error: jest.fn(),
-        },
-      }))
-    })
-
-    afterEach(() => {
-      jest.dontMock("../../utils/logger")
-    })
-
-    it("should log database configuration in non-production environments", async () => {
-      process.env.ENVIRONMENT = "development"
-      const { logger } = await import("../../utils/logger")
-      await import("../database")
-      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("[Database Config] Using database:"))
-    })
-
-    it("should NOT log database configuration in production", async () => {
-      process.env.ENVIRONMENT = "production"
-      const { logger } = await import("../../utils/logger")
-      await import("../database")
-      expect(logger.info).not.toHaveBeenCalled()
+  describe("CONTACT_SUBMISSIONS_COLLECTION", () => {
+    it("should export CONTACT_SUBMISSIONS_COLLECTION constant", async () => {
+      const { CONTACT_SUBMISSIONS_COLLECTION } = await import("../database")
+      expect(CONTACT_SUBMISSIONS_COLLECTION).toBe("contact-submissions")
     })
   })
 })

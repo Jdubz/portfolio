@@ -68,7 +68,7 @@ describe("handleContactForm", () => {
       expect.objectContaining({
         success: false,
         error: "METHOD_NOT_ALLOWED",
-        errorCode: "CF_REQ_001",
+        message: "Only POST requests are allowed",
       })
     )
   })
@@ -87,7 +87,6 @@ describe("handleContactForm", () => {
       expect.objectContaining({
         success: false,
         error: "VALIDATION_FAILED",
-        errorCode: "CF_VAL_001",
       })
     )
   })

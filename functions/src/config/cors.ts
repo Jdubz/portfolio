@@ -13,7 +13,6 @@ import cors from "cors"
 export const ALLOWED_ORIGINS = [
   "https://joshwentworth.com",
   "https://www.joshwentworth.com",
-  "https://staging.joshwentworth.com",
   "http://localhost:8000",
   "http://localhost:3000",
 ]

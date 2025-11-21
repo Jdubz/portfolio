@@ -5,7 +5,6 @@
  *
  * Environment-based database selection:
  * - Emulator: (default)
- * - Staging: portfolio-staging
  * - Production: portfolio
  */
 
@@ -17,9 +16,7 @@ import { logger } from "../utils/logger"
  * Priority order:
  * 1. FIRESTORE_DATABASE_ID environment variable (explicit override)
  * 2. Emulator detection (uses "(default)")
- * 3. ENVIRONMENT variable (production/staging)
- * 4. NODE_ENV variable (fallback)
- * 5. Default to "portfolio" (production)
+ * 3. Default to "portfolio" (production)
  *
  * @returns {string} The database ID to use
  */
@@ -35,21 +32,8 @@ function getDatabaseId(): string {
     return "(default)"
   }
 
-  // Environment-based selection
-  const environment = process.env.ENVIRONMENT || process.env.NODE_ENV
-
-  switch (environment) {
-    case "staging":
-      return "portfolio-staging"
-    case "production":
-      return "portfolio"
-    case "development":
-    case "test":
-      return "(default)"
-    default:
-      // Production is the safe default
-      return "portfolio"
-  }
+  // Always use production database
+  return "portfolio"
 }
 
 /**
