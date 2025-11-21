@@ -169,6 +169,7 @@ jobs:
             entry_point: handleContactForm
             runtime_service_account: contact-form-runtime@static-sites-257923.iam.gserviceaccount.com
             memory: 512Mi
+            cpu: 1
             max_instances: 50
             secrets: MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest
             changed: ${{ needs.detect-changes.outputs.contact-form }}
@@ -239,6 +240,7 @@ jobs:
             --service-account=${{ matrix.function.runtime_service_account }} \
             --build-service-account=projects/static-sites-257923/serviceAccounts/cloud-functions-builder@static-sites-257923.iam.gserviceaccount.com \
             --memory=${{ matrix.function.memory }} \
+            --cpu=${{ matrix.function.cpu }} \
             --timeout=120s \
             --max-instances=${{ matrix.function.max_instances }} \
             --set-env-vars=NODE_ENV=production,ENVIRONMENT=production"
