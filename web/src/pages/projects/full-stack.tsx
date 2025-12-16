@@ -56,13 +56,22 @@ const FullStackPage = () => {
             borderColor: "divider",
           }}
         >
-          <div sx={{ variant: "layout.container", display: "grid", gap: [4, 5], gridTemplateColumns: ["1fr", null, "1.5fr 1fr"] }}>
+          <div
+            sx={{
+              variant: "layout.container",
+              display: "grid",
+              gap: [4, 5],
+              gridTemplateColumns: ["1fr", null, "1.5fr 1fr"],
+            }}
+          >
             <div>
               <p sx={{ variant: "text.heroKicker", mb: 3 }}>Case Study</p>
-              <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>Full-Stack Cloud Development</h1>
+              <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>
+                Full-Stack Cloud Development
+              </h1>
               <p sx={{ variant: "text.lead", mb: 4 }}>
-                Production-ready web apps, APIs, and cloud infrastructure delivered end-to-end. Modern TypeScript and Python
-                stacks, CI/CD you can trust, and observability baked in from day one.
+                Production-ready web apps, APIs, and cloud infrastructure delivered end-to-end. Modern TypeScript and
+                Python stacks, CI/CD you can trust, and observability baked in from day one.
               </p>
               <div sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
                 <a
@@ -103,19 +112,22 @@ const FullStackPage = () => {
                 <li>
                   <span sx={{ color: "primary" }}>▸</span>
                   <div>
-                    <strong>Frontends people enjoy using.</strong> React/Angular, design systems, accessibility, and fast loads.
+                    <strong>Frontends people enjoy using.</strong> React/Angular, design systems, accessibility, and
+                    fast loads.
                   </div>
                 </li>
                 <li>
                   <span sx={{ color: "primary" }}>▸</span>
                   <div>
-                    <strong>Resilient backends.</strong> Node.js or Python services with strong typing, tracing, and rate limits.
+                    <strong>Resilient backends.</strong> Node.js or Python services with strong typing, tracing, and
+                    rate limits.
                   </div>
                 </li>
                 <li>
                   <span sx={{ color: "primary" }}>▸</span>
                   <div>
-                    <strong>Cloud you can trust.</strong> Kubernetes on GCP/AWS, Terraform, CI/CD, and monitoring ready for prod.
+                    <strong>Cloud you can trust.</strong> Kubernetes on GCP/AWS, Terraform, CI/CD, and monitoring ready
+                    for prod.
                   </div>
                 </li>
               </ul>
@@ -170,9 +182,20 @@ const FullStackPage = () => {
         {/* Featured GitHub projects */}
         <section sx={{ pb: [6, 7] }}>
           <div sx={{ variant: "layout.container" }}>
-            <div sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4, gap: 3, flexWrap: "wrap" }}>
+            <div
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 4,
+                gap: 3,
+                flexWrap: "wrap",
+              }}
+            >
               <h2 sx={{ variant: "text.sectionTitle", mb: 0 }}>Featured GitHub Work</h2>
-              <p sx={{ variant: "text.micro", m: 0, color: "textMuted" }}>All repositories are public and actively maintained.</p>
+              <p sx={{ variant: "text.micro", m: 0, color: "textMuted" }}>
+                All repositories are public and actively maintained.
+              </p>
             </div>
             <div sx={{ display: "grid", gap: [4, 4, 5], gridTemplateColumns: ["1fr", null, "repeat(3, 1fr)"] }}>
               {featuredRepos.map((repo) => (
@@ -191,7 +214,15 @@ const FullStackPage = () => {
                   }}
                 >
                   <div>
-                    <p sx={{ color: "textMuted", fontSize: 1, letterSpacing: "0.06em", textTransform: "uppercase", mb: 2 }}>
+                    <p
+                      sx={{
+                        color: "textMuted",
+                        fontSize: 1,
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        mb: 2,
+                      }}
+                    >
                       Open Source
                     </p>
                     <h3 sx={{ color: "heading", mb: 2, fontSize: [3, 4] }}>{repo.title}</h3>

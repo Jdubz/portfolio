@@ -15,7 +15,7 @@ type ProjectCardProps = {
 const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
   const cardRef = React.useRef<HTMLDivElement | HTMLAnchorElement | null>(null)
   const [hasBeenViewed, setHasBeenViewed] = React.useState(false)
-  const isInternalLink = Boolean(link && link.startsWith("/"))
+  const isInternalLink = Boolean(link?.startsWith("/"))
 
   // Track project views with Intersection Observer
   React.useEffect(() => {
