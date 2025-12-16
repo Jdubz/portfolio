@@ -91,7 +91,8 @@ const FullStackPage = () => {
               position: "absolute",
               inset: 0,
               pointerEvents: "none",
-              opacity: 0.48,
+              opacity: 0.72,
+              filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.25))",
             }}
             aria-hidden="true"
           >
@@ -222,8 +223,9 @@ const FullStackPage = () => {
                 position: "absolute",
                 inset: "4% 6%",
                 pointerEvents: "none",
-                opacity: 0.35,
-                mixBlendMode: "screen",
+                opacity: 0.6,
+                mixBlendMode: "lighten",
+                filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.25))",
               }}
               aria-hidden="true"
             >
