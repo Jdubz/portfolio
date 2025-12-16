@@ -57,29 +57,6 @@ const FullStackPage = () => {
           color: "text",
         }}
       >
-        <div
-          sx={{
-            variant: "layout.container",
-            maxWidth: 1080,
-            py: [3, 4],
-            display: "flex",
-            justifyContent: "flex-start",
-            px: [3, 4],
-          }}
-        >
-          <a
-            href="/"
-            sx={{
-              variant: "links.muted",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 2,
-              fontSize: 2,
-            }}
-          >
-            ← Home
-          </a>
-        </div>
         {/* Hero */}
         <section
           sx={{
@@ -93,6 +70,32 @@ const FullStackPage = () => {
             borderColor: "divider",
           }}
         >
+          <a
+            href="/"
+            sx={{
+              position: "absolute",
+              top: [3, 4],
+              left: [3, 4],
+              zIndex: 3,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 2,
+              px: 3,
+              py: 2,
+              borderRadius: "12px",
+              backgroundColor: "rgba(20,24,33,0.7)",
+              border: "1px solid",
+              borderColor: "divider",
+              backdropFilter: "blur(10px)",
+              color: "text",
+              textDecoration: "none",
+              fontWeight: 600,
+              "&:hover": { color: "primary", borderColor: "primary" },
+            }}
+          >
+            ← Home
+          </a>
+
           <div
             sx={{
               position: "absolute",
