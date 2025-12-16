@@ -16,32 +16,32 @@ const featuredRepos: FeaturedRepo[] = [
   {
     title: "Portfolio",
     repoUrl: "https://github.com/Jdubz/portfolio",
-    summary: "The site you’re browsing: Gatsby + Theme UI, Firebase hosting, CI/CD with lint/tests on every push.",
+    summary: "This site: Gatsby + Theme UI with MDX sections, Firebase Hosting, GH Actions for lint/test/deploy.",
     tech: ["Gatsby", "React", "TypeScript", "Firebase Hosting"],
   },
   {
     title: "Job Finder Worker",
     repoUrl: "https://github.com/Jdubz/job-finder-worker",
     summary:
-      "Queue-driven scraper that aggregates newly posted jobs for the Job Finder app; resilient fetch + rate limiting.",
+      "Queue-driven scraper that normalizes new job posts; Playwright fetchers, backoff/retry, idempotent queue writes.",
     tech: ["TypeScript", "Node.js", "Playwright", "Queues"],
   },
   {
     title: "Blinky Time",
     repoUrl: "https://github.com/Jdubz/blinky_time",
-    summary: "Arduino/Neopixel controller with audio-reactive modes, smooth timing, and Wi‑Fi control.",
+    summary: "Arduino/Neopixel controller with audio-reactive modes, fixed-timestep pattern loop, ESP Wi‑Fi bridge.",
     tech: ["C++", "Arduino", "Neopixel", "Audio DSP"],
   },
   {
     title: "App Monitor",
     repoUrl: "https://github.com/Jdubz/app-monitor",
-    summary: "Developer ops dashboard for complex dev flows; monitors services and environments.",
+    summary: "Dev workflow monitor: service health polling, env toggles, and Slack/CLI surfaces for multi-repo flows.",
     tech: ["TypeScript", "Node.js", "Monitoring", "CLI"],
   },
   {
     title: "Imagineer",
     repoUrl: "https://github.com/Jdubz/imagineer",
-    summary: "Playground for AI image generation experiments and tooling.",
+    summary: "AI image experiments: prompt pipelines, model runners, and asset bookkeeping scripts.",
     tech: ["Python", "AI", "Image Gen"],
   },
 ]
@@ -92,13 +92,13 @@ const FullStackPage = () => {
             }}
           >
             <div>
-              <p sx={{ variant: "text.heroKicker", mb: 3 }}>Case Study</p>
+              <p sx={{ variant: "text.heroKicker", mb: 3 }}>Technical Showcase</p>
               <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>
                 Full-Stack Cloud Development
               </h1>
               <p sx={{ variant: "text.lead", mb: 4 }}>
-                Production-ready web apps, APIs, and cloud infrastructure delivered end-to-end. Modern TypeScript and
-                Python stacks, CI/CD you can trust, and observability baked in from day one.
+                Selected builds with their stacks, deployment targets, and instrumentation. Frontend, services, and
+                platform are all represented with links to code and infra.
               </p>
               <div sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
                 <a
@@ -110,7 +110,7 @@ const FullStackPage = () => {
                   View GitHub
                 </a>
                 <Link to="/contact" sx={{ variant: "buttons.secondary" }}>
-                  Book a project chat
+                  Contact
                 </Link>
               </div>
             </div>
@@ -125,7 +125,7 @@ const FullStackPage = () => {
                 boxShadow: "lg",
               }}
             >
-              <h3 sx={{ color: "heading", mb: 3, fontSize: [3, 4] }}>What I deliver</h3>
+              <h3 sx={{ color: "heading", mb: 3, fontSize: [3, 4] }}>What’s shown here</h3>
               <ul
                 sx={{
                   listStyle: "none",
@@ -141,8 +141,8 @@ const FullStackPage = () => {
                     ▸
                   </span>
                   <div>
-                    <strong>Frontends people enjoy using.</strong> React/Angular, design systems, accessibility, and
-                    fast loads.
+                    <strong>Frontend builds.</strong> React/Next/Angular, design systems, SSR/SPA hybrids, perf budgets,
+                    a11y checks.
                   </div>
                 </li>
                 <li>
@@ -150,8 +150,8 @@ const FullStackPage = () => {
                     ▸
                   </span>
                   <div>
-                    <strong>Resilient backends.</strong> Node.js or Python services with strong typing, tracing, and
-                    rate limits.
+                    <strong>Service layer.</strong> Typed Node/Python services, REST/GraphQL, tracing, rate limiting,
+                    contract tests.
                   </div>
                 </li>
                 <li>
@@ -159,8 +159,8 @@ const FullStackPage = () => {
                     ▸
                   </span>
                   <div>
-                    <strong>Cloud you can trust.</strong> Kubernetes on GCP/AWS, Terraform, CI/CD, and monitoring ready
-                    for prod.
+                    <strong>Platform.</strong> Kubernetes/Cloud Run, Terraform stacks, CI/CD pipelines, SLO dashboards,
+                    alerting.
                   </div>
                 </li>
               </ul>
