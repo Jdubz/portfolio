@@ -1,0 +1,85 @@
+name: PR Preview (Firebase Hosting)
+
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    name: Build & Preview Deploy
+    runs-on: ubuntu-latest
+    # Skip previews for forks (secrets unavailable)
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    env:
+      NODE_VERSION: 20
+      GATSBY_ACTIVE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=8192
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+
+      - name: Install root deps
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Install web deps
+        working-directory: web
+        run: npm ci --include=optional --legacy-peer-deps --prefer-offline --no-audit
+
+      - name: Build site (production config)
+        working-directory: web
+        run: npm run build
+
+      - name: Deploy preview to Firebase Hosting
+        id: firebase_deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+          projectId: static-sites-257923
+          channelId: pr-${{ github.event.pull_request.number }}
+          target: production
+          expires: 7d
+
+      - name: Comment with preview URL
+        if: success() && steps.firebase_deploy.outputs.details_url != ''
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.firebase_deploy.outputs.details_url }}
+        with:
+          script: |
+            const url = process.env.PREVIEW_URL;
+            const body = [
+              '🚀 Firebase Hosting preview is ready:',
+              '',
+              `**URL:** ${url}`,
+              '_Expires in 7 days or when the PR is closed._'
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+          preview_url: ${{ steps.firebase_deploy.outputs.details_url }}
