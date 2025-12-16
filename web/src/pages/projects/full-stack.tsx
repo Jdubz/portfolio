@@ -55,8 +55,31 @@ const FullStackPage = () => {
           bg: "background",
           minHeight: "100vh",
           color: "text",
+          px: [3, 4],
         }}
       >
+        <div
+          sx={{
+            variant: "layout.container",
+            maxWidth: 1080,
+            py: [3, 4],
+            display: "flex",
+            justifyContent: "flex-start",
+          }}
+        >
+          <a
+            href="/"
+            sx={{
+              variant: "links.muted",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 2,
+              fontSize: 2,
+            }}
+          >
+            ← Home
+          </a>
+        </div>
         {/* Hero */}
         <section
           sx={{
