@@ -3,7 +3,6 @@ import * as React from "react"
 import { jsx } from "theme-ui"
 import Layout from "../../components/homepage/Layout"
 import Seo from "../../components/homepage/Seo"
-import { Link } from "gatsby"
 import Svg from "../../components/homepage/Svg"
 import { UpDown, UpDownWide } from "../../styles/animations"
 
@@ -45,21 +44,6 @@ const featuredRepos: FeaturedRepo[] = [
     repoUrl: "https://github.com/Jdubz/imagineer",
     summary: "AI image experiments: prompt pipelines, model runners, and asset bookkeeping scripts.",
     tech: ["Python", "AI", "Image Gen"],
-  },
-]
-
-const capabilities = [
-  {
-    title: "Frontend",
-    items: ["React/Next/Angular", "Design systems & theming", "Accessibility & performance"],
-  },
-  {
-    title: "Backend & Data",
-    items: ["Node.js, Python", "REST & GraphQL", "Postgres, Redis, Firestore"],
-  },
-  {
-    title: "Platform",
-    items: ["Kubernetes & Cloud Run", "Terraform & CI/CD", "Observability (Grafana/Loki/Elastic)"],
   },
 ]
 
@@ -116,152 +100,18 @@ const FullStackPage = () => {
           <div
             sx={{
               variant: "layout.container",
-              display: "grid",
-              gap: [4, 5],
-              gridTemplateColumns: ["1fr", null, "1.5fr 1fr"],
+              maxWidth: 1080,
             }}
           >
-            <div sx={{ position: "relative", zIndex: 1 }}>
+            <div sx={{ position: "relative", zIndex: 1, maxWidth: 720 }}>
               <p sx={{ variant: "text.heroKicker", mb: 3 }}>Technical Showcase</p>
               <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>
                 Full-Stack Cloud Development
               </h1>
-              <p sx={{ variant: "text.lead", mb: 4 }}>
+              <p sx={{ variant: "text.lead", mb: 0 }}>
                 Selected builds with their stacks, deployment targets, and instrumentation. Frontend, services, and
                 platform are all represented with links to code and infra.
               </p>
-              <div sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-                <a
-                  href="https://github.com/Jdubz"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  sx={{ variant: "buttons.primary" }}
-                >
-                  View GitHub
-                </a>
-                <Link to="/contact" sx={{ variant: "buttons.secondary" }}>
-                  Contact
-                </Link>
-              </div>
-            </div>
-            <div
-              sx={{
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: "16px",
-                p: [3, 4],
-                bg: "muted",
-                backdropFilter: "blur(10px)",
-                boxShadow: "lg",
-                position: "relative",
-                zIndex: 1,
-                "::before": {
-                  content: '""',
-                  position: "absolute",
-                  inset: -2,
-                  borderRadius: "inherit",
-                  background: "linear-gradient(135deg, rgba(14,165,233,0.35), rgba(0,201,167,0.25))",
-                  opacity: 0.4,
-                  zIndex: -1,
-                  filter: "blur(16px)",
-                },
-              }}
-            >
-              <h3 sx={{ color: "heading", mb: 3, fontSize: [3, 4] }}>What’s shown here</h3>
-              <ul
-                sx={{
-                  listStyle: "none",
-                  p: 0,
-                  m: 0,
-                  display: "grid",
-                  gap: 3,
-                  li: { display: "flex", gap: 3, alignItems: "flex-start" },
-                }}
-              >
-                <li>
-                  <span sx={{ color: "primary" }} aria-hidden="true">
-                    ▸
-                  </span>
-                  <div>
-                    <strong>Frontend builds.</strong> React/Next/Angular, design systems, SSR/SPA hybrids, perf budgets,
-                    a11y checks.
-                  </div>
-                </li>
-                <li>
-                  <span sx={{ color: "primary" }} aria-hidden="true">
-                    ▸
-                  </span>
-                  <div>
-                    <strong>Service layer.</strong> Typed Node/Python services, REST/GraphQL, tracing, rate limiting,
-                    contract tests.
-                  </div>
-                </li>
-                <li>
-                  <span sx={{ color: "primary" }} aria-hidden="true">
-                    ▸
-                  </span>
-                  <div>
-                    <strong>Platform.</strong> Kubernetes/Cloud Run, Terraform stacks, CI/CD pipelines, SLO dashboards,
-                    alerting.
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* Capabilities */}
-        <section sx={{ py: [6, 7] }}>
-          <div
-            sx={{
-              variant: "layout.container",
-              position: "relative",
-            }}
-          >
-            <div
-              sx={{
-                position: "absolute",
-                inset: "4% 6%",
-                pointerEvents: "none",
-                opacity: 0.6,
-                mixBlendMode: "lighten",
-                filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.25))",
-              }}
-              aria-hidden="true"
-            >
-              <UpDownWide>
-                <Svg icon="function-fx" width={64} color="icon_teal" left="12%" top="30%" />
-                <Svg icon="json" width={56} color="icon_yellow" left="76%" top="24%" />
-                <Svg icon="ruler" width={64} stroke color="icon_orange" left="82%" top="70%" />
-                <Svg icon="screwdriver" width={56} color="icon_brightest" left="18%" top="78%" />
-              </UpDownWide>
-            </div>
-            <div sx={{ display: "grid", gap: [4, 5], gridTemplateColumns: ["1fr", null, "repeat(3, 1fr)"] }}>
-              {capabilities.map((block) => (
-                <div
-                  key={block.title}
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: "16px",
-                    p: [3, 4],
-                    bg: "muted",
-                    boxShadow: "md",
-                  }}
-                >
-                  <h3 sx={{ color: "heading", mb: 3, fontSize: [3, 4] }}>{block.title}</h3>
-                  <ul sx={{ m: 0, p: 0, listStyle: "none", display: "grid", gap: 2 }}>
-                    {block.items.map((item) => (
-                      <li key={item} sx={{ color: "textMuted", display: "flex", gap: 2, alignItems: "center" }}>
-                        <span sx={{ color: "primary" }} aria-hidden="true">
-                          •
-                        </span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
             </div>
           </div>
         </section>
