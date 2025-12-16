@@ -22,7 +22,8 @@ const featuredRepos: FeaturedRepo[] = [
   {
     title: "Job Finder Worker",
     repoUrl: "https://github.com/Jdubz/job-finder-worker",
-    summary: "Queue-driven scraper that aggregates newly posted jobs for the Job Finder app; resilient fetch + rate limiting.",
+    summary:
+      "Queue-driven scraper that aggregates newly posted jobs for the Job Finder app; resilient fetch + rate limiting.",
     tech: ["TypeScript", "Node.js", "Playwright", "Queues"],
   },
   {
