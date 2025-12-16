@@ -169,6 +169,7 @@ jobs:
             entry_point: handleContactForm
             runtime_service_account: contact-form-runtime@static-sites-257923.iam.gserviceaccount.com
             memory: 512Mi
+            # 1 vCPU keeps the contact form responsive under bursty submissions while staying within free tier limits.
             cpu: 1
             max_instances: 50
             secrets: MAILGUN_API_KEY=mailgun-api-key:latest,MAILGUN_DOMAIN=mailgun-domain:latest,FROM_EMAIL=from-email:latest,TO_EMAIL=to-email:latest,REPLY_TO_EMAIL=reply-to-email:latest

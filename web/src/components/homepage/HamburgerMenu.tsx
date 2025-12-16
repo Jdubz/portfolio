@@ -297,6 +297,9 @@ const HamburgerMenu: React.FC = () => {
               <NavLink to="/" onClick={closeMenu} icon="🏠">
                 Home
               </NavLink>
+              <NavLink to="/projects/full-stack" onClick={closeMenu} icon="🛠️">
+                Full-Stack Project
+              </NavLink>
               <NavLink to="/contact" onClick={closeMenu} icon="✉️">
                 Contact
               </NavLink>

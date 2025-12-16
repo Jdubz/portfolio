@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import * as React from "react"
 import { jsx } from "theme-ui"
+import { Link as GatsbyLink } from "gatsby"
 
 type ProjectCardProps = {
   link?: string
@@ -12,8 +13,9 @@ type ProjectCardProps = {
 }
 
 const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
-  const cardRef = React.useRef<HTMLDivElement>(null)
+  const cardRef = React.useRef<HTMLElement | null>(null)
   const [hasBeenViewed, setHasBeenViewed] = React.useState(false)
+  const isInternalLink = Boolean(link?.startsWith("/"))
 
   // Track project views with Intersection Observer
   React.useEffect(() => {
@@ -49,27 +51,36 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
     // Track project link click
     import("../../utils/firebase-analytics")
       .then(({ analyticsEvents }) => {
-        analyticsEvents.projectLinkClicked(title, link ? "external" : "none")
+        analyticsEvents.projectLinkClicked(title, isInternalLink ? "internal" : link ? "external" : "none")
       })
       .catch(() => {
         // Analytics not critical
       })
   }
 
-  const CardWrapper = link ? `a` : `div`
-  const cardProps = link
-    ? {
-        href: link,
-        target: "_blank",
-        rel: "noreferrer noopener",
+  const CardWrapper = isInternalLink ? GatsbyLink : link ? `a` : `div`
+  const cardProps = (() => {
+    if (!link) {
+      return {}
+    }
+    if (isInternalLink) {
+      return {
+        to: link,
         onClick: handleClick,
       }
-    : {}
+    }
+    return {
+      href: link,
+      target: "_blank",
+      rel: "noreferrer noopener",
+      onClick: handleClick,
+    }
+  })()
 
   return (
     <CardWrapper
       {...cardProps}
-      // @ts-expect-error - ref type incompatibility between a and div
+      // @ts-expect-error - ref type incompatibility between gatsby Link and div
       ref={cardRef}
       aria-label={`Project: ${title}`}
       className="card"
