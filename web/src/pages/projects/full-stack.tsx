@@ -12,25 +12,36 @@ type FeaturedRepo = {
   tech: string[]
 }
 
-// Replace these entries with the specific GitHub projects you want to highlight.
 const featuredRepos: FeaturedRepo[] = [
   {
-    title: "Repo One (replace me)",
-    repoUrl: "https://github.com/Jdubz",
-    summary: "Brief description of the project and the problem it solves. Swap this with the chosen repo.",
-    tech: ["TypeScript", "React", "Node.js"],
+    title: "Portfolio",
+    repoUrl: "https://github.com/Jdubz/portfolio",
+    summary: "The site you’re browsing: Gatsby + Theme UI, Firebase hosting, CI/CD with lint/tests on every push.",
+    tech: ["Gatsby", "React", "TypeScript", "Firebase Hosting"],
   },
   {
-    title: "Repo Two (replace me)",
-    repoUrl: "https://github.com/Jdubz",
-    summary: "Outline the system, scale, or standout implementation details here.",
-    tech: ["Python", "FastAPI", "PostgreSQL"],
+    title: "Job Finder Worker",
+    repoUrl: "https://github.com/Jdubz/job-finder-worker",
+    summary: "Queue-driven scraper that aggregates newly posted jobs for the Job Finder app; resilient fetch + rate limiting.",
+    tech: ["TypeScript", "Node.js", "Playwright", "Queues"],
   },
   {
-    title: "Repo Three (replace me)",
-    repoUrl: "https://github.com/Jdubz",
-    summary: "Add a concise, outcomes-focused blurb once selections are final.",
-    tech: ["GCP", "Kubernetes", "Terraform"],
+    title: "Blinky Time",
+    repoUrl: "https://github.com/Jdubz/blinky_time",
+    summary: "Arduino/Neopixel controller with audio-reactive modes, smooth timing, and Wi‑Fi control.",
+    tech: ["C++", "Arduino", "Neopixel", "Audio DSP"],
+  },
+  {
+    title: "App Monitor",
+    repoUrl: "https://github.com/Jdubz/app-monitor",
+    summary: "Developer ops dashboard for complex dev flows; monitors services and environments.",
+    tech: ["TypeScript", "Node.js", "Monitoring", "CLI"],
+  },
+  {
+    title: "Imagineer",
+    repoUrl: "https://github.com/Jdubz/imagineer",
+    summary: "Playground for AI image generation experiments and tooling.",
+    tech: ["Python", "AI", "Image Gen"],
   },
 ]
 
