@@ -46,6 +46,21 @@ const featuredRepos: FeaturedRepo[] = [
   },
 ]
 
+const capabilities = [
+  {
+    title: "Frontend",
+    items: ["React/Next/Angular", "Design systems & theming", "Accessibility & performance"],
+  },
+  {
+    title: "Backend & Data",
+    items: ["Node.js, Python", "REST & GraphQL", "Postgres, Redis, Firestore"],
+  },
+  {
+    title: "Platform",
+    items: ["Kubernetes & Cloud Run", "Terraform & CI/CD", "Observability (Grafana/Loki/Elastic)"],
+  },
+]
+
 const FullStackPage = () => {
   return (
     <Layout>
@@ -122,21 +137,27 @@ const FullStackPage = () => {
                 }}
               >
                 <li>
-                  <span sx={{ color: "primary" }}>▸</span>
+                  <span sx={{ color: "primary" }} aria-hidden="true">
+                    ▸
+                  </span>
                   <div>
                     <strong>Frontends people enjoy using.</strong> React/Angular, design systems, accessibility, and
                     fast loads.
                   </div>
                 </li>
                 <li>
-                  <span sx={{ color: "primary" }}>▸</span>
+                  <span sx={{ color: "primary" }} aria-hidden="true">
+                    ▸
+                  </span>
                   <div>
                     <strong>Resilient backends.</strong> Node.js or Python services with strong typing, tracing, and
                     rate limits.
                   </div>
                 </li>
                 <li>
-                  <span sx={{ color: "primary" }}>▸</span>
+                  <span sx={{ color: "primary" }} aria-hidden="true">
+                    ▸
+                  </span>
                   <div>
                     <strong>Cloud you can trust.</strong> Kubernetes on GCP/AWS, Terraform, CI/CD, and monitoring ready
                     for prod.
@@ -151,20 +172,7 @@ const FullStackPage = () => {
         <section sx={{ py: [6, 7] }}>
           <div sx={{ variant: "layout.container" }}>
             <div sx={{ display: "grid", gap: [4, 5], gridTemplateColumns: ["1fr", null, "repeat(3, 1fr)"] }}>
-              {[
-                {
-                  title: "Frontend",
-                  items: ["React/Next/Angular", "Design systems & theming", "Accessibility & performance"],
-                },
-                {
-                  title: "Backend & Data",
-                  items: ["Node.js, Python", "REST & GraphQL", "Postgres, Redis, Firestore"],
-                },
-                {
-                  title: "Platform",
-                  items: ["Kubernetes & Cloud Run", "Terraform & CI/CD", "Observability (Grafana/Loki/Elastic)"],
-                },
-              ].map((block) => (
+              {capabilities.map((block) => (
                 <div
                   key={block.title}
                   sx={{
@@ -180,7 +188,9 @@ const FullStackPage = () => {
                   <ul sx={{ m: 0, p: 0, listStyle: "none", display: "grid", gap: 2 }}>
                     {block.items.map((item) => (
                       <li key={item} sx={{ color: "textMuted", display: "flex", gap: 2, alignItems: "center" }}>
-                        <span sx={{ color: "primary" }}>•</span>
+                        <span sx={{ color: "primary" }} aria-hidden="true">
+                          •
+                        </span>
                         <span>{item}</span>
                       </li>
                     ))}

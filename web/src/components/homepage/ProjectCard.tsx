@@ -13,7 +13,7 @@ type ProjectCardProps = {
 }
 
 const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
-  const cardRef = React.useRef<HTMLDivElement | HTMLAnchorElement | null>(null)
+  const cardRef = React.useRef<HTMLElement | null>(null)
   const [hasBeenViewed, setHasBeenViewed] = React.useState(false)
   const isInternalLink = Boolean(link?.startsWith("/"))
 
@@ -60,23 +60,21 @@ const ProjectCard = ({ link, title, children, bgImage }: ProjectCardProps) => {
 
   const CardWrapper = isInternalLink ? GatsbyLink : link ? `a` : `div`
   const cardProps = (() => {
-    if (isInternalLink && link) {
+    if (!link) {
+      return {}
+    }
+    if (isInternalLink) {
       return {
         to: link,
         onClick: handleClick,
       }
     }
-
-    if (link) {
-      return {
-        href: link,
-        target: "_blank",
-        rel: "noreferrer noopener",
-        onClick: handleClick,
-      }
+    return {
+      href: link,
+      target: "_blank",
+      rel: "noreferrer noopener",
+      onClick: handleClick,
     }
-
-    return {}
   })()
 
   return (
