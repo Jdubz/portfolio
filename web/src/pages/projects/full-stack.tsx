@@ -4,6 +4,8 @@ import { jsx } from "theme-ui"
 import Layout from "../../components/homepage/Layout"
 import Seo from "../../components/homepage/Seo"
 import { Link } from "gatsby"
+import Svg from "../../components/homepage/Svg"
+import { UpDown, UpDownWide } from "../../styles/animations"
 
 type FeaturedRepo = {
   title: string
@@ -78,11 +80,38 @@ const FullStackPage = () => {
             overflow: "hidden",
             pb: [6, 7],
             pt: [6, 7],
-            background: "linear-gradient(135deg, rgba(14,165,233,0.12), rgba(0,201,167,0.12))",
+            background:
+              "radial-gradient(circle at 20% 20%, rgba(14,165,233,0.14), transparent 32%), radial-gradient(circle at 80% 10%, rgba(0,201,167,0.14), transparent 30%), linear-gradient(135deg, rgba(14,165,233,0.08), rgba(0,201,167,0.12))",
             borderBottom: "1px solid",
             borderColor: "divider",
           }}
         >
+          <div
+            sx={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+              opacity: 0.48,
+            }}
+            aria-hidden="true"
+          >
+            <UpDown>
+              <Svg icon="rocket" width={80} color="icon_blue" left="8%" top="12%" />
+              <Svg icon="database" width={72} stroke color="icon_teal" left="65%" top="78%" />
+              <Svg icon="bolt" width={96} color="icon_purple" left="18%" top="82%" />
+              <Svg icon="shield" width={80} stroke color="icon_blue" left="88%" top="88%" />
+            </UpDown>
+            <UpDownWide>
+              <Svg icon="cloud" width={88} color="icon_teal" left="78%" top="5%" />
+              <Svg icon="git-branch" width={80} color="icon_green" left="3%" top="6%" />
+              <Svg icon="server-stack" width={64} color="icon_brightest" left="92%" top="10%" />
+              <Svg icon="graph" width={72} color="icon_purple" left="70%" top="90%" />
+              <Svg icon="pcb-trace" width={72} color="icon_green" left="12%" top="68%" />
+              <Svg icon="code-brackets" width={64} stroke color="icon_teal" left="52%" top="28%" />
+            </UpDownWide>
+            <Svg icon="magnifier" width={40} color="icon_indigo" left="48%" top="58%" />
+          </div>
+
           <div
             sx={{
               variant: "layout.container",
@@ -91,7 +120,7 @@ const FullStackPage = () => {
               gridTemplateColumns: ["1fr", null, "1.5fr 1fr"],
             }}
           >
-            <div>
+            <div sx={{ position: "relative", zIndex: 1 }}>
               <p sx={{ variant: "text.heroKicker", mb: 3 }}>Technical Showcase</p>
               <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>
                 Full-Stack Cloud Development
@@ -123,6 +152,18 @@ const FullStackPage = () => {
                 bg: "muted",
                 backdropFilter: "blur(10px)",
                 boxShadow: "lg",
+                position: "relative",
+                zIndex: 1,
+                "::before": {
+                  content: '""',
+                  position: "absolute",
+                  inset: -2,
+                  borderRadius: "inherit",
+                  background: "linear-gradient(135deg, rgba(14,165,233,0.35), rgba(0,201,167,0.25))",
+                  opacity: 0.4,
+                  zIndex: -1,
+                  filter: "blur(16px)",
+                },
               }}
             >
               <h3 sx={{ color: "heading", mb: 3, fontSize: [3, 4] }}>What’s shown here</h3>
@@ -170,7 +211,29 @@ const FullStackPage = () => {
 
         {/* Capabilities */}
         <section sx={{ py: [6, 7] }}>
-          <div sx={{ variant: "layout.container" }}>
+          <div
+            sx={{
+              variant: "layout.container",
+              position: "relative",
+            }}
+          >
+            <div
+              sx={{
+                position: "absolute",
+                inset: "4% 6%",
+                pointerEvents: "none",
+                opacity: 0.35,
+                mixBlendMode: "screen",
+              }}
+              aria-hidden="true"
+            >
+              <UpDownWide>
+                <Svg icon="function-fx" width={64} color="icon_teal" left="12%" top="30%" />
+                <Svg icon="json" width={56} color="icon_yellow" left="76%" top="24%" />
+                <Svg icon="ruler" width={64} stroke color="icon_orange" left="82%" top="70%" />
+                <Svg icon="screwdriver" width={56} color="icon_brightest" left="18%" top="78%" />
+              </UpDownWide>
+            </div>
             <div sx={{ display: "grid", gap: [4, 5], gridTemplateColumns: ["1fr", null, "repeat(3, 1fr)"] }}>
               {capabilities.map((block) => (
                 <div
