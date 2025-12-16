@@ -55,7 +55,6 @@ const FullStackPage = () => {
           bg: "background",
           minHeight: "100vh",
           color: "text",
-          px: [3, 4],
         }}
       >
         <div
@@ -65,6 +64,7 @@ const FullStackPage = () => {
             py: [3, 4],
             display: "flex",
             justifyContent: "flex-start",
+            px: [3, 4],
           }}
         >
           <a
@@ -127,27 +127,18 @@ const FullStackPage = () => {
               position: "relative",
             }}
           >
-            <div
-              sx={{
-                position: "absolute",
-                inset: "-12px",
-                background: "linear-gradient(135deg, rgba(14,165,233,0.35), rgba(0,201,167,0.25))",
-                filter: "blur(14px)",
-                opacity: 0.5,
-                borderRadius: "24px",
-                zIndex: 0,
-              }}
-              aria-hidden="true"
-            />
-            <div sx={{ position: "relative", zIndex: 1, maxWidth: 720 }}>
-              <p sx={{ variant: "text.heroKicker", mb: 3 }}>Technical Showcase</p>
-              <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>
-                Full-Stack Cloud Development
-              </h1>
-              <p sx={{ variant: "text.lead", mb: 0 }}>
-                Selected builds with their stacks, deployment targets, and instrumentation. Frontend, services, and
-                platform are all represented with links to code and infra.
-              </p>
+            <div sx={{ position: "relative", maxWidth: 720 }}>
+              <div sx={{ variant: "masks.soft", inset: "-8px" }} aria-hidden="true" />
+              <div sx={{ position: "relative", zIndex: 1 }}>
+                <p sx={{ variant: "text.heroKicker", mb: 3 }}>Technical Showcase</p>
+                <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>
+                  Full-Stack Cloud Development
+                </h1>
+                <p sx={{ variant: "text.lead", mb: 0 }}>
+                  Selected builds with their stacks, deployment targets, and instrumentation. Frontend, services, and
+                  platform are all represented with links to code and infra.
+                </p>
+              </div>
             </div>
           </div>
         </section>
