@@ -101,8 +101,21 @@ const FullStackPage = () => {
             sx={{
               variant: "layout.container",
               maxWidth: 1080,
+              position: "relative",
             }}
           >
+            <div
+              sx={{
+                position: "absolute",
+                inset: "-12px",
+                background: "linear-gradient(135deg, rgba(14,165,233,0.35), rgba(0,201,167,0.25))",
+                filter: "blur(14px)",
+                opacity: 0.5,
+                borderRadius: "24px",
+                zIndex: 0,
+              }}
+              aria-hidden="true"
+            />
             <div sx={{ position: "relative", zIndex: 1, maxWidth: 720 }}>
               <p sx={{ variant: "text.heroKicker", mb: 3 }}>Technical Showcase</p>
               <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>
