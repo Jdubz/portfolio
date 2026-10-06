@@ -59,7 +59,8 @@ jobs:
         run: |
           mkdir deploy
           cp functions/dist/index.js deploy/
-          FRAMEWORK_VERSION=$(node -p "require('@google-cloud/functions-framework/package.json').version")
+          # Read the file directly: the package's "exports" map does not expose package.json to require()
+          FRAMEWORK_VERSION=$(jq -r .version node_modules/@google-cloud/functions-framework/package.json)
           jq --arg framework "$FRAMEWORK_VERSION" \
             '{name, version, main: "index.js", engines, dependencies: {"@google-cloud/functions-framework": $framework}}' \
             functions/package.json > deploy/package.json
