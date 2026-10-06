@@ -102,9 +102,11 @@ jobs:
             Run ONE plain command per Bash call. Pipes, `&&`, `;` and `$(...)` do not match the
             allowlist and are denied.
 
-            COVERAGE. Report `coverage: "full"` only if you read the diff of every A/M/R file listed
-            above. Otherwise report `coverage: "partial"` and name what you skipped in the summary.
-            A review that did not read the code must not look like a clean one.
+            COVERAGE. Reading the diff of EVERY A/M/R file listed above is the job, not a stretch
+            goal: docs, config, tests and scripts included. There is no turn or time budget to save,
+            so do not stop early or sample. Work through the list directory by directory until it
+            is exhausted. Report `coverage: "full"` only if you did. `coverage: "partial"` is for
+            when something actually prevented a read; name what and why in the summary.
 
             Review the DIFF, not the whole repo, and anchor every finding to a changed hunk.
             Report ONLY high-signal issues, and validate each against the actual code before
@@ -127,7 +129,9 @@ jobs:
           # value the workflow posts, not a comment the model may or may not write.
           # Tools are read-only; `gh pr comment` is deliberately absent so the workflow is the only
           # poster of verdicts.
+          # The model is set explicitly so review depth does not change when the action's default does.
           claude_args: |
+            --model claude-opus-5-5
             --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Bash(git merge-base:*),Bash(git show:*)" --json-schema '{"type":"object","required":["verdict","coverage","summary"],"additionalProperties":false,"properties":{"verdict":{"type":"string","enum":["no-issues","issues"]},"coverage":{"type":"string","enum":["full","partial"]},"issue_count":{"type":"integer","minimum":0},"summary":{"type":"string"}}}'
 
       # Posts only a verdict that was actually received; a malformed payload is refused rather than

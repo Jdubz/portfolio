@@ -63,7 +63,7 @@ Sending needs the variables in [.env.example](./.env.example) exported in your s
 | 429    | `RATE_LIMIT_EXCEEDED` | Too many requests from this IP           |
 | 500    | `INTERNAL_ERROR`      | Email could not be sent; see logs        |
 
-Every JSON response includes `success`, and all but 429 include a `requestId` that appears in the logs.
+Every JSON response includes `success`. Responses to form submissions (all rows above except 429) also include a `requestId` that appears in the logs; `GET /health` does not.
 
 The validation limits are duplicated in `web/src/components/ContactForm.tsx`; change both together.
 
