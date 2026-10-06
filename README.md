@@ -82,6 +82,7 @@ Deployment is automatic:
 | Push to `main`                          | Site deployed to https://joshwentworth.com             |
 | Push to `main` touching `functions/**`  | `handleContactForm` function redeployed                |
 | Pull request to `main`                  | Lint, tests, and a temporary Firebase preview URL      |
+| Any pull request                        | Claude code review, posted as a sha-stamped comment    |
 
 Workflow: `feature → staging → main`. Staging shares the production contact form function.
 

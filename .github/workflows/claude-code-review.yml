@@ -1,0 +1,121 @@
+name: Claude Code Review
+
+# Reviews every PR with anthropics/claude-code-action on the Claude subscription (OAuth token),
+# never API credits. The model returns a structured verdict and the WORKFLOW posts it, stamped
+# with the reviewed commit sha, so a green check with no verdict comment means the review did
+# not happen for that commit.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+
+# A new push makes the in-flight review of the previous commit worthless, so cancel it.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  claude-review:
+    name: Claude Review
+    # Skip drafts, and skip forks: this repo is public and fork PRs do not receive secrets.
+    if: |
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write # inline review comments
+      issues: write # the verdict is a PR (issue) comment
+      # No `id-token: write`: github_token is passed explicitly below, so the action never
+      # tries to exchange an OIDC token for a Claude GitHub App token.
+
+    steps:
+      # Full history, so a PR too large for `gh pr diff` can be diffed against its merge base.
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      # The verdict comment is stamped with this sha.
+      - name: Resolve reviewed commit
+        id: rev
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        # Advisory: a failed review must not red-X the PR. A failure posts no verdict, and that
+        # absence is the signal.
+        continue-on-error: true
+        # Subscription-only billing: blank the credentials that outrank the OAuth token
+        # (ANTHROPIC_AUTH_TOKEN > ANTHROPIC_API_KEY > CLAUDE_CODE_OAUTH_TOKEN).
+        env:
+          ANTHROPIC_API_KEY: ""
+          ANTHROPIC_AUTH_TOKEN: ""
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Required: without it the action tries to mint a GitHub App token via OIDC and exits
+          # before Claude runs, which `continue-on-error` would then paint green.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            BASE BRANCH: ${{ github.base_ref }}
+            COMMIT UNDER REVIEW: ${{ steps.rev.outputs.sha }}
+
+            The PR branch is checked out in the working directory.
+
+            Review this pull request for:
+            - bugs and incorrect logic (wrong results regardless of input)
+            - code that cannot compile or parse
+            - security implications
+            - clear, quotable CLAUDE.md violations
+
+            Read the root CLAUDE.md first. Get the author's intent with `gh pr view`.
+
+            THE DIFF. Start with `gh pr diff`. It TRUNCATES at the API's 20,000-line limit and on a
+            large PR gives you nothing usable. If it is truncated or empty, get the real diff locally
+            (full history is checked out) with
+              `git diff $(git merge-base origin/${{ github.base_ref }} HEAD)...HEAD`
+            and review it in chunks by path (`git diff <base>...HEAD -- <dir>`) until you have covered
+            every changed file. Skip `package-lock.json`. If you still cannot see the whole diff, say
+            so in the summary and return `verdict: "issues"` — a review that did not read the code
+            must NOT report clean.
+
+            Review the DIFF, not the whole repo, and anchor every finding to a changed hunk.
+            Report ONLY high-signal issues, and validate each against the actual code before
+            reporting it: no style, no nitpicks, nothing contingent on unstated inputs. A false
+            positive is worse than a miss. Post each surviving issue as an inline comment with
+            `mcp__github_inline_comment__create_inline_comment` (`confirmed: true`).
+
+            Do NOT skip this review for any reason — not because Claude has already commented, not
+            because it is Claude-authored, not because it looks trivial. A re-review after the author
+            addressed feedback is the most important review there is.
+
+            WORK ALONE. Do not use the Task tool or spawn subagents: they are not in the allowlist,
+            a subagent's tool calls are auto-denied in headless CI, and attempting a fan-out burns
+            the whole run and produces NO verdict. Read the files yourself.
+
+            Do not post a top-level comment. Return the verdict as structured output — `verdict`
+            ("no-issues" or "issues"), `issue_count`, and a short markdown `summary` — and the
+            workflow posts it, stamped with the sha above.
+          # `--json-schema` exposes `outputs.structured_output`, so the verdict is a machine-readable
+          # value the workflow posts, not a comment the model may or may not write.
+          # Tools are read-only; `gh pr comment` is deliberately absent so the workflow is the only
+          # poster of verdicts.
+          claude_args: |
+            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Bash(git merge-base:*),Bash(git show:*)" --json-schema '{"type":"object","required":["verdict","summary"],"additionalProperties":false,"properties":{"verdict":{"type":"string","enum":["no-issues","issues"]},"issue_count":{"type":"integer","minimum":0},"summary":{"type":"string"}}}'
+
+      # Posts only a verdict that was actually received; a malformed payload is refused rather than
+      # reported as "0 issues". Re-run a crashed review with `gh run rerun <id>`.
+      - name: Post the review verdict
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ steps.rev.outputs.sha }}
+          STRUCTURED: ${{ steps.claude-review.outputs.structured_output }}
+        run: bash scripts/post-review-verdict.sh
