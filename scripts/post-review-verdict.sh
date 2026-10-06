@@ -36,6 +36,7 @@ jq -e . >/dev/null 2>&1 <<<"$STRUCTURED" || warn "Structured output for $SHA is 
 # Validate against the schema the model was given. `jq -r '.verdict'` on `{}` yields the STRING
 # "null", which would otherwise post "Found 0 issue(s)" for a review that produced malformed output.
 verdict=$(jq -r '.verdict // empty' <<<"$STRUCTURED")
+coverage=$(jq -r '.coverage // empty' <<<"$STRUCTURED")
 summary=$(jq -r '.summary // empty' <<<"$STRUCTURED")
 count=$(jq -r 'if (.issue_count | type) == "number" then .issue_count else "" end' <<<"$STRUCTURED")
 
@@ -43,15 +44,23 @@ case "$verdict" in
     no-issues|issues) ;;
     *) warn "Structured output for $SHA has no valid 'verdict' (got: '${verdict:-<missing>}')." ;;
 esac
+case "$coverage" in
+    full|partial) ;;
+    *) warn "Structured output for $SHA has no valid 'coverage' (got: '${coverage:-<missing>}')." ;;
+esac
 [ -n "$summary" ] || warn "Structured output for $SHA has no 'summary'."
 
-if [ "$verdict" = "no-issues" ]; then
+if [ "$verdict" = "no-issues" ] && [ "$coverage" = "partial" ]; then
+    # Never let a partial read pass for a clean review.
+    headline="Incomplete review: no issues found, but not every changed file was read."
+elif [ "$verdict" = "no-issues" ]; then
     headline="No issues found. Checked for bugs and CLAUDE.md compliance."
 else
     # A verdict of "issues" with no positive count is incoherent: refuse it rather than paper over it.
     [ -n "$count" ] && [ "$count" -ge 1 ] 2>/dev/null \
         || warn "Structured output for $SHA says 'issues' but issue_count is '${count:-<missing>}'."
     headline="Found ${count} issue(s) — see the inline comments."
+    [ "$coverage" = "full" ] || headline="$headline Not every changed file was read."
 fi
 
 body=$(printf '## Claude review — %s\n\n%s\n\n%s\n' "$SHA" "$headline" "$summary")
