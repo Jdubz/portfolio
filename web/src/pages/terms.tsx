@@ -5,10 +5,13 @@ import { Link } from "gatsby"
 import Layout from "../components/homepage/Layout"
 import Seo from "../components/homepage/Seo"
 
+// A literal, not `new Date()`: the date must not change on every build or differ between the
+// server-rendered HTML and the browser.
+const LAST_UPDATED = "October 6, 2026"
+
 const TermsPage = () => {
   return (
     <Layout>
-      <Seo title="Terms of Service" description="Terms of service for Josh Wentworth's portfolio website" />
       <div
         sx={{
           minHeight: "100vh",
@@ -46,9 +49,7 @@ const TermsPage = () => {
             Terms of Service
           </h1>
 
-          <p sx={{ fontSize: 1, color: "textMuted", mb: 5 }}>
-            Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-          </p>
+          <p sx={{ fontSize: 1, color: "textMuted", mb: 5 }}>Last updated: {LAST_UPDATED}</p>
 
           <div
             sx={{ "& > section": { mb: 5 }, "& p": { lineHeight: "relaxed" }, "& ul": { pl: 4, "& li": { mb: 2 } } }}
@@ -200,3 +201,13 @@ const TermsPage = () => {
 }
 
 export default TermsPage
+
+// Rendered through the Head API, not in the page body: inside the body its <script> and <meta>
+// tags break React hydration.
+export const Head = () => (
+  <Seo
+    title="Terms of Service"
+    description="Terms of service for Josh Wentworth's portfolio website"
+    pathname="/terms"
+  />
+)
