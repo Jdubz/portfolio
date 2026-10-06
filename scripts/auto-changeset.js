@@ -46,7 +46,6 @@ const IGNORED_PATTERNS = [
 // Files/patterns that definitely need a changeset
 const IMPORTANT_PATTERNS = [
   /^web\/src\//,
-  /^functions\/src\//,
   /^web\/gatsby-/,
   /package\.json$/,
 ];
@@ -109,9 +108,6 @@ function detectPackages(files) {
   for (const file of files) {
     if (file.startsWith('web/')) {
       packages.add('josh-wentworth-portfolio');
-    }
-    if (file.startsWith('functions/')) {
-      packages.add('contact-form-function');
     }
   }
 

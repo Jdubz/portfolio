@@ -96,21 +96,13 @@ jobs:
 
       - name: Lint and test
         run: |
-          npm run lint:web
-          npm run test:web
+          npm run lint
+          npm test
 
       - name: Set build environment
         run: |
           echo "GATSBY_ACTIVE_ENV=${{ github.ref_name == 'main' && 'production' || 'staging' }}" >> $GITHUB_ENV
           echo "NODE_OPTIONS=--max-old-space-size=8192" >> $GITHUB_ENV
-
-      - name: Verify environment configuration
-        working-directory: web
-        run: |
-          echo "Building for environment: $GATSBY_ACTIVE_ENV"
-          echo "Environment file:"
-          cat .env.$GATSBY_ACTIVE_ENV
-          echo ""
 
       - name: Build
         working-directory: web

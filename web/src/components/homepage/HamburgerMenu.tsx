@@ -300,9 +300,46 @@ const HamburgerMenu: React.FC = () => {
               <NavLink to="/projects/full-stack" onClick={closeMenu} icon="🛠️">
                 Full-Stack Project
               </NavLink>
-              <NavLink to="/contact" onClick={closeMenu} icon="✉️">
-                Contact
-              </NavLink>
+            </NavSection>
+
+            <NavDivider />
+
+            {/* Email */}
+            <NavSection>
+              <Box
+                sx={{
+                  width: "100%",
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    bg: "divider",
+                    "& a": {
+                      color: "primary",
+                    },
+                  },
+                }}
+              >
+                <a
+                  href="mailto:hello@joshwentworth.com"
+                  onClick={closeMenu}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    py: 3,
+                    px: 4,
+                    color: "text",
+                    fontSize: 2,
+                    fontWeight: "body",
+                    textDecoration: "none",
+                    transition: "color 0.2s ease",
+                  }}
+                >
+                  <span sx={{ fontSize: 3 }}>✉️</span>
+                  hello@joshwentworth.com
+                </a>
+              </Box>
             </NavSection>
 
             <NavDivider />

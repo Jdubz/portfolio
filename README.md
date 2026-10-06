@@ -13,61 +13,45 @@ _Multidisciplinary Engineer_
 
 ## Project Structure
 
-An npm workspace with two packages:
+A static Gatsby site. There is no backend: contact is a `mailto:` link.
 
 ```
 portfolio/
-├── web/                   # Gatsby static site
+├── web/                   # Gatsby static site (npm workspace)
 │   ├── src/
-│   │   ├── pages/         # Homepage, contact, project and legal pages
+│   │   ├── pages/         # Homepage, project and legal pages
 │   │   ├── components/    # React components
 │   │   ├── content/       # MDX content for homepage sections
 │   │   └── gatsby-plugin-theme-ui/  # Theme UI theme
-│   ├── static/            # Static assets
-│   └── e2e/               # Playwright tests
-│
-├── functions/             # Contact form Cloud Function
-│   └── src/
-│       ├── index.ts       # HTTP handler: CORS, validation, honeypot
-│       ├── rate-limit.ts  # Per-IP rate limiting
-│       ├── email.ts       # Mailgun delivery
-│       └── logger.ts      # Structured logging
+│   └── static/            # Static assets
 │
 ├── firebase.json          # Hosting config (production + staging targets)
 ├── .github/workflows/     # CI and deployment
+├── scripts/               # Changeset helper, screenshots, image optimisation
 └── package.json           # Workspace root
 ```
 
 ## Built With
 
-- **Web:** Gatsby 5, React 18, Theme UI, React Spring (parallax), MDX
-- **Function:** Cloud Functions Gen 2 (Node.js 20), TypeScript, Joi, express-rate-limit, Mailgun, bundled with esbuild
-- **Hosting:** Firebase Hosting behind Cloudflare
+- Gatsby 5, React 18, Theme UI, React Spring (parallax), MDX
+- Firebase Hosting behind Cloudflare
 
 ## Quick Start
 
 Requires Node.js >= 20 and npm >= 10.
 
 ```bash
-npm install            # Installs both workspaces
-
-npm run dev            # Gatsby dev server on http://localhost:8000
-npm run dev:functions  # Contact form function on http://localhost:8080
+npm install     # Installs the workspace
+npm run dev     # Gatsby dev server on http://localhost:8000
 ```
-
-`web/.env.development` already points the contact form at the local function.
-To actually send email locally, copy `functions/.env.example` to `functions/.env`,
-fill it in and export the variables before starting the function.
 
 ## Checks
 
 ```bash
-npm run lint           # Type-check, ESLint and Prettier for both packages
-npm test               # Jest unit tests for both packages
+npm run lint           # Type-check, ESLint and Prettier
+npm test               # Jest unit tests
 npm run build          # Production Gatsby build
 npm run firebase:serve # Serve the build with the hosting rules in firebase.json
-
-cd web && npm run test:e2e   # Playwright (needs a build; mocks the function)
 ```
 
 `make help` lists the same commands as make targets.
@@ -76,28 +60,24 @@ cd web && npm run test:e2e   # Playwright (needs a build; mocks the function)
 
 Deployment is automatic:
 
-| Trigger                                 | Result                                                 |
-| --------------------------------------- | ------------------------------------------------------ |
-| Push to `staging`                       | Site deployed to https://staging.joshwentworth.com     |
-| Push to `main`                          | Site deployed to https://joshwentworth.com             |
-| Push to `main` touching `functions/**`  | `handleContactForm` function redeployed                |
-| Pull request to `main`                  | Lint, tests, and a temporary Firebase preview URL      |
-| Any pull request                        | Claude code review, posted as a sha-stamped comment    |
+| Trigger                | Result                                                |
+| ---------------------- | ----------------------------------------------------- |
+| Push to `staging`      | Site deployed to https://staging.joshwentworth.com    |
+| Push to `main`         | Site deployed to https://joshwentworth.com            |
+| Pull request to `main` | Lint, tests, and a temporary Firebase preview URL     |
+| Any pull request       | Claude code review, posted as a sha-stamped comment   |
 
-Workflow: `feature → staging → main`. Staging shares the production contact form function.
+Workflow: `feature → staging → main`.
 
 Manual hosting deploys, if ever needed: `make deploy-staging` / `make deploy-prod`.
-The function's memory, instance limit and secrets are defined only in
-`.github/workflows/deploy-cloud-functions.yml`.
 
 ## Versioning
 
 Versions are managed with [Changesets](./.changeset/README.md). Run `npm run changeset`
-with any change to `web/` or `functions/`; versions are bumped automatically on merge to `main`.
+with any change to `web/`; versions are bumped automatically on merge to `main`.
 
 ## Documentation
 
-- [functions/README.md](./functions/README.md) - Contact form function
 - [docs/brand/README.md](./docs/brand/README.md) - Brand identity and assets
 - [docs/DEVELOPMENT_WORKFLOW.md](./docs/DEVELOPMENT_WORKFLOW.md) - Git workflow
 

@@ -1,26 +1,16 @@
-.PHONY: help dev dev-clean build serve clean test lint lint-fix dev-functions test-functions \
-	changeset firebase-serve firebase-login deploy-staging deploy-prod health-check screenshot screenshot-ci screenshot-quick
-
-FUNCTION_URL = https://us-central1-static-sites-257923.cloudfunctions.net/handleContactForm
+.PHONY: help dev dev-clean build serve clean test lint lint-fix changeset \
+	firebase-serve firebase-login deploy-staging deploy-prod screenshot screenshot-ci screenshot-quick
 
 help:
-	@echo "Web:"
 	@echo "  make dev              - Start Gatsby development server (port 8000)"
 	@echo "  make dev-clean        - Clean cache and start fresh dev server"
 	@echo "  make build            - Build production bundle"
 	@echo "  make serve            - Serve production build (port 9000)"
 	@echo "  make clean            - Clean Gatsby cache and build files"
-	@echo "  make screenshot       - Generate component screenshots (also -ci, -quick)"
-	@echo ""
-	@echo "Contact form function:"
-	@echo "  make dev-functions    - Build and run the function locally (port 8080)"
-	@echo "  make health-check     - Check the deployed function"
-	@echo ""
-	@echo "All packages:"
-	@echo "  make test             - Run web and functions tests"
-	@echo "  make test-functions   - Run functions tests only"
-	@echo "  make lint             - Type-check and lint web and functions"
+	@echo "  make test             - Run tests"
+	@echo "  make lint             - Type-check, ESLint and Prettier"
 	@echo "  make lint-fix         - Auto-fix lint issues"
+	@echo "  make screenshot       - Generate component screenshots (also -ci, -quick)"
 	@echo "  make changeset        - Create a changeset for versioning"
 	@echo ""
 	@echo "Firebase:"
@@ -30,10 +20,10 @@ help:
 	@echo "  make deploy-prod      - Build and deploy hosting manually (CI does this on merge to main)"
 
 dev:
-	npm run dev:web
+	npm run dev
 
 dev-clean:
-	npm run clean && npm run dev:web
+	npm run clean && npm run dev
 
 build:
 	npm run build
@@ -47,17 +37,11 @@ clean:
 test:
 	npm test
 
-test-functions:
-	npm run test:functions
-
 lint:
 	npm run lint
 
 lint-fix:
-	npm run lint:fix --workspaces --if-present
-
-dev-functions:
-	npm run dev:functions
+	npm run lint:fix
 
 changeset:
 	npm run changeset
@@ -73,9 +57,6 @@ deploy-staging:
 
 deploy-prod:
 	npm run deploy:production
-
-health-check:
-	@curl -fsS $(FUNCTION_URL)/health && echo
 
 screenshot:
 	cd web && npm run screenshot

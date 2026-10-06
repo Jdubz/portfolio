@@ -8,9 +8,7 @@
   ],
   "commit": false,
   "fixed": [],
-  "linked": [
-    ["josh-wentworth-portfolio", "contact-form-function"]
-  ],
+  "linked": [],
   "access": "restricted",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
