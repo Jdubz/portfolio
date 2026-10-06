@@ -1,7 +1,14 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui"
 import React, { useState } from "react"
-import { logger } from "../utils/logger"
+
+// Keep in sync with the schema in functions/src/index.ts
+const NAME_MAX_LENGTH = 100
+const MESSAGE_MIN_LENGTH = 10
+const MESSAGE_MAX_LENGTH = 2000
+
+const FALLBACK_ERROR =
+  "We couldn't send your message right now. Please try again later or email me directly at support@joshwentworth.com"
 
 interface FormData {
   name: string
@@ -43,6 +50,8 @@ const ContactForm = (): React.JSX.Element => {
 
     if (!formData.name.trim()) {
       newErrors.name = "Name is required"
+    } else if (formData.name.trim().length > NAME_MAX_LENGTH) {
+      newErrors.name = `Name must be ${NAME_MAX_LENGTH} characters or fewer`
     }
 
     if (!formData.email.trim()) {
@@ -51,8 +60,13 @@ const ContactForm = (): React.JSX.Element => {
       newErrors.email = "Email is invalid"
     }
 
-    if (!formData.message.trim()) {
+    const messageLength = formData.message.trim().length
+    if (messageLength === 0) {
       newErrors.message = "Message is required"
+    } else if (messageLength < MESSAGE_MIN_LENGTH) {
+      newErrors.message = `Message must be at least ${MESSAGE_MIN_LENGTH} characters`
+    } else if (messageLength > MESSAGE_MAX_LENGTH) {
+      newErrors.message = `Message must be ${MESSAGE_MAX_LENGTH} characters or fewer`
     }
 
     setErrors(newErrors)
@@ -75,12 +89,6 @@ const ContactForm = (): React.JSX.Element => {
         throw new Error("Contact form URL not configured")
       }
 
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      }
-
-      const startTime = Date.now()
-
       // Create an AbortController for timeout
       const controller = new AbortController()
       // eslint-disable-next-line no-undef
@@ -90,7 +98,7 @@ const ContactForm = (): React.JSX.Element => {
       try {
         response = await fetch(functionUrl, {
           method: "POST",
-          headers,
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...formData,
             honeypot, // Include honeypot for bot detection
@@ -117,48 +125,11 @@ const ContactForm = (): React.JSX.Element => {
         clearTimeout(timeoutId)
       }
 
-      const duration = Date.now() - startTime
-
       if (!response.ok) {
-        const errorData = (await response.json()) as {
-          message?: string
-          errorCode?: string
-          requestId?: string
-          traceId?: string
-          spanId?: string
-        }
-
-        // Log detailed error info for debugging (includes trace IDs for correlation)
-        logger.error("Contact form request failed", new Error(response.statusText), {
-          component: "ContactForm",
-          action: "handleSubmit",
-          status: response.status,
-          statusText: response.statusText,
-          errorCode: errorData.errorCode,
-          requestId: errorData.requestId,
-          traceId: errorData.traceId,
-          spanId: errorData.spanId,
-          duration: `${duration}ms`,
-          message: errorData.message,
-          timestamp: new Date().toISOString(),
-          url: functionUrl,
-        })
-
-        // User-friendly error messages
-        const userMessage =
-          errorData.message ??
-          "We couldn't send your message right now. Please try again later or email me directly at support@joshwentworth.com"
-
-        throw new Error(userMessage)
+        // Error responses are JSON from the function, but may be HTML from the platform
+        const errorData = (await response.json().catch(() => ({}))) as { message?: string }
+        throw new Error(errorData.message ?? FALLBACK_ERROR)
       }
-
-      logger.info("Contact form message sent successfully", {
-        component: "ContactForm",
-        action: "handleSubmit",
-        duration: `${duration}ms`,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-      })
 
       setStatus({ submitting: false, submitted: true, error: null })
       setFormData({ name: "", email: "", message: "" })

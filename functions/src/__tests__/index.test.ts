@@ -1,177 +1,89 @@
-import type { Request } from "firebase-functions/v2/https"
-import type { Response } from "express"
-import { handleContactForm } from "../index"
+import type { Request, Response } from "@google-cloud/functions-framework"
+import { handleRequest } from "../index"
+import { sendContactNotification } from "../email"
 
-// Mock the dependencies
-jest.mock("@google-cloud/logging")
-jest.mock("../services/email.service")
-jest.mock("../services/secret-manager.service")
-jest.mock("../services/firestore.service")
-jest.mock("cors", () => {
-  return jest.fn(() => (_req: any, _res: any, next: any) => {
-    next()
-  })
-})
+jest.mock("../email")
+jest.mock("../rate-limit", () => ({
+  contactFormRateLimiter: (_req: unknown, _res: unknown, next: () => void) => next(),
+}))
 
-describe("handleContactForm", () => {
-  let mockRequest: Partial<Request>
-  let mockResponse: Partial<Response>
-  let mockStatus: jest.Mock
-  let mockJson: jest.Mock
+const mockSend = jest.mocked(sendContactNotification)
+
+const validBody = {
+  name: "John Doe",
+  email: "john@example.com",
+  message: "This is a valid message that is long enough to pass validation.",
+  honeypot: "",
+}
+
+describe("handleRequest", () => {
+  let res: { status: jest.Mock; json: jest.Mock; [key: string]: unknown }
+
+  const call = (req: Partial<Request>) =>
+    handleRequest({ method: "POST", path: "/", headers: {}, body: {}, ...req } as Request, res as unknown as Response)
 
   beforeEach(() => {
-    mockStatus = jest.fn().mockReturnThis()
-    mockJson = jest.fn().mockReturnThis()
-    const mockSend = jest.fn().mockReturnThis()
-
-    mockResponse = {
-      status: mockStatus,
-      json: mockJson,
-      send: mockSend,
-      set: jest.fn().mockReturnThis(),
-      setHeader: jest.fn().mockReturnThis(),
-      getHeader: jest.fn().mockReturnValue(undefined),
-      header: jest.fn().mockReturnThis(),
+    mockSend.mockReset().mockResolvedValue("mailgun-id")
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+      once: jest.fn(),
+      setHeader: jest.fn(),
+      getHeader: jest.fn(),
       headersSent: false,
     }
-
-    mockRequest = {
-      method: "POST",
-      body: {},
-      rawBody: Buffer.from(""),
-      ip: "127.0.0.1",
-      get: jest.fn().mockReturnValue("test-user-agent"),
-      headers: {
-        origin: "https://example.com",
-        "content-type": "application/json",
-        "user-agent": "test-user-agent",
-      },
-    }
   })
 
-  it("should handle OPTIONS preflight request", async () => {
-    mockRequest.method = "OPTIONS"
+  it("responds to GET /health with the package version", async () => {
+    await call({ method: "GET", path: "/health" })
 
-    await handleContactForm(mockRequest as Request, mockResponse as Response)
-
-    expect(mockStatus).toHaveBeenCalledWith(204)
-    expect(mockResponse.send).toHaveBeenCalledWith("")
-  })
-
-  it("should reject non-POST requests", async () => {
-    mockRequest.method = "GET"
-
-    await handleContactForm(mockRequest as Request, mockResponse as Response)
-
-    expect(mockStatus).toHaveBeenCalledWith(405)
-    expect(mockJson).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        error: "METHOD_NOT_ALLOWED",
-        message: "Only POST requests are allowed",
-      })
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "healthy", version: expect.stringMatching(/^\d+\.\d+\.\d+/) })
     )
   })
 
-  it("should validate required fields", async () => {
-    mockRequest.body = {
-      name: "",
-      email: "invalid-email",
-      message: "hi", // too short
-    }
+  it("rejects non-POST requests", async () => {
+    await call({ method: "GET" })
 
-    await handleContactForm(mockRequest as Request, mockResponse as Response)
-
-    expect(mockStatus).toHaveBeenCalledWith(400)
-    expect(mockJson).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        error: "VALIDATION_FAILED",
-      })
-    )
+    expect(res.status).toHaveBeenCalledWith(405)
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: "METHOD_NOT_ALLOWED" }))
   })
 
-  it("should detect honeypot spam", async () => {
-    mockRequest.body = {
-      name: "John Doe",
-      email: "john@example.com",
-      message: "This is a valid message that is long enough to pass validation.",
-      honeypot: "spam-content", // Bot filled this
-    }
+  it("rejects invalid submissions without sending email", async () => {
+    await call({ body: { name: "", email: "invalid-email", message: "hi" } })
 
-    await handleContactForm(mockRequest as Request, mockResponse as Response)
-
-    // Should return success to not reveal honeypot
-    expect(mockStatus).toHaveBeenCalledWith(200)
-    expect(mockJson).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-      })
-    )
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: "VALIDATION_FAILED" }))
+    expect(mockSend).not.toHaveBeenCalled()
   })
 
-  it("should accept valid form submission", async () => {
-    mockRequest.body = {
-      name: "John Doe",
-      email: "john@example.com",
-      message: "This is a valid message that is long enough to pass validation.",
-      honeypot: "", // Empty honeypot
-    }
+  it("reports success to bots that fill the honeypot, without sending email", async () => {
+    await call({ body: { ...validBody, honeypot: "spam-content" } })
 
-    // Note: This test will fail until we mock the email service properly
-    // For now it demonstrates the test structure
-    await expect(handleContactForm(mockRequest as Request, mockResponse as Response)).resolves.not.toThrow()
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }))
+    expect(mockSend).not.toHaveBeenCalled()
   })
 
-  describe("Health Endpoint", () => {
-    it("should respond to GET /health request", async () => {
-      mockRequest = {
-        ...mockRequest,
-        method: "GET",
-        path: "/health",
-        url: "/health",
-      }
+  it("emails valid submissions", async () => {
+    await call({ body: validBody })
 
-      await handleContactForm(mockRequest as Request, mockResponse as Response)
-
-      expect(mockStatus).toHaveBeenCalledWith(200)
-      expect(mockJson).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: true,
-          service: "contact-form",
-          status: "healthy",
-          version: expect.any(String),
-          timestamp: expect.any(String),
-        })
-      )
+    expect(mockSend).toHaveBeenCalledWith({
+      name: validBody.name,
+      email: validBody.email,
+      message: validBody.message,
     })
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }))
+  })
 
-    it("should respond to GET /health without rate limiting", async () => {
-      mockRequest = {
-        ...mockRequest,
-        method: "GET",
-        path: "/health",
-        url: "/health",
-      }
+  it("returns 500 when the email cannot be sent", async () => {
+    mockSend.mockRejectedValue(new Error("mailgun 401"))
 
-      await handleContactForm(mockRequest as Request, mockResponse as Response)
+    await call({ body: validBody })
 
-      // Should succeed without requiring AppCheck or rate limiting
-      expect(mockStatus).toHaveBeenCalledWith(200)
-    })
-
-    it("should return valid ISO timestamp", async () => {
-      mockRequest = {
-        ...mockRequest,
-        method: "GET",
-        path: "/health",
-        url: "/health",
-      }
-
-      await handleContactForm(mockRequest as Request, mockResponse as Response)
-
-      const response = mockJson.mock.calls[0][0]
-      expect(response.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
-    })
+    expect(res.status).toHaveBeenCalledWith(500)
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: false, error: "INTERNAL_ERROR" }))
   })
 })

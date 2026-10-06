@@ -45,7 +45,7 @@ test.describe("Contact Form", () => {
     await page.locator("textarea#message").fill("This is a test message from E2E tests")
 
     // Intercept the network request to delay response
-    await page.route("**/contact-form-staging", async (route) => {
+    await page.route("**/handleContactForm", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 1000))
       await route.fulfill({
         status: 200,
@@ -69,7 +69,7 @@ test.describe("Contact Form", () => {
     await page.locator("textarea#message").fill("This is a test message from E2E tests")
 
     // Mock successful response
-    await page.route("**/contact-form-staging", async (route) => {
+    await page.route("**/handleContactForm", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -98,7 +98,7 @@ test.describe("Contact Form", () => {
     await page.locator("textarea#message").fill("This is a test message from E2E tests")
 
     // Mock network error
-    await page.route("**/contact-form-staging", async (route) => {
+    await page.route("**/handleContactForm", async (route) => {
       await route.abort("failed")
     })
 
@@ -120,7 +120,7 @@ test.describe("Contact Form", () => {
     await page.locator("textarea#message").fill("This is a test message from E2E tests")
 
     // Mock server error
-    await page.route("**/contact-form-staging", async (route) => {
+    await page.route("**/handleContactForm", async (route) => {
       await route.fulfill({
         status: 500,
         contentType: "application/json",
@@ -147,7 +147,7 @@ test.describe("Contact Form", () => {
     await page.locator("textarea#message").fill("This is a test message from E2E tests")
 
     // Mock timeout (delay longer than 30 seconds won't work in test, so we'll use abort)
-    await page.route("**/contact-form-staging", async (route) => {
+    await page.route("**/handleContactForm", async (route) => {
       // Simulate timeout by delaying then aborting
       await new Promise((resolve) => setTimeout(resolve, 100))
       await route.abort("timedout")

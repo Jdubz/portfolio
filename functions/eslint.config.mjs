@@ -12,7 +12,6 @@ export default [
       "*.config.js",
       "*.config.mjs",
       "**/dist/**",
-      "contact-form/dist/**",
       "scripts/**",
     ],
   },
@@ -83,7 +82,7 @@ export default [
       parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
-        project: "./tsconfig.dev.json",
+        project: "./tsconfig.json",
       },
       globals: {
         console: "readonly",

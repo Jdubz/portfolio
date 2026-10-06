@@ -80,19 +80,6 @@ if gcloud secrets describe to-email &> /dev/null; then
     gcloud secrets versions add to-email --data-file=-
 fi
 
-# Create reply-to-email secret
-echo "Creating reply-to-email..."
-echo -n "hello@joshwentworth.com" | \
-  gcloud secrets create reply-to-email \
-    --data-file=- \
-    --replication-policy="automatic" \
-    || echo "Secret reply-to-email already exists, updating..."
-
-if gcloud secrets describe reply-to-email &> /dev/null; then
-  echo -n "hello@joshwentworth.com" | \
-    gcloud secrets versions add reply-to-email --data-file=-
-fi
-
 echo ""
 echo "✅ All secrets created successfully!"
 echo ""
@@ -105,4 +92,3 @@ echo "  gcloud secrets add-iam-policy-binding mailgun-api-key --member=serviceAc
 echo "  gcloud secrets add-iam-policy-binding mailgun-domain --member=serviceAccount:\$PROJECT_NUMBER-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor"
 echo "  gcloud secrets add-iam-policy-binding from-email --member=serviceAccount:\$PROJECT_NUMBER-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor"
 echo "  gcloud secrets add-iam-policy-binding to-email --member=serviceAccount:\$PROJECT_NUMBER-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor"
-echo "  gcloud secrets add-iam-policy-binding reply-to-email --member=serviceAccount:\$PROJECT_NUMBER-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor"

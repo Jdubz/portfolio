@@ -85,15 +85,13 @@ const PrivacyPage = () => {
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>4. Data Storage and Security</h2>
-              <p sx={{ mb: 2 }}>Your information is stored securely using:</p>
-              <ul>
-                <li>Google Cloud Platform with industry-standard encryption</li>
-                <li>Firestore database with access controls</li>
-                <li>Secure email delivery via Mailgun</li>
-              </ul>
+              <p sx={{ mb: 2 }}>
+                Contact form submissions are processed on Google Cloud Platform and delivered to our inbox by email via
+                Mailgun. The website does not keep a separate database of submissions.
+              </p>
               <p sx={{ mt: 3 }}>
-                We retain your contact form submissions for as long as necessary to respond to your inquiry and maintain
-                business records. You may request deletion of your data at any time.
+                We retain the emails for as long as necessary to respond to your inquiry and maintain business records.
+                You may request deletion of your data at any time.
               </p>
             </section>
 

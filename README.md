@@ -2,7 +2,7 @@
 
 > **Software × Hardware × Fabrication**
 
-A professional portfolio showcasing multidisciplinary engineering projects that blend software development, electronics design, and digital fabrication. Built as a lightweight Gatsby static site with serverless contact form functionality.
+A professional portfolio showcasing multidisciplinary engineering projects that blend software development, electronics design, and digital fabrication.
 
 **Josh Wentworth**
 _Multidisciplinary Engineer_
@@ -11,232 +11,95 @@ _Multidisciplinary Engineer_
 - **LinkedIn**: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)
 - **GitHub**: [github.com/joshwentworth](https://github.com/joshwentworth)
 
-## 📁 Project Structure
+## Project Structure
 
-This project is organized as a minimal Firebase hosting setup:
+An npm workspace with two packages:
 
 ```
 portfolio/
-├── web/                    # Gatsby static site
+├── web/                   # Gatsby static site
 │   ├── src/
-│   │   ├── pages/         # Site pages (homepage, contact, legal)
+│   │   ├── pages/         # Homepage, contact, project and legal pages
 │   │   ├── components/    # React components
-│   │   └── sections/      # Homepage sections
+│   │   ├── content/       # MDX content for homepage sections
+│   │   └── gatsby-plugin-theme-ui/  # Theme UI theme
 │   ├── static/            # Static assets
-│   └── package.json       # Web dependencies
+│   └── e2e/               # Playwright tests
 │
-├── functions/             # Cloud Functions (contact form only)
-│   ├── contact-form/
-│   │   └── index.ts       # Contact form handler
-│   ├── src/
-│   │   └── index.ts       # Function exports
-│   └── package.json       # Minimal function dependencies
+├── functions/             # Contact form Cloud Function
+│   └── src/
+│       ├── index.ts       # HTTP handler: CORS, validation, honeypot
+│       ├── rate-limit.ts  # Per-IP rate limiting
+│       ├── email.ts       # Mailgun delivery
+│       └── logger.ts      # Structured logging
 │
-├── firebase.json          # Firebase hosting configuration
-└── package.json           # Root workspace config
+├── firebase.json          # Hosting config (production + staging targets)
+├── .github/workflows/     # CI and deployment
+└── package.json           # Workspace root
 ```
 
-## 🔧 Built With
+## Built With
 
-### Web Stack
+- **Web:** Gatsby 5, React 18, Theme UI, React Spring (parallax), MDX
+- **Function:** Cloud Functions Gen 2 (Node.js 20), TypeScript, Joi, express-rate-limit, Mailgun, bundled with esbuild
+- **Hosting:** Firebase Hosting behind Cloudflare
 
-- **Gatsby** - React-based static site generator
-- **Theme UI** - Constraint-based styling system
-- **React Spring** - Smooth parallax animations
-- **MDX** - Markdown with JSX for content
+## Quick Start
 
-### Functions Stack
-
-- **Cloud Functions Gen 2** - Serverless contact form handler
-- **TypeScript** - Type-safe function development
-- **Mailgun** - Email delivery service
-- **Joi & Zod** - Request validation
-- **Express Rate Limit** - Rate limiting protection
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js >= 20.0.0
-- npm >= 10.0.0
-
-### Installation
+Requires Node.js >= 20 and npm >= 10.
 
 ```bash
-# Install all dependencies (root + workspaces)
-npm install
+npm install            # Installs both workspaces
 
-# Or install individually
-npm install              # Root dependencies
-cd web && npm install   # Web dependencies
-cd functions && npm install  # Functions dependencies
+npm run dev            # Gatsby dev server on http://localhost:8000
+npm run dev:functions  # Contact form function on http://localhost:8080
 ```
 
-### Development
+`web/.env.development` already points the contact form at the local function.
+To actually send email locally, copy `functions/.env.example` to `functions/.env`,
+fill it in and export the variables before starting the function.
+
+## Checks
 
 ```bash
-# Web development (port 8000)
-npm run dev
-# or
-make dev
+npm run lint           # Type-check, ESLint and Prettier for both packages
+npm test               # Jest unit tests for both packages
+npm run build          # Production Gatsby build
+npm run firebase:serve # Serve the build with the hosting rules in firebase.json
 
-# Functions development (port 8080)
-npm run dev:functions
-# or
-make dev-functions
-
-# Run Firebase emulators (hosting + functions)
-npm run firebase:serve
-# or
-make firebase-serve
+cd web && npm run test:e2e   # Playwright (needs a build; mocks the function)
 ```
 
-### Building
+`make help` lists the same commands as make targets.
 
-```bash
-# Build web
-npm run build:web
+## Deployment
 
-# Build functions
-npm run build:functions
+Deployment is automatic:
 
-# Build all
-npm run build
-```
+| Trigger                                 | Result                                                 |
+| --------------------------------------- | ------------------------------------------------------ |
+| Push to `staging`                       | Site deployed to https://staging.joshwentworth.com     |
+| Push to `main`                          | Site deployed to https://joshwentworth.com             |
+| Push to `main` touching `functions/**`  | `handleContactForm` function redeployed                |
+| Pull request to `main`                  | Lint, tests, and a temporary Firebase preview URL      |
 
-### Testing
+Workflow: `feature → staging → main`. Staging shares the production contact form function.
 
-```bash
-# Unit tests
-npm test                    # Run all unit tests (web + functions)
-npm run test:web           # Run web unit tests (Jest)
-npm run test:functions     # Run functions unit tests (Jest)
+Manual hosting deploys, if ever needed: `make deploy-staging` / `make deploy-prod`.
+The function's memory, instance limit and secrets are defined only in
+`.github/workflows/deploy-cloud-functions.yml`.
 
-# E2E tests (Playwright)
-cd web
-npm run test:e2e           # Run E2E tests headless
-npm run test:e2e:ui        # Run E2E tests with UI mode
-npm run test:e2e:debug     # Debug E2E tests
-npm run test:e2e:report    # View test report
-```
+## Versioning
 
-## 🎨 Brand Implementation
+Versions are managed with [Changesets](./.changeset/README.md). Run `npm run changeset`
+with any change to `web/` or `functions/`; versions are bumped automatically on merge to `main`.
 
-This portfolio implements Josh's complete brand identity:
+## Documentation
 
-- **Typography**: Poppins (headings) and Inter (body text)
-- **Color Palette**: Premium surfaces with accent blue (#0EA5E9)
-- **Engineering Icons**: Custom technical iconography
+- [functions/README.md](./functions/README.md) - Contact form function
+- [docs/brand/README.md](./docs/brand/README.md) - Brand identity and assets
+- [docs/DEVELOPMENT_WORKFLOW.md](./docs/DEVELOPMENT_WORKFLOW.md) - Git workflow
 
-## 📦 Deployment
-
-### Staging
-
-```bash
-# Deploy web to staging
-npm run deploy:staging
-# or
-make deploy-staging
-
-# Deploy functions to staging
-npm run deploy:functions:staging
-```
-
-### Production
-
-```bash
-# Deploy web to production
-npm run deploy:production
-# or
-make deploy-prod
-
-# Deploy functions to production
-npm run deploy:functions:production
-```
-
-## 🛠️ Available Commands
-
-### Root Commands
-
-```bash
-npm run dev                      # Start web dev server
-npm run dev:functions            # Start functions dev server
-npm run build                    # Build web
-npm run build:web               # Build web
-npm run build:functions         # Build functions
-npm test                        # Run all tests
-npm run lint                    # Lint all workspaces
-npm run clean                   # Clean web cache
-```
-
-### Makefile Commands
-
-```bash
-make help                # Show all available commands
-make dev                 # Start web dev server
-make dev-functions       # Start functions dev server
-make build               # Build web
-make test                # Run web tests
-make test-functions      # Run functions tests
-make clean               # Clean web cache
-make firebase-serve      # Run Firebase emulators
-make deploy-staging      # Deploy to staging
-make deploy-prod         # Deploy to production
-```
-
-## ✨ Features
-
-### Portfolio Showcase
-
-- **Homepage**: Animated parallax sections showcasing engineering projects
-- **Case Studies**: Detailed technical project breakdowns
-- **Contact Form**: Secure serverless email delivery with rate limiting
-- **Legal Pages**: Privacy policy and terms of service
-- **Performance Optimized**: Static site generation for fast loading
-- **SEO Friendly**: Optimized meta tags and structured data
-- **Responsive Design**: Mobile-first with smooth animations
-
-## 📝 Documentation
-
-All documentation has been consolidated in the [`docs/`](./docs/) folder:
-
-### Setup & Configuration
-
-- [Firebase Configuration Checklist](./docs/setup/FIREBASE_CONFIG_CHECKLIST.md) - Complete setup guide
-- [Development Workflow](./docs/DEVELOPMENT_WORKFLOW.md) - Git workflow and best practices
-
-### Development
-
-- **[Architecture](./docs/development/ARCHITECTURE.md)** - System design and patterns
-- [Known Issues](./docs/development/KNOWN_ISSUES.md) - Current known issues and workarounds
-
-### Brand Assets
-
-- [Brand Guidelines](./docs/brand/README.md) - Complete brand identity and assets
-
-### Changelog
-
-- [Changelog](./docs/CHANGELOG.md) - Version history and release notes
-
-## 🔒 Environment Variables
-
-### Web (.env in web/)
-
-```
-GATSBY_CONTACT_FUNCTION_URL=https://...cloudfunctions.net/contact-form
-```
-
-### Functions (.env in functions/)
-
-See [functions/.env.example](./functions/.env.example)
-
-## 📜 License
+## License
 
 0BSD - See [LICENSE](./LICENSE)
-
-## 🤝 Contact
-
-For questions or collaborations:
-
-- Email: hello@joshwentworth.com
-- LinkedIn: [linkedin.com/in/joshwentworth](https://linkedin.com/in/joshwentworth)

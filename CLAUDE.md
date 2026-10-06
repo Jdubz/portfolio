@@ -4,351 +4,116 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a minimal Firebase monorepo for Josh Wentworth's professional portfolio. The project is a Gatsby static site with a single Cloud Function for the contact form.
+Josh Wentworth's professional portfolio: a Gatsby static site plus one Cloud Function for the contact form. Keep it that small. The resume builder and job tools moved to the separate Job Finder app; `/resume-builder` and `/app` redirect there.
 
-**Key Technologies:**
-- **Frontend:** Gatsby 5 + React 18 + Theme UI + TypeScript
-- **Backend:** Firebase Cloud Functions Gen 2 (Node.js 20) - single function
-- **Database:** Cloud Firestore (stores contact form submissions)
-- **Security:** Firebase App Check + reCAPTCHA v3
-- **Analytics:** Firebase Analytics
-- **Infrastructure:** Google Cloud Platform (GCP) with Secret Manager
+- **Frontend:** Gatsby 5 + React 18 + Theme UI + TypeScript (`web/`)
+- **Backend:** one HTTP Cloud Function, Gen 2, Node.js 20 (`functions/`)
+- **Hosting:** Firebase Hosting behind Cloudflare
+- **Email:** Mailgun
+
+There is no database, no authentication, no analytics and no App Check. Do not reintroduce the Firebase client SDK without a reason.
 
 ## Project Structure
 
 ```
 portfolio/
-├── web/                    # Gatsby frontend (port 8000)
+├── web/                    # Gatsby frontend (npm workspace)
 │   ├── src/
-│   │   ├── components/    # React components (ui, layout)
-│   │   ├── pages/         # Gatsby page components (homepage, contact, legal)
-│   │   ├── styles/        # Theme UI configuration
-│   │   └── utils/         # Utilities (logger, firebase config)
-│   └── static/            # Static assets
+│   │   ├── components/     # ContactForm, homepage/*, elements/*
+│   │   ├── content/        # MDX for homepage sections
+│   │   ├── pages/          # index, contact, projects/full-stack, privacy, terms, 404
+│   │   ├── templates/      # home.tsx (parallax homepage)
+│   │   └── gatsby-plugin-theme-ui/  # Theme
+│   ├── e2e/                # Playwright tests
+│   └── static/             # Static assets
 │
-├── functions/             # Cloud Functions (Node.js 20)
+├── functions/              # Contact form function (npm workspace)
 │   └── src/
-│       ├── config/        # Configuration (cors, secrets, error-codes)
-│       ├── services/      # Email service (Mailgun)
-│       ├── utils/         # Utilities (logger, request-id)
-│       └── index.ts       # Contact form handler (ONLY function)
+│       ├── index.ts        # Handler: CORS, validation, honeypot (entry: handleContactForm)
+│       ├── rate-limit.ts   # Per-IP rate limiter
+│       ├── email.ts        # Mailgun delivery, reads config from env vars
+│       └── logger.ts       # Structured JSON logging
 │
-├── scripts/               # Build and deployment scripts
-├── docs/                  # Documentation
-└── Makefile              # Development commands
+├── firebase.json           # Hosting: production + staging targets, headers, redirects
+├── .github/workflows/      # CI/CD
+├── scripts/                # Changeset helper, screenshots, image optimisation
+└── Makefile                # Thin aliases for npm scripts (`make help`)
 ```
 
-## Common Development Commands
-
-### Daily Development
+## Commands
 
 ```bash
-# Start web dev server (Gatsby on port 8000)
-npm run dev
-# or
-make dev
+npm run dev             # Gatsby dev server (port 8000)
+npm run dev:functions   # Build and run the function locally (port 8080)
 
-# Start Firebase emulators (Functions, Hosting)
-npm run firebase:serve
-# or
-make firebase-emulators
+npm run lint            # tsc + ESLint + Prettier, both packages
+npm test                # Jest, both packages
+npm run build           # Production Gatsby build
+npm run build:functions # esbuild bundle -> functions/dist/index.js
 
-# Run all tests
-npm test
-
-# Lint all code (web + functions)
-npm run lint
-# or
-make lint
-
-# Fix linting issues
-npm run lint:fix
-# or
-make lint-fix
+npm run firebase:serve  # Hosting emulator for the built site (port 5000)
+cd web && npm run test:e2e   # Playwright
 ```
 
-### Building
+Run `npm run lint && npm test` before finishing a change; CI runs both on every PR and before every hosting deploy.
 
-```bash
-# Build web
-npm run build:web
+## Contact Form
 
-# Build functions
-npm run build:functions
+**Frontend** (`web/src/components/ContactForm.tsx`): client-side validation, hidden honeypot field, POST as JSON to `GATSBY_CONTACT_FUNCTION_URL`.
 
-# Build everything
-npm run build
-```
+**Backend** (`functions/src/index.ts`), in order:
 
-### Testing
+1. CORS allowlist (production, staging, localhost)
+2. `GET /health` returns status and package version
+3. Rate limit: 5 requests / 15 minutes / IP
+4. Joi validation
+5. Honeypot: filled means bot, respond 200 without sending
+6. Send email via Mailgun
 
-```bash
-# Web tests (Jest)
-npm run test:web
+Things that are easy to get wrong:
 
-# Functions tests (Jest)
-npm run test:functions
+- **Validation limits live in two places** (the Joi schema and `ContactForm.tsx`). Change both.
+- **Client IP is the last `X-Forwarded-For` entry.** Google appends it; earlier entries are client-supplied and spoofable.
+- **Rate limit counts are in memory per instance**, so `--max-instances` in the deploy workflow is part of the limit. Keep it low.
+- **Never log form contents** (name, email, message). Log request IDs.
+- **Log errors through `logger`** so `Error` message and stack survive serialisation.
+- The function is bundled, so `functions/dist/index.js` has no runtime dependencies beyond the Functions Framework.
 
-# E2E tests (Playwright)
-cd web && npm run test:e2e          # Headless
-cd web && npm run test:e2e:ui       # UI mode
-cd web && npm run test:e2e:debug    # Debug mode
+## Environments
 
-# Test contact form
-make test-contact-form              # Test contact form API
-```
+| Environment | Site                        | Gatsby env file        | Contact function                  |
+| ----------- | --------------------------- | ---------------------- | --------------------------------- |
+| Local       | localhost:8000              | `web/.env.development` | localhost:8080                    |
+| Staging     | staging.joshwentworth.com   | `web/.env.staging`     | production `handleContactForm`    |
+| Production  | joshwentworth.com           | `web/.env.production`  | production `handleContactForm`    |
 
-### Linting
+`GATSBY_ACTIVE_ENV` selects the env file. Everything in those files is public.
 
-```bash
-# Web linting
-npm run lint:web                    # TypeScript + ESLint + Prettier
-npm run lint:web:tsc                # TypeScript only
-npm run lint:web:eslint             # ESLint only
-npm run lint:web:prettier           # Prettier only
+Function secrets (`MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `FROM_EMAIL`, `TO_EMAIL`) are Secret Manager secrets mounted as environment variables by `.github/workflows/deploy-cloud-functions.yml`. That workflow is the only place the function's memory, instance limit and secrets are defined.
 
-# Functions linting
-npm run lint:functions
+## Git Workflow and Deployment
 
-# Fix issues
-npm run lint:fix                    # Auto-fix all
-```
-
-### Firebase Development
-
-```bash
-# Start emulators with UI dashboard
-make firebase-emulators-ui
-
-# Health checks
-make health-check-local             # Check local emulator function
-make health-check-staging           # Check staging function
-make health-check-prod              # Check production function
-```
-
-### Deployment
-
-**IMPORTANT:** Always follow the branch workflow: `feature → staging → main`
-
-```bash
-# Deploy to staging (auto-deploys on push to staging branch)
-git push origin staging
-
-# Deploy to production (create PR: staging → main)
-gh pr create --base main --head staging
-
-# Manual deployments (use CI/CD instead)
-make deploy-staging
-make deploy-prod
-```
-
-### Process Management
-
-```bash
-# Kill all dev servers and clean cache
-make kill
-
-# Clean Gatsby cache only
-npm run clean
-```
-
-## Contact Form Architecture
-
-The contact form is a simple, secure implementation:
-
-### Frontend (`web/src/pages/contact.tsx`)
-
-- Inline HTML form (no complex form components)
-- reCAPTCHA v3 integration for spam protection
-- Client-side validation before submission
-- Direct HTTP POST to Cloud Function
-
-### Backend (`functions/src/index.ts`)
-
-Single Cloud Function: `handleContactForm`
-
-**Flow:**
-1. Verify reCAPTCHA token
-2. Verify Firebase App Check token
-3. Rate limiting (prevents spam)
-4. Save submission to Firestore (`contact_submissions` collection)
-5. Send email via Mailgun
-6. Return success/error response
-
-**Security Layers:**
-- Firebase App Check (defense-in-depth)
-- reCAPTCHA v3 (spam protection)
-- Rate limiting (express-rate-limit)
-- CORS configuration
-- Request ID tracking
-
-**Key Files:**
-- `functions/src/index.ts` - Main handler
-- `functions/src/services/email.service.ts` - Mailgun integration
-- `functions/src/config/cors.ts` - CORS configuration
-- `functions/src/config/secrets.ts` - Secret Manager access
-
-## Environment Configuration
-
-### Local Development (Emulators)
-
-**Web** (`.env.development`):
-```env
-GATSBY_USE_FIREBASE_EMULATORS=true
-GATSBY_EMULATOR_HOST=localhost
-```
-
-No authentication required for local development.
-
-### Staging
-
-**Web** (`.env.staging`):
-- Domain: `staging.joshwentworth.com`
-- Function: `handleContactForm-staging`
-
-### Production
-
-**Web** (`.env.production`):
-- Domain: `joshwentworth.com`
-- Function: `handleContactForm`
-
-## Firebase Services
-
-### Cloud Functions
-
-**Deployed Function:**
-- **`handleContactForm`**: Contact form submission handler with email delivery
-
-**Health endpoint:** `GET /health` for monitoring.
-
-### Firestore Collections
-
-**Production:**
-- `contact_submissions`: Contact form submissions (admin access only via Firebase Console)
-
-**Staging:**
-- Same structure as production
-
-**Note:** Firestore is ONLY accessed server-side via Cloud Function (Admin SDK). No client-side Firestore access.
-
-### Secret Manager
-
-Secrets stored in Google Cloud Secret Manager:
-
-- `mailgun-api-key`: Email service API key
-- `mailgun-domain`: Email service domain
-
-### Security Services
-
-- **Firebase App Check**: Validates requests from legitimate clients
-- **Firebase Analytics**: Tracks page views and events
-- **reCAPTCHA v3**: Spam protection for contact form
-
-## Git Workflow
-
-**Branch Strategy:**
 ```
 feature_branch → staging → main
 ```
 
-**Rules:**
-1. Create feature branches from `staging`
-2. Create PR: `feature → staging`
-3. After staging testing, create PR: `staging → main`
-4. **Never push directly to `main`** (use PRs from staging)
+1. Branch from `staging`, PR into `staging`
+2. Push to `staging` auto-deploys the site to `staging.joshwentworth.com`
+3. After testing there, PR `staging → main`
+4. Merge to `main` auto-deploys the site to `joshwentworth.com`, and the function if `functions/**` changed
 
-**Exception:** Hotfixes for broken staging can be committed directly to staging
+Never push directly to `main`. Every change to `web/` or `functions/` needs a changeset (`npm run changeset`); versions bump automatically on merge.
 
-**Deployment:**
-- Push to `staging` → auto-deploys to `staging.joshwentworth.com`
-- Merge to `main` → auto-deploys to `joshwentworth.com`
+## Hosting Notes (`firebase.json`)
 
-## Testing Checklist (Before Merging to Main)
+- Pages are served at clean URLs (`/contact`), so the default `Cache-Control` is revalidate; fingerprinted JS/CSS and images override it with immutable caching. Rule order matters: later rules win.
+- No catch-all rewrite: unknown URLs must return Gatsby's `404.html`.
+- The staging target is a copy of production plus `X-Robots-Tag: noindex`. Change both together.
+- The CSP only allows what the site loads today (self, Bunny Fonts, the function, Cloudflare Insights). Adding a third-party script means updating it.
+- `firestore.rules` and `storage.rules` deny everything; nothing in this repo uses those services.
 
-- [ ] All tests pass (`npm test`)
-- [ ] Build succeeds (`npm run build`)
-- [ ] Linting passes (`npm run lint`)
-- [ ] Feature tested on `staging.joshwentworth.com`
-- [ ] Contact form works (if contact-related changes)
-- [ ] No console errors
-- [ ] Mobile responsive (if UI changes)
+## Common Issues
 
-## Versioning
-
-This project uses **Changesets** for version management:
-
-```bash
-# Create changeset after changes
-npm run changeset
-# or
-make changeset
-
-# Version packages (done by CI/CD)
-npm run version
-
-# Publish (done by CI/CD on main merge)
-npm run release
-```
-
-**Changeset bump types:**
-- **patch**: Bug fixes, typos, small improvements
-- **minor**: New features, non-breaking changes
-- **major**: Breaking changes
-
-**Automatic version bumping:** When a PR is merged to `main`, a GitHub Action automatically creates a new changeset if one wasn't included.
-
-## Important Notes
-
-### Security
-
-- **Firebase App Check**: Defense-in-depth for contact form
-- **reCAPTCHA v3**: Spam protection
-- **Rate Limiting**: Contact form protected with express-rate-limit
-- **CORS**: Configured in `functions/src/config/cors.ts`
-- **Secrets**: Never commit secrets; use Secret Manager
-- **No client-side database access**: Firestore only accessed via Cloud Function
-
-### Performance
-
-- **Gatsby Build**: Requires Node.js 20, 6-8GB RAM allocation
-- **Function**: Gen 2, 256MB memory, 60s timeout
-- **Static Site**: Deployed to Firebase Hosting (CDN)
-
-### Common Issues
-
-1. **Gatsby Build Fails**: Clean cache with `npm run clean` or `make kill`
-2. **Emulators Won't Start**: Check ports 5000, 5001, 8080 are free
-3. **Contact form fails**: Check reCAPTCHA keys in environment variables
-4. **Function Deployment Fails**: Ensure correct build service account is configured
-
-### Logging
-
-Both web and functions use structured logging:
-
-```typescript
-import { logger } from '../utils/logger'
-
-logger.info("Contact form submitted", { email })
-logger.error("Email send failed", error, { recipient })
-```
-
-**Environments:**
-- Development/Staging: Console output
-- Production: Google Cloud Logging
-
-### Documentation
-
-For more details, see:
-- [Development Workflow](./docs/DEVELOPMENT_WORKFLOW.md)
-- [Firebase Configuration](./docs/setup/FIREBASE_CONFIG_CHECKLIST.md)
-- [Brand Guidelines](./docs/brand/README.md)
-
-## Pages
-
-The site has minimal pages:
-
-1. **Homepage** (`/`) - Static portfolio showcase
-2. **Contact** (`/contact`) - Contact form
-3. **Legal Pages** - Privacy policy, terms of service, etc.
-
-All pages are static (no authentication, no dynamic content management).
+1. **Gatsby build fails oddly:** `npm run clean`, then rebuild. Builds want Node 20 and several GB of RAM.
+2. **Prettier flags every line on Windows:** the checkout has CRLF endings; `.gitattributes` forces LF, so re-checkout the files.
+3. **Contact form returns 500 locally:** the Mailgun env vars are not set (see `functions/.env.example`).

@@ -64,9 +64,6 @@ typings/
 !.env.production
 !.env.example
 
-# Cache version files (generated during build)
-.cache-version
-web/.env.cache
 
 # Gatsby cache and build
 .cache
@@ -122,9 +119,6 @@ lighthouse-*.json
 # Claude Code local settings
 .claude/settings.local.json
 
-# Generated Partytown assets (should be copied from node_modules during build)
-web/public/~partytown/
-public/~partytown/
 
 # Test and dev files
 web/src/components/*Test.tsx

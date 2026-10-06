@@ -150,14 +150,14 @@ function getCommitMessage() {
   return '';
 }
 
-function generateChangesetContent(packages, changeType, summary, cacheBust = false) {
+function generateChangesetContent(packages, changeType, summary) {
   const packageEntries = packages.map(pkg => `"${pkg}": ${changeType}`).join('\n');
 
   const content = `---
 ${packageEntries}
 ---
 
-${summary}${cacheBust ? '\n\nCACHE_BUST: true' : ''}
+${summary}
 `;
 
   return content;
@@ -175,7 +175,7 @@ function generateChangesetFilename() {
   return `${adj}-${animal}-${verb}.md`;
 }
 
-function createChangeset(packages, changeType, summary, cacheBust = false) {
+function createChangeset(packages, changeType, summary) {
   const changesetDir = path.join(process.cwd(), '.changeset');
 
   if (!fs.existsSync(changesetDir)) {
@@ -184,7 +184,7 @@ function createChangeset(packages, changeType, summary, cacheBust = false) {
 
   const filename = generateChangesetFilename();
   const filepath = path.join(changesetDir, filename);
-  const content = generateChangesetContent(packages, changeType, summary, cacheBust);
+  const content = generateChangesetContent(packages, changeType, summary);
 
   fs.writeFileSync(filepath, content, 'utf8');
 
@@ -289,22 +289,12 @@ async function main() {
 
   const finalSummary = summary || defaultSummary || 'Updates';
 
-  // Prompt for cache bust
-  console.log('');
-  console.log(`${colors.yellow}⚠️  Does this change require users to hard refresh?${colors.reset}`);
-  console.log('   (Service worker changes, critical CSS/JS updates, etc.)');
-  console.log('');
-  const cacheBust = await prompt('Force cache invalidation? (y/N) [N]: ', true);
-
   // Create changeset
-  const filename = createChangeset(packages, changeType, finalSummary, cacheBust);
+  const filename = createChangeset(packages, changeType, finalSummary);
 
   console.log('');
   console.log(`${colors.green}✓${colors.reset} Created changeset: ${colors.bright}.changeset/${filename}${colors.reset}`);
   console.log(`${colors.green}✓${colors.reset} Staged changeset file`);
-  if (cacheBust) {
-    console.log(`${colors.yellow}🔥${colors.reset} Cache bust enabled - users will get a hard refresh`);
-  }
   console.log('');
 }
 
