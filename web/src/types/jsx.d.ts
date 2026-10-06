@@ -7,11 +7,6 @@ declare global {
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface IntrinsicElements {}
   }
-
-  interface Window {
-    __APP_VERSION__?: string
-    __APP_NAME__?: string
-  }
 }
 
 // Suppress React 18 JSX component return type errors

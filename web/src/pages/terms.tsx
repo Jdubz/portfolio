@@ -65,8 +65,8 @@ const TermsPage = () => {
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>2. Description of Service</h2>
               <p>
                 This Website is a personal portfolio showcasing Josh Wentworth's professional work, projects, and skills
-                in software development, hardware engineering, and digital fabrication. The Website includes a contact
-                form for professional inquiries.
+                in software development, hardware engineering, and digital fabrication. Professional inquiries are
+                welcome by email.
               </p>
             </section>
 
@@ -75,7 +75,7 @@ const TermsPage = () => {
               <p sx={{ mb: 2 }}>You agree to use this Website only for lawful purposes. You agree not to:</p>
               <ul>
                 <li>Use the Website in any way that violates applicable laws or regulations</li>
-                <li>Send spam, malicious code, or harmful content through the contact form</li>
+                <li>Send spam, malicious code, or harmful content to the contact email address</li>
                 <li>Attempt to gain unauthorized access to any part of the Website</li>
                 <li>Interfere with or disrupt the Website or servers</li>
                 <li>Use automated systems (bots, scrapers) without permission</li>
@@ -84,9 +84,9 @@ const TermsPage = () => {
             </section>
 
             <section>
-              <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>4. Contact Form Usage</h2>
+              <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>4. Contacting Us</h2>
               <p sx={{ mb: 2 }}>
-                The contact form is provided for legitimate professional inquiries only. By using the contact form, you
+                The contact email address is provided for legitimate professional inquiries only. By emailing us, you
                 agree that:
               </p>
               <ul>

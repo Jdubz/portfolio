@@ -103,8 +103,7 @@ const Seo = ({
       <link rel="manifest" href="/favicons/site.webmanifest" />
 
       {/* Preconnect to external domains for performance */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      <link rel="preconnect" href="https://fonts.bunny.net" crossOrigin="" />
 
       {children}
     </>

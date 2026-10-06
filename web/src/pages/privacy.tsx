@@ -57,18 +57,19 @@ const PrivacyPage = () => {
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>1. Introduction</h2>
               <p>
                 This Privacy Policy describes how joshwentworth.com ("we", "us", or "our") collects, uses, and protects
-                your personal information when you visit our website and use our contact form.
+                your personal information when you visit our website or contact us by email.
               </p>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>2. Information We Collect</h2>
-              <p sx={{ mb: 2 }}>When you use our contact form, we collect:</p>
+              <p sx={{ mb: 2 }}>
+                This website has no contact form, user accounts or tracking, and does not collect personal information
+                from visitors. If you email us, we receive:
+              </p>
               <ul>
-                <li>Your name</li>
-                <li>Your email address</li>
+                <li>Your email address and the name your email client sends</li>
                 <li>The message content you provide</li>
-                <li>Technical information (IP address, browser type, timestamp)</li>
               </ul>
             </section>
 
@@ -78,22 +79,19 @@ const PrivacyPage = () => {
               <ul>
                 <li>Respond to your inquiries and messages</li>
                 <li>Maintain records of our communications</li>
-                <li>Prevent spam and abuse of our contact form</li>
                 <li>Improve our website and services</li>
               </ul>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>4. Data Storage and Security</h2>
-              <p sx={{ mb: 2 }}>Your information is stored securely using:</p>
-              <ul>
-                <li>Google Cloud Platform with industry-standard encryption</li>
-                <li>Firestore database with access controls</li>
-                <li>Secure email delivery via Mailgun</li>
-              </ul>
+              <p sx={{ mb: 2 }}>
+                Emails you send us are held by our email provider. The website does not keep a database of visitors or
+                messages.
+              </p>
               <p sx={{ mt: 3 }}>
-                We retain your contact form submissions for as long as necessary to respond to your inquiry and maintain
-                business records. You may request deletion of your data at any time.
+                We retain the emails for as long as necessary to respond to your inquiry and maintain business records.
+                You may request deletion of your data at any time.
               </p>
             </section>
 
@@ -102,13 +100,13 @@ const PrivacyPage = () => {
               <p sx={{ mb: 2 }}>We use the following third-party services:</p>
               <ul>
                 <li>
-                  <strong>Google Cloud Platform:</strong> For hosting and data storage
+                  <strong>Firebase Hosting (Google):</strong> For website hosting
                 </li>
                 <li>
-                  <strong>Mailgun:</strong> For email delivery
+                  <strong>Cloudflare:</strong> For content delivery and DNS
                 </li>
                 <li>
-                  <strong>Firebase:</strong> For website hosting and serverless functions
+                  <strong>Bunny Fonts:</strong> For web fonts
                 </li>
               </ul>
               <p sx={{ mt: 3 }}>These services have their own privacy policies and we encourage you to review them.</p>
