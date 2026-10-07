@@ -299,12 +299,15 @@ const buildIndex = ({ tracks, groups, sections }) => {
       }
     })
 
+    // Groups are newest first unless the section asks for name order
     const groupDate = (group) => group.date || group.tracks.map(sortKey).sort().pop()
+    const groupName = (group) => group.title || group.path
     builtGroups.sort((a, b) => {
       if ((a.path === id) !== (b.path === id)) {
         return a.path === id ? -1 : 1
       }
-      return groupDate(b).localeCompare(groupDate(a)) || natural(a.path, b.path)
+      const byDate = sectionFields.sort === "name" ? 0 : groupDate(b).localeCompare(groupDate(a))
+      return byDate || natural(groupName(a), groupName(b)) || natural(a.path, b.path)
     })
 
     return {
@@ -325,11 +328,14 @@ const buildIndex = ({ tracks, groups, sections }) => {
 
 const main = async () => {
   const args = process.argv.slice(2)
-  const dryRun = args.includes("--dry-run")
-  const [source] = args.filter((arg) => !arg.startsWith("--"))
-  if (!source) {
+  const options = args.filter((arg) => arg.startsWith("-"))
+  const folders = args.filter((arg) => !arg.startsWith("-"))
+  // A mistyped --dry-run must not turn a preview into a real publish
+  if (folders.length !== 1 || options.some((option) => option !== "--dry-run")) {
     fail("Usage: npm run publish-audio -- <library-folder> [--dry-run]")
   }
+  const dryRun = options.includes("--dry-run")
+  const [source] = folders
   const root = path.resolve(process.env.INIT_CWD || process.cwd(), source)
   if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
     fail(`${root} is not a folder`)
