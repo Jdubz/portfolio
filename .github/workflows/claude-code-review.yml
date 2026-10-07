@@ -132,7 +132,7 @@ jobs:
           # The model is set explicitly so review depth does not change when the action's default does.
           claude_args: |
             --model claude-opus-5-5
-            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Bash(git merge-base:*),Bash(git show:*)" --json-schema '{"type":"object","required":["verdict","coverage","summary"],"additionalProperties":false,"properties":{"verdict":{"type":"string","enum":["no-issues","issues"]},"coverage":{"type":"string","enum":["full","partial"]},"issue_count":{"type":"integer","minimum":0},"summary":{"type":"string"}}}'
+            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Bash(git merge-base:*),Bash(git show:*)" --json-schema '{"type":"object","required":["verdict","coverage","issue_count","summary"],"additionalProperties":false,"properties":{"verdict":{"type":"string","enum":["no-issues","issues"]},"coverage":{"type":"string","enum":["full","partial"]},"issue_count":{"type":"integer","minimum":0},"summary":{"type":"string"}}}'
 
       # Posts only a verdict that was actually received; a malformed payload is refused rather than
       # reported as "0 issues". Re-run a crashed review with `gh run rerun <id>`.
