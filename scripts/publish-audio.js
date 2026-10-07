@@ -527,7 +527,15 @@ const main = async () => {
   const retainedUpdates = new Map()
   // A folder is processed when it has audio to publish, or only a meta.json for what is already there
   const metaFolders = files.filter((file) => path.basename(file) === META_FILE).map((file) => path.posix.dirname(file))
-  const publishFolders = new Set([...localFolders.keys(), ...metaFolders.filter((folder) => folder !== ".")])
+  // ... or only new artwork: a cover.* image, or the file a group's saved cover points at
+  const coverFolders = files
+    .filter(
+      (file) => COVER_FILE.test(path.basename(file)) || [...groups.values()].some((group) => group.cover === file)
+    )
+    .map((file) => path.posix.dirname(file))
+  const publishFolders = new Set(
+    [...localFolders.keys(), ...metaFolders, ...coverFolders].filter((folder) => folder !== ".")
+  )
   for (const folder of publishFolders) {
     const folderTracks = localFolders.get(folder) || []
     const meta = readMeta(root, folder)
@@ -597,6 +605,9 @@ const main = async () => {
       if (described || !previous) {
         const cover = inFolder(meta.cover || localCover || publishedCover)
         groups.set(folder, { path: folder, title: meta.title, description: meta.description, date: meta.date, cover })
+      } else if (previous.cover && isLocal(path.basename(previous.cover))) {
+        // No meta.json, and the saved cover is in the folder: upload it again in case it changed
+        namedCovers.push(previous.cover)
       } else if (localCover) {
         // No meta.json: keep what was published, and only a cover supplied now replaces the saved one
         groups.set(folder, { ...previous, cover: inFolder(localCover) })
