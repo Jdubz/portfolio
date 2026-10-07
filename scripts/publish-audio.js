@@ -192,7 +192,19 @@ const probe = (file) => {
 }
 
 const computePeaks = (file) => {
-  const pcm = run("ffmpeg", ["-v", "error", "-i", file, "-ac", "1", "-ar", String(PEAK_SAMPLE_RATE), "-f", "s16le", "-"])
+  const pcm = run("ffmpeg", [
+    "-v",
+    "error",
+    "-i",
+    file,
+    "-ac",
+    "1",
+    "-ar",
+    String(PEAK_SAMPLE_RATE),
+    "-f",
+    "s16le",
+    "-",
+  ])
   const sampleCount = Math.floor(pcm.length / 2)
   if (sampleCount === 0) {
     return ""
@@ -425,6 +437,10 @@ const main = async () => {
   console.log(`Reading the published index for gs://${BUCKET} ...`)
   const published = flattenIndex(await fetchJson(`${STORAGE_API}/${INDEX_FILE}?alt=media`))
   const publishedByPath = new Map(published.tracks.map((track) => [track.path, track]))
+  // Published tracks that are not being republished now but are still in the bucket
+  const alreadyInBucket = await listBucket()
+  const localSet = new Set(localAudio)
+  const retained = published.tracks.filter((track) => !localSet.has(track.path) && alreadyInBucket.has(track.path))
 
   // 1. Read every local track, reusing the waveform when the file has not changed
   const localFolders = new Map()
@@ -449,8 +465,14 @@ const main = async () => {
     const meta = readMeta(root, folder)
     const isSection = !folder.includes("/")
 
-    // A leading number is a track number only when every file in the folder has a different one
-    const numbers = folderTracks.map((track) => LEADING_NUMBER.exec(track.fileTitle))
+    // A leading number is a track number only when every file in the folder has a different one,
+    // counting the files already published there that this run leaves alone
+    const siblings = retained
+      .filter((track) => path.posix.dirname(track.path) === folder)
+      .map((track) => path.basename(track.path).replace(AUDIO_FILE, "").replace(LEADING_DATE, ""))
+    const numbers = [...folderTracks.map((track) => track.fileTitle), ...siblings].map((name) =>
+      LEADING_NUMBER.exec(name)
+    )
     const numbered = numbers.every(Boolean) && new Set(numbers.map((match) => Number(match[1]))).size === numbers.length
 
     const described = hasMeta(root, folder)
@@ -507,7 +529,8 @@ const main = async () => {
   // A cover deleted from the bucket must not stay in the index. In a dry run nothing was uploaded,
   // so a cover that exists locally counts as present.
   for (const [folder, group] of groups) {
-    const present = group.cover && (inBucket.has(group.cover) || (dryRun && fs.existsSync(path.join(root, group.cover))))
+    const present =
+      group.cover && (inBucket.has(group.cover) || (dryRun && fs.existsSync(path.join(root, group.cover))))
     if (group.cover && !present) {
       groups.set(folder, { ...group, cover: undefined })
     }
