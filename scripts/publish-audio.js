@@ -162,6 +162,14 @@ const computePeaks = (file) => {
   return levels.map((level) => PEAK_ALPHABET[Math.round((level / loudest) * (PEAK_ALPHABET.length - 1))]).join("")
 }
 
+// The track fields meta.json may set. Everything else is computed from the file.
+const OVERRIDABLE = ["title", "number", "date", "bpm", "key", "description"]
+
+const pickOverrides = (entry) => {
+  const picked = Object.fromEntries(Object.entries(entry || {}).filter(([field]) => OVERRIDABLE.includes(field)))
+  return Object.keys(picked).length > 0 ? picked : undefined
+}
+
 const LEADING_DATE = /^(\d{4}-\d{2}-\d{2})[\s._-]*/
 const LEADING_NUMBER = /^(\d{1,3})[\s._-]+(?=\S)/
 
@@ -179,7 +187,7 @@ const readTrack = (root, relativePath, stat, knownPeaks) => {
   const { duration, tags } = probe(file)
   const baseName = path.basename(relativePath).replace(AUDIO_FILE, "")
   const fileDate = LEADING_DATE.exec(baseName)
-  const tagDate = /^\d{4}(-\d{2}-\d{2})?/.exec(tags.date || "")
+  const tagDate = /^(\d{4})(-\d{2}-\d{2})?/.exec(tags.date || "")
 
   return {
     path: relativePath,
@@ -187,7 +195,8 @@ const readTrack = (root, relativePath, stat, knownPeaks) => {
     fileTitle: baseName.replace(LEADING_DATE, "") || baseName,
     tagTitle: tags.title || undefined,
     number: firstNumber(tags.track),
-    date: (fileDate && fileDate[1]) || (tagDate && tagDate[0]) || undefined,
+    // A full date in the tags, then one leading the file name, then a tagged year
+    date: (tagDate && tagDate[2] && tagDate[0]) || (fileDate && fileDate[1]) || (tagDate && tagDate[1]) || undefined,
     bpm: firstNumber(tags.tbpm || tags.bpm || tags.tmpo),
     key: tags.initialkey || tags.key || tags.tkey || undefined,
     duration: Math.round(duration * 100) / 100,
@@ -351,7 +360,8 @@ const main = async () => {
   const audioFiles = files.filter((file) => AUDIO_FILE.test(file))
   const loose = audioFiles.filter((file) => !file.includes("/"))
   if (loose.length > 0) {
-    console.warn(`! Skipping ${loose.length} audio file(s) outside a section folder: ${loose.join(", ")}`)
+    // The upload sends the whole folder, so these would be public without ever being listed
+    fail(`Move these into a section folder such as tracks/ before publishing: ${loose.join(", ")}`)
   }
   const localAudio = audioFiles.filter((file) => file.includes("/"))
 
@@ -390,9 +400,9 @@ const main = async () => {
 
     for (const { fileTitle, tagTitle, ...track } of folderTracks) {
       const previous = publishedByPath.get(track.path)
-      const overrides = described
-        ? (meta.tracks && meta.tracks[path.basename(track.path)]) || undefined
-        : previous && previous.overrides
+      const overrides = pickOverrides(
+        described ? meta.tracks && meta.tracks[path.basename(track.path)] : previous && previous.overrides
+      )
       const leading = numbered ? LEADING_NUMBER.exec(fileTitle) : null
       tracks.push({
         ...track,
