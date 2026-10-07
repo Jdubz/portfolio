@@ -80,7 +80,7 @@ Never push directly to `main`. Every change to `web/` needs a changeset (`npm ru
 
 `/recordings` (titled "Analog Synthesis") plays audio from the public bucket `gs://joshwentworth-recordings` (project `static-sites-257923`). The page loads the bucket's `index.json` from the browser on every visit, so publishing involves no build or deploy.
 
-**Publish** with `npm run publish-audio -- <library-folder>` (add `--dry-run` to preview). It needs `ffmpeg`/`ffprobe` and an authenticated `gcloud` on PATH. The script (`scripts/publish-audio.js`) uploads the folder, reads tags and durations, computes each waveform, and rewrites `index.json`.
+**Publish** with `npm run publish-audio -- <library-folder>` (add `--dry-run` to preview). It needs `ffmpeg`/`ffprobe` and an authenticated `gcloud` on PATH. The script (`scripts/publish-audio.js`) uploads the folder's audio and cover images (nothing else: the bucket is public, so notes and project files stay local), reads tags and durations, computes each waveform, and rewrites `index.json`.
 
 - **Sections** are the first level of folders. `albums`, `tracks`, `dailies`, `stems` and `one-shots` appear in that order; any other folder name becomes a section after them.
 - **Groups** are folders inside a section: an album, a song's stems, a sample pack. Audio directly in a section folder is listed without a group heading.

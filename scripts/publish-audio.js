@@ -5,7 +5,7 @@
  *
  *   npm run publish-audio -- <library-folder> [--dry-run]
  *
- * Uploads the folder to the recordings bucket and rebuilds index.json, the manifest the
+ * Uploads the folder's audio and cover art to the recordings bucket and rebuilds index.json, the manifest the
  * /recordings page loads. The first level of folders are the page's sections (albums, tracks,
  * stems, dailies, one-shots, or any other name); folders inside a section are groups such as an
  * album or a sample pack.
@@ -32,8 +32,24 @@ const AUDIO_FILE = /\.(mp3|m4a|aac|wav|flac|ogg|opus)$/i
 const COVER_FILE = /^cover\.(jpe?g|png|webp)$/i
 const META_FILE = "meta.json"
 const INDEX_FILE = "index.json"
-// Never uploaded: dotfiles, OS droppings, the meta.json sources and a stray local index.json
-const RSYNC_EXCLUDE = String.raw`(^|.*[\\/])(\..*|meta\.json|Thumbs\.db|desktop\.ini)$|^index\.json$`
+const IMAGE_FILE = /^[^\\/"%]+\.(jpe?g|png|webp)$/i
+
+/**
+ * The bucket is public, so only what the page uses is uploaded: audio, cover.* images and any
+ * cover a meta.json names. rsync can only exclude, so this pattern matches every other path,
+ * including anything hidden. Notes, project files and other images in the library stay local.
+ */
+const rsyncExclude = (namedCovers) => {
+  const separator = String.raw`[\\/]`
+  const literal = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
+  const allowed = [
+    String.raw`.*\.(mp3|m4a|aac|wav|flac|ogg|opus)`,
+    String.raw`.*${separator}cover\.(jpe?g|png|webp)`,
+    ...namedCovers.map((cover) => cover.split("/").map(literal).join(separator)),
+  ]
+  const visible = String.raw`(?!(.*${separator})?\.)`
+  return `(?i)^(?!${visible}(${allowed.join("|")})$).*$`
+}
 
 const SECTION_ORDER = ["albums", "tracks", "dailies", "stems", "one-shots"]
 const SECTION_LAYOUT = { albums: "album", "one-shots": "grid" }
@@ -459,6 +475,7 @@ const main = async () => {
   //    published; without one (a partial publish) the published overrides are kept. Each track
   //    carries its overrides so they can be reapplied over freshly read tags next time.
   const groups = new Map(published.groups)
+  const namedCovers = []
   const sections = new Map(published.sections)
   const tracks = []
   for (const [folder, folderTracks] of localFolders) {
@@ -493,6 +510,12 @@ const main = async () => {
     }
 
     if (!isSection) {
+      if (meta.cover && !(IMAGE_FILE.test(meta.cover) && fs.existsSync(path.join(root, folder, meta.cover)))) {
+        fail(`${folder}/${META_FILE}: "cover" must name a jpg, png or webp file in that folder`)
+      }
+      if (meta.cover) {
+        namedCovers.push(`${folder}/${meta.cover}`)
+      }
       const localCover = meta.cover || fs.readdirSync(path.join(root, folder)).find((name) => COVER_FILE.test(name))
       const cover = localCover ? `${folder}/${localCover}` : undefined
       const previous = groups.get(folder)
@@ -516,7 +539,7 @@ const main = async () => {
     console.log("\nDry run: nothing uploaded.")
   } else {
     console.log(`\nUploading ${root} ...`)
-    gcloud(["storage", "rsync", "--recursive", `--exclude=${RSYNC_EXCLUDE}`, root, `gs://${BUCKET}`], {
+    gcloud(["storage", "rsync", "--recursive", `--exclude=${rsyncExclude(namedCovers)}`, root, `gs://${BUCKET}`], {
       stdio: "inherit",
     })
   }
