@@ -101,13 +101,18 @@ const walk = (root, relative = "") => {
 
 // meta.json fields and the type each must have. Checked before anything is uploaded, because a
 // wrong type would otherwise reach the page and break it.
-const META_FIELDS = {
+const SECTION_FIELDS = {
+  title: "string",
+  description: "string",
+  layout: LAYOUTS,
+  sort: ["name", "newest"],
+  tracks: "object",
+}
+const GROUP_FIELDS = {
   title: "string",
   description: "string",
   date: "string",
   cover: "string",
-  layout: LAYOUTS,
-  sort: ["name", "newest"],
   tracks: "object",
 }
 const TRACK_FIELDS = {
@@ -151,7 +156,8 @@ const readMeta = (root, folder) => {
     if (!isPlainObject(meta)) {
       throw new Error("expected a JSON object")
     }
-    checkFields(meta, META_FIELDS, "")
+    // A first-level folder is a section; anything deeper is a group
+    checkFields(meta, folder.includes("/") ? GROUP_FIELDS : SECTION_FIELDS, "")
     for (const [fileName, overrides] of Object.entries(meta.tracks || {})) {
       if (!isPlainObject(overrides)) {
         throw new Error(`tracks["${fileName}"] must be an object`)
