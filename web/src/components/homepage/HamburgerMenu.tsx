@@ -261,6 +261,9 @@ const HamburgerMenu: React.FC = () => {
             <NavLink to="/projects/full-stack" onClick={closeMenu} icon="🛠️">
               Full-Stack Project
             </NavLink>
+            <NavLink to="/recordings" onClick={closeMenu} icon="🎛️">
+              Analog Synthesis
+            </NavLink>
 
             <NavDivider />
 

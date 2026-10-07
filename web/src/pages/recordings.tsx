@@ -1,7 +1,8 @@
 /** @jsx jsx */
 import * as React from "react"
 import { jsx } from "theme-ui"
-import Layout from "../components/homepage/Layout"
+import PageShell from "../components/PageShell"
+import ButtonLink from "../components/elements/ButtonLink"
 import Seo from "../components/homepage/Seo"
 import TrackRow, { TrackTile } from "../components/recordings/TrackRow"
 import useAudioPlayer, { type AudioPlayer } from "../hooks/useAudioPlayer"
@@ -111,88 +112,51 @@ const RecordingsPage = () => {
   }, [])
 
   return (
-    <Layout>
-      <div sx={{ bg: "background", minHeight: "100vh", color: "text" }}>
-        <section
-          sx={{
-            position: "relative",
-            pb: [5, 6],
-            pt: [6, 7],
-            background:
-              "radial-gradient(circle at 20% 20%, rgba(14,165,233,0.14), transparent 32%), radial-gradient(circle at 80% 10%, rgba(0,201,167,0.14), transparent 30%), linear-gradient(135deg, rgba(14,165,233,0.08), rgba(0,201,167,0.12))",
-            borderBottom: "1px solid",
-            borderColor: "divider",
-          }}
-        >
-          <a
-            href="/"
-            sx={{
-              position: "absolute",
-              top: [3, 4],
-              left: [3, 4],
-              px: 3,
-              py: 2,
-              borderRadius: "12px",
-              border: "1px solid",
-              borderColor: "divider",
-              color: "text",
-              textDecoration: "none",
-              fontWeight: 600,
-              "&:hover": { color: "primary", borderColor: "primary" },
-            }}
-          >
-            ← Home
-          </a>
-
-          <div sx={{ variant: "layout.container", maxWidth: 1080 }}>
-            <p sx={{ variant: "text.heroKicker", mb: 3 }}>Recordings</p>
-            <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>Analog Synthesis</h1>
-            <p sx={{ variant: "text.lead", mb: 0 }}>
-              Custom modules, control-voltage experiments, and sound design sessions.
-            </p>
-            {sections.length > 1 && (
-              <nav aria-label="Sections" sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 4 }}>
-                {sections.map((section, position) => (
-                  <a
-                    key={section.id}
-                    href={`#${anchors[position]}`}
-                    sx={{ variant: "buttons.secondary", py: 2, px: 3, fontSize: 1, textDecoration: "none" }}
-                  >
-                    {section.title}
-                  </a>
-                ))}
-              </nav>
-            )}
-          </div>
-        </section>
-
-        <div sx={{ variant: "layout.container", maxWidth: 1080, py: [5, 6] }}>
-          {state.status === "loading" && <Status>Loading recordings…</Status>}
-          {state.status === "error" && <Status>The recordings could not be loaded. Try refreshing the page.</Status>}
-          {state.status === "ready" && state.sections.length === 0 && <Status>No recordings yet.</Status>}
-          {/* Anchors never contain a double hyphen, so the heading ids cannot collide with a section's */}
-          {sections.map((section, position) => (
-            <section
-              key={section.id}
-              id={anchors[position]}
-              aria-labelledby={`${anchors[position]}--title`}
-              sx={{ mb: [5, 6] }}
-            >
-              <h2
-                id={`${anchors[position]}--title`}
-                sx={{ variant: "text.sectionTitle", mb: section.description ? 2 : 4 }}
+    <PageShell
+      kicker="Recordings"
+      title="Analog Synthesis"
+      lead="Custom modules, control-voltage experiments, and sound design sessions."
+      heroExtra={
+        sections.length > 1 && (
+          <nav aria-label="Sections" sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 4, position: "relative" }}>
+            {sections.map((section, position) => (
+              <ButtonLink
+                key={section.id}
+                href={`#${anchors[position]}`}
+                variant="secondary"
+                styles={{ py: 2, px: 3, fontSize: 1, bg: "background" }}
               >
                 {section.title}
-              </h2>
-              {section.description && <p sx={{ variant: "text.body", mb: 4 }}>{section.description}</p>}
-              {section.groups.map((group) => (
-                <Group key={group.path} group={group} layout={section.layout} player={player} />
-              ))}
-            </section>
+              </ButtonLink>
+            ))}
+          </nav>
+        )
+      }
+    >
+      {state.status === "loading" && <Status>Loading recordings…</Status>}
+      {state.status === "error" && <Status>The recordings could not be loaded. Try refreshing the page.</Status>}
+      {state.status === "ready" && state.sections.length === 0 && <Status>No recordings yet.</Status>}
+      {/* Anchors never contain a double hyphen, so the heading ids cannot collide with a section's */}
+      {sections.map((section, position) => (
+        <section
+          key={section.id}
+          id={anchors[position]}
+          aria-labelledby={`${anchors[position]}--title`}
+          sx={{ mb: [5, 6], scrollMarginTop: "80px" }}
+        >
+          <h2
+            id={`${anchors[position]}--title`}
+            sx={{ variant: "text.sectionTitle", mt: 0, mb: section.description ? 2 : 4 }}
+          >
+            {section.title}
+          </h2>
+          {section.description && <p sx={{ variant: "text.body", mt: 0, mb: 4 }}>{section.description}</p>}
+          {section.groups.map((group) => (
+            <Group key={group.path} group={group} layout={section.layout} player={player} />
           ))}
-        </div>
-      </div>
-    </Layout>
+        </section>
+      ))}
+    </PageShell>
   )
 }
 

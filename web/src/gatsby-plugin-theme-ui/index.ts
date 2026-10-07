@@ -205,7 +205,7 @@ const theme: CustomTheme = {
         warning: "#f59e0b",
         info: "#3b82f6",
         divider: "#e2e8f0",
-        textMuted: "#64748b",
+        textMuted: "#526073",
         muted: "rgba(100, 116, 139, 0.1)",
         dark: "#0f172a",
         wave: "#334155",
@@ -410,6 +410,14 @@ const theme: CustomTheme = {
     },
   },
   cards: {
+    // The panel used for repo cards, track rows and sound tiles
+    surface: {
+      border: "1px solid",
+      borderColor: "divider",
+      borderRadius: "xl",
+      bg: "muted",
+      boxShadow: "lg",
+    },
     project: {
       display: "block",
       width: "100%",
