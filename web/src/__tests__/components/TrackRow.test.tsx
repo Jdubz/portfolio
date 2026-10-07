@@ -102,5 +102,31 @@ describe("TrackTile", () => {
     fireEvent.click(screen.getByRole("button", { name: "Play Intro" }))
 
     expect(onSeek).toHaveBeenCalledWith(track, 0)
+    expect(screen.queryByRole("button", { name: "Pause Intro" })).not.toBeInTheDocument()
+  })
+
+  it("offers a separate pause while it is playing", () => {
+    const onToggle = jest.fn()
+    const onSeek = jest.fn()
+    render(
+      <ul>
+        <TrackTile track={track} active playing progress={0.2} onToggle={onToggle} onSeek={onSeek} />
+      </ul>
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "Pause Intro" }))
+
+    expect(onToggle).toHaveBeenCalledWith(track)
+    expect(onSeek).not.toHaveBeenCalled()
+  })
+
+  it("offers resume when paused part-way through", () => {
+    render(
+      <ul>
+        <TrackTile track={track} active playing={false} progress={0.2} onToggle={jest.fn()} onSeek={jest.fn()} />
+      </ul>
+    )
+
+    expect(screen.getByRole("button", { name: "Resume Intro" })).toBeInTheDocument()
   })
 })

@@ -28,6 +28,8 @@ export type Track = {
   overrides?: Partial<Track>
   /** The values those overrides replaced; also only for the publish script */
   original?: Partial<Track>
+  /** Which of title and number came from the file's tags; also only for the publish script */
+  fromTags?: string[]
 }
 
 export type TrackGroup = {
