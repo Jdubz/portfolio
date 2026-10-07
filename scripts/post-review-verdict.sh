@@ -50,9 +50,13 @@ case "$coverage" in
 esac
 [ -n "$summary" ] || warn "Structured output for $SHA has no 'summary'."
 
+# `issue_count` is required by the schema for BOTH verdicts, so a payload without a numeric one is
+# malformed and gets no verdict, clean or not.
+[ -n "$count" ] || warn "Structured output for $SHA has no numeric 'issue_count'."
+
 # A clean verdict that also counts issues contradicts itself: refuse it, as the `issues` branch
 # below refuses a count of zero. Otherwise findings could be posted under a clean headline.
-if [ "$verdict" = "no-issues" ] && jq -e '(.issue_count | type) == "number" and .issue_count != 0' >/dev/null <<<"$STRUCTURED"; then
+if [ "$verdict" = "no-issues" ] && jq -e '.issue_count != 0' >/dev/null <<<"$STRUCTURED"; then
     warn "Structured output for $SHA says 'no-issues' but issue_count is '$count'."
 fi
 
