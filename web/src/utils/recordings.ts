@@ -24,6 +24,8 @@ export type Track = {
   bpm?: number
   key?: string
   description?: string
+  /** The meta.json fields already applied above; kept for the publish script, not shown */
+  overrides?: Partial<Track>
 }
 
 export type TrackGroup = {
@@ -90,7 +92,11 @@ export const sectionAnchors = (sections: Section[]): string[] => {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
-    const anchor = slug && !taken.has(slug) ? slug : `section-${position + 1}`
+    const base = slug || `section-${position + 1}`
+    let anchor = base
+    for (let suffix = 2; taken.has(anchor); suffix++) {
+      anchor = `${base}-${suffix}`
+    }
     taken.add(anchor)
     return anchor
   })

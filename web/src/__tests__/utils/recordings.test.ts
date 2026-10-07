@@ -47,12 +47,19 @@ describe("sectionAnchors", () => {
     expect(sectionAnchors([section("Field Recordings (2026)")])).toEqual(["field-recordings-2026"])
   })
 
-  it("falls back to the position when a name has no usable characters or repeats", () => {
+  it("numbers repeated names and names with no usable characters", () => {
     expect(sectionAnchors([section("live set"), section("Live-Set"), section("???")])).toEqual([
       "live-set",
-      "section-2",
+      "live-set-2",
       "section-3",
     ])
+  })
+
+  it("never repeats an anchor, even when a fallback matches a real name", () => {
+    const anchors = sectionAnchors([section("section-2"), section("???"), section("section-2-2")])
+
+    expect(anchors).toEqual(["section-2", "section-2-2", "section-2-2-2"])
+    expect(new Set(anchors).size).toBe(anchors.length)
   })
 })
 

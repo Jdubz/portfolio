@@ -363,11 +363,12 @@ const main = async () => {
 
     const folder = path.posix.dirname(relativePath)
     const track = readTrack(root, relativePath, stat, unchanged ? previous.peaks : undefined)
-    localFolders.set(folder, [...(localFolders.get(folder) || []), { ...track, unchanged }])
+    localFolders.set(folder, [...(localFolders.get(folder) || []), track])
   }
 
   // 2. Apply folder conventions and meta.json to each local folder. A meta.json replaces what was
-  //    published; without one (a partial publish) the published details are kept.
+  //    published; without one (a partial publish) the published overrides are kept. Each track
+  //    carries its overrides so they can be reapplied over freshly read tags next time.
   const groups = new Map(published.groups)
   const sections = new Map(published.sections)
   const tracks = []
@@ -381,19 +382,18 @@ const main = async () => {
 
     const described = hasMeta(root, folder)
 
-    for (const { fileTitle, tagTitle, unchanged, ...track } of folderTracks) {
+    for (const { fileTitle, tagTitle, ...track } of folderTracks) {
       const previous = publishedByPath.get(track.path)
-      if (!described && previous) {
-        // meta.json is the only source of a description, and may have overridden any other field
-        tracks.push(unchanged ? previous : { ...track, title: previous.title, description: previous.description })
-        continue
-      }
+      const overrides = described
+        ? (meta.tracks && meta.tracks[path.basename(track.path)]) || undefined
+        : previous && previous.overrides
       const leading = numbered ? LEADING_NUMBER.exec(fileTitle) : null
       tracks.push({
         ...track,
         title: tagTitle || (leading ? fileTitle.replace(LEADING_NUMBER, "") : fileTitle),
         number: track.number !== undefined ? track.number : leading ? Number(leading[1]) : undefined,
-        ...((meta.tracks && meta.tracks[path.basename(track.path)]) || {}),
+        ...overrides,
+        overrides,
       })
     }
 
@@ -430,6 +430,15 @@ const main = async () => {
   const localPaths = new Set(tracks.map((track) => track.path))
   const kept = published.tracks.filter((track) => !localPaths.has(track.path) && inBucket.has(track.path))
   const dropped = published.tracks.filter((track) => !localPaths.has(track.path) && !inBucket.has(track.path))
+
+  // A cover deleted from the bucket must not stay in the index. In a dry run nothing was uploaded,
+  // so a cover that exists locally counts as present.
+  for (const [folder, group] of groups) {
+    const present = group.cover && (inBucket.has(group.cover) || (dryRun && fs.existsSync(path.join(root, group.cover))))
+    if (group.cover && !present) {
+      groups.set(folder, { ...group, cover: undefined })
+    }
+  }
 
   const index = buildIndex({ tracks: [...tracks, ...kept], groups, sections })
 
