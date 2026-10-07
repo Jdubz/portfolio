@@ -5,7 +5,15 @@ import Layout from "../components/homepage/Layout"
 import Seo from "../components/homepage/Seo"
 import TrackRow, { TrackTile } from "../components/recordings/TrackRow"
 import useAudioPlayer, { type AudioPlayer } from "../hooks/useAudioPlayer"
-import { fetchSections, formatDate, objectUrl, type Section, type Track, type TrackGroup } from "../utils/recordings"
+import {
+  fetchSections,
+  formatDate,
+  objectUrl,
+  sectionAnchors,
+  type Section,
+  type Track,
+  type TrackGroup,
+} from "../utils/recordings"
 
 type LoadState = { status: "loading" } | { status: "error" } | { status: "ready"; sections: Section[] }
 
@@ -78,6 +86,8 @@ const Group = ({ group, layout, player }: { group: TrackGroup; layout: Section["
 const RecordingsPage = () => {
   const [state, setState] = React.useState<LoadState>({ status: "loading" })
   const player = useAudioPlayer()
+  const sections = state.status === "ready" ? state.sections : []
+  const anchors = sectionAnchors(sections)
 
   React.useEffect(() => {
     let cancelled = false
@@ -139,12 +149,12 @@ const RecordingsPage = () => {
             <p sx={{ variant: "text.lead", mb: 0 }}>
               Custom modules, control-voltage experiments, and sound design sessions.
             </p>
-            {state.status === "ready" && state.sections.length > 1 && (
+            {sections.length > 1 && (
               <nav aria-label="Sections" sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 4 }}>
-                {state.sections.map((section) => (
+                {sections.map((section, position) => (
                   <a
                     key={section.id}
-                    href={`#${section.id}`}
+                    href={`#${anchors[position]}`}
                     sx={{ variant: "buttons.secondary", py: 2, px: 3, fontSize: 1, textDecoration: "none" }}
                   >
                     {section.title}
@@ -159,18 +169,25 @@ const RecordingsPage = () => {
           {state.status === "loading" && <Status>Loading recordings…</Status>}
           {state.status === "error" && <Status>The recordings could not be loaded. Try refreshing the page.</Status>}
           {state.status === "ready" && state.sections.length === 0 && <Status>No recordings yet.</Status>}
-          {state.status === "ready" &&
-            state.sections.map((section) => (
-              <section key={section.id} id={section.id} aria-labelledby={`${section.id}-title`} sx={{ mb: [5, 6] }}>
-                <h2 id={`${section.id}-title`} sx={{ variant: "text.sectionTitle", mb: section.description ? 2 : 4 }}>
-                  {section.title}
-                </h2>
-                {section.description && <p sx={{ variant: "text.body", mb: 4 }}>{section.description}</p>}
-                {section.groups.map((group) => (
-                  <Group key={group.path} group={group} layout={section.layout} player={player} />
-                ))}
-              </section>
-            ))}
+          {sections.map((section, position) => (
+            <section
+              key={section.id}
+              id={anchors[position]}
+              aria-labelledby={`${anchors[position]}-title`}
+              sx={{ mb: [5, 6] }}
+            >
+              <h2
+                id={`${anchors[position]}-title`}
+                sx={{ variant: "text.sectionTitle", mb: section.description ? 2 : 4 }}
+              >
+                {section.title}
+              </h2>
+              {section.description && <p sx={{ variant: "text.body", mb: 4 }}>{section.description}</p>}
+              {section.groups.map((group) => (
+                <Group key={group.path} group={group} layout={section.layout} player={player} />
+              ))}
+            </section>
+          ))}
         </div>
       </div>
     </Layout>

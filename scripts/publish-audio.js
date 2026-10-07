@@ -11,8 +11,9 @@
  * album or a sample pack.
  *
  * Publishing is additive: anything already in the bucket that is not in <library-folder> stays on
- * the page, so a single new album can be published on its own. To remove something, delete it
- * from the bucket and run this again.
+ * the page, so a single new album can be published on its own. A folder published without its
+ * meta.json keeps the details it was last published with. To remove something, delete it from the
+ * bucket and run this again.
  *
  * Needs ffmpeg and ffprobe (metadata and waveforms) and gcloud (upload) on PATH.
  * See CLAUDE.md, "Recordings", for the folder layout and meta.json fields.
@@ -97,6 +98,8 @@ const walk = (root, relative = "") => {
   }
   return files
 }
+
+const hasMeta = (root, folder) => fs.existsSync(path.join(root, folder, META_FILE))
 
 const readMeta = (root, folder) => {
   const file = path.join(root, folder, META_FILE)
@@ -360,10 +363,11 @@ const main = async () => {
 
     const folder = path.posix.dirname(relativePath)
     const track = readTrack(root, relativePath, stat, unchanged ? previous.peaks : undefined)
-    localFolders.set(folder, [...(localFolders.get(folder) || []), track])
+    localFolders.set(folder, [...(localFolders.get(folder) || []), { ...track, unchanged }])
   }
 
-  // 2. Apply folder conventions and meta.json to each local folder
+  // 2. Apply folder conventions and meta.json to each local folder. A meta.json replaces what was
+  //    published; without one (a partial publish) the published details are kept.
   const groups = new Map(published.groups)
   const sections = new Map(published.sections)
   const tracks = []
@@ -375,7 +379,15 @@ const main = async () => {
     const numbers = folderTracks.map((track) => LEADING_NUMBER.exec(track.fileTitle))
     const numbered = numbers.every(Boolean) && new Set(numbers.map((match) => Number(match[1]))).size === numbers.length
 
-    for (const { fileTitle, tagTitle, ...track } of folderTracks) {
+    const described = hasMeta(root, folder)
+
+    for (const { fileTitle, tagTitle, unchanged, ...track } of folderTracks) {
+      const previous = publishedByPath.get(track.path)
+      if (!described && previous) {
+        // meta.json is the only source of a description, and may have overridden any other field
+        tracks.push(unchanged ? previous : { ...track, title: previous.title, description: previous.description })
+        continue
+      }
       const leading = numbered ? LEADING_NUMBER.exec(fileTitle) : null
       tracks.push({
         ...track,
@@ -386,20 +398,22 @@ const main = async () => {
     }
 
     if (!isSection) {
-      const cover = meta.cover || fs.readdirSync(path.join(root, folder)).find((name) => COVER_FILE.test(name))
-      groups.set(folder, {
-        path: folder,
-        title: meta.title,
-        description: meta.description,
-        date: meta.date,
-        cover: cover ? `${folder}/${cover}` : undefined,
-      })
+      const localCover = meta.cover || fs.readdirSync(path.join(root, folder)).find((name) => COVER_FILE.test(name))
+      const cover = localCover ? `${folder}/${localCover}` : undefined
+      const previous = groups.get(folder)
+      if (described || !previous) {
+        groups.set(folder, { path: folder, title: meta.title, description: meta.description, date: meta.date, cover })
+      } else if (cover) {
+        groups.set(folder, { ...previous, cover })
+      }
     }
   }
   // A section's own meta.json sets its title, description, layout and sort
   for (const id of new Set([...localFolders.keys()].map((folder) => folder.split("/")[0]))) {
-    const { title, description, layout, sort } = readMeta(root, id)
-    sections.set(id, { id, title, description, layout, sort })
+    if (hasMeta(root, id) || !sections.has(id)) {
+      const { title, description, layout, sort } = readMeta(root, id)
+      sections.set(id, { id, title, description, layout, sort })
+    }
   }
 
   // 3. Upload, then keep the published tracks that are still in the bucket

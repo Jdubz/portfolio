@@ -5,6 +5,8 @@ import {
   formatDuration,
   objectUrl,
   RECORDINGS_BUCKET,
+  sectionAnchors,
+  type Section,
 } from "../../utils/recordings"
 
 describe("objectUrl", () => {
@@ -31,6 +33,26 @@ describe("decodePeaks", () => {
 
   it("returns no bars for a track without peaks", () => {
     expect(decodePeaks("", 40)).toEqual([])
+  })
+})
+
+describe("sectionAnchors", () => {
+  const section = (id: string): Section => ({ id, title: id, layout: "list", groups: [] })
+
+  it("keeps simple folder names", () => {
+    expect(sectionAnchors([section("albums"), section("one-shots")])).toEqual(["albums", "one-shots"])
+  })
+
+  it("replaces whitespace and punctuation", () => {
+    expect(sectionAnchors([section("Field Recordings (2026)")])).toEqual(["field-recordings-2026"])
+  })
+
+  it("falls back to the position when a name has no usable characters or repeats", () => {
+    expect(sectionAnchors([section("live set"), section("Live-Set"), section("???")])).toEqual([
+      "live-set",
+      "section-2",
+      "section-3",
+    ])
   })
 })
 

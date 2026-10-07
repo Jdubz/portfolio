@@ -63,9 +63,24 @@ describe("TrackRow", () => {
   it("seeks with the arrow keys", () => {
     const { onSeek } = renderRow({ active: true, playing: true, progress: 0.5 })
 
-    fireEvent.keyDown(screen.getByRole("slider", { name: "Seek Intro" }), { key: "ArrowRight" })
+    const slider = screen.getByRole("slider", { name: "Seek Intro" })
 
-    expect(onSeek).toHaveBeenCalledWith(track, 0.55)
+    fireEvent.keyDown(slider, { key: "ArrowRight" })
+    expect(onSeek).toHaveBeenLastCalledWith(track, 0.55)
+
+    fireEvent.keyDown(slider, { key: "ArrowDown" })
+    expect(onSeek).toHaveBeenLastCalledWith(track, 0.45)
+  })
+
+  it("jumps to the start and end with Home and End", () => {
+    const { onSeek } = renderRow({ active: true, playing: true, progress: 0.5 })
+    const slider = screen.getByRole("slider", { name: "Seek Intro" })
+
+    fireEvent.keyDown(slider, { key: "Home" })
+    expect(onSeek).toHaveBeenLastCalledWith(track, 0)
+
+    fireEvent.keyDown(slider, { key: "End" })
+    expect(onSeek).toHaveBeenLastCalledWith(track, 1)
   })
 })
 

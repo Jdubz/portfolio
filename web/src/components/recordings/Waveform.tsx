@@ -18,6 +18,16 @@ type WaveformProps = {
 const BAR_WIDTH = 0.6
 const KEY_STEP = 0.05
 
+// The keys a slider is expected to answer to, each mapping the current position to a new one
+const SEEK_KEYS: Partial<Record<string, (progress: number) => number>> = {
+  ArrowRight: (progress) => progress + KEY_STEP,
+  ArrowUp: (progress) => progress + KEY_STEP,
+  ArrowLeft: (progress) => progress - KEY_STEP,
+  ArrowDown: (progress) => progress - KEY_STEP,
+  Home: () => 0,
+  End: () => 1,
+}
+
 // One path for all bars, mirrored around the centre line, in a 0..bars by 0..100 box
 const barsPath = (levels: number[]) =>
   levels
@@ -66,9 +76,10 @@ const Waveform = ({ peaks, progress, bars = 160, height = 48, label, onSeek }: W
         onSeek((event.clientX - box.left) / box.width)
       }}
       onKeyDown={(event) => {
-        if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+        const target = SEEK_KEYS[event.key]
+        if (target) {
           event.preventDefault()
-          onSeek(progress + (event.key === "ArrowRight" ? KEY_STEP : -KEY_STEP))
+          onSeek(target(progress))
         }
       }}
       sx={{

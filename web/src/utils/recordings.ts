@@ -79,6 +79,23 @@ export const decodePeaks = (peaks: string, bars: number): number[] => {
   })
 }
 
+/**
+ * An id for each section that is safe in the DOM and as a link target. Section ids are folder
+ * names, which can hold spaces and other characters an HTML id cannot.
+ */
+export const sectionAnchors = (sections: Section[]): string[] => {
+  const taken = new Set<string>()
+  return sections.map((section, position) => {
+    const slug = section.id
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+    const anchor = slug && !taken.has(slug) ? slug : `section-${position + 1}`
+    taken.add(anchor)
+    return anchor
+  })
+}
+
 export const formatDuration = (seconds: number): string => {
   const total = Math.max(0, Math.round(seconds))
   const hours = Math.floor(total / 3600)

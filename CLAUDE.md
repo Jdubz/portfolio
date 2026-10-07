@@ -88,7 +88,7 @@ Never push directly to `main`. Every change to `web/` needs a changeset (`npm ru
 - **Track details** come from the file's tags (title, track number, date, BPM, key), falling back to the file name. A leading `YYYY-MM-DD` in the name is the date; leading numbers are track numbers when every file in the folder has a different one.
 - **`meta.json`** in a folder is optional and overrides the above. In a group: `title`, `description`, `date`, `cover`. In a section: `title`, `description`, `layout`, `sort` (`name` or `newest`). In either: `tracks`, keyed by file name, to override any track field or add a `description`.
 - **Cover art** is `cover.jpg`/`.png`/`.webp` in an album folder.
-- **Publishing is additive.** Tracks already in the bucket stay on the page even if they are not in the folder being published, so one new album can be published alone. To remove something, delete it from the bucket and publish again.
+- **Publishing is additive.** Tracks already in the bucket stay on the page even if they are not in the folder being published, so one new album can be published alone. A folder published without its `meta.json` keeps the details it was last published with; include the file to change or clear them. To remove something, delete it from the bucket and publish again.
 - **Replacing a file** under the same name can take up to an hour to reach listeners (Cloud Storage caches public objects).
 
 The `index.json` shape is the `Section` type in `web/src/utils/recordings.ts`; the script and that file share the bucket name and the waveform encoding, so change them together.
