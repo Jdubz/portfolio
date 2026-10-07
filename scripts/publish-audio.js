@@ -54,7 +54,8 @@ const rsyncExclude = (namedCovers) => {
     ...namedCovers.map((cover) => cover.split("/").map(literal).join(separator)),
   ]
   const visible = String.raw`(?!(.*${separator})?\.)`
-  return `^(?!${visible}(${allowed.join("|")})$).*$`
+  // (?s) with \A and \Z: a file name can contain a newline, which . and $ would otherwise stop at
+  return String.raw`(?s)\A(?!${visible}(${allowed.join("|")})\Z).*\Z`
 }
 
 const SECTION_ORDER = ["albums", "tracks", "dailies", "stems", "one-shots"]
