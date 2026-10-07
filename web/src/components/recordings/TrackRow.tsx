@@ -67,7 +67,8 @@ const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }
           border: "none",
           cursor: "pointer",
           bg: "primary",
-          color: "white",
+          // White on the primary blue is under the 3:1 contrast an icon needs
+          color: "dark",
           "&:focus-visible": { outline: "3px solid", outlineColor: "highlight", outlineOffset: "2px" },
         }}
       >

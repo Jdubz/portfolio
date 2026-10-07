@@ -251,6 +251,28 @@ const pickOverrides = (entry) => {
   return Object.keys(picked).length > 0 ? picked : undefined
 }
 
+/**
+ * Applies meta.json overrides to a track and records them, with the values they replaced, so a
+ * later publish can change or remove an override without the audio file being present.
+ */
+const applyOverrides = (track, overrides) => {
+  if (!overrides) {
+    return track
+  }
+  const original = Object.fromEntries(Object.keys(overrides).map((field) => [field, track[field]]))
+  return { ...track, ...overrides, overrides, original }
+}
+
+/** The track as it was before its overrides were applied */
+const withoutOverrides = ({ overrides, original, ...track }) => {
+  for (const field of Object.keys(overrides || {})) {
+    delete track[field]
+  }
+  const restored = { ...track, ...original }
+  // Entries published before originals were recorded may have had their title overridden
+  return { ...restored, title: restored.title || path.basename(track.path).replace(AUDIO_FILE, "") }
+}
+
 const LEADING_DATE = /^(\d{4}-\d{2}-\d{2})[\s._-]*/
 const LEADING_NUMBER = /^(\d{1,3})[\s._-]+(?=\S)/
 
@@ -478,7 +500,12 @@ const main = async () => {
   const namedCovers = []
   const sections = new Map(published.sections)
   const tracks = []
-  for (const [folder, folderTracks] of localFolders) {
+  const retainedUpdates = new Map()
+  // A folder is processed when it has audio to publish, or only a meta.json for what is already there
+  const metaFolders = files.filter((file) => path.basename(file) === META_FILE).map((file) => path.posix.dirname(file))
+  const publishFolders = new Set([...localFolders.keys(), ...metaFolders.filter((folder) => folder !== ".")])
+  for (const folder of publishFolders) {
+    const folderTracks = localFolders.get(folder) || []
     const meta = readMeta(root, folder)
     const isSection = !folder.includes("/")
 
@@ -500,13 +527,21 @@ const main = async () => {
         described ? meta.tracks && meta.tracks[path.basename(track.path)] : previous && previous.overrides
       )
       const leading = numbered ? LEADING_NUMBER.exec(fileTitle) : null
-      tracks.push({
+      const derived = {
         ...track,
         title: tagTitle || (leading ? fileTitle.replace(LEADING_NUMBER, "") : fileTitle),
         number: track.number !== undefined ? track.number : leading ? Number(leading[1]) : undefined,
-        ...overrides,
-        overrides,
-      })
+      }
+      tracks.push(applyOverrides(derived, overrides))
+    }
+
+    // A meta.json also updates the tracks already published in this folder that are not being
+    // uploaded again: their old overrides are undone and the new ones applied
+    if (described) {
+      for (const track of retained.filter((entry) => path.posix.dirname(entry.path) === folder)) {
+        const overrides = pickOverrides(meta.tracks && meta.tracks[path.basename(track.path)])
+        retainedUpdates.set(track.path, applyOverrides(withoutOverrides(track), overrides))
+      }
     }
 
     if (!isSection) {
@@ -527,7 +562,7 @@ const main = async () => {
     }
   }
   // A section's own meta.json sets its title, description, layout and sort
-  for (const id of new Set([...localFolders.keys()].map((folder) => folder.split("/")[0]))) {
+  for (const id of new Set([...publishFolders].map((folder) => folder.split("/")[0]))) {
     if (hasMeta(root, id) || !sections.has(id)) {
       const { title, description, layout, sort } = readMeta(root, id)
       sections.set(id, { id, title, description, layout, sort })
@@ -546,7 +581,9 @@ const main = async () => {
 
   const inBucket = await listBucket()
   const localPaths = new Set(tracks.map((track) => track.path))
-  const kept = published.tracks.filter((track) => !localPaths.has(track.path) && inBucket.has(track.path))
+  const kept = published.tracks
+    .filter((track) => !localPaths.has(track.path) && inBucket.has(track.path))
+    .map((track) => retainedUpdates.get(track.path) || track)
   const dropped = published.tracks.filter((track) => !localPaths.has(track.path) && !inBucket.has(track.path))
 
   // A cover deleted from the bucket must not stay in the index. In a dry run nothing was uploaded,
