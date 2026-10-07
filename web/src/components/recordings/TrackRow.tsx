@@ -51,7 +51,8 @@ const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }
         border: "1px solid",
         borderColor: active ? "primary" : "divider",
         borderRadius: "16px",
-        bg: "muted",
+        // Not muted: the secondary text in a row is under 4.5:1 contrast against it in light mode
+        bg: "background",
       }}
     >
       <button
