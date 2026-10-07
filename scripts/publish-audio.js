@@ -46,13 +46,15 @@ const rsyncExclude = (namedCovers) => {
       .replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
       .replace(/%/g, String.raw`\x25`)
       .replace(/"/g, String.raw`\x22`)
+  // Extensions and cover.* match in any case; a named cover must match exactly, so a file that
+  // differs from it only by case is not uploaded in its place
   const allowed = [
-    String.raw`.*\.(mp3|m4a|aac|wav|flac|ogg|opus)`,
-    String.raw`.*${separator}cover\.(jpe?g|png|webp)`,
+    String.raw`.*\.(?i:mp3|m4a|aac|wav|flac|ogg|opus)`,
+    String.raw`.*${separator}(?i:cover\.(jpe?g|png|webp))`,
     ...namedCovers.map((cover) => cover.split("/").map(literal).join(separator)),
   ]
   const visible = String.raw`(?!(.*${separator})?\.)`
-  return `(?i)^(?!${visible}(${allowed.join("|")})$).*$`
+  return `^(?!${visible}(${allowed.join("|")})$).*$`
 }
 
 const SECTION_ORDER = ["albums", "tracks", "dailies", "stems", "one-shots"]
