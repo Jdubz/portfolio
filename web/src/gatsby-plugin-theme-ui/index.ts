@@ -343,7 +343,8 @@ const theme: CustomTheme = {
       },
       "&:focus-visible": {
         outline: "3px solid",
-        outlineColor: "link",
+        // These sit on the homepage wave, which is dark in both modes, so not the mode-aware link colour
+        outlineColor: "primary",
         outlineOffset: "2px",
         borderRadius: "2px",
       },
