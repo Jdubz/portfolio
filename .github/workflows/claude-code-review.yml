@@ -53,7 +53,7 @@ jobs:
           echo "base=$base" >> "$GITHUB_OUTPUT"
           {
             echo "files<<CHANGED_FILES_EOF"
-            git diff --name-status "$base" HEAD -- . ':!package-lock.json'
+            git diff --name-status "$base" HEAD
             echo "CHANGED_FILES_EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -90,7 +90,7 @@ jobs:
 
             Read the root CLAUDE.md first. Get the author's intent with `gh pr view`.
 
-            CHANGED FILES (git name-status against the merge base; `package-lock.json` omitted):
+            CHANGED FILES (git name-status against the merge base):
             ${{ steps.rev.outputs.files }}
 
             THE DIFF. Every entry above that is not a deletion (D) must be read, whatever its status
@@ -102,6 +102,13 @@ jobs:
 
             Run ONE plain command per Bash call. Pipes, `&&`, `;` and `$(...)` do not match the
             allowlist and are denied.
+
+            LOCKFILES. `package-lock.json` is the one file you check by summary instead of reading
+            line by line. Run `git diff --stat ${{ steps.rev.outputs.base }} HEAD -- package-lock.json`,
+            then confirm the change is explained by the `package.json` changes in this PR. A lockfile
+            that changes with no matching `package.json` change, or far more than those changes
+            explain, is a finding. Say in the summary that the lockfile was checked by summary. That
+            counts as reading it for coverage.
 
             COVERAGE. Reading the diff of EVERY non-deleted entry listed above is the job, not a stretch
             goal: docs, config, tests and scripts included. There is no turn or time budget to save,
