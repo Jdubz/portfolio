@@ -80,8 +80,8 @@ const RecordingsPage = () => {
           </a>
 
           <div sx={{ variant: "layout.container", maxWidth: 1080 }}>
-            <p sx={{ variant: "text.heroKicker", mb: 3 }}>Modular Synthesizer</p>
-            <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>Recordings</h1>
+            <p sx={{ variant: "text.heroKicker", mb: 3 }}>Recordings</p>
+            <h1 sx={{ variant: "text.h1", mb: 3, fontSize: ["42px", "48px", "56px"] }}>Analog Synthesis</h1>
             <p sx={{ variant: "text.lead", mb: 0 }}>
               Custom modules, control-voltage experiments, and sound design sessions.
             </p>
@@ -139,5 +139,5 @@ const RecordingsPage = () => {
 export default RecordingsPage
 
 export const Head = () => (
-  <Seo title="Recordings" description="Modular synthesizer recordings by Josh Wentworth." pathname="/recordings" />
+  <Seo title="Analog Synthesis" description="Analog synthesis recordings by Josh Wentworth." pathname="/recordings" />
 )
