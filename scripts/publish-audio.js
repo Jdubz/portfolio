@@ -560,14 +560,15 @@ const main = async () => {
         .filter((name) => path.posix.dirname(name) === folder)
         .map((name) => path.basename(name))
         .find((name) => COVER_FILE.test(name))
-      const chosenCover =
-        meta.cover || fs.readdirSync(path.join(root, folder)).find((name) => COVER_FILE.test(name)) || publishedCover
-      const cover = chosenCover ? `${folder}/${chosenCover}` : undefined
+      const localCover = fs.readdirSync(path.join(root, folder)).find((name) => COVER_FILE.test(name))
+      const inFolder = (name) => (name ? `${folder}/${name}` : undefined)
       const previous = groups.get(folder)
       if (described || !previous) {
+        const cover = inFolder(meta.cover || localCover || publishedCover)
         groups.set(folder, { path: folder, title: meta.title, description: meta.description, date: meta.date, cover })
-      } else if (cover) {
-        groups.set(folder, { ...previous, cover })
+      } else if (localCover) {
+        // No meta.json: keep what was published, and only a cover supplied now replaces the saved one
+        groups.set(folder, { ...previous, cover: inFolder(localCover) })
       }
     }
   }
