@@ -263,6 +263,12 @@ const applyOverrides = (track, overrides) => {
   return { ...track, ...overrides, overrides, original }
 }
 
+/** The file name without its extension or a leading date; a name that is only a date is kept whole */
+const fileTitleOf = (trackPath) => {
+  const baseName = path.basename(trackPath).replace(AUDIO_FILE, "")
+  return baseName.replace(LEADING_DATE, "") || baseName
+}
+
 /**
  * Fills in the title and number that tags did not supply from the file name. A leading number is
  * a track number, and is dropped from the title, only when the folder is `numbered`.
@@ -313,7 +319,7 @@ const readTrack = (root, relativePath, stat, knownPeaks) => {
   return {
     path: relativePath,
     // The file name with any leading date removed; a leading track number is handled per group
-    fileTitle: baseName.replace(LEADING_DATE, "") || baseName,
+    fileTitle: fileTitleOf(relativePath),
     tagTitle: tags.title || undefined,
     number: firstNumber(tags.track),
     // A full date in the tags, then one leading the file name, then a tagged year
@@ -531,7 +537,7 @@ const main = async () => {
     // counting the files already published there that this run leaves alone
     const siblings = retained
       .filter((track) => path.posix.dirname(track.path) === folder)
-      .map((track) => path.basename(track.path).replace(AUDIO_FILE, "").replace(LEADING_DATE, ""))
+      .map((track) => fileTitleOf(track.path))
     const numbers = [...folderTracks.map((track) => track.fileTitle), ...siblings].map((name) =>
       LEADING_NUMBER.exec(name)
     )
@@ -560,7 +566,7 @@ const main = async () => {
       if (!described && !track.fromTags) {
         continue
       }
-      const fileTitle = path.basename(track.path).replace(AUDIO_FILE, "").replace(LEADING_DATE, "")
+      const fileTitle = fileTitleOf(track.path)
       const base = withoutOverrides(track)
       const overrides = pickOverrides(
         described ? meta.tracks && meta.tracks[path.basename(track.path)] : track.overrides
