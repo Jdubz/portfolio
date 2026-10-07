@@ -26,6 +26,8 @@ export type Track = {
   description?: string
   /** The meta.json fields already applied above; kept for the publish script, not shown */
   overrides?: Partial<Track>
+  /** The values those overrides replaced; also only for the publish script */
+  original?: Partial<Track>
 }
 
 export type TrackGroup = {
