@@ -84,6 +84,7 @@ export const decodePeaks = (peaks: string, bars: number): number[] => {
 /**
  * An id for each section that is safe in the DOM and as a link target. Section ids are folder
  * names, which can hold spaces and other characters an HTML id cannot.
+ * Anchors use single hyphens only, which leaves `--` free for ids derived from them.
  */
 export const sectionAnchors = (sections: Section[]): string[] => {
   const taken = new Set<string>()

@@ -169,15 +169,16 @@ const RecordingsPage = () => {
           {state.status === "loading" && <Status>Loading recordings…</Status>}
           {state.status === "error" && <Status>The recordings could not be loaded. Try refreshing the page.</Status>}
           {state.status === "ready" && state.sections.length === 0 && <Status>No recordings yet.</Status>}
+          {/* Anchors never contain a double hyphen, so the heading ids cannot collide with a section's */}
           {sections.map((section, position) => (
             <section
               key={section.id}
               id={anchors[position]}
-              aria-labelledby={`${anchors[position]}-title`}
+              aria-labelledby={`${anchors[position]}--title`}
               sx={{ mb: [5, 6] }}
             >
               <h2
-                id={`${anchors[position]}-title`}
+                id={`${anchors[position]}--title`}
                 sx={{ variant: "text.sectionTitle", mb: section.description ? 2 : 4 }}
               >
                 {section.title}
