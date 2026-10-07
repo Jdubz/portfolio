@@ -50,6 +50,12 @@ case "$coverage" in
 esac
 [ -n "$summary" ] || warn "Structured output for $SHA has no 'summary'."
 
+# A clean verdict that also counts issues contradicts itself: refuse it, as the `issues` branch
+# below refuses a count of zero. Otherwise findings could be posted under a clean headline.
+if [ "$verdict" = "no-issues" ] && jq -e '(.issue_count | type) == "number" and .issue_count != 0' >/dev/null <<<"$STRUCTURED"; then
+    warn "Structured output for $SHA says 'no-issues' but issue_count is '$count'."
+fi
+
 if [ "$verdict" = "no-issues" ] && [ "$coverage" = "partial" ]; then
     # Never let a partial read pass for a clean review.
     headline="Incomplete review: no issues found, but not every changed file was read."
