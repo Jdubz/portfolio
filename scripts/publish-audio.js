@@ -263,6 +263,28 @@ const applyOverrides = (track, overrides) => {
   return { ...track, ...overrides, overrides, original }
 }
 
+/** The file name without its extension or a leading date; a name that is only a date is kept whole */
+const fileTitleOf = (trackPath) => {
+  const baseName = path.basename(trackPath).replace(AUDIO_FILE, "")
+  return baseName.replace(LEADING_DATE, "") || baseName
+}
+
+/**
+ * Fills in the title and number that tags did not supply from the file name. A leading number is
+ * a track number, and is dropped from the title, only when the folder is `numbered`.
+ */
+const inferFromName = (track, fileTitle, numbered) => {
+  const leading = numbered ? LEADING_NUMBER.exec(fileTitle) : null
+  const inferred = { ...track }
+  if (!track.fromTags.includes("title")) {
+    inferred.title = leading ? fileTitle.replace(LEADING_NUMBER, "") : fileTitle
+  }
+  if (!track.fromTags.includes("number")) {
+    inferred.number = leading ? Number(leading[1]) : undefined
+  }
+  return inferred
+}
+
 /** The track as it was before its overrides were applied */
 const withoutOverrides = ({ overrides, original, ...track }) => {
   for (const field of Object.keys(overrides || {})) {
@@ -297,7 +319,7 @@ const readTrack = (root, relativePath, stat, knownPeaks) => {
   return {
     path: relativePath,
     // The file name with any leading date removed; a leading track number is handled per group
-    fileTitle: baseName.replace(LEADING_DATE, "") || baseName,
+    fileTitle: fileTitleOf(relativePath),
     tagTitle: tags.title || undefined,
     number: firstNumber(tags.track),
     // A full date in the tags, then one leading the file name, then a tagged year
@@ -515,7 +537,7 @@ const main = async () => {
     // counting the files already published there that this run leaves alone
     const siblings = retained
       .filter((track) => path.posix.dirname(track.path) === folder)
-      .map((track) => path.basename(track.path).replace(AUDIO_FILE, "").replace(LEADING_DATE, ""))
+      .map((track) => fileTitleOf(track.path))
     const numbers = [...folderTracks.map((track) => track.fileTitle), ...siblings].map((name) =>
       LEADING_NUMBER.exec(name)
     )
@@ -528,22 +550,31 @@ const main = async () => {
       const overrides = pickOverrides(
         described ? meta.tracks && meta.tracks[path.basename(track.path)] : previous && previous.overrides
       )
-      const leading = numbered ? LEADING_NUMBER.exec(fileTitle) : null
-      const derived = {
-        ...track,
-        title: tagTitle || (leading ? fileTitle.replace(LEADING_NUMBER, "") : fileTitle),
-        number: track.number !== undefined ? track.number : leading ? Number(leading[1]) : undefined,
-      }
-      tracks.push(applyOverrides(derived, overrides))
+      // Which of title and number came from tags; the rest follow the file name and are worked out
+      // again whenever the folder's contents change
+      const fromTags = [tagTitle && "title", track.number !== undefined && "number"].filter(Boolean)
+      tracks.push(
+        applyOverrides(inferFromName({ ...track, title: tagTitle, fromTags }, fileTitle, numbered), overrides)
+      )
     }
 
-    // A meta.json also updates the tracks already published in this folder that are not being
-    // uploaded again: their old overrides are undone and the new ones applied
-    if (described) {
-      for (const track of retained.filter((entry) => path.posix.dirname(entry.path) === folder)) {
-        const overrides = pickOverrides(meta.tracks && meta.tracks[path.basename(track.path)])
-        retainedUpdates.set(track.path, applyOverrides(withoutOverrides(track), overrides))
+    // The tracks already published in this folder that are not being uploaded again. Their
+    // file-name title and number depend on the whole folder, so they are worked out again; a
+    // meta.json replaces their overrides, and without one their overrides are reapplied.
+    for (const track of retained.filter((entry) => path.posix.dirname(entry.path) === folder)) {
+      // An entry published before fromTags was recorded can only be changed by a meta.json
+      if (!described && !track.fromTags) {
+        continue
       }
+      const fileTitle = fileTitleOf(track.path)
+      const base = withoutOverrides(track)
+      const overrides = pickOverrides(
+        described ? meta.tracks && meta.tracks[path.basename(track.path)] : track.overrides
+      )
+      retainedUpdates.set(
+        track.path,
+        applyOverrides(track.fromTags ? inferFromName(base, fileTitle, numbered) : base, overrides)
+      )
     }
 
     if (!isSection) {

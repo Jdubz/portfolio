@@ -17,8 +17,8 @@ export type TrackProps = {
   onSeek: (track: Track, fraction: number) => void
 }
 
-const PlayIcon = ({ playing }: { playing: boolean }) => (
-  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
+const PlayIcon = ({ playing, size = 18 }: { playing: boolean; size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" fill="currentColor">
     {playing ? <path d="M6 5h4v14H6zM14 5h4v14h-4z" /> : <path d="M8 5v14l11-7z" />}
   </svg>
 )
@@ -108,8 +108,34 @@ const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }
 }
 
 /** One short sound as a compact tile that plays from the start when pressed */
-export const TrackTile = ({ track, active, playing, progress, failed, onSeek }: TrackProps) => (
-  <li>
+export const TrackTile = ({ track, active, playing, progress, failed, onToggle, onSeek }: TrackProps) => (
+  <li sx={{ position: "relative" }}>
+    {/* Pressing the tile restarts the sound, so a sound that is part-way through gets its own pause */}
+    {active && (playing || progress > 0) && (
+      <button
+        type="button"
+        aria-label={`${playing ? "Pause" : "Resume"} ${track.title}`}
+        onClick={() => onToggle(track)}
+        sx={{
+          position: "absolute",
+          top: 2,
+          right: 2,
+          zIndex: 1,
+          display: "grid",
+          placeItems: "center",
+          width: 28,
+          height: 28,
+          borderRadius: "50%",
+          border: "none",
+          cursor: "pointer",
+          bg: "primary",
+          color: "dark",
+          "&:focus-visible": { outline: "3px solid", outlineColor: "highlight", outlineOffset: "2px" },
+        }}
+      >
+        <PlayIcon playing={playing} size={14} />
+      </button>
+    )}
     <button
       type="button"
       aria-label={`Play ${track.title}`}
@@ -130,7 +156,8 @@ export const TrackTile = ({ track, active, playing, progress, failed, onSeek }: 
         "&:focus-visible": { outline: "3px solid", outlineColor: "highlight", outlineOffset: "2px" },
       }}
     >
-      <span sx={{ display: "block", fontWeight: 600, fontSize: 1, mb: 2, overflowWrap: "anywhere" }}>
+      {/* The right padding keeps a long title clear of the pause button, whether or not it is showing */}
+      <span sx={{ display: "block", fontWeight: 600, fontSize: 1, mb: 2, pr: "28px", overflowWrap: "anywhere" }}>
         {track.title}
       </span>
       <Waveform peaks={track.peaks} progress={active ? progress : 0} bars={40} height={28} />
