@@ -20,7 +20,6 @@
  */
 
 const fs = require("fs")
-const os = require("os")
 const path = require("path")
 const { spawnSync } = require("child_process")
 
@@ -680,22 +679,19 @@ const main = async () => {
 
   const index = buildIndex({ tracks: [...tracks, ...kept], groups, sections })
 
-  // 4. Publish the index
+  // 4. Publish the index. It is piped to gcloud, so there is no temporary file to name or clean up.
   if (!dryRun) {
-    const temporary = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "publish-audio-")), INDEX_FILE)
-    fs.writeFileSync(temporary, JSON.stringify(index))
     gcloud(
       [
         "storage",
         "cp",
-        INDEX_FILE,
+        "-",
         `gs://${BUCKET}/${INDEX_FILE}`,
         "--cache-control=no-store",
         "--content-type=application/json",
       ],
-      { cwd: path.dirname(temporary), stdio: "inherit" }
+      { input: JSON.stringify(index), stdio: ["pipe", "inherit", "inherit"] }
     )
-    fs.rmSync(path.dirname(temporary), { recursive: true })
   }
 
   console.log("")
