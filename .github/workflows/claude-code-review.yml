@@ -93,16 +93,17 @@ jobs:
             CHANGED FILES (git name-status against the merge base; `package-lock.json` omitted):
             ${{ steps.rev.outputs.files }}
 
-            THE DIFF. Every added (A), modified (M) or renamed (R) file above must be read; deleted
-            (D) files need no review beyond checking that nothing still depends on them. Read the
-            diff per file or per directory with
+            THE DIFF. Every entry above that is not a deletion (D) must be read, whatever its status
+            letter: added, modified, renamed, copied, or type-changed (T, e.g. a file replaced by a
+            symlink). A deleted (D) file needs no review beyond checking that nothing still depends
+            on it. Read the diff per file or per directory with
               `git diff ${{ steps.rev.outputs.base }} HEAD -- <path>`
             Do not rely on `gh pr diff`: it truncates at the API's 20,000-line limit.
 
             Run ONE plain command per Bash call. Pipes, `&&`, `;` and `$(...)` do not match the
             allowlist and are denied.
 
-            COVERAGE. Reading the diff of EVERY A/M/R file listed above is the job, not a stretch
+            COVERAGE. Reading the diff of EVERY non-deleted entry listed above is the job, not a stretch
             goal: docs, config, tests and scripts included. There is no turn or time budget to save,
             so do not stop early or sample. Work through the list directory by directory until it
             is exhausted. Report `coverage: "full"` only if you did. `coverage: "partial"` is for
