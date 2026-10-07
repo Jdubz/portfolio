@@ -156,7 +156,8 @@ export const TrackTile = ({ track, active, playing, progress, failed, onToggle, 
         "&:focus-visible": { outline: "3px solid", outlineColor: "highlight", outlineOffset: "2px" },
       }}
     >
-      <span sx={{ display: "block", fontWeight: 600, fontSize: 1, mb: 2, overflowWrap: "anywhere" }}>
+      {/* The right padding keeps a long title clear of the pause button, whether or not it is showing */}
+      <span sx={{ display: "block", fontWeight: 600, fontSize: 1, mb: 2, pr: "28px", overflowWrap: "anywhere" }}>
         {track.title}
       </span>
       <Waveform peaks={track.peaks} progress={active ? progress : 0} bars={40} height={28} />
