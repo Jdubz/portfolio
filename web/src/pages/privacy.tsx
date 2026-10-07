@@ -65,8 +65,8 @@ const PrivacyPage = () => {
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>2. Information We Collect</h2>
               <p sx={{ mb: 2 }}>
-                This website has no contact form, user accounts or tracking, and does not collect personal information
-                from visitors. If you email us, we receive:
+                This website has no contact form or user accounts and sets no cookies. It records anonymous, aggregate
+                usage statistics through Cloudflare Web Analytics (see section 6). If you email us, we receive:
               </p>
               <ul>
                 <li>Your email address and the name your email client sends</li>
@@ -104,7 +104,7 @@ const PrivacyPage = () => {
                   <strong>Firebase Hosting (Google):</strong> For website hosting
                 </li>
                 <li>
-                  <strong>Cloudflare:</strong> For content delivery and DNS
+                  <strong>Cloudflare:</strong> For content delivery, DNS and cookie-free web analytics
                 </li>
                 <li>
                   <strong>Bunny Fonts:</strong> For web fonts
@@ -116,8 +116,11 @@ const PrivacyPage = () => {
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>6. Cookies and Analytics</h2>
               <p>
-                This website does not use cookies or tracking analytics. We respect your privacy and do not track your
-                browsing behavior.
+                This website does not use cookies. It uses Cloudflare Web Analytics to measure aggregate traffic and
+                page performance. That service records page views, the referring page, page load timings, and general
+                browser, device and country information. According to Cloudflare, it does not use cookies or local
+                storage and does not fingerprint visitors, and we do not use it to identify individuals or track them
+                across other sites.
               </p>
             </section>
 
