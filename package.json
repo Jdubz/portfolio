@@ -21,6 +21,7 @@
     "deploy:production": "firebase deploy --only hosting:production",
     "changeset": "changeset",
     "changeset:auto": "node scripts/auto-changeset.js",
+    "publish-audio": "node scripts/publish-audio.js",
     "version": "changeset version && npm install --package-lock-only",
     "release": "changeset publish",
     "lint:fix": "npm run lint:fix --workspace=web"

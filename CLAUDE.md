@@ -8,7 +8,7 @@ Josh Wentworth's professional portfolio: a static Gatsby site on Firebase Hostin
 
 - **Stack:** Gatsby 5 + React 18 + Theme UI + TypeScript (`web/`)
 - **No backend.** No Cloud Functions, database, authentication, analytics or forms.
-- **Recordings are not in the repo.** `/recordings` lists the public `joshwentworth-recordings` Cloud Storage bucket from the browser on each page load (see Recordings below).
+- **Recordings are not in the repo.** `/recordings` loads a manifest and audio from the public `joshwentworth-recordings` Cloud Storage bucket in the browser (see Recordings below).
 - **Contact is a `mailto:hello@joshwentworth.com` link.** The contact form and its Cloud Function were removed deliberately; do not reintroduce them.
 - The resume builder and job tools live in the separate Job Finder app; `/resume-builder` and `/app` redirect there.
 
@@ -18,7 +18,7 @@ Josh Wentworth's professional portfolio: a static Gatsby site on Firebase Hostin
 portfolio/
 ├── web/                    # Gatsby site (the only npm workspace)
 │   ├── src/
-│   │   ├── components/     # homepage/*, elements/*, LegalPage (shared privacy/terms shell)
+│   │   ├── components/     # homepage/*, elements/*, recordings/*, LegalPage (shared privacy/terms shell)
 │   │   ├── content/        # MDX for homepage sections
 │   │   ├── pages/          # index, projects/full-stack, recordings, privacy, terms, 404
 │   │   ├── templates/      # home.tsx (parallax homepage)
@@ -27,7 +27,7 @@ portfolio/
 │
 ├── firebase.json           # Hosting: production + staging targets, headers, redirects
 ├── .github/workflows/      # CI/CD
-├── scripts/                # Changeset helper, screenshots, image optimisation
+├── scripts/                # Changeset helper, screenshots, audio publishing
 └── Makefile                # Thin aliases for npm scripts (`make help`)
 ```
 
@@ -73,19 +73,25 @@ Never push directly to `main`. Every change to `web/` needs a changeset (`npm ru
 - Pages are served at clean URLs (`/privacy`), so the default `Cache-Control` is revalidate; fingerprinted JS/CSS and images override it with immutable caching. Rule order matters: later rules win.
 - No catch-all rewrite: unknown URLs must return Gatsby's `404.html`.
 - The staging target is a copy of production plus `X-Robots-Tag: noindex`. Change both together.
-- The CSP only allows what the site loads today (self, Bunny Fonts, Cloudflare Insights, and Cloud Storage for the recordings listing and audio). Adding a third-party script or API call means updating it.
+- The CSP only allows what the site loads today (self, Bunny Fonts, Cloudflare Insights, and Cloud Storage for the recordings manifest and audio). Adding a third-party script or API call means updating it.
 - `/contact` redirects to `/` for old links.
 
 ## Recordings
 
-`/recordings` shows the audio files in `gs://joshwentworth-recordings` (project `static-sites-257923`, public read). Each folder in the bucket is a section on the page; no build or deploy is involved, so an upload appears on the next refresh.
+`/recordings` (titled "Analog Synthesis") plays audio from the public bucket `gs://joshwentworth-recordings` (project `static-sites-257923`). The page loads the bucket's `index.json` from the browser on every visit, so publishing involves no build or deploy.
 
-- **Upload:** drag a folder into the bucket in the Cloud Console, or `gcloud storage cp -r "Folder Name" gs://joshwentworth-recordings/`.
-- **Order:** folders are listed newest upload first; tracks are sorted by file name, so prefix them `01`, `02`, … to set the order. The title is the file name without its extension.
-- **Formats:** mp3, m4a, aac, wav, flac, ogg, opus. Anything else in the bucket is ignored.
-- **Replacing a file** under the same name can take up to an hour to reach listeners (Cloud Storage caches public objects); new files and deletions are immediate.
+**Publish** with `npm run publish-audio -- <library-folder>` (add `--dry-run` to preview). It needs `ffmpeg`/`ffprobe` and an authenticated `gcloud` on PATH. The script (`scripts/publish-audio.js`) uploads the folder, reads tags and durations, computes each waveform, and rewrites `index.json`.
 
-The bucket name and listing logic live in `web/src/utils/recordings.ts`.
+- **Sections** are the first level of folders. `albums`, `tracks`, `dailies`, `stems` and `one-shots` appear in that order; any other folder name becomes a section after them.
+- **Groups** are folders inside a section: an album, a song's stems, a sample pack. Audio directly in a section folder is listed without a group heading.
+- **Layout** per section: `album` (cover and numbered tracks, the default for `albums`), `grid` (compact tiles, the default for `one-shots`), otherwise `list`.
+- **Track details** come from the file's tags (title, track number, date, BPM, key), falling back to the file name. A leading `YYYY-MM-DD` in the name is the date; leading numbers are track numbers when every file in the folder has a different one.
+- **`meta.json`** in a folder is optional and overrides the above. In a group: `title`, `description`, `date`, `cover`. In a section: `title`, `description`, `layout`, `sort` (`name` or `newest`). In either: `tracks`, keyed by file name, to override any track field or add a `description`.
+- **Cover art** is `cover.jpg`/`.png`/`.webp` in an album folder.
+- **Publishing is additive.** Tracks already in the bucket stay on the page even if they are not in the folder being published, so one new album can be published alone. To remove something, delete it from the bucket and publish again.
+- **Replacing a file** under the same name can take up to an hour to reach listeners (Cloud Storage caches public objects).
+
+The `index.json` shape is the `Section` type in `web/src/utils/recordings.ts`; the script and that file share the bucket name and the waveform encoding, so change them together.
 
 ## Conventions
 
