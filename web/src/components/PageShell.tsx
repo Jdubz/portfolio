@@ -54,7 +54,7 @@ const PageShell = ({ kicker, title, lead, heroExtra, narrow = false, children }:
   const maxWidth = narrow ? NARROW : WIDE
 
   return (
-    <Layout>
+    <Layout ownMain>
       <HamburgerMenu />
       <div sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bg: "background", color: "text" }}>
         <header
@@ -110,9 +110,9 @@ const PageShell = ({ kicker, title, lead, heroExtra, narrow = false, children }:
           </div>
         </header>
 
-        <div sx={{ flex: 1, py: [5, 6] }}>
+        <main sx={{ flex: 1, py: [5, 6] }}>
           <div sx={{ variant: "layout.container", maxWidth }}>{children}</div>
-        </div>
+        </main>
 
         <Footer onPage />
       </div>
