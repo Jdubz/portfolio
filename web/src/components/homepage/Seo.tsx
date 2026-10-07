@@ -59,7 +59,6 @@ const Seo = ({
       <title>{seo.title}</title>
       <meta name="description" content={seo.description} />
       <meta name="image" content={seo.image} />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="theme-color" content="#0EA5E9" />
 
       {/* Open Graph */}

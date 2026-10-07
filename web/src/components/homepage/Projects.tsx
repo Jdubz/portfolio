@@ -31,6 +31,7 @@ const Projects = ({ offset, factor = 2 }: { offset: number; factor?: number }) =
               h2: { gridColumn: `-1/1` },
             }}
           >
+            <h2 sx={{ variant: "text.sectionTitle" }}>Projects</h2>
             <ProjectsMDX />
           </div>
         </div>

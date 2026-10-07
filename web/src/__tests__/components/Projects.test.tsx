@@ -22,6 +22,11 @@ describe("Projects Component", () => {
     expect(screen.getByTestId("projects-content")).toBeInTheDocument()
   })
 
+  it("renders the section heading", () => {
+    render(<Projects offset={1} factor={2} />)
+    expect(screen.getByRole("heading", { level: 2, name: "Projects" })).toBeInTheDocument()
+  })
+
   it("applies the projects preset", () => {
     const { container } = render(<Projects offset={1} factor={2} />)
     const section = container.querySelector(".section")
