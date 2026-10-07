@@ -44,8 +44,8 @@ jobs:
         working-directory: web
         run: npm run build
 
+      # The action posts the preview URL as a PR comment and updates it on each push.
       - name: Deploy preview to Firebase Hosting
-        id: firebase_deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
@@ -54,24 +54,3 @@ jobs:
           channelId: pr-${{ github.event.pull_request.number }}
           target: production
           expires: 7d
-
-      - name: Comment with preview URL
-        if: success() && steps.firebase_deploy.outputs.details_url != ''
-        uses: actions/github-script@v7
-        env:
-          PREVIEW_URL: ${{ steps.firebase_deploy.outputs.details_url }}
-        with:
-          script: |
-            const url = process.env.PREVIEW_URL;
-            const body = [
-              '🚀 Firebase Hosting preview is ready:',
-              '',
-              `**URL:** ${url}`,
-              '_Expires in 7 days or when the PR is closed._'
-            ].join('\n');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body
-            });
