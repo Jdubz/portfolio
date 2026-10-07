@@ -59,7 +59,7 @@ const NavLink: React.FC<NavLinkProps> = ({ to, href, newTab = false, onClick, ch
         "&:hover": {
           bg: "divider",
           "& a": {
-            color: "primary",
+            color: "link",
           },
         },
       }}
@@ -167,7 +167,7 @@ const HamburgerMenu: React.FC = () => {
           },
           "&:focus-visible": {
             outline: "2px solid",
-            outlineColor: "primary",
+            outlineColor: "link",
             outlineOffset: "2px",
           },
         }}
@@ -260,6 +260,9 @@ const HamburgerMenu: React.FC = () => {
             </NavLink>
             <NavLink to="/projects/full-stack" onClick={closeMenu} icon="🛠️">
               Full-Stack Project
+            </NavLink>
+            <NavLink to="/recordings" onClick={closeMenu} icon="🎛️">
+              Analog Synthesis
             </NavLink>
 
             <NavDivider />

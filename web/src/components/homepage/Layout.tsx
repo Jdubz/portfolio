@@ -5,9 +5,17 @@ import { MDXProvider } from "@mdx-js/react"
 import { Global } from "@emotion/react"
 import MdxComponents from "./mdx-components"
 
-type LayoutProps = { children: React.ReactNode; className?: string }
+type LayoutProps = {
+  children: React.ReactNode
+  className?: string
+  /**
+   * Set when the page supplies its own `main` landmark around just its content, so the menu, hero
+   * and footer are not inside it. The homepage leaves this off and gets one `main` around everything.
+   */
+  ownMain?: boolean
+}
 
-const Layout = ({ children, className = `` }: LayoutProps) => (
+const Layout = ({ children, className = ``, ownMain = false }: LayoutProps) => (
   <React.Fragment>
     <Global
       styles={(t) => ({
@@ -147,9 +155,13 @@ const Layout = ({ children, className = `` }: LayoutProps) => (
       })}
     />
     <MDXProvider components={MdxComponents}>
-      <main className={className} role="main" aria-label="Main content">
-        {children}
-      </main>
+      {ownMain ? (
+        children
+      ) : (
+        <main className={className} role="main" aria-label="Main content">
+          {children}
+        </main>
+      )}
     </MDXProvider>
   </React.Fragment>
 )

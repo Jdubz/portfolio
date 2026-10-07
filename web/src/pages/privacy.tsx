@@ -59,6 +59,9 @@ const PrivacyPage = () => (
         <li>
           <strong>Bunny Fonts:</strong> For web fonts
         </li>
+        <li>
+          <strong>Google Cloud Storage:</strong> For the audio files on the recordings page
+        </li>
       </ul>
       <p sx={{ mt: 3 }}>These services have their own privacy policies and we encourage you to review them.</p>
     </LegalSection>
@@ -100,7 +103,7 @@ const PrivacyPage = () => (
     <LegalSection heading="10. Contact Us">
       <p>
         If you have any questions about this Privacy Policy or wish to exercise your rights, please contact us at:{" "}
-        <a href="mailto:hello@joshwentworth.com" sx={{ color: "primary", textDecoration: "underline" }}>
+        <a href="mailto:hello@joshwentworth.com" sx={{ color: "link", textDecoration: "underline" }}>
           hello@joshwentworth.com
         </a>
       </p>
