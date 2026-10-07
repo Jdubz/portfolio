@@ -60,6 +60,12 @@ describe("TrackRow", () => {
     expect(screen.getByRole("slider", { name: "Seek Intro" })).toHaveAttribute("aria-valuenow", "50")
   })
 
+  it("says when the track could not be played", () => {
+    renderRow({ active: true, failed: true })
+
+    expect(screen.getByRole("alert")).toHaveTextContent("could not be played")
+  })
+
   it("seeks with the arrow keys", () => {
     const { onSeek } = renderRow({ active: true, playing: true, progress: 0.5 })
 

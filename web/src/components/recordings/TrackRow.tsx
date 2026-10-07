@@ -11,6 +11,8 @@ export type TrackProps = {
   playing: boolean
   /** Position in this track, 0 to 1; always 0 unless active */
   progress: number
+  /** Whether the player could not play this track */
+  failed?: boolean
   onToggle: (track: Track) => void
   onSeek: (track: Track, fraction: number) => void
 }
@@ -21,12 +23,18 @@ const PlayIcon = ({ playing }: { playing: boolean }) => (
   </svg>
 )
 
+const PlaybackError = () => (
+  <span role="alert" sx={{ display: "block", color: "danger", fontSize: 1, mt: 1 }}>
+    This recording could not be played.
+  </span>
+)
+
 const Detail = ({ children }: { children: React.ReactNode }) => (
   <span sx={{ "& + &::before": { content: '"·"', mx: 2 } }}>{children}</span>
 )
 
 /** One track as a full-width row: play button, title and details, seekable waveform, length */
-const TrackRow = ({ track, active, playing, progress, onToggle, onSeek }: TrackProps) => {
+const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }: TrackProps) => {
   const isPlaying = active && playing
 
   return (
@@ -79,6 +87,7 @@ const TrackRow = ({ track, active, playing, progress, onToggle, onSeek }: TrackP
           </div>
         )}
         {track.description && <div sx={{ color: "textMuted", fontSize: 1, mt: 1 }}>{track.description}</div>}
+        {failed && <PlaybackError />}
       </div>
 
       <div sx={{ gridArea: "wave", minWidth: 0 }}>
@@ -98,7 +107,7 @@ const TrackRow = ({ track, active, playing, progress, onToggle, onSeek }: TrackP
 }
 
 /** One short sound as a compact tile that plays from the start when pressed */
-export const TrackTile = ({ track, active, playing, progress, onSeek }: TrackProps) => (
+export const TrackTile = ({ track, active, playing, progress, failed, onSeek }: TrackProps) => (
   <li>
     <button
       type="button"
@@ -124,6 +133,7 @@ export const TrackTile = ({ track, active, playing, progress, onSeek }: TrackPro
         {track.title}
       </span>
       <Waveform peaks={track.peaks} progress={active ? progress : 0} bars={40} height={28} />
+      {failed && <PlaybackError />}
     </button>
   </li>
 )

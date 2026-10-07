@@ -99,6 +99,46 @@ const walk = (root, relative = "") => {
   return files
 }
 
+// meta.json fields and the type each must have. Checked before anything is uploaded, because a
+// wrong type would otherwise reach the page and break it.
+const META_FIELDS = {
+  title: "string",
+  description: "string",
+  date: "string",
+  cover: "string",
+  layout: LAYOUTS,
+  sort: ["name", "newest"],
+  tracks: "object",
+}
+const TRACK_FIELDS = {
+  title: "string",
+  description: "string",
+  date: "string",
+  key: "string",
+  number: "number",
+  bpm: "number",
+}
+
+const isPlainObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value)
+
+const checkFields = (values, fields, where) => {
+  for (const [field, value] of Object.entries(values)) {
+    const expected = fields[field]
+    if (!expected) {
+      throw new Error(`${where}"${field}" is not a supported field (use ${Object.keys(fields).join(", ")})`)
+    }
+    if (Array.isArray(expected)) {
+      if (!expected.includes(value)) {
+        throw new Error(`${where}"${field}" must be one of ${expected.join(", ")}`)
+      }
+    } else if (expected === "object" ? !isPlainObject(value) : typeof value !== expected) {
+      throw new Error(`${where}"${field}" must be ${expected === "object" ? "an object" : `a ${expected}`}`)
+    } else if (expected === "number" && !Number.isFinite(value)) {
+      throw new Error(`${where}"${field}" must be a finite number`)
+    }
+  }
+}
+
 const hasMeta = (root, folder) => fs.existsSync(path.join(root, folder, META_FILE))
 
 const readMeta = (root, folder) => {
@@ -108,8 +148,15 @@ const readMeta = (root, folder) => {
   }
   try {
     const meta = JSON.parse(fs.readFileSync(file, "utf8"))
-    if (typeof meta !== "object" || meta === null || Array.isArray(meta)) {
+    if (!isPlainObject(meta)) {
       throw new Error("expected a JSON object")
+    }
+    checkFields(meta, META_FIELDS, "")
+    for (const [fileName, overrides] of Object.entries(meta.tracks || {})) {
+      if (!isPlainObject(overrides)) {
+        throw new Error(`tracks["${fileName}"] must be an object`)
+      }
+      checkFields(overrides, TRACK_FIELDS, `tracks["${fileName}"] `)
     }
     return meta
   } catch (error) {
@@ -163,7 +210,7 @@ const computePeaks = (file) => {
 }
 
 // The track fields meta.json may set. Everything else is computed from the file.
-const OVERRIDABLE = ["title", "number", "date", "bpm", "key", "description"]
+const OVERRIDABLE = Object.keys(TRACK_FIELDS)
 
 const pickOverrides = (entry) => {
   const picked = Object.fromEntries(Object.entries(entry || {}).filter(([field]) => OVERRIDABLE.includes(field)))

@@ -24,7 +24,7 @@ const Status = ({ children }: { children: React.ReactNode }) => (
 )
 
 const Group = ({ group, layout, player }: { group: TrackGroup; layout: Section["layout"]; player: AudioPlayer }) => {
-  const { currentPath, playing, progress, toggle, seek } = player
+  const { currentPath, playing, progress, failedPath, toggle, seek } = player
   // An album or a list plays through; short sounds in a grid play one at a time
   const queue = layout === "grid" ? undefined : group.tracks
 
@@ -69,6 +69,7 @@ const Group = ({ group, layout, player }: { group: TrackGroup; layout: Section["
             active,
             playing: active && playing,
             progress: active ? progress : 0,
+            failed: failedPath === track.path,
             onToggle,
             onSeek,
           }
