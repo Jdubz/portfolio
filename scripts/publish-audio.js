@@ -39,7 +39,8 @@ const IMAGE_FILE = /^[^\\/"%]+\.(jpe?g|png|webp)$/i
  * including anything hidden. Notes, project files and other images in the library stay local.
  */
 const rsyncExclude = (namedCovers) => {
-  const separator = String.raw`[\\/]`
+  // A backslash separates folders only on Windows; elsewhere it is an ordinary file-name character
+  const separator = process.platform === "win32" ? String.raw`[\\/]` : "/"
   // % and " are written as hex escapes so the pattern survives the Windows shell (see gcloud)
   const literal = (text) =>
     text
