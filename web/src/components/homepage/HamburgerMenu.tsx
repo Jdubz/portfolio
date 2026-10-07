@@ -167,7 +167,7 @@ const HamburgerMenu: React.FC = () => {
           },
           "&:focus-visible": {
             outline: "2px solid",
-            outlineColor: "primary",
+            outlineColor: "link",
             outlineOffset: "2px",
           },
         }}

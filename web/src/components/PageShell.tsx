@@ -92,7 +92,7 @@ const PageShell = ({ kicker, title, lead, heroExtra, narrow = false, children }:
               textDecoration: "none",
               transition: "all 0.3s ease",
               "&:hover": { color: "link", borderColor: "primary" },
-              "&:focus-visible": { outline: "2px solid", outlineColor: "primary", outlineOffset: "2px" },
+              "&:focus-visible": { outline: "2px solid", outlineColor: "link", outlineOffset: "2px" },
             }}
           >
             ← Home

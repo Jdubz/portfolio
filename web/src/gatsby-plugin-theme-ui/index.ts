@@ -282,7 +282,7 @@ const theme: CustomTheme = {
       },
       "&:focus-visible": {
         outline: "3px solid",
-        outlineColor: "primary",
+        outlineColor: "link",
         outlineOffset: "2px",
       },
     },
@@ -310,7 +310,7 @@ const theme: CustomTheme = {
       },
       "&:focus-visible": {
         outline: "3px solid",
-        outlineColor: "primary",
+        outlineColor: "link",
         outlineOffset: "2px",
       },
     },
@@ -327,7 +327,7 @@ const theme: CustomTheme = {
       },
       "&:focus-visible": {
         outline: "3px solid",
-        outlineColor: "primary",
+        outlineColor: "link",
         outlineOffset: "2px",
         borderRadius: "2px",
       },
@@ -343,7 +343,7 @@ const theme: CustomTheme = {
       },
       "&:focus-visible": {
         outline: "3px solid",
-        outlineColor: "primary",
+        outlineColor: "link",
         outlineOffset: "2px",
         borderRadius: "2px",
       },
