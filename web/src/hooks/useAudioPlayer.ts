@@ -43,6 +43,8 @@ const useAudioPlayer = (): AudioPlayer => {
         if (next) {
           load(next, queue, 0)
         } else {
+          // Not every browser fires "pause" when a track simply runs out
+          setPlaying(false)
           setProgress(0)
         }
       })
