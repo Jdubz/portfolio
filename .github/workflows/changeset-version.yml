@@ -53,7 +53,6 @@ jobs:
           echo "Updated versions:"
           cat package.json | jq '.version'
           cat web/package.json | jq '.version'
-          cat functions/package.json | jq '.version'
 
       - name: Create and merge version bump PR
         if: steps.check-changesets.outputs.has_changesets == 'true'
@@ -81,7 +80,6 @@ jobs:
           CHANGESET_COUNT="${{ steps.check-changesets.outputs.changeset_count }}"
           ROOT_VERSION=$(cat package.json | jq -r '.version')
           WEB_VERSION=$(cat web/package.json | jq -r '.version')
-          FUNCTIONS_VERSION=$(cat functions/package.json | jq -r '.version')
 
           PR_BODY=$(cat <<EOF
           ## Version Bump
@@ -97,7 +95,6 @@ jobs:
           ### Versions
           - Root: ${ROOT_VERSION}
           - Web: ${WEB_VERSION}
-          - Functions: ${FUNCTIONS_VERSION}
 
           ---
           🤖 This PR was automatically created by the changeset version workflow

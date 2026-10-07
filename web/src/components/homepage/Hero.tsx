@@ -52,8 +52,10 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
           }}
         >
           <img
-            src="/logo-gradient.svg"
+            src="/logo-gradient.webp"
             alt="JW Logo"
+            width={400}
+            height={400}
             sx={{
               width: ["240px", "320px", "400px"],
               height: ["240px", "320px", "400px"],

@@ -47,7 +47,7 @@ jobs:
           changed_files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
 
           # Check if any important files were changed
-          important_changes=$(echo "$changed_files" | grep -E '^(web/src|functions/src|web/gatsby-|.*package\.json$)' || true)
+          important_changes=$(echo "$changed_files" | grep -E '^(web/src|web/gatsby-|.*package\.json$)' || true)
 
           if [ -n "$important_changes" ]; then
             echo "has_important_changes=true" >> $GITHUB_OUTPUT
@@ -94,14 +94,9 @@ jobs:
           # Determine which packages changed
           changed_files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           has_web=false
-          has_functions=false
 
           if echo "$changed_files" | grep -qE '^web/'; then
             has_web=true
-          fi
-
-          if echo "$changed_files" | grep -qE '^functions/'; then
-            has_functions=true
           fi
 
           # Auto-detect change type (default to patch)
@@ -116,10 +111,6 @@ jobs:
 
           if [ "$has_web" = "true" ]; then
             echo "\"josh-wentworth-portfolio\": $change_type" >> ".changeset/pr-$PR_NUMBER-auto.md"
-          fi
-
-          if [ "$has_functions" = "true" ]; then
-            echo "\"contact-form-function\": $change_type" >> ".changeset/pr-$PR_NUMBER-auto.md"
           fi
 
           echo "---" >> ".changeset/pr-$PR_NUMBER-auto.md"

@@ -5,10 +5,13 @@ import { Link } from "gatsby"
 import Layout from "../components/homepage/Layout"
 import Seo from "../components/homepage/Seo"
 
+// A literal, not `new Date()`: the date must not change on every build or differ between the
+// server-rendered HTML and the browser.
+const LAST_UPDATED = "October 6, 2026"
+
 const PrivacyPage = () => {
   return (
     <Layout>
-      <Seo title="Privacy Policy" description="Privacy policy for Josh Wentworth's portfolio website" />
       <div
         sx={{
           minHeight: "100vh",
@@ -46,9 +49,7 @@ const PrivacyPage = () => {
             Privacy Policy
           </h1>
 
-          <p sx={{ fontSize: 1, color: "textMuted", mb: 5 }}>
-            Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-          </p>
+          <p sx={{ fontSize: 1, color: "textMuted", mb: 5 }}>Last updated: {LAST_UPDATED}</p>
 
           <div
             sx={{ "& > section": { mb: 5 }, "& p": { lineHeight: "relaxed" }, "& ul": { pl: 4, "& li": { mb: 2 } } }}
@@ -57,18 +58,19 @@ const PrivacyPage = () => {
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>1. Introduction</h2>
               <p>
                 This Privacy Policy describes how joshwentworth.com ("we", "us", or "our") collects, uses, and protects
-                your personal information when you visit our website and use our contact form.
+                your personal information when you visit our website or contact us by email.
               </p>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>2. Information We Collect</h2>
-              <p sx={{ mb: 2 }}>When you use our contact form, we collect:</p>
+              <p sx={{ mb: 2 }}>
+                This website has no contact form or user accounts and sets no cookies. It records anonymous, aggregate
+                usage statistics through Cloudflare Web Analytics (see section 6). If you email us, we receive:
+              </p>
               <ul>
-                <li>Your name</li>
-                <li>Your email address</li>
+                <li>Your email address and the name your email client sends</li>
                 <li>The message content you provide</li>
-                <li>Technical information (IP address, browser type, timestamp)</li>
               </ul>
             </section>
 
@@ -78,22 +80,19 @@ const PrivacyPage = () => {
               <ul>
                 <li>Respond to your inquiries and messages</li>
                 <li>Maintain records of our communications</li>
-                <li>Prevent spam and abuse of our contact form</li>
                 <li>Improve our website and services</li>
               </ul>
             </section>
 
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>4. Data Storage and Security</h2>
-              <p sx={{ mb: 2 }}>Your information is stored securely using:</p>
-              <ul>
-                <li>Google Cloud Platform with industry-standard encryption</li>
-                <li>Firestore database with access controls</li>
-                <li>Secure email delivery via Mailgun</li>
-              </ul>
+              <p sx={{ mb: 2 }}>
+                Emails you send us are held by our email provider. The website does not keep a database of visitors or
+                messages.
+              </p>
               <p sx={{ mt: 3 }}>
-                We retain your contact form submissions for as long as necessary to respond to your inquiry and maintain
-                business records. You may request deletion of your data at any time.
+                We retain the emails for as long as necessary to respond to your inquiry and maintain business records.
+                You may request deletion of your data at any time.
               </p>
             </section>
 
@@ -102,13 +101,13 @@ const PrivacyPage = () => {
               <p sx={{ mb: 2 }}>We use the following third-party services:</p>
               <ul>
                 <li>
-                  <strong>Google Cloud Platform:</strong> For hosting and data storage
+                  <strong>Firebase Hosting (Google):</strong> For website hosting
                 </li>
                 <li>
-                  <strong>Mailgun:</strong> For email delivery
+                  <strong>Cloudflare:</strong> For content delivery, DNS and cookie-free web analytics
                 </li>
                 <li>
-                  <strong>Firebase:</strong> For website hosting and serverless functions
+                  <strong>Bunny Fonts:</strong> For web fonts
                 </li>
               </ul>
               <p sx={{ mt: 3 }}>These services have their own privacy policies and we encourage you to review them.</p>
@@ -117,8 +116,11 @@ const PrivacyPage = () => {
             <section>
               <h2 sx={{ fontSize: 4, mb: 3, color: "heading" }}>6. Cookies and Analytics</h2>
               <p>
-                This website does not use cookies or tracking analytics. We respect your privacy and do not track your
-                browsing behavior.
+                This website does not use cookies. It uses Cloudflare Web Analytics to measure aggregate traffic and
+                page performance. That service records page views, the referring page, page load timings, and general
+                browser, device and country information. According to Cloudflare, it does not use cookies or local
+                storage and does not fingerprint visitors, and we do not use it to identify individuals or track them
+                across other sites.
               </p>
             </section>
 
@@ -168,3 +170,9 @@ const PrivacyPage = () => {
 }
 
 export default PrivacyPage
+
+// Rendered through the Head API, not in the page body: inside the body its <script> and <meta>
+// tags break React hydration.
+export const Head = () => (
+  <Seo title="Privacy Policy" description="Privacy policy for Josh Wentworth's portfolio website" pathname="/privacy" />
+)

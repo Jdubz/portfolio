@@ -1,7 +1,2 @@
-# Prevent line ending issues during restructure
-* text=auto
-*.sh text eol=lf
-*.ts text eol=lf
-*.js text eol=lf
-*.json text eol=lf
-*.md text eol=lf
+# Always check out text files with LF so Prettier (endOfLine: lf) passes on Windows too
+* text=auto eol=lf

@@ -15,7 +15,6 @@
 /.github/ @Jdubz
 /eslint.config.mjs @Jdubz
 /jest.config.json @Jdubz
-/playwright.config.ts @Jdubz
 /firebase.json @Jdubz
 
 # Build and deployment
