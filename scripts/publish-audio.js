@@ -340,9 +340,11 @@ const buildIndex = ({ tracks, groups, sections }) => {
       const groupFields = groups.get(folder) || {}
       // Track numbers set the order unless the section's meta.json asks for newest first
       const byNumber = sectionFields.sort !== "newest"
+      // Numbered tracks come first in number order, so a partly numbered folder still has one order
+      const rank = (track) => (byNumber && track.number !== undefined ? track.number : Infinity)
       groupTracks.sort((a, b) => {
-        if (byNumber && a.number !== undefined && b.number !== undefined && a.number !== b.number) {
-          return a.number - b.number
+        if (rank(a) !== rank(b)) {
+          return rank(a) - rank(b)
         }
         return newestFirst ? sortKey(b).localeCompare(sortKey(a)) : natural(a.title, b.title)
       })

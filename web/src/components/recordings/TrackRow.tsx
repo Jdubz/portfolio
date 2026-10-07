@@ -133,8 +133,9 @@ export const TrackTile = ({ track, active, playing, progress, failed, onSeek }: 
         {track.title}
       </span>
       <Waveform peaks={track.peaks} progress={active ? progress : 0} bars={40} height={28} />
-      {failed && <PlaybackError />}
     </button>
+    {/* Outside the button: content inside one is not announced as an alert */}
+    {failed && <PlaybackError />}
   </li>
 )
 
