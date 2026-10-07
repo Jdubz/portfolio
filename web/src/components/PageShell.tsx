@@ -91,7 +91,7 @@ const PageShell = ({ kicker, title, lead, heroExtra, narrow = false, children }:
               fontWeight: 600,
               textDecoration: "none",
               transition: "all 0.3s ease",
-              "&:hover": { color: "primary", borderColor: "primary" },
+              "&:hover": { color: "link", borderColor: "primary" },
               "&:focus-visible": { outline: "2px solid", outlineColor: "primary", outlineOffset: "2px" },
             }}
           >

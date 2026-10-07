@@ -73,7 +73,7 @@ const TermsPage = () => (
           href="https://github.com/Jdubz/portfolio"
           target="_blank"
           rel="noopener noreferrer"
-          sx={{ color: "primary", textDecoration: "underline" }}
+          sx={{ color: "link", textDecoration: "underline" }}
         >
           GitHub
         </a>{" "}
@@ -115,7 +115,7 @@ const TermsPage = () => (
     <LegalSection heading="11. Privacy">
       <p>
         Your use of this Website is also governed by our{" "}
-        <Link to="/privacy" sx={{ color: "primary", textDecoration: "underline" }}>
+        <Link to="/privacy" sx={{ color: "link", textDecoration: "underline" }}>
           Privacy Policy
         </Link>
         . Please review it to understand how we collect and use your information.
@@ -132,7 +132,7 @@ const TermsPage = () => (
     <LegalSection heading="13. Contact Information">
       <p>
         If you have any questions about these Terms of Service, please contact us at:{" "}
-        <a href="mailto:hello@joshwentworth.com" sx={{ color: "primary", textDecoration: "underline" }}>
+        <a href="mailto:hello@joshwentworth.com" sx={{ color: "link", textDecoration: "underline" }}>
           hello@joshwentworth.com
         </a>
       </p>

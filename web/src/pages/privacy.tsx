@@ -103,7 +103,7 @@ const PrivacyPage = () => (
     <LegalSection heading="10. Contact Us">
       <p>
         If you have any questions about this Privacy Policy or wish to exercise your rights, please contact us at:{" "}
-        <a href="mailto:hello@joshwentworth.com" sx={{ color: "primary", textDecoration: "underline" }}>
+        <a href="mailto:hello@joshwentworth.com" sx={{ color: "link", textDecoration: "underline" }}>
           hello@joshwentworth.com
         </a>
       </p>

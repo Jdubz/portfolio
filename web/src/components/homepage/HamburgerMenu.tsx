@@ -59,7 +59,7 @@ const NavLink: React.FC<NavLinkProps> = ({ to, href, newTab = false, onClick, ch
         "&:hover": {
           bg: "divider",
           "& a": {
-            color: "primary",
+            color: "link",
           },
         },
       }}

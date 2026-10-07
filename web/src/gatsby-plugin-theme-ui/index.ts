@@ -86,11 +86,11 @@ const theme: CustomTheme = {
       fontFeatureSettings: "'cv05','ss01','case','liga','calt'",
     },
     a: {
-      color: "primary",
+      color: "link",
       textDecoration: "none",
       transition: "all 0.3s ease-in-out",
       "&:hover": {
-        color: "primary",
+        color: "link",
         textDecoration: "none",
       },
     },
@@ -163,6 +163,11 @@ const theme: CustomTheme = {
     background: "#141821",
     primary: "#0EA5E9",
     primaryHover: "#0284c7",
+    // A lighter step of the brand blue, for hovering a primary button under its dark text
+    primaryBright: "#38bdf8",
+    // The brand blue as text. Same blue on the dark page; a darker one in light mode, where the
+    // brand blue is under 3:1 against the page.
+    link: "#0EA5E9",
     highlight: "#00C9A7",
     danger: "#ef4444",
     success: "#10b981",
@@ -199,6 +204,8 @@ const theme: CustomTheme = {
         background: "#f8fafc",
         primary: "#0EA5E9",
         primaryHover: "#0284c7",
+        primaryBright: "#38bdf8",
+        link: "#0369a1",
         highlight: "#00C9A7",
         danger: "#ef4444",
         success: "#10b981",
@@ -253,7 +260,8 @@ const theme: CustomTheme = {
   buttons: {
     primary: {
       bg: "primary",
-      color: "white",
+      // Dark text: white on the brand blue is under 3:1
+      color: "dark",
       fontSize: [2, 3],
       fontWeight: "bold",
       px: 4,
@@ -263,7 +271,8 @@ const theme: CustomTheme = {
       cursor: "pointer",
       transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
       "&:hover": {
-        bg: "primaryHover",
+        bg: "primaryBright",
+        color: "dark",
         transform: "translateY(-2px)",
         boxShadow: "0 4px 12px rgba(14, 165, 233, 0.4)",
       },
@@ -291,7 +300,7 @@ const theme: CustomTheme = {
       transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
       "&:hover": {
         borderColor: "primary",
-        color: "primary",
+        color: "link",
         transform: "translateY(-2px)",
         boxShadow: "0 4px 12px rgba(14, 165, 233, 0.2)",
       },
@@ -308,12 +317,12 @@ const theme: CustomTheme = {
   },
   links: {
     primary: {
-      color: "primary",
+      color: "link",
       textDecoration: "none",
       fontWeight: 600,
       transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
       "&:hover": {
-        color: "primaryHover",
+        color: "link",
         textDecoration: "underline",
       },
       "&:focus-visible": {
@@ -329,7 +338,7 @@ const theme: CustomTheme = {
       fontWeight: 600,
       transition: "all 200ms cubic-bezier(.22,.61,.36,1)",
       "&:hover": {
-        color: "primaryHover",
+        color: "white",
         textDecoration: "underline",
       },
       "&:focus-visible": {
@@ -371,7 +380,7 @@ const theme: CustomTheme = {
     heroKicker: {
       fontSize: [2, 3],
       fontWeight: 600,
-      color: "primary",
+      color: "link",
       letterSpacing: "wide",
       textTransform: "uppercase",
     },
