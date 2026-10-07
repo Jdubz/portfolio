@@ -63,7 +63,7 @@ feature_branch → staging → main
 3. After testing there, PR `staging → main`
 4. Merge to `main` auto-deploys to `joshwentworth.com`
 
-Every PR gets an automated Claude review (`.github/workflows/claude-code-review.yml`). It runs on the Claude subscription via the `CLAUDE_CODE_OAUTH_TOKEN` secret, never an API key. The workflow, not the model, posts the verdict as `## Claude review — <sha>`, including whether every changed file was read; a green check with no verdict comment for the head commit means the review did not run. Re-run with `gh run rerun <id>`.
+Every PR gets an automated Claude review (`.github/workflows/claude-code-review.yml`). It runs on the Claude subscription via the `CLAUDE_CODE_OAUTH_TOKEN` secret, never an API key. The workflow, not the model, posts the verdict as `## Claude review — <sha>`, including whether every changed file was read (the lockfile is checked against the `package.json` changes rather than line by line); a green check with no verdict comment for the head commit means the review did not run. Re-run with `gh run rerun <id>`.
 
 Never push directly to `main`. Every change to `web/` needs a changeset (`npm run changeset`); versions bump automatically on merge.
 
