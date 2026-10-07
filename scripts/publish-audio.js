@@ -268,9 +268,11 @@ const withoutOverrides = ({ overrides, original, ...track }) => {
   for (const field of Object.keys(overrides || {})) {
     delete track[field]
   }
-  const restored = { ...track, ...original }
-  // Entries published before originals were recorded may have had their title overridden
-  return { ...restored, title: restored.title || path.basename(track.path).replace(AUDIO_FILE, "") }
+  // An entry published before originals were recorded cannot be restored without reading its file
+  if (overrides && !original) {
+    fail(`Include ${track.path} in the folder being published: its meta.json cannot be changed without the audio.`)
+  }
+  return { ...track, ...original }
 }
 
 const LEADING_DATE = /^(\d{4}-\d{2}-\d{2})[\s._-]*/
@@ -545,14 +547,22 @@ const main = async () => {
     }
 
     if (!isSection) {
-      if (meta.cover && !(IMAGE_FILE.test(meta.cover) && fs.existsSync(path.join(root, folder, meta.cover)))) {
+      // A cover can be in the folder being published or already in the bucket from an earlier run
+      const isLocal = (name) => fs.existsSync(path.join(root, folder, name))
+      const isPublished = (name) => alreadyInBucket.has(`${folder}/${name}`)
+      if (meta.cover && !(IMAGE_FILE.test(meta.cover) && (isLocal(meta.cover) || isPublished(meta.cover)))) {
         fail(`${folder}/${META_FILE}: "cover" must name a jpg, png or webp file in that folder`)
       }
-      if (meta.cover) {
+      if (meta.cover && isLocal(meta.cover)) {
         namedCovers.push(`${folder}/${meta.cover}`)
       }
-      const localCover = meta.cover || fs.readdirSync(path.join(root, folder)).find((name) => COVER_FILE.test(name))
-      const cover = localCover ? `${folder}/${localCover}` : undefined
+      const publishedCover = [...alreadyInBucket]
+        .filter((name) => path.posix.dirname(name) === folder)
+        .map((name) => path.basename(name))
+        .find((name) => COVER_FILE.test(name))
+      const chosenCover =
+        meta.cover || fs.readdirSync(path.join(root, folder)).find((name) => COVER_FILE.test(name)) || publishedCover
+      const cover = chosenCover ? `${folder}/${chosenCover}` : undefined
       const previous = groups.get(folder)
       if (described || !previous) {
         groups.set(folder, { path: folder, title: meta.title, description: meta.description, date: meta.date, cover })
