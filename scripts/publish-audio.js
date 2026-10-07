@@ -610,9 +610,12 @@ const main = async () => {
 
     if (!isSection) {
       // A cover can be in the folder being published or already in the bucket from an earlier run
-      // Compared with the folder's own entries: on Windows and macOS a name in the wrong case
-      // would be found on disk but then not match the upload pattern, which is exact
-      const localNames = fs.readdirSync(path.join(root, folder))
+      // Compared with the uploadable files in the folder (regular, not hidden), by exact name: on
+      // Windows and macOS a name in the wrong case would be found on disk but then not match the
+      // upload pattern, and the cover would be dropped after the upload
+      const localNames = files
+        .filter((file) => path.posix.dirname(file) === folder)
+        .map((file) => path.posix.basename(file))
       const isLocal = (name) => localNames.includes(name)
       const isPublished = (name) => alreadyInBucket.has(`${folder}/${name}`)
       if (meta.cover && !(IMAGE_FILE.test(meta.cover) && (isLocal(meta.cover) || isPublished(meta.cover)))) {
@@ -625,7 +628,7 @@ const main = async () => {
         .filter((name) => path.posix.dirname(name) === folder)
         .map((name) => path.posix.basename(name))
         .find((name) => COVER_FILE.test(name))
-      const localCover = fs.readdirSync(path.join(root, folder)).find((name) => COVER_FILE.test(name))
+      const localCover = localNames.find((name) => COVER_FILE.test(name))
       const inFolder = (name) => (name ? `${folder}/${name}` : undefined)
       const previous = groups.get(folder)
       if (described || !previous) {
