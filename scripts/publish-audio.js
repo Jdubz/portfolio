@@ -291,8 +291,10 @@ const buildIndex = ({ tracks, groups, sections }) => {
 
     const builtGroups = [...sectionGroups.entries()].map(([folder, groupTracks]) => {
       const groupFields = groups.get(folder) || {}
+      // Track numbers set the order unless the section's meta.json asks for newest first
+      const byNumber = sectionFields.sort !== "newest"
       groupTracks.sort((a, b) => {
-        if (a.number !== undefined && b.number !== undefined && a.number !== b.number) {
+        if (byNumber && a.number !== undefined && b.number !== undefined && a.number !== b.number) {
           return a.number - b.number
         }
         return newestFirst ? sortKey(b).localeCompare(sortKey(a)) : natural(a.title, b.title)
