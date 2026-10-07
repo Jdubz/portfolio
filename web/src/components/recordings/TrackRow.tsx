@@ -69,7 +69,7 @@ const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }
           bg: "primary",
           // White on the primary blue is under the 3:1 contrast an icon needs
           color: "dark",
-          "&:focus-visible": { outline: "3px solid", outlineColor: "highlight", outlineOffset: "2px" },
+          "&:focus-visible": { outline: "3px solid", outlineColor: "primaryHover", outlineOffset: "2px" },
         }}
       >
         <PlayIcon playing={isPlaying} />
@@ -130,7 +130,7 @@ export const TrackTile = ({ track, active, playing, progress, failed, onToggle, 
           cursor: "pointer",
           bg: "primary",
           color: "dark",
-          "&:focus-visible": { outline: "3px solid", outlineColor: "highlight", outlineOffset: "2px" },
+          "&:focus-visible": { outline: "3px solid", outlineColor: "primaryHover", outlineOffset: "2px" },
         }}
       >
         <PlayIcon playing={playing} size={14} />
@@ -153,7 +153,7 @@ export const TrackTile = ({ track, active, playing, progress, failed, onToggle, 
         font: "inherit",
         cursor: "pointer",
         "&:hover": { borderColor: "primary" },
-        "&:focus-visible": { outline: "3px solid", outlineColor: "highlight", outlineOffset: "2px" },
+        "&:focus-visible": { outline: "3px solid", outlineColor: "primaryHover", outlineOffset: "2px" },
       }}
     >
       {/* The right padding keeps a long title clear of the pause button, whether or not it is showing */}

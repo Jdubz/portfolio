@@ -263,6 +263,12 @@ const applyOverrides = (track, overrides) => {
   return { ...track, ...overrides, overrides, original }
 }
 
+/** Whether every one of a folder's file titles starts with a different number */
+const isNumbered = (fileTitles) => {
+  const numbers = fileTitles.map((name) => LEADING_NUMBER.exec(name))
+  return numbers.every(Boolean) && new Set(numbers.map((match) => Number(match[1]))).size === numbers.length
+}
+
 /** The file name without its extension or a leading date; a name that is only a date is kept whole */
 const fileTitleOf = (trackPath) => {
   const baseName = path.basename(trackPath).replace(AUDIO_FILE, "")
@@ -546,10 +552,7 @@ const main = async () => {
     const siblings = retained
       .filter((track) => path.posix.dirname(track.path) === folder)
       .map((track) => fileTitleOf(track.path))
-    const numbers = [...folderTracks.map((track) => track.fileTitle), ...siblings].map((name) =>
-      LEADING_NUMBER.exec(name)
-    )
-    const numbered = numbers.every(Boolean) && new Set(numbers.map((match) => Number(match[1]))).size === numbers.length
+    const numbered = isNumbered([...folderTracks.map((track) => track.fileTitle), ...siblings])
 
     const described = hasMeta(root, folder)
 
@@ -614,6 +617,19 @@ const main = async () => {
       }
     }
   }
+  // Folders that are not being published can still have changed: deleting a file from the bucket
+  // can make the rest of its folder numbered, or stop it being so. Their file-name titles and
+  // numbers are worked out again from what is left, with each track's own overrides reapplied.
+  const untouched = new Set(retained.map((track) => path.posix.dirname(track.path)))
+  for (const folder of [...untouched].filter((name) => !publishFolders.has(name))) {
+    const remaining = retained.filter((track) => path.posix.dirname(track.path) === folder)
+    const numbered = isNumbered(remaining.map((track) => fileTitleOf(track.path)))
+    for (const track of remaining.filter((entry) => entry.fromTags)) {
+      const inferred = inferFromName(withoutOverrides(track), fileTitleOf(track.path), numbered)
+      retainedUpdates.set(track.path, applyOverrides(inferred, pickOverrides(track.overrides)))
+    }
+  }
+
   // A section's own meta.json sets its title, description, layout and sort
   for (const id of new Set([...publishFolders].map((folder) => folder.split("/")[0]))) {
     if (hasMeta(root, id) || !sections.has(id)) {
