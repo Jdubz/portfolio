@@ -21,13 +21,6 @@ const featuredRepos: FeaturedRepo[] = [
     tech: ["Gatsby", "React", "TypeScript", "Firebase Hosting"],
   },
   {
-    title: "Job Finder Worker",
-    repoUrl: "https://github.com/Jdubz/job-finder-worker",
-    summary:
-      "Queue-driven scraper that normalizes new job posts; Playwright fetchers, backoff/retry, idempotent queue writes.",
-    tech: ["TypeScript", "Node.js", "Playwright", "Queues"],
-  },
-  {
     title: "Blinky Time",
     repoUrl: "https://github.com/Jdubz/blinky_time",
     summary: "Arduino/Neopixel controller with audio-reactive modes, fixed-timestep pattern loop, ESP Wi‑Fi bridge.",
@@ -38,12 +31,6 @@ const featuredRepos: FeaturedRepo[] = [
     repoUrl: "https://github.com/Jdubz/app-monitor",
     summary: "Dev workflow monitor: service health polling, env toggles, and Slack/CLI surfaces for multi-repo flows.",
     tech: ["TypeScript", "Node.js", "Monitoring", "CLI"],
-  },
-  {
-    title: "Imagineer",
-    repoUrl: "https://github.com/Jdubz/imagineer",
-    summary: "AI image experiments: prompt pipelines, model runners, and asset bookkeeping scripts.",
-    tech: ["Python", "AI", "Image Gen"],
   },
 ]
 
