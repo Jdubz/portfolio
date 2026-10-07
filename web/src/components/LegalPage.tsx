@@ -18,7 +18,8 @@ export const LegalPage = ({ title, lastUpdated, children }: LegalPageProps) => (
         "& > section": { mb: 5 },
         "& p": { lineHeight: "relaxed" },
         "& ul": { pl: 4, "& li": { mb: 2 } },
-        "& a": { variant: "links.primary" },
+        // Underlined: inside running text, colour alone does not mark a link
+        "& a": { color: "link", textDecoration: "underline" },
       }}
     >
       {children}
