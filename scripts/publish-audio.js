@@ -205,6 +205,9 @@ const probe = (file) => {
   const output = run("ffprobe", [
     "-v",
     "error",
+    // Audio streams only: embedded cover art is a stream too, and its tags are not the track's
+    "-select_streams",
+    "a",
     "-show_entries",
     "format=duration:format_tags:stream_tags",
     "-of",
@@ -286,7 +289,7 @@ const isNumbered = (fileTitles) => {
 
 /** The file name without its extension or a leading date; a name that is only a date is kept whole */
 const fileTitleOf = (trackPath) => {
-  const baseName = path.basename(trackPath).replace(AUDIO_FILE, "")
+  const baseName = path.posix.basename(trackPath).replace(AUDIO_FILE, "")
   return baseName.replace(LEADING_DATE, "") || baseName
 }
 
@@ -333,7 +336,7 @@ const firstNumber = (value) => {
 const readTrack = (root, relativePath, stat, knownPeaks) => {
   const file = path.join(root, relativePath)
   const { duration, tags } = probe(file)
-  const baseName = path.basename(relativePath).replace(AUDIO_FILE, "")
+  const baseName = path.posix.basename(relativePath).replace(AUDIO_FILE, "")
   const fileDate = LEADING_DATE.exec(baseName)
   const tagDate = /^(\d{4})(-\d{2}-\d{2})?/.exec(tags.date || "")
 
@@ -547,11 +550,13 @@ const main = async () => {
   const tracks = []
   const retainedUpdates = new Map()
   // A folder is processed when it has audio to publish, or only a meta.json for what is already there
-  const metaFolders = files.filter((file) => path.basename(file) === META_FILE).map((file) => path.posix.dirname(file))
+  const metaFolders = files
+    .filter((file) => path.posix.basename(file) === META_FILE)
+    .map((file) => path.posix.dirname(file))
   // ... or only new artwork: a cover.* image, or the file a group's saved cover points at
   const coverFolders = files
     .filter(
-      (file) => COVER_FILE.test(path.basename(file)) || [...groups.values()].some((group) => group.cover === file)
+      (file) => COVER_FILE.test(path.posix.basename(file)) || [...groups.values()].some((group) => group.cover === file)
     )
     .map((file) => path.posix.dirname(file))
   const publishFolders = new Set(
@@ -574,7 +579,7 @@ const main = async () => {
     for (const { fileTitle, tagTitle, ...track } of folderTracks) {
       const previous = publishedByPath.get(track.path)
       const overrides = pickOverrides(
-        described ? meta.tracks && meta.tracks[path.basename(track.path)] : previous && previous.overrides
+        described ? meta.tracks && meta.tracks[path.posix.basename(track.path)] : previous && previous.overrides
       )
       // Which of title and number came from tags; the rest follow the file name and are worked out
       // again whenever the folder's contents change
@@ -595,7 +600,7 @@ const main = async () => {
       const fileTitle = fileTitleOf(track.path)
       const base = withoutOverrides(track)
       const overrides = pickOverrides(
-        described ? meta.tracks && meta.tracks[path.basename(track.path)] : track.overrides
+        described ? meta.tracks && meta.tracks[path.posix.basename(track.path)] : track.overrides
       )
       retainedUpdates.set(
         track.path,
@@ -605,7 +610,10 @@ const main = async () => {
 
     if (!isSection) {
       // A cover can be in the folder being published or already in the bucket from an earlier run
-      const isLocal = (name) => fs.existsSync(path.join(root, folder, name))
+      // Compared with the folder's own entries: on Windows and macOS a name in the wrong case
+      // would be found on disk but then not match the upload pattern, which is exact
+      const localNames = fs.readdirSync(path.join(root, folder))
+      const isLocal = (name) => localNames.includes(name)
       const isPublished = (name) => alreadyInBucket.has(`${folder}/${name}`)
       if (meta.cover && !(IMAGE_FILE.test(meta.cover) && (isLocal(meta.cover) || isPublished(meta.cover)))) {
         fail(`${folder}/${META_FILE}: "cover" must name a jpg, png or webp file in that folder`)
@@ -615,7 +623,7 @@ const main = async () => {
       }
       const publishedCover = [...alreadyInBucket]
         .filter((name) => path.posix.dirname(name) === folder)
-        .map((name) => path.basename(name))
+        .map((name) => path.posix.basename(name))
         .find((name) => COVER_FILE.test(name))
       const localCover = fs.readdirSync(path.join(root, folder)).find((name) => COVER_FILE.test(name))
       const inFolder = (name) => (name ? `${folder}/${name}` : undefined)
@@ -623,7 +631,7 @@ const main = async () => {
       if (described || !previous) {
         const cover = inFolder(meta.cover || localCover || publishedCover)
         groups.set(folder, { path: folder, title: meta.title, description: meta.description, date: meta.date, cover })
-      } else if (previous.cover && isLocal(path.basename(previous.cover))) {
+      } else if (previous.cover && isLocal(path.posix.basename(previous.cover))) {
         // No meta.json, and the saved cover is in the folder: upload it again in case it changed
         namedCovers.push(previous.cover)
       } else if (localCover) {
