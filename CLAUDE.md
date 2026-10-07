@@ -8,6 +8,7 @@ Josh Wentworth's professional portfolio: a static Gatsby site on Firebase Hostin
 
 - **Stack:** Gatsby 5 + React 18 + Theme UI + TypeScript (`web/`)
 - **No backend.** No Cloud Functions, database, authentication, analytics or forms.
+- **Recordings are not in the repo.** `/recordings` lists the public `joshwentworth-recordings` Cloud Storage bucket from the browser on each page load (see Recordings below).
 - **Contact is a `mailto:hello@joshwentworth.com` link.** The contact form and its Cloud Function were removed deliberately; do not reintroduce them.
 - The resume builder and job tools live in the separate Job Finder app; `/resume-builder` and `/app` redirect there.
 
@@ -19,7 +20,7 @@ portfolio/
 │   ├── src/
 │   │   ├── components/     # homepage/*, elements/*, LegalPage (shared privacy/terms shell)
 │   │   ├── content/        # MDX for homepage sections
-│   │   ├── pages/          # index, projects/full-stack, privacy, terms, 404
+│   │   ├── pages/          # index, projects/full-stack, recordings, privacy, terms, 404
 │   │   ├── templates/      # home.tsx (parallax homepage)
 │   │   └── gatsby-plugin-theme-ui/  # Theme
 │   └── static/             # Static assets: only files the site references, plus manifest.webmanifest
@@ -72,8 +73,19 @@ Never push directly to `main`. Every change to `web/` needs a changeset (`npm ru
 - Pages are served at clean URLs (`/privacy`), so the default `Cache-Control` is revalidate; fingerprinted JS/CSS and images override it with immutable caching. Rule order matters: later rules win.
 - No catch-all rewrite: unknown URLs must return Gatsby's `404.html`.
 - The staging target is a copy of production plus `X-Robots-Tag: noindex`. Change both together.
-- The CSP only allows what the site loads today (self, Bunny Fonts, Cloudflare Insights). Adding a third-party script or API call means updating it.
+- The CSP only allows what the site loads today (self, Bunny Fonts, Cloudflare Insights, and Cloud Storage for the recordings listing and audio). Adding a third-party script or API call means updating it.
 - `/contact` redirects to `/` for old links.
+
+## Recordings
+
+`/recordings` shows the audio files in `gs://joshwentworth-recordings` (project `static-sites-257923`, public read). Each folder in the bucket is a section on the page; no build or deploy is involved, so an upload appears on the next refresh.
+
+- **Upload:** drag a folder into the bucket in the Cloud Console, or `gcloud storage cp -r "Folder Name" gs://joshwentworth-recordings/`.
+- **Order:** folders are listed newest upload first; tracks are sorted by file name, so prefix them `01`, `02`, … to set the order. The title is the file name without its extension.
+- **Formats:** mp3, m4a, aac, wav, flac, ogg, opus. Anything else in the bucket is ignored.
+- **Replacing a file** under the same name can take up to an hour to reach listeners (Cloud Storage caches public objects); new files and deletions are immediate.
+
+The bucket name and listing logic live in `web/src/utils/recordings.ts`.
 
 ## Conventions
 

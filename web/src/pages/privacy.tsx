@@ -59,6 +59,9 @@ const PrivacyPage = () => (
         <li>
           <strong>Bunny Fonts:</strong> For web fonts
         </li>
+        <li>
+          <strong>Google Cloud Storage:</strong> For the audio files on the recordings page
+        </li>
       </ul>
       <p sx={{ mt: 3 }}>These services have their own privacy policies and we encourage you to review them.</p>
     </LegalSection>

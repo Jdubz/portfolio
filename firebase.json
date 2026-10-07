@@ -41,7 +41,7 @@
             },
             {
               "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; img-src 'self' data: https:; font-src 'self' data: https://fonts.bunny.net; connect-src 'self' https://cloudflareinsights.com; frame-ancestors 'none'; frame-src 'none';"
+              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; img-src 'self' data: https:; font-src 'self' data: https://fonts.bunny.net; connect-src 'self' https://cloudflareinsights.com https://storage.googleapis.com; media-src 'self' https://storage.googleapis.com; frame-ancestors 'none'; frame-src 'none';"
             },
             {
               "key": "Cache-Control",
@@ -143,7 +143,7 @@
             },
             {
               "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; img-src 'self' data: https:; font-src 'self' data: https://fonts.bunny.net; connect-src 'self' https://cloudflareinsights.com; frame-ancestors 'none'; frame-src 'none';"
+              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; img-src 'self' data: https:; font-src 'self' data: https://fonts.bunny.net; connect-src 'self' https://cloudflareinsights.com https://storage.googleapis.com; media-src 'self' https://storage.googleapis.com; frame-ancestors 'none'; frame-src 'none';"
             },
             {
               "key": "Cache-Control",
