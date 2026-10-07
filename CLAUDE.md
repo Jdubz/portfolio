@@ -18,7 +18,7 @@ Josh Wentworth's professional portfolio: a static Gatsby site on Firebase Hostin
 portfolio/
 ├── web/                    # Gatsby site (the only npm workspace)
 │   ├── src/
-│   │   ├── components/     # homepage/*, elements/*, recordings/*, LegalPage (shared privacy/terms shell)
+│   │   ├── components/     # homepage/*, elements/*, recordings/*, PageShell (frame for every sub-page), LegalPage
 │   │   ├── content/        # MDX for homepage sections
 │   │   ├── pages/          # index, projects/full-stack, recordings, privacy, terms, 404
 │   │   ├── templates/      # home.tsx (parallax homepage)
@@ -95,6 +95,10 @@ The `index.json` shape is the `Section` type in `web/src/utils/recordings.ts`; t
 
 ## Conventions
 
+- **Page frame:** every page except the homepage renders inside `components/PageShell.tsx` (menu, hero with back link and floating icons, content column, footer). Do not hand-roll a hero or footer on a new page.
+- **Buttons that are links:** use `components/elements/ButtonLink.tsx`, never a button variant on a bare `<a>`. In MDX an `<a>` takes the theme's link colour, which made the primary button's text the same blue as its background.
+- **Cards:** panels use the `cards.surface` variant (repo cards, track rows, sound tiles) so they match in both colour modes.
+- **Check both colour modes.** Dark is the default; light is one toggle away in the menu.
 - **One web manifest:** `web/static/manifest.webmanifest`, linked from `Seo.tsx`. There is no manifest plugin.
 - **Static assets:** `web/static` holds only what the site references. The full brand kit (all favicon variants, logo sources, individual icons) lives in `docs/brand`; copy a file over when the site starts using it.
 - **Theme variants:** `gatsby-plugin-theme-ui/index.ts` only defines variants that are used. Add one when you need it rather than keeping spares.

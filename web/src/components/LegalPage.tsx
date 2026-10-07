@@ -1,8 +1,7 @@
 /** @jsx jsx */
 import * as React from "react"
 import { jsx } from "theme-ui"
-import { Link } from "gatsby"
-import Layout from "./homepage/Layout"
+import PageShell from "./PageShell"
 
 type LegalPageProps = {
   title: string
@@ -11,54 +10,21 @@ type LegalPageProps = {
   children: React.ReactNode
 }
 
-/** Shared shell for the privacy and terms pages: back link, title, date and section spacing. */
+/** Shared shell for the privacy and terms pages: the site page frame with long-form section spacing. */
 export const LegalPage = ({ title, lastUpdated, children }: LegalPageProps) => (
-  <Layout>
+  <PageShell kicker="Legal" title={title} lead={`Last updated: ${lastUpdated}`} narrow>
     <div
       sx={{
-        minHeight: "100vh",
-        bg: "background",
-        py: [6, 7, 8],
+        "& > section": { mb: 5 },
+        "& p": { lineHeight: "relaxed" },
+        "& ul": { pl: 4, "& li": { mb: 2 } },
+        // Underlined: inside running text, colour alone does not mark a link
+        "& a": { color: "link", textDecoration: "underline" },
       }}
     >
-      <div sx={{ variant: "layout.container", maxWidth: 800 }}>
-        <Link
-          to="/"
-          sx={{
-            variant: "links.primary",
-            display: "inline-flex",
-            alignItems: "center",
-            mb: 5,
-            fontSize: 2,
-            "&:before": {
-              content: '"← "',
-              mr: 2,
-            },
-          }}
-        >
-          Back to Home
-        </Link>
-
-        <h1
-          sx={{
-            fontSize: [6, 7, 8],
-            fontWeight: "heading",
-            lineHeight: "heading",
-            color: "heading",
-            mb: 3,
-          }}
-        >
-          {title}
-        </h1>
-
-        <p sx={{ fontSize: 1, color: "textMuted", mb: 5 }}>Last updated: {lastUpdated}</p>
-
-        <div sx={{ "& > section": { mb: 5 }, "& p": { lineHeight: "relaxed" }, "& ul": { pl: 4, "& li": { mb: 2 } } }}>
-          {children}
-        </div>
-      </div>
+      {children}
     </div>
-  </Layout>
+  </PageShell>
 )
 
 type LegalSectionProps = {

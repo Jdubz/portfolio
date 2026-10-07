@@ -48,11 +48,8 @@ const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }
         columnGap: [3, null, 4],
         rowGap: 3,
         p: 3,
-        border: "1px solid",
-        borderColor: active ? "primary" : "divider",
-        borderRadius: "16px",
-        // Not muted: the secondary text in a row is under 4.5:1 contrast against it in light mode
-        bg: "background",
+        variant: "cards.surface",
+        ...(active && { borderColor: "primary" }),
       }}
     >
       <button
@@ -147,10 +144,8 @@ export const TrackTile = ({ track, active, playing, progress, failed, onToggle, 
         width: "100%",
         p: 3,
         textAlign: "left",
-        border: "1px solid",
-        borderColor: active && playing ? "primary" : "divider",
-        borderRadius: "12px",
-        bg: "muted",
+        variant: "cards.surface",
+        ...(active && playing && { borderColor: "primary" }),
         color: "heading",
         font: "inherit",
         cursor: "pointer",
