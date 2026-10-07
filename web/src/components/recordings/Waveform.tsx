@@ -53,7 +53,8 @@ const Waveform = ({ peaks, progress, bars = 160, height = 48, label, onSeek }: W
     </svg>
   )
 
-  const layers = [layer("rest", "textMuted"), layer("played", "primary", `inset(0 ${(1 - progress) * 100}% 0 0)`)]
+  // primaryHover, not primary: the lighter blue is under 3:1 contrast against a row in light mode
+  const layers = [layer("rest", "textMuted"), layer("played", "primaryHover", `inset(0 ${(1 - progress) * 100}% 0 0)`)]
 
   if (!onSeek) {
     return (
@@ -87,7 +88,7 @@ const Waveform = ({ peaks, progress, bars = 160, height = 48, label, onSeek }: W
         height,
         cursor: "pointer",
         borderRadius: "4px",
-        "&:focus-visible": { outline: "2px solid", outlineColor: "primary", outlineOffset: "4px" },
+        "&:focus-visible": { outline: "2px solid", outlineColor: "primaryHover", outlineOffset: "4px" },
       }}
     >
       {layers}
