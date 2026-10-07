@@ -17,12 +17,12 @@ Josh Wentworth's professional portfolio: a static Gatsby site on Firebase Hostin
 portfolio/
 ├── web/                    # Gatsby site (the only npm workspace)
 │   ├── src/
-│   │   ├── components/     # homepage/*, elements/*
+│   │   ├── components/     # homepage/*, elements/*, LegalPage (shared privacy/terms shell)
 │   │   ├── content/        # MDX for homepage sections
 │   │   ├── pages/          # index, projects/full-stack, privacy, terms, 404
 │   │   ├── templates/      # home.tsx (parallax homepage)
 │   │   └── gatsby-plugin-theme-ui/  # Theme
-│   └── static/             # Static assets
+│   └── static/             # Static assets: only files the site references, plus manifest.webmanifest
 │
 ├── firebase.json           # Hosting: production + staging targets, headers, redirects
 ├── .github/workflows/      # CI/CD
@@ -74,7 +74,13 @@ Never push directly to `main`. Every change to `web/` needs a changeset (`npm ru
 - The staging target is a copy of production plus `X-Robots-Tag: noindex`. Change both together.
 - The CSP only allows what the site loads today (self, Bunny Fonts, Cloudflare Insights). Adding a third-party script or API call means updating it.
 - `/contact` redirects to `/` for old links.
-- `firestore.rules` and `storage.rules` deny everything; nothing in this repo uses those services.
+
+## Conventions
+
+- **One web manifest:** `web/static/manifest.webmanifest`, linked from `Seo.tsx`. There is no manifest plugin.
+- **Static assets:** `web/static` holds only what the site references. The full brand kit (all favicon variants, logo sources, individual icons) lives in `docs/brand`; copy a file over when the site starts using it.
+- **Theme variants:** `gatsby-plugin-theme-ui/index.ts` only defines variants that are used. Add one when you need it rather than keeping spares.
+- **Test mocks:** shared mocks for `Divider`, `Content`, `Inner`, `Svg` and `animations` live in `__mocks__` next to each module; tests call `jest.mock(path)` with no factory.
 
 ## Common Issues
 

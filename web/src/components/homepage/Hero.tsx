@@ -37,7 +37,7 @@ const Hero = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
       {/* Mid-section - sparser, smaller bubbles for depth */}
       <Svg icon="arrowUp" width={32} color="icon_teal" left="12%" top="48%" />
     </Divider>
-    <Content sx={{ variant: `texts.bigger` }} speed={0.4} offset={offset} factor={factor} className="content">
+    <Content speed={0.4} offset={offset} factor={factor} className="content">
       <Inner>
         <Intro />
         {/* Logo at bottom of hero section, overlapping 50% with next section */}

@@ -7,81 +7,48 @@ import { Box, Button, Flex, useColorMode, jsx } from "theme-ui"
 import { Link } from "gatsby"
 
 /**
- * Navigation Section Component
- */
-interface NavSectionProps {
-  title?: string
-  children: React.ReactNode
-  defaultExpanded?: boolean
-}
-
-const NavSection: React.FC<NavSectionProps> = ({ title, children, defaultExpanded = true }) => {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
-
-  if (!title) {
-    // No title = just render children without collapsible wrapper
-    return <>{children}</>
-  }
-
-  return (
-    <Box>
-      {/* Section Header (collapsible) */}
-      <Box
-        onClick={() => setIsExpanded(!isExpanded)}
-        sx={{
-          py: 2,
-          px: 4,
-          bg: "backgroundSecondary",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          transition: "all 0.2s ease",
-          "&:hover": {
-            bg: "divider",
-          },
-        }}
-      >
-        <span
-          sx={{
-            color: "textMuted",
-            fontSize: 1,
-            fontWeight: "bold",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-          }}
-        >
-          {title}
-        </span>
-        <span
-          sx={{
-            color: "textMuted",
-            fontSize: 2,
-            transition: "transform 0.2s ease",
-            transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-          }}
-        >
-          ▼
-        </span>
-      </Box>
-
-      {/* Section Content */}
-      {isExpanded && children}
-    </Box>
-  )
-}
-
-/**
  * Navigation Link Component
+ *
+ * `to` renders an internal Gatsby link; `href` renders a plain anchor (mailto or external).
  */
 interface NavLinkProps {
-  to: string
-  onClick: () => void
+  to?: string
+  href?: string
+  /** Open `href` in a new tab and show the external-link arrow */
+  newTab?: boolean
+  onClick?: () => void
   children: React.ReactNode
   icon?: string
 }
 
-const NavLink: React.FC<NavLinkProps> = ({ to, onClick, children, icon }) => {
+const navLinkStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 2,
+  py: 3,
+  px: 4,
+  color: "text",
+  fontSize: 2,
+  fontWeight: "body",
+  textDecoration: "none",
+  transition: "color 0.2s ease",
+}
+
+const NavLink: React.FC<NavLinkProps> = ({ to, href, newTab = false, onClick, children, icon }) => {
+  const content = [
+    icon && (
+      <span key="icon" sx={{ fontSize: 3 }}>
+        {icon}
+      </span>
+    ),
+    children,
+    newTab && (
+      <span key="arrow" sx={{ fontSize: 1, ml: "auto" }}>
+        ↗
+      </span>
+    ),
+  ]
+
   return (
     <Box
       sx={{
@@ -97,25 +64,20 @@ const NavLink: React.FC<NavLinkProps> = ({ to, onClick, children, icon }) => {
         },
       }}
     >
-      <Link
-        to={to}
-        onClick={onClick}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          py: 3,
-          px: 4,
-          color: "text",
-          fontSize: 2,
-          fontWeight: "body",
-          textDecoration: "none",
-          transition: "color 0.2s ease",
-        }}
-      >
-        {icon && <span sx={{ fontSize: 3 }}>{icon}</span>}
-        {children}
-      </Link>
+      {to ? (
+        <Link to={to} onClick={onClick} sx={navLinkStyle}>
+          {content}
+        </Link>
+      ) : (
+        <a
+          href={href}
+          onClick={onClick}
+          {...(newTab && { target: "_blank", rel: "noopener noreferrer" })}
+          sx={navLinkStyle}
+        >
+          {content}
+        </a>
+      )}
     </Box>
   )
 }
@@ -293,96 +255,26 @@ const HamburgerMenu: React.FC = () => {
             }}
           >
             {/* Main Pages */}
-            <NavSection>
-              <NavLink to="/" onClick={closeMenu} icon="🏠">
-                Home
-              </NavLink>
-              <NavLink to="/projects/full-stack" onClick={closeMenu} icon="🛠️">
-                Full-Stack Project
-              </NavLink>
-            </NavSection>
+            <NavLink to="/" onClick={closeMenu} icon="🏠">
+              Home
+            </NavLink>
+            <NavLink to="/projects/full-stack" onClick={closeMenu} icon="🛠️">
+              Full-Stack Project
+            </NavLink>
 
             <NavDivider />
 
             {/* Email */}
-            <NavSection>
-              <Box
-                sx={{
-                  width: "100%",
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    bg: "divider",
-                    "& a": {
-                      color: "primary",
-                    },
-                  },
-                }}
-              >
-                <a
-                  href="mailto:hello@joshwentworth.com"
-                  onClick={closeMenu}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    py: 3,
-                    px: 4,
-                    color: "text",
-                    fontSize: 2,
-                    fontWeight: "body",
-                    textDecoration: "none",
-                    transition: "color 0.2s ease",
-                  }}
-                >
-                  <span sx={{ fontSize: 3 }}>✉️</span>
-                  hello@joshwentworth.com
-                </a>
-              </Box>
-            </NavSection>
+            <NavLink href="mailto:hello@joshwentworth.com" onClick={closeMenu} icon="✉️">
+              hello@joshwentworth.com
+            </NavLink>
 
             <NavDivider />
 
             {/* Job Finder - External Link */}
-            <NavSection>
-              <Box
-                sx={{
-                  width: "100%",
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    bg: "divider",
-                    "& a": {
-                      color: "primary",
-                    },
-                  },
-                }}
-              >
-                <a
-                  href={jobFinderUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    py: 3,
-                    px: 4,
-                    color: "text",
-                    fontSize: 2,
-                    fontWeight: "body",
-                    textDecoration: "none",
-                    transition: "color 0.2s ease",
-                  }}
-                >
-                  <span sx={{ fontSize: 3 }}>🔍</span>
-                  Job Finder
-                  <span sx={{ fontSize: 1, ml: "auto" }}>↗</span>
-                </a>
-              </Box>
-            </NavSection>
+            <NavLink href={jobFinderUrl} newTab icon="🔍">
+              Job Finder
+            </NavLink>
 
             <NavDivider />
 

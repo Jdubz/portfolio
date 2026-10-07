@@ -59,8 +59,7 @@ const Seo = ({
       <title>{seo.title}</title>
       <meta name="description" content={seo.description} />
       <meta name="image" content={seo.image} />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta name="theme-color" content="#141821" />
+      <meta name="theme-color" content="#0EA5E9" />
 
       {/* Open Graph */}
       <meta property="og:title" content={seo.title} />
@@ -100,7 +99,7 @@ const Seo = ({
       <link rel="icon" type="image/png" sizes="512x512" href="/favicons/primary-512.png" />
       <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon-primary-180.png" />
       <link rel="mask-icon" href="/favicons/favicon-mono.svg" color="#0EA5E9" />
-      <link rel="manifest" href="/favicons/site.webmanifest" />
+      <link rel="manifest" href="/manifest.webmanifest" />
 
       {/* Preconnect to external domains for performance */}
       <link rel="preconnect" href="https://fonts.bunny.net" crossOrigin="" />

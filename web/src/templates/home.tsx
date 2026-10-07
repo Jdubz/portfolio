@@ -37,30 +37,27 @@ const Cara = () => {
     }
   }, [])
 
-  React.useEffect(() => {
-    // Hide the FCP fallback and show the main content when React has hydrated
-    const fallback = document.querySelector(".fcp-hero-fallback")
-    const gatsby = document.querySelector("#___gatsby")
+  // The fallback is only for the static HTML; once hydrated the hero has its own h1
+  const [hydrated, setHydrated] = React.useState(false)
 
-    if (fallback) {
-      fallback.classList.add("loaded")
-    }
-    if (gatsby) {
-      gatsby.classList.add("loaded")
-    }
+  React.useEffect(() => {
+    setHydrated(true)
+    document.querySelector("#___gatsby")?.classList.add("loaded")
   }, [])
 
   return (
     <>
       {/* Critical FCP content - renders immediately */}
-      <div className="fcp-hero-fallback">
-        <div className="fcp-hero-content">
-          <h1 className="fcp-hero-title">Josh Wentworth</h1>
-          <p className="fcp-hero-description">
-            Multidisciplinary engineer blending software, electronics/lighting, and digital fabrication.
-          </p>
+      {!hydrated && (
+        <div className="fcp-hero-fallback">
+          <div className="fcp-hero-content">
+            <h1 className="fcp-hero-title">Josh Wentworth</h1>
+            <p className="fcp-hero-description">
+              Multidisciplinary engineer blending software, electronics/lighting, and digital fabrication.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Hamburger Menu */}
       <HamburgerMenu />
@@ -99,12 +96,6 @@ export const Head: HeadFC = () => (
             align-items: center;
             justify-content: center;
             padding: 2rem;
-            opacity: 1;
-            transition: opacity 0.3s ease-out;
-            pointer-events: none;
-          }
-          .fcp-hero-fallback.loaded {
-            opacity: 0;
             pointer-events: none;
           }
           .fcp-hero-content {

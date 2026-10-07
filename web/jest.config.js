@@ -3,10 +3,6 @@ module.exports = {
   preset: "ts-jest",
   silent: true, // Suppress console.log/warn/error during tests unless they fail
   verbose: false, // Less verbose test output
-  moduleNameMapper: {
-    "^@lekoarts/gatsby-theme-cara/(.*)$": "<rootDir>/../node_modules/@lekoarts/gatsby-theme-cara/$1",
-    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
-  },
   transform: {
     "^.+\\.(ts|tsx)$": [
       "ts-jest",

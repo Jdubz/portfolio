@@ -3,7 +3,7 @@
 echo "🧪 Running all tests before push..."
 echo ""
 
-# Run all tests (both web and functions)
+# Run all tests
 npm test || {
   echo ""
   echo "❌ Tests failed! Push aborted."

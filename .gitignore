@@ -61,14 +61,12 @@ typings/
 .env.*.local
 !.env.example
 
-
 # Gatsby cache and build
 .cache
 **/.cache
 web/public
 web/.cache
 public/
-
 
 .idea
 .vscode
@@ -77,51 +75,17 @@ public/
 # Firebase
 .firebase/
 firebase-debug.log
-firestore-debug.log
 ui-debug.log
-
-# Firebase exports (temporary export directories)
-firebase-export-*/
-firestore-exports/
 
 # Windows
 nul
 
 # Screenshots
 screenshots/images/
-!screenshots/README.md
 !screenshots/.gitkeep
-
-# Lighthouse reports
-lighthouse-report.html
-lighthouse-report.json
-lighthouse-report.*.html
-lighthouse-report.*.json
-.lighthouseci/
-lighthouse-debug.json
-lighthouse-fcp-test.html
-lighthouse-launcher.html
-lighthouse-*.html
-lighthouse-*.json
 
 # Claude Code local settings
 .claude/settings.local.json
-
-
-# Test and dev files
-web/src/components/*Test.tsx
-web/src/components/FORMS_GUIDE.md
-web/src/test-theme.ts
-
-# Firebase emulator data (keep structure, ignore exported data)
-emulator-data/*
-!emulator-data/.gitkeep
-
-# Playwright test artifacts
-web/playwright-report/
-web/test-results/
-playwright-report/
-test-results/
 
 # Editor swap files
 *.swp
@@ -142,3 +106,6 @@ terraform.rc
 # Debugging
 analysis/
 cors.json
+
+# Playwright MCP browser artifacts
+.playwright-mcp/
