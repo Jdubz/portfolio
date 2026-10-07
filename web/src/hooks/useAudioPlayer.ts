@@ -71,7 +71,8 @@ const useAudioPlayer = (): AudioPlayer => {
       }
 
       const audio = audioRef.current
-      if (trackRef.current?.path !== track.path) {
+      // Also after an error: without a fresh source the element fails again without retrying
+      if (trackRef.current?.path !== track.path || audio.error) {
         audio.src = objectUrl(track.path)
       }
       trackRef.current = track
@@ -88,7 +89,7 @@ const useAudioPlayer = (): AudioPlayer => {
   const toggle = React.useCallback(
     (track: Track, queue: Track[] = []) => {
       const audio = audioRef.current
-      if (!audio || trackRef.current?.path !== track.path) {
+      if (!audio || trackRef.current?.path !== track.path || audio.error) {
         load(track, queue, 0)
       } else if (audio.paused) {
         setFailedPath(null)
