@@ -24,7 +24,8 @@ const PlayIcon = ({ playing, size = 18 }: { playing: boolean; size?: number }) =
 )
 
 const PlaybackError = () => (
-  <span role="alert" sx={{ display: "block", color: "danger", fontSize: 1, mt: 1 }}>
+  // The text token, not danger: red at this size is under 4.5:1 contrast on rows and tiles
+  <span role="alert" sx={{ display: "block", color: "text", fontWeight: 600, fontSize: 1, mt: 1 }}>
     This recording could not be played.
   </span>
 )

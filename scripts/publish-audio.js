@@ -41,7 +41,12 @@ const IMAGE_FILE = /^[^\\/"%]+\.(jpe?g|png|webp)$/i
  */
 const rsyncExclude = (namedCovers) => {
   const separator = String.raw`[\\/]`
-  const literal = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
+  // % and " are written as hex escapes so the pattern survives the Windows shell (see gcloud)
+  const literal = (text) =>
+    text
+      .replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
+      .replace(/%/g, String.raw`\x25`)
+      .replace(/"/g, String.raw`\x22`)
   const allowed = [
     String.raw`.*\.(mp3|m4a|aac|wav|flac|ogg|opus)`,
     String.raw`.*${separator}cover\.(jpe?g|png|webp)`,
@@ -75,10 +80,17 @@ const run = (command, args, options = {}) => {
   return result.stdout
 }
 
-// gcloud is a .cmd shim on Windows, which Node only runs through a shell
+// gcloud is a .cmd shim on Windows, which Node only runs through a shell. cmd.exe expands %NAME%
+// and ends a quoted argument at ", even inside quotes, so local paths are never put on the command
+// line: callers set `cwd` and pass paths relative to it. Anything else that carries either
+// character is refused rather than passed on altered.
 const gcloud = (args, options = {}) => {
   if (process.platform !== "win32") {
     return run("gcloud", args, options)
+  }
+  const unsafe = args.find((arg) => /[%"]/.test(arg))
+  if (unsafe) {
+    throw new Error(`gcloud argument cannot be passed safely on Windows: ${unsafe}`)
   }
   return run(`gcloud ${args.map((arg) => `"${arg}"`).join(" ")}`, [], { shell: true, ...options })
 }
@@ -643,7 +655,8 @@ const main = async () => {
     console.log("\nDry run: nothing uploaded.")
   } else {
     console.log(`\nUploading ${root} ...`)
-    gcloud(["storage", "rsync", "--recursive", `--exclude=${rsyncExclude(namedCovers)}`, root, `gs://${BUCKET}`], {
+    gcloud(["storage", "rsync", "--recursive", `--exclude=${rsyncExclude(namedCovers)}`, ".", `gs://${BUCKET}`], {
+      cwd: root,
       stdio: "inherit",
     })
   }
@@ -675,12 +688,12 @@ const main = async () => {
       [
         "storage",
         "cp",
-        temporary,
+        INDEX_FILE,
         `gs://${BUCKET}/${INDEX_FILE}`,
         "--cache-control=no-store",
         "--content-type=application/json",
       ],
-      { stdio: "inherit" }
+      { cwd: path.dirname(temporary), stdio: "inherit" }
     )
     fs.rmSync(path.dirname(temporary), { recursive: true })
   }
