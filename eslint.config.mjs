@@ -217,25 +217,9 @@ export default [
     },
   },
 
-  // Shadowed theme files - more permissive for third-party theme customizations
-  {
-    files: ["src/@lekoarts/**/*"],
-    rules: {
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unsafe-assignment": "off",
-      "@typescript-eslint/no-unsafe-call": "off",
-      "@typescript-eslint/no-unsafe-member-access": "off",
-      "@typescript-eslint/no-unsafe-argument": "off",
-      "@typescript-eslint/no-redundant-type-constituents": "off",
-      "@typescript-eslint/no-base-to-string": "off",
-      "@typescript-eslint/restrict-template-expressions": "off",
-    },
-  },
-
   // Test files - more permissive rules
   {
-    files: ["**/__tests__/**/*", "**/*.test.*", "**/*.spec.*"],
+    files: ["**/__tests__/**/*", "**/__mocks__/**/*", "**/*.test.*", "**/*.spec.*"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-assertion": "off",

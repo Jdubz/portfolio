@@ -16,44 +16,12 @@ jest.mock("../../components/homepage/Footer", () => {
   }
 })
 
-// Mock components
-jest.mock("../../components/elements/Divider", () => {
-  return function DividerMock({ children, className }: any) {
-    return (
-      <div data-testid="divider" className={className}>
-        {children}
-      </div>
-    )
-  }
-})
-
-jest.mock("../../components/elements/Content", () => {
-  return function ContentMock({ children, className }: any) {
-    return (
-      <div data-testid="content" className={className}>
-        {children}
-      </div>
-    )
-  }
-})
-
-jest.mock("../../components/elements/Inner", () => {
-  return function InnerMock({ children }: any) {
-    return <div data-testid="inner">{children}</div>
-  }
-})
-
-jest.mock("../../components/homepage/Svg", () => {
-  return function SvgMock() {
-    return <svg data-testid="icon" />
-  }
-})
-
-jest.mock("../../styles/animations", () => ({
-  UpDown: ({ children }: any) => <div data-testid="updown">{children}</div>,
-  UpDownWide: ({ children }: any) => <div data-testid="updownwide">{children}</div>,
-  waveAnimation: jest.fn(() => "wave-animation"),
-}))
+// Shared manual mocks live next to each module, in its __mocks__ directory
+jest.mock("../../components/elements/Divider")
+jest.mock("../../components/elements/Content")
+jest.mock("../../components/elements/Inner")
+jest.mock("../../components/homepage/Svg")
+jest.mock("../../styles/animations")
 
 describe("Contact Component", () => {
   it("renders without crashing", () => {

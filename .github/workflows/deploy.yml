@@ -26,73 +26,9 @@ jobs:
           node-version: 20
           cache: "npm"
 
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 make g++
-
-      - name: Install root dependencies
-        run: |
-          max_attempts=3
-          attempt=1
-          while [ $attempt -le $max_attempts ]; do
-            echo "Attempt $attempt of $max_attempts..."
-            if npm ci --prefer-offline --no-audit; then
-              echo "✓ Dependencies installed successfully"
-              break
-            else
-              if [ $attempt -eq $max_attempts ]; then
-                echo "✗ Failed after $max_attempts attempts"
-                exit 1
-              fi
-              echo "⚠ Installation failed, retrying in 10 seconds..."
-              sleep 10
-              attempt=$((attempt + 1))
-            fi
-          done
-        env:
-          NPM_CONFIG_FETCH_RETRIES: 3
-          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 20000
-          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 120000
-
-      - name: Install and verify @parcel/watcher
-        run: |
-          echo "Installing @parcel/watcher with prebuilds..."
-          npm install --no-save @parcel/watcher@2.5.1
-
-          echo "Rebuilding native module..."
-          npm rebuild @parcel/watcher --verbose
-
-          echo "Verifying installation..."
-          if [ ! -d "node_modules/@parcel/watcher" ]; then
-            echo "ERROR: @parcel/watcher not installed"
-            exit 1
-          fi
-
-          echo "Directory structure:"
-          ls -la node_modules/@parcel/watcher/
-
-          echo "Checking for native binding..."
-          if [ -f "node_modules/@parcel/watcher/watcher.node" ]; then
-            echo "✓ Native binding found: watcher.node"
-            file node_modules/@parcel/watcher/watcher.node
-          else
-            echo "⚠ Native binding not found"
-          fi
-
-          echo "Checking prebuilds..."
-          if [ -d "node_modules/@parcel/watcher/prebuilds" ]; then
-            ls -la node_modules/@parcel/watcher/prebuilds/
-          else
-            echo "No prebuilds directory"
-          fi
-
-          echo "Testing require..."
-          node -e "require('@parcel/watcher')" && echo "✓ Module loads successfully" || echo "✗ Module failed to load"
-
-      - name: Clean Gatsby cache
-        working-directory: web
-        run: npm run clean
+      # The same plain install the PR preview and quality gate use.
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
 
       - name: Lint and test
         run: |

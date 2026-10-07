@@ -32,42 +32,6 @@ const config: GatsbyConfig = {
     },
     // Theme-UI for styling
     `gatsby-plugin-theme-ui`,
-    {
-      resolve: `gatsby-plugin-manifest`,
-      options: {
-        name: `Josh Wentworth - Portfolio`,
-        short_name: `JW`,
-        description: `Multidisciplinary engineer blending software, electronics/lighting, and digital fabrication`,
-        start_url: `/`,
-        background_color: `#141821`,
-        theme_color: `#0EA5E9`,
-        display: `standalone`,
-        icons: [
-          {
-            src: `/favicons/primary-192.png`,
-            sizes: `192x192`,
-            type: `image/png`,
-          },
-          {
-            src: `/favicons/primary-512.png`,
-            sizes: `512x512`,
-            type: `image/png`,
-          },
-          {
-            src: `/favicons/maskable-primary-192.png`,
-            sizes: `192x192`,
-            type: `image/png`,
-            purpose: `maskable`,
-          },
-          {
-            src: `/favicons/maskable-primary-512.png`,
-            sizes: `512x512`,
-            type: `image/png`,
-            purpose: `maskable`,
-          },
-        ],
-      },
-    },
   ],
 }
 

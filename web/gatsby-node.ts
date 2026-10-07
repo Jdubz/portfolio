@@ -1,15 +1,8 @@
 import type { GatsbyNode } from "gatsby"
 import type { Configuration } from "webpack"
-import path from "path"
 
 export const onCreateWebpackConfig: GatsbyNode["onCreateWebpackConfig"] = ({ actions, stage, getConfig }) => {
-  // Configure webpack alias for @/ imports
   actions.setWebpackConfig({
-    resolve: {
-      alias: {
-        "@": path.resolve(__dirname, "src"),
-      },
-    },
     // Add watch options to ignore unnecessary files
     ...(stage === "develop" && {
       watchOptions: {

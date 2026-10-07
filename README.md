@@ -79,7 +79,7 @@ with any change to `web/`; versions are bumped automatically on merge to `main`.
 ## Documentation
 
 - [docs/brand/README.md](./docs/brand/README.md) - Brand identity and assets
-- [docs/DEVELOPMENT_WORKFLOW.md](./docs/DEVELOPMENT_WORKFLOW.md) - Git workflow
+- [CLAUDE.md](./CLAUDE.md) - Structure, commands, environments and git workflow
 
 ## License
 
