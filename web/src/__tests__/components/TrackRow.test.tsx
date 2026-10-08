@@ -44,6 +44,34 @@ describe("TrackRow", () => {
     expect(screen.getByText("1:40")).toBeInTheDocument()
   })
 
+  it("shows no badge or links for a track without them", () => {
+    renderRow()
+
+    expect(screen.queryByText("Draft")).not.toBeInTheDocument()
+    expect(screen.queryByRole("link")).not.toBeInTheDocument()
+  })
+
+  it("marks a draft and links to its stems, its release and itself", () => {
+    renderRow({
+      track: {
+        ...track,
+        id: "intro",
+        status: "draft",
+        stems: "intro-stems",
+        link: "https://soundcloud.com/someone/intro",
+      },
+    })
+
+    expect(screen.getByText("Draft")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Stems" })).toHaveAttribute("href", "#intro-stems")
+    expect(screen.getByRole("link", { name: "SoundCloud" })).toHaveAttribute(
+      "href",
+      "https://soundcloud.com/someone/intro"
+    )
+    expect(screen.getByRole("link", { name: "Link to Intro" })).toHaveAttribute("href", "#intro")
+    expect(screen.getByRole("listitem")).toHaveAttribute("id", "intro")
+  })
+
   it("toggles playback from the button", () => {
     const { onToggle } = renderRow()
 

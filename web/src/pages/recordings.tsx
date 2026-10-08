@@ -4,11 +4,13 @@ import { jsx } from "theme-ui"
 import PageShell from "../components/PageShell"
 import ButtonLink from "../components/elements/ButtonLink"
 import Seo from "../components/homepage/Seo"
-import TrackRow, { TrackTile } from "../components/recordings/TrackRow"
+import TrackRow, { highlight, TrackTile } from "../components/recordings/TrackRow"
 import useAudioPlayer, { type AudioPlayer } from "../hooks/useAudioPlayer"
 import {
   fetchSections,
+  formatBytes,
   formatDate,
+  hasRecording,
   objectUrl,
   sectionAnchors,
   type Section,
@@ -24,7 +26,15 @@ const Status = ({ children }: { children: React.ReactNode }) => (
   </p>
 )
 
-const Group = ({ group, layout, player }: { group: TrackGroup; layout: Section["layout"]; player: AudioPlayer }) => {
+type GroupProps = {
+  group: TrackGroup
+  layout: Section["layout"]
+  player: AudioPlayer
+  /** The id in the page's address, when it names a track or group */
+  target: string
+}
+
+const Group = ({ group, layout, player, target }: GroupProps) => {
   const { currentPath, playing, progress, failedPath, toggle, seek } = player
   // An album or a list plays through; short sounds in a grid play one at a time
   const queue = layout === "grid" ? undefined : group.tracks
@@ -35,7 +45,18 @@ const Group = ({ group, layout, player }: { group: TrackGroup; layout: Section["
   return (
     <div sx={{ mb: [4, 5] }}>
       {group.title && (
-        <div sx={{ display: "flex", alignItems: "center", gap: [3, 4], mb: 3 }}>
+        <div
+          id={group.id}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: [3, 4],
+            mb: 3,
+            scrollMarginTop: "80px",
+            borderRadius: "12px",
+            ...(group.id !== undefined && group.id === target && highlight),
+          }}
+        >
           {group.cover && layout === "album" && (
             <img
               src={objectUrl(group.cover)}
@@ -50,6 +71,15 @@ const Group = ({ group, layout, player }: { group: TrackGroup; layout: Section["
             <h3 sx={{ color: "heading", fontSize: [3, 4], m: 0 }}>{group.title}</h3>
             {group.date && <p sx={{ color: "textMuted", fontSize: 1, mt: 1, mb: 0 }}>{formatDate(group.date)}</p>}
             {group.description && <p sx={{ color: "textMuted", mt: 2, mb: 0 }}>{group.description}</p>}
+            {group.download && (
+              <ButtonLink
+                href={objectUrl(group.download)}
+                variant="secondary"
+                styles={{ py: 2, px: 3, fontSize: 1, mt: 3 }}
+              >
+                Download{group.downloadBytes ? ` (${formatBytes(group.downloadBytes)})` : ""}
+              </ButtonLink>
+            )}
           </div>
         </div>
       )}
@@ -71,6 +101,7 @@ const Group = ({ group, layout, player }: { group: TrackGroup; layout: Section["
             playing: active && playing,
             progress: active ? progress : 0,
             failed: failedPath === track.path,
+            highlighted: track.id !== undefined && track.id === target,
             onToggle,
             onSeek,
           }
@@ -90,6 +121,30 @@ const RecordingsPage = () => {
   const player = useAudioPlayer()
   const sections = state.status === "ready" ? state.sections : []
   const anchors = sectionAnchors(sections)
+  const [hash, setHash] = React.useState("")
+  // Only a track's or group's id is highlighted; a section's anchor is an ordinary jump
+  const target = hasRecording(sections, hash) ? hash : ""
+
+  React.useEffect(() => {
+    const read = () => {
+      try {
+        setHash(decodeURIComponent(window.location.hash.slice(1)))
+      } catch {
+        setHash("")
+      }
+    }
+    read()
+    window.addEventListener("hashchange", read)
+    return () => window.removeEventListener("hashchange", read)
+  }, [])
+
+  // The recordings load after the page, so the browser's own jump to the address has nothing to
+  // land on yet. Ids are plain slugs, checked when they are published.
+  React.useEffect(() => {
+    if (target) {
+      document.getElementById(target)?.scrollIntoView({ block: "center" })
+    }
+  }, [target])
 
   React.useEffect(() => {
     let cancelled = false
@@ -152,7 +207,7 @@ const RecordingsPage = () => {
           </h2>
           {section.description && <p sx={{ variant: "text.body", mt: 0, mb: 4 }}>{section.description}</p>}
           {section.groups.map((group) => (
-            <Group key={group.path} group={group} layout={section.layout} player={player} />
+            <Group key={group.path} group={group} layout={section.layout} player={player} target={target} />
           ))}
         </section>
       ))}
