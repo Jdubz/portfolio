@@ -24,6 +24,13 @@ export type Track = {
   bpm?: number
   key?: string
   description?: string
+  /** Link target on the page: /recordings#<id>. Unique among tracks, groups and section anchors. */
+  id?: string
+  status?: "draft" | "final"
+  /** Where the finished track is released, an https address */
+  link?: string
+  /** The id of the group that holds this track's stems */
+  stems?: string
   /** The meta.json fields already applied above; kept for the publish script, not shown */
   overrides?: Partial<Track>
   /** The values those overrides replaced; also only for the publish script */
@@ -34,12 +41,17 @@ export type Track = {
 
 export type TrackGroup = {
   path: string
+  /** Link target on the page, as for a track */
+  id?: string
   /** Absent for tracks that sit directly in the section folder */
   title?: string
   description?: string
   date?: string
   /** Object path of the cover image */
   cover?: string
+  /** Object path of a zip of the group's files, for example lossless stems */
+  download?: string
+  downloadBytes?: number
   tracks: Track[]
 }
 
@@ -106,6 +118,38 @@ export const sectionAnchors = (sections: Section[]): string[] => {
     return anchor
   })
 }
+
+/** "soundcloud.com/..." becomes "SoundCloud"; any other address is named by its host */
+export const linkLabel = (link: string): string => {
+  let host: string
+  try {
+    host = new URL(link).hostname.replace(/^www\./, "")
+  } catch {
+    return "Link"
+  }
+  const known: Record<string, string> = { "soundcloud.com": "SoundCloud", "bandcamp.com": "Bandcamp" }
+  const match = Object.keys(known).find((name) => host === name || host.endsWith(`.${name}`))
+  return match ? known[match] : host
+}
+
+/** 1536 becomes "1.5 KB"; sizes are shown next to downloads */
+export const formatBytes = (bytes: number): string => {
+  const units = ["B", "KB", "MB", "GB"]
+  let value = Math.max(0, bytes)
+  let unit = 0
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024
+    unit++
+  }
+  return `${unit === 0 || value >= 10 ? Math.round(value) : value.toFixed(1)} ${units[unit]}`
+}
+
+/** Whether `id` is the link target of a published track or group */
+export const hasRecording = (sections: Section[], id: string): boolean =>
+  id !== "" &&
+  sections.some((section) =>
+    section.groups.some((group) => group.id === id || group.tracks.some((track) => track.id === id))
+  )
 
 export const formatDuration = (seconds: number): string => {
   const total = Math.max(0, Math.round(seconds))

@@ -2,7 +2,7 @@
 import * as React from "react"
 import { jsx } from "theme-ui"
 import Waveform from "./Waveform"
-import { formatDate, formatDuration, type Track } from "../../utils/recordings"
+import { formatDate, formatDuration, linkLabel, type Track } from "../../utils/recordings"
 
 export type TrackProps = {
   track: Track
@@ -13,9 +13,46 @@ export type TrackProps = {
   progress: number
   /** Whether the player could not play this track */
   failed?: boolean
+  /** Whether the page was opened on this track's link */
+  highlighted?: boolean
   onToggle: (track: Track) => void
   onSeek: (track: Track, fraction: number) => void
 }
+
+type DetailLinkProps = { href: string; newTab?: boolean; label?: string; children: React.ReactNode }
+
+const DetailLink = ({ href, newTab, label, children }: DetailLinkProps) => (
+  <a
+    href={href}
+    aria-label={label}
+    {...(newTab && { target: "_blank", rel: "noreferrer noopener" })}
+    sx={{ variant: "links.primary" }}
+  >
+    {children}
+  </a>
+)
+
+const Badge = ({ children }: { children: React.ReactNode }) => (
+  <span
+    sx={{
+      display: "inline-block",
+      ml: 2,
+      px: 2,
+      border: "1px solid",
+      borderColor: "textMuted",
+      borderRadius: "999px",
+      color: "textMuted",
+      fontSize: 0,
+      fontWeight: 600,
+      verticalAlign: "middle",
+    }}
+  >
+    {children}
+  </span>
+)
+
+/** The ring around the track or group the page was opened on */
+export const highlight = { outline: "2px solid", outlineColor: "link", outlineOffset: "2px" }
 
 const PlayIcon = ({ playing, size = 18 }: { playing: boolean; size?: number }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" fill="currentColor">
@@ -35,12 +72,15 @@ const Detail = ({ children }: { children: React.ReactNode }) => (
 )
 
 /** One track as a full-width row: play button, title and details, seekable waveform, length */
-const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }: TrackProps) => {
+const TrackRow = ({ track, active, playing, progress, failed, highlighted, onToggle, onSeek }: TrackProps) => {
   const isPlaying = active && playing
+  const hasDetails = [track.date, track.bpm, track.key, track.link, track.stems, track.id].some(Boolean)
 
   return (
     <li
+      id={track.id}
       sx={{
+        scrollMarginTop: "80px",
         display: "grid",
         gridTemplateColumns: ["auto minmax(0, 1fr) auto", null, "auto minmax(0, 15rem) minmax(0, 1fr) auto"],
         gridTemplateAreas: ['"button text time" "wave wave wave"', null, '"button text wave time"'],
@@ -50,6 +90,7 @@ const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }
         p: 3,
         variant: "cards.surface",
         ...(active && { borderColor: "primary" }),
+        ...(highlighted && highlight),
       }}
     >
       <button
@@ -78,12 +119,32 @@ const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }
         <div sx={{ color: "heading", fontWeight: 600, overflowWrap: "anywhere" }}>
           {track.number !== undefined && <span sx={{ color: "textMuted", mr: 2 }}>{track.number}.</span>}
           {track.title}
+          {track.status === "draft" && <Badge>Draft</Badge>}
         </div>
-        {(track.date ?? track.bpm ?? track.key) !== undefined && (
+        {hasDetails && (
           <div sx={{ color: "textMuted", fontSize: 1, mt: 1 }}>
             {track.date && <Detail>{formatDate(track.date)}</Detail>}
             {track.bpm && <Detail>{track.bpm} BPM</Detail>}
             {track.key && <Detail>{track.key}</Detail>}
+            {track.stems && (
+              <Detail>
+                <DetailLink href={`#${track.stems}`}>Stems</DetailLink>
+              </Detail>
+            )}
+            {track.link && (
+              <Detail>
+                <DetailLink href={track.link} newTab>
+                  {linkLabel(track.link)}
+                </DetailLink>
+              </Detail>
+            )}
+            {track.id && (
+              <Detail>
+                <DetailLink href={`#${track.id}`} label={`Link to ${track.title}`}>
+                  Link
+                </DetailLink>
+              </Detail>
+            )}
           </div>
         )}
         {track.description && <div sx={{ color: "textMuted", fontSize: 1, mt: 1 }}>{track.description}</div>}
@@ -107,8 +168,8 @@ const TrackRow = ({ track, active, playing, progress, failed, onToggle, onSeek }
 }
 
 /** One short sound as a compact tile that plays from the start when pressed */
-export const TrackTile = ({ track, active, playing, progress, failed, onToggle, onSeek }: TrackProps) => (
-  <li sx={{ position: "relative" }}>
+export const TrackTile = ({ track, active, playing, progress, failed, highlighted, onToggle, onSeek }: TrackProps) => (
+  <li id={track.id} sx={{ position: "relative", scrollMarginTop: "80px" }}>
     {/* Pressing the tile restarts the sound, so a sound that is part-way through gets its own pause */}
     {active && (playing || progress > 0) && (
       <button
@@ -146,6 +207,7 @@ export const TrackTile = ({ track, active, playing, progress, failed, onToggle, 
         textAlign: "left",
         variant: "cards.surface",
         ...(active && playing && { borderColor: "primary" }),
+        ...(highlighted && highlight),
         color: "heading",
         font: "inherit",
         cursor: "pointer",

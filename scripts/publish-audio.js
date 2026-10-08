@@ -3,7 +3,7 @@
 /**
  * Publish audio to the recordings page.
  *
- *   npm run publish-audio -- <library-folder> [--dry-run]
+ *   npm run publish-audio -- <library-folder> [--dry-run] [--prune]
  *
  * Uploads the folder's audio and cover art to the recordings bucket and rebuilds index.json, the manifest the
  * /recordings page loads. The first level of folders are the page's sections (albums, tracks,
@@ -14,6 +14,9 @@
  * the page, so a single new album can be published on its own. A folder published without its
  * meta.json keeps the details it was last published with. To remove something, delete it from the
  * bucket and run this again.
+ *
+ * With --prune the folder is the whole library instead: audio, covers and downloads in the bucket
+ * that are not in <library-folder> are removed from the bucket and the page.
  *
  * Needs ffmpeg and ffprobe (metadata and waveforms) and gcloud (upload) on PATH.
  * See CLAUDE.md, "Recordings", for the folder layout and meta.json fields.
@@ -32,13 +35,16 @@ const COVER_FILE = /^cover\.(jpe?g|png|webp)$/i
 const META_FILE = "meta.json"
 const INDEX_FILE = "index.json"
 const IMAGE_FILE = /^[^\\/"%]+\.(jpe?g|png|webp)$/i
+const ZIP_FILE = /^[^\\/"%]+\.zip$/i
+// Ids are link targets on the page (/recordings#<id>), so they are kept to plain slugs
+const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 /**
  * The bucket is public, so only what the page uses is uploaded: audio, cover.* images and any
- * cover a meta.json names. rsync can only exclude, so this pattern matches every other path,
+ * cover or download a meta.json names. rsync can only exclude, so this pattern matches every other path,
  * including anything hidden. Notes, project files and other images in the library stay local.
  */
-const rsyncExclude = (namedCovers) => {
+const rsyncExclude = (namedFiles) => {
   // A backslash separates folders only on Windows; elsewhere it is an ordinary file-name character
   const separator = process.platform === "win32" ? String.raw`[\\/]` : "/"
   // % and " are written as hex escapes so the pattern survives the Windows shell (see gcloud)
@@ -47,12 +53,12 @@ const rsyncExclude = (namedCovers) => {
       .replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
       .replace(/%/g, String.raw`\x25`)
       .replace(/"/g, String.raw`\x22`)
-  // Extensions and cover.* match in any case; a named cover must match exactly, so a file that
-  // differs from it only by case is not uploaded in its place
+  // Extensions and cover.* match in any case; a named cover or download must match exactly, so a
+  // file that differs from it only by case is not uploaded in its place
   const allowed = [
     String.raw`.*\.(?i:mp3|m4a|aac|wav|flac|ogg|opus)`,
     String.raw`.*${separator}(?i:cover\.(jpe?g|png|webp))`,
-    ...namedCovers.map((cover) => cover.split("/").map(literal).join(separator)),
+    ...namedFiles.map((file) => file.split("/").map(literal).join(separator)),
   ]
   const visible = String.raw`(?!(.*${separator})?\.)`
   // (?s) with \A and \Z: a file name can contain a newline, which . and $ would otherwise stop at
@@ -140,19 +146,25 @@ const SECTION_FIELDS = {
   tracks: "object",
 }
 const GROUP_FIELDS = {
+  id: "string",
   title: "string",
   description: "string",
   date: "string",
   cover: "string",
+  download: "string",
   tracks: "object",
 }
 const TRACK_FIELDS = {
+  id: "string",
   title: "string",
   description: "string",
   date: "string",
   key: "string",
   number: "number",
   bpm: "number",
+  status: ["draft", "final"],
+  link: "string",
+  stems: "string",
 }
 
 const isPlainObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value)
@@ -172,6 +184,12 @@ const checkFields = (values, fields, where) => {
     } else if (expected === "number" && !Number.isFinite(value)) {
       throw new Error(`${where}"${field}" must be a finite number`)
     }
+  }
+  if (values.id !== undefined && !ID.test(values.id)) {
+    throw new Error(`${where}"id" must be lower-case letters, digits and single hyphens, such as control-test`)
+  }
+  if (values.link !== undefined && !/^https:\/\/\S+$/.test(values.link)) {
+    throw new Error(`${where}"link" must be an https:// address`)
   }
 }
 
@@ -389,9 +407,35 @@ const listBucket = async () => {
   return names
 }
 
+/**
+ * Deletes objects by exact name through the JSON API. `gcloud storage rm` reads * ? and [ ] in a
+ * name as wildcards, and file names here often carry brackets.
+ */
+const removeFromBucket = async (names) => {
+  const token = gcloud(["auth", "print-access-token"]).toString("utf8").trim()
+  for (const name of names) {
+    console.log(`  removing ${name}`)
+    const response = await fetch(`${STORAGE_API}/${encodeURIComponent(name)}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    // Already gone is the outcome that was wanted
+    if (!response.ok && response.status !== 404) {
+      throw new Error(`Removing ${name} from the bucket failed with status ${response.status}`)
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Building the index
 // ---------------------------------------------------------------------------
+
+/** A section's link target on the page; the same rule as sectionAnchors in web/src/utils/recordings.ts */
+const slugOf = (name) =>
+  name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
 
 const titleCase = (name) => name.replace(/(^|[\s_-])([a-z])/g, (_, lead, letter) => lead + letter.toUpperCase())
 
@@ -456,9 +500,12 @@ const buildIndex = ({ tracks, groups, sections }) => {
         path: folder,
         // Tracks directly inside the section folder form an untitled group
         title: folder === id ? undefined : groupFields.title || folder.split("/").slice(1).join(" / "),
+        id: groupFields.id,
         description: groupFields.description,
         date: groupFields.date,
         cover: groupFields.cover,
+        download: groupFields.download,
+        downloadBytes: groupFields.downloadBytes,
         tracks: groupTracks,
       }
     })
@@ -495,10 +542,11 @@ const main = async () => {
   const options = args.filter((arg) => arg.startsWith("-"))
   const folders = args.filter((arg) => !arg.startsWith("-"))
   // A mistyped --dry-run must not turn a preview into a real publish
-  if (folders.length !== 1 || options.some((option) => option !== "--dry-run")) {
-    fail("Usage: npm run publish-audio -- <library-folder> [--dry-run]")
+  if (folders.length !== 1 || options.some((option) => !["--dry-run", "--prune"].includes(option))) {
+    fail("Usage: npm run publish-audio -- <library-folder> [--dry-run] [--prune]")
   }
   const dryRun = options.includes("--dry-run")
+  const prune = options.includes("--prune")
   const [source] = folders
   const root = path.resolve(process.env.INIT_CWD || process.cwd(), source)
   if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
@@ -519,14 +567,21 @@ const main = async () => {
     fail(`Move these into a section folder such as tracks/ before publishing: ${loose.join(", ")}`)
   }
   const localAudio = audioFiles.filter((file) => file.includes("/"))
+  if (prune && localAudio.length === 0) {
+    // Most likely the wrong folder: pruning against it would remove everything that is published
+    fail(`${root} has no audio, so --prune would empty the bucket. Delete from the bucket by hand if that is meant.`)
+  }
 
   console.log(`Reading the published index for gs://${BUCKET} ...`)
   const published = flattenIndex(await fetchJson(`${STORAGE_API}/${INDEX_FILE}?alt=media`))
   const publishedByPath = new Map(published.tracks.map((track) => [track.path, track]))
-  // Published tracks that are not being republished now but are still in the bucket
+  // Published tracks that are not being republished now but are still in the bucket. With --prune
+  // there are none: what is not in the folder is removed.
   const alreadyInBucket = await listBucket()
   const localSet = new Set(localAudio)
-  const retained = published.tracks.filter((track) => !localSet.has(track.path) && alreadyInBucket.has(track.path))
+  const retained = prune
+    ? []
+    : published.tracks.filter((track) => !localSet.has(track.path) && alreadyInBucket.has(track.path))
 
   // 1. Read every local track, reusing the waveform when the file has not changed
   const localFolders = new Map()
@@ -545,7 +600,8 @@ const main = async () => {
   //    published; without one (a partial publish) the published overrides are kept. Each track
   //    carries its overrides so they can be reapplied over freshly read tags next time.
   const groups = new Map(published.groups)
-  const namedCovers = []
+  // Covers and downloads a meta.json names, which the upload has to be told about one by one
+  const namedFiles = []
   const sections = new Map(published.sections)
   const tracks = []
   const retainedUpdates = new Map()
@@ -553,10 +609,13 @@ const main = async () => {
   const metaFolders = files
     .filter((file) => path.posix.basename(file) === META_FILE)
     .map((file) => path.posix.dirname(file))
-  // ... or only new artwork: a cover.* image, or the file a group's saved cover points at
+  // ... or only new artwork or a new download: a cover.* image, or the file a group's saved cover
+  // or download points at
   const coverFolders = files
     .filter(
-      (file) => COVER_FILE.test(path.posix.basename(file)) || [...groups.values()].some((group) => group.cover === file)
+      (file) =>
+        COVER_FILE.test(path.posix.basename(file)) ||
+        [...groups.values()].some((group) => group.cover === file || group.download === file)
     )
     .map((file) => path.posix.dirname(file))
   const publishFolders = new Set(
@@ -622,8 +681,15 @@ const main = async () => {
         fail(`${folder}/${META_FILE}: "cover" must name a jpg, png or webp file in that folder`)
       }
       if (meta.cover && isLocal(meta.cover)) {
-        namedCovers.push(`${folder}/${meta.cover}`)
+        namedFiles.push(`${folder}/${meta.cover}`)
       }
+      if (meta.download && !(ZIP_FILE.test(meta.download) && (isLocal(meta.download) || isPublished(meta.download)))) {
+        fail(`${folder}/${META_FILE}: "download" must name a zip file in that folder`)
+      }
+      if (meta.download && isLocal(meta.download)) {
+        namedFiles.push(`${folder}/${meta.download}`)
+      }
+      const sizeOf = (file) => fs.statSync(path.join(root, file)).size
       const publishedCover = [...alreadyInBucket]
         .filter((name) => path.posix.dirname(name) === folder)
         .map((name) => path.posix.basename(name))
@@ -633,13 +699,34 @@ const main = async () => {
       const previous = groups.get(folder)
       if (described || !previous) {
         const cover = inFolder(meta.cover || localCover || publishedCover)
-        groups.set(folder, { path: folder, title: meta.title, description: meta.description, date: meta.date, cover })
-      } else if (previous.cover && isLocal(path.posix.basename(previous.cover))) {
-        // No meta.json, and the saved cover is in the folder: upload it again in case it changed
-        namedCovers.push(previous.cover)
-      } else if (localCover) {
-        // No meta.json: keep what was published, and only a cover supplied now replaces the saved one
-        groups.set(folder, { ...previous, cover: inFolder(localCover) })
+        const download = inFolder(meta.download)
+        // The size shown next to the link. A download that is only in the bucket keeps the size it
+        // was published with.
+        const savedBytes = previous && previous.download === download ? previous.downloadBytes : undefined
+        const downloadBytes = download && (isLocal(meta.download) ? sizeOf(download) : savedBytes)
+        groups.set(folder, {
+          path: folder,
+          id: meta.id,
+          title: meta.title,
+          description: meta.description,
+          date: meta.date,
+          cover,
+          download,
+          downloadBytes,
+        })
+      } else {
+        if (previous.cover && isLocal(path.posix.basename(previous.cover))) {
+          // No meta.json, and the saved cover is in the folder: upload it again in case it changed
+          namedFiles.push(previous.cover)
+        } else if (localCover) {
+          // No meta.json: keep what was published, and only a cover supplied now replaces the saved one
+          groups.set(folder, { ...previous, cover: inFolder(localCover) })
+        }
+        if (previous.download && isLocal(path.posix.basename(previous.download))) {
+          // The same for the saved download
+          namedFiles.push(previous.download)
+          groups.set(folder, { ...groups.get(folder), downloadBytes: sizeOf(previous.download) })
+        }
       }
     }
   }
@@ -664,32 +751,66 @@ const main = async () => {
     }
   }
 
+  // Ids are link targets, so each must be the only one on the page. Checked before the upload.
+  const folderOf = (track) => path.posix.dirname(track.path)
+  const staying = [...tracks, ...retained.map((track) => retainedUpdates.get(track.path) || track)]
+  const shownFolders = new Set(staying.map(folderOf))
+  const shownGroups = [...groups.values()].filter((group) => shownFolders.has(group.path))
+  const sectionSlugs = new Set([...shownFolders].map((folder) => slugOf(folder.split("/")[0])))
+  const idOwners = new Map()
+  for (const { id, path: owner } of [...shownGroups, ...staying].filter((entry) => entry.id !== undefined)) {
+    if (idOwners.has(id)) {
+      fail(`The id "${id}" is used by both ${idOwners.get(id)} and ${owner}`)
+    }
+    if (sectionSlugs.has(id)) {
+      fail(`The id "${id}" of ${owner} is also a section's link target; choose another`)
+    }
+    idOwners.set(id, owner)
+  }
+  const groupIds = new Set(shownGroups.map((group) => group.id).filter(Boolean))
+  for (const track of staying.filter((entry) => entry.stems !== undefined && !groupIds.has(entry.stems))) {
+    fail(`${track.path}: "stems" must be the id of a published group, and "${track.stems}" is not one`)
+  }
+
+  // With --prune, whatever the bucket holds that this folder would not upload is removed
+  const coverFiles = files.filter((file) => file.includes("/") && COVER_FILE.test(path.posix.basename(file)))
+  const uploaded = new Set([...localAudio, ...coverFiles, ...namedFiles])
+  const pruned = prune ? [...alreadyInBucket].filter((name) => name !== INDEX_FILE && !uploaded.has(name)) : []
+
   // 3. Upload, then keep the published tracks that are still in the bucket
   if (dryRun) {
     console.log("\nDry run: nothing uploaded.")
+    for (const name of pruned) {
+      console.log(`  would remove ${name}`)
+    }
   } else {
     console.log(`\nUploading ${root} ...`)
-    gcloud(["storage", "rsync", "--recursive", `--exclude=${rsyncExclude(namedCovers)}`, ".", `gs://${BUCKET}`], {
+    gcloud(["storage", "rsync", "--recursive", `--exclude=${rsyncExclude(namedFiles)}`, ".", `gs://${BUCKET}`], {
       cwd: root,
       stdio: "inherit",
     })
+    if (pruned.length > 0) {
+      await removeFromBucket(pruned)
+    }
   }
 
-  const inBucket = await listBucket()
+  // In a dry run the pruned objects are still there, so they are left out by name
+  const inBucket = new Set([...(await listBucket())].filter((name) => !pruned.includes(name)))
   const localPaths = new Set(tracks.map((track) => track.path))
   const kept = published.tracks
     .filter((track) => !localPaths.has(track.path) && inBucket.has(track.path))
     .map((track) => retainedUpdates.get(track.path) || track)
-  const dropped = published.tracks.filter((track) => !localPaths.has(track.path) && !inBucket.has(track.path))
+  const dropped = published.tracks.filter(
+    (track) => !localPaths.has(track.path) && !inBucket.has(track.path) && !pruned.includes(track.path)
+  )
 
-  // A cover deleted from the bucket must not stay in the index. In a dry run nothing was uploaded,
-  // so a cover that exists locally counts as present.
+  // A cover or download deleted from the bucket must not stay in the index. In a dry run nothing
+  // was uploaded, so a file that exists locally counts as present.
+  const present = (file) => inBucket.has(file) || (dryRun && fs.existsSync(path.join(root, file)))
   for (const [folder, group] of groups) {
-    const present =
-      group.cover && (inBucket.has(group.cover) || (dryRun && fs.existsSync(path.join(root, group.cover))))
-    if (group.cover && !present) {
-      groups.set(folder, { ...group, cover: undefined })
-    }
+    const cover = group.cover && present(group.cover) ? group.cover : undefined
+    const download = group.download && present(group.download) ? group.download : undefined
+    groups.set(folder, { ...group, cover, download, downloadBytes: download ? group.downloadBytes : undefined })
   }
 
   const index = buildIndex({ tracks: [...tracks, ...kept], groups, sections })
@@ -716,6 +837,9 @@ const main = async () => {
   }
   if (dropped.length > 0) {
     console.log(`  Removed ${dropped.length} track(s) no longer in the bucket`)
+  }
+  if (pruned.length > 0) {
+    console.log(`  ${dryRun ? "Would prune" : "Pruned"} ${pruned.length} file(s) that are not in the folder`)
   }
   console.log(dryRun ? "\n✓ Dry run complete" : "\n✓ Published: https://joshwentworth.com/recordings")
 }
