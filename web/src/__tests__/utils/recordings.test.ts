@@ -1,8 +1,11 @@
 import {
   decodePeaks,
   fetchSections,
+  formatBytes,
   formatDate,
   formatDuration,
+  hasRecording,
+  linkLabel,
   objectUrl,
   RECORDINGS_BUCKET,
   sectionAnchors,
@@ -60,6 +63,58 @@ describe("sectionAnchors", () => {
 
     expect(anchors).toEqual(["section-2", "section-2-2", "section-2-2-2"])
     expect(new Set(anchors).size).toBe(anchors.length)
+  })
+})
+
+describe("linkLabel", () => {
+  it("names the services it knows", () => {
+    expect(linkLabel("https://soundcloud.com/someone/track")).toBe("SoundCloud")
+    expect(linkLabel("https://someone.bandcamp.com/track/one")).toBe("Bandcamp")
+  })
+
+  it("names any other address by its host", () => {
+    expect(linkLabel("https://www.example.com/a")).toBe("example.com")
+    expect(linkLabel("https://notsoundcloud.com/a")).toBe("notsoundcloud.com")
+  })
+
+  it("falls back for something that is not an address", () => {
+    expect(linkLabel("not a link")).toBe("Link")
+  })
+})
+
+describe("formatBytes", () => {
+  it("picks the unit that fits", () => {
+    expect(formatBytes(512)).toBe("512 B")
+    expect(formatBytes(1536)).toBe("1.5 KB")
+    expect(formatBytes(84 * 1024 * 1024)).toBe("84 MB")
+  })
+})
+
+describe("hasRecording", () => {
+  const sections: Section[] = [
+    {
+      id: "stems",
+      title: "Stems",
+      layout: "list",
+      groups: [
+        {
+          path: "stems/Song",
+          id: "song-stems",
+          tracks: [{ path: "stems/Song/Bass.mp3", title: "Bass", duration: 1, peaks: "", id: "song-bass" }],
+        },
+      ],
+    },
+  ]
+
+  it("finds a group's id and a track's id", () => {
+    expect(hasRecording(sections, "song-stems")).toBe(true)
+    expect(hasRecording(sections, "song-bass")).toBe(true)
+  })
+
+  it("does not match a section anchor, an unknown id or an empty one", () => {
+    expect(hasRecording(sections, "stems")).toBe(false)
+    expect(hasRecording(sections, "other")).toBe(false)
+    expect(hasRecording(sections, "")).toBe(false)
   })
 })
 
