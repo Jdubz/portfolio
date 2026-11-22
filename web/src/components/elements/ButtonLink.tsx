@@ -14,13 +14,15 @@ type Shared = {
 /** Exactly one destination: an internal route, or an address that may open in a new tab */
 type ButtonLinkProps = Shared &
   (
-    | { /** Internal route; rendered as a Gatsby link */ to: string; href?: never; newTab?: never }
+    | { /** Internal route; rendered as a Gatsby link */ to: string; href?: never; newTab?: never; download?: never }
     | {
         /** External or mailto address; rendered as a plain anchor */
         href: string
         to?: never
         /** Open `href` in a new tab */
         newTab?: boolean
+        /** Save `href` as a file with this name instead of opening it */
+        download?: string
       }
   )
 
@@ -34,6 +36,7 @@ const ButtonLink = ({
   href,
   variant = "primary",
   newTab = false,
+  download,
   styles,
   className,
   children,
@@ -56,7 +59,13 @@ const ButtonLink = ({
   }
 
   return (
-    <a href={href} className={className} sx={style} {...(newTab && { target: "_blank", rel: "noreferrer noopener" })}>
+    <a
+      href={href}
+      download={download}
+      className={className}
+      sx={style}
+      {...(newTab && { target: "_blank", rel: "noreferrer noopener" })}
+    >
       {children}
     </a>
   )

@@ -27,6 +27,16 @@ describe("ButtonLink", () => {
     expect(link).not.toHaveAttribute("target")
   })
 
+  it("downloads instead of opening when given a file name", () => {
+    render(
+      <ButtonLink href="data:text/plain,hello" download="hello.txt">
+        Download
+      </ButtonLink>
+    )
+
+    expect(screen.getByRole("link", { name: "Download" })).toHaveAttribute("download", "hello.txt")
+  })
+
   it("opens in a new tab safely when asked", () => {
     render(
       <ButtonLink href="https://github.com/Jdubz/portfolio" newTab>
